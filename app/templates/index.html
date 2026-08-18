@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+
+{% block title %}Tirupur Garments — Platform for the Tirupur Garment Industry{% endblock %}
+
+{% block breadcrumbs_block %}{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <h1 class="hero-title">Tirupur Garments</h1>
+    <p class="hero-subtitle">The primary digital platform for Tirupur's apparel, fabric, and garment manufacturing
+        industry. Connecting companies, jobs, calculators, and AI design services.</p>
+    <div style="display: flex; justify-content: center; gap: var(--space-md); flex-wrap: wrap;">
+        <a href="/tools" class="btn btn-primary">Garment Tools</a>
+        <a href="/ai-studio" class="btn btn-secondary" style="border-color: white; color: white;">AI Studio</a>
+    </div>
+</div>
+
+<section style="margin-bottom: var(--space-xxl);">
+    <div class="section-header">
+        <h2 class="section-title">Industrial Core Sections</h2>
+    </div>
+    <div class="grid grid-3">
+        <div class="card">
+            <h3 class="card-tag">Garment Hub</h3>
+            <h4 class="card-title" style="margin-bottom: var(--space-sm);">Industry Hub & Directory</h4>
+            <p class="card-summary">Explore Tirupur news, knowledge bases, industry data, directories of local
+                manufacturers, suppliers, services, and current job vacancies.</p>
+            <a href="/news" class="btn btn-secondary btn-sm" style="margin-top: auto;">Explore Hub</a>
+        </div>
+        <div class="card">
+            <h3 class="card-tag">Garment Tools</h3>
+            <h4 class="card-title" style="margin-bottom: var(--space-sm);">100+ Calculators Suite</h4>
+            <p class="card-summary">Calculate Standard Allowed Minutes (SAM), fabric GSM, thread consumption, order
+                costs, margins, and plan resources with precision tools.</p>
+            <a href="/tools" class="btn btn-secondary btn-sm" style="margin-top: auto;">Open Tools</a>
+        </div>
+        <div class="card">
+            <h3 class="card-tag">Garment AI Studio</h3>
+            <h4 class="card-title" style="margin-bottom: var(--space-sm);">AI Solutions Panel</h4>
+            <p class="card-summary">Harness the power of AI to automate daily content, generate reports, compute costing
+                breakdowns, and get assistant-driven styling/planning support.</p>
+            <a href="/ai-studio" class="btn btn-secondary btn-sm" style="margin-top: auto;">Launch Studio</a>
+        </div>
+    </div>
+</section>
+
+<!-- Feeds Grid -->
+<div class="grid grid-2" style="margin-bottom: var(--space-xxl);">
+    <!-- News Column -->
+    <div>
+        <div class="section-header">
+            <h2 class="section-title">Latest News</h2>
+            <a href="/news">View All</a>
+        </div>
+        {% if recent_news %}
+        <div style="display: flex; flex-direction: column; gap: var(--space-md);">
+            {% for item in recent_news %}
+            <div class="card" style="padding: var(--space-md);">
+                <span class="card-tag">{{ item.category.name if item.category else 'General' }}</span>
+                <h3 class="card-title"><a href="/news/{{ item.slug }}">{{ item.title }}</a></h3>
+                <p class="card-summary" style="font-size: 0.85rem; margin-bottom: var(--space-xs);">{{ item.summary }}
+                </p>
+                <span class="card-meta" style="border: none; padding: 0;">{{ item.published_at.strftime('%d %B %Y') if
+                    item.published_at }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color: var(--text-light);">No news articles published yet. Run the database seed script to import
+            sample data.</p>
+        {% endif %}
+    </div>
+
+    <!-- Jobs Column -->
+    <div>
+        <div class="section-header">
+            <h2 class="section-title">Latest Jobs in Tirupur</h2>
+            <a href="/jobs">View All</a>
+        </div>
+        {% if recent_jobs %}
+        <div style="display: flex; flex-direction: column; gap: var(--space-md);">
+            {% for job in recent_jobs %}
+            <div class="card" style="padding: var(--space-md);">
+                <span class="card-tag">{{ job.job_type }}</span>
+                <h3 class="card-title"><a href="/jobs/{{ job.slug }}">{{ job.title }}</a></h3>
+                <p class="card-summary" style="font-size: 0.85rem; margin-bottom: var(--space-xs);">{{ job.company.name
+                    }} — {{ job.location }}</p>
+                <span class="card-meta" style="border: none; padding: 0;">Salary: {{ job.salary_range or 'Negotiable'
+                    }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color: var(--text-light);">No jobs posted yet. Run the database seed script to import sample data.</p>
+        {% endif %}
+    </div>
+</div>
+
+<section style="margin-bottom: var(--space-xxl);">
+    <div class="section-header">
+        <h2 class="section-title">Featured Calculators</h2>
+        <a href="/tools">View All Tools</a>
+    </div>
+    <div class="grid grid-4">
+        {% if popular_tools %}
+        {% for tool in popular_tools %}
+        <div class="card" style="padding: var(--space-md);">
+            <h3 class="card-tag">{{ tool.category.name if tool.category else 'Tool' }}</h3>
+            <h4 class="card-title" style="font-size: 1rem;"><a href="/tools/{{ tool.slug }}">{{ tool.name }}</a></h4>
+            <p class="card-summary" style="font-size: 0.8rem; margin-bottom: var(--space-sm);">{{ tool.description }}
+            </p>
+            <a href="/tools/{{ tool.slug }}" class="btn btn-secondary btn-sm"
+                style="font-size: 0.8rem; padding: 0.4rem 0.8rem; width: 100%;">Use Tool</a>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="card" style="padding: var(--space-md);">
+            <h3 class="card-tag">Production</h3>
+            <h4 class="card-title" style="font-size: 1rem;"><a href="/tools/sam-calculator">SAM Calculator</a></h4>
+            <p class="card-summary" style="font-size: 0.8rem; margin-bottom: var(--space-sm);">Standard Allowed Minutes
+                calculator for sewing operations.</p>
+            <a href="/tools/sam-calculator" class="btn btn-secondary btn-sm"
+                style="font-size: 0.8rem; padding: 0.4rem 0.8rem; width: 100%;">Use Tool</a>
+        </div>
+        <div class="card" style="padding: var(--space-md);">
+            <h3 class="card-tag">Fabric</h3>
+            <h4 class="card-title" style="font-size: 1rem;"><a href="/tools/fabric-gsm-calculator">Fabric GSM
+                    Calculator</a></h4>
+            <p class="card-summary" style="font-size: 0.8rem; margin-bottom: var(--space-sm);">Grams per Square Meter
+                calculator for knit & woven swatches.</p>
+            <a href="/tools/fabric-gsm-calculator" class="btn btn-secondary btn-sm"
+                style="font-size: 0.8rem; padding: 0.4rem 0.8rem; width: 100%;">Use Tool</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<section>
+    <div class="section-header">
+        <h2 class="section-title">Knowledge & Guides</h2>
+        <a href="/knowledge">View All Articles</a>
+    </div>
+    <div class="grid grid-3">
+        {% if recent_knowledge %}
+        {% for art in recent_knowledge %}
+        <div class="card">
+            <h3 class="card-tag">{{ art.category.name if art.category else 'Guide' }}</h3>
+            <h4 class="card-title"><a href="/knowledge/{{ art.slug }}">{{ art.title }}</a></h4>
+            <p class="card-summary">{{ art.summary }}</p>
+            <div class="card-meta">
+                <span>Published: {{ art.published_at.strftime('%d %b %Y') if art.published_at }}</span>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p style="color: var(--text-light);">No knowledge articles loaded. Run the database seed script to import sample
+            data.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

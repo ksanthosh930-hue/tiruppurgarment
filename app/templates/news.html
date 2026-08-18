@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{% if article %}
+{{ article.seo_title or article.title }} — Tirupur Garments News
+{% else %}
+Garment Hub News — Tirupur Garments
+{% endif %}
+{% endblock %}
+
+{% block meta_description %}
+{% if article %}
+{{ article.seo_description or article.summary }}
+{% else %}
+Read latest Tirupur garments industry news, apparel updates, export regulations and financial yarn price updates.
+{% endif %}
+{% endblock %}
+
+{% block schema_json %}
+{% if article %}
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    "headline": "{{ article.title }}",
+    "description": "{{ article.summary }}",
+    "datePublished": "{{ article.published_at.isoformat() if article.published_at }}",
+    "dateModified": "{{ article.updated_at.isoformat() if article.updated_at }}",
+    "author": {
+      "@type": "Person",
+      "name": "{{ article.author.username if article.author else 'Tirupur Garments Editor' }}"
+    }
+  }
+  </script>
+{% endif %}
+{% endblock %}
+
+{% block breadcrumbs %}
+{% if article %}
+<li><a href="/news">News</a></li>
+<li>{{ article.title }}</li>
+{% else %}
+<li>News</li>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{% if article %}
+<article class="card" style="padding: var(--space-xl); margin-bottom: var(--space-xl);">
+  <div class="article-header">
+    <span class="card-tag">{{ article.category.name if article.category else 'General' }}</span>
+    <h1 class="article-title">{{ article.title }}</h1>
+    <div class="article-meta">
+      <span>By: <strong>{{ article.author.username if article.author else 'Staff Reporter' }}</strong></span>
+      <span>Published: <strong>{{ article.published_at.strftime('%d %B %Y') if article.published_at }}</strong></span>
+    </div>
+  </div>
+
+  <div class="article-body">
+    {{ article.content | replace('\n', '<br>') | safe }}
+  </div>
+</article>
+
+{% if related_news %}
+<section style="margin-top: var(--space-xxl);">
+  <div class="section-header">
+    <h2 class="section-title">Related News Articles</h2>
+  </div>
+  <div class="grid grid-3">
+    {% for item in related_news %}
+    <div class="card">
+      <span class="card-tag">{{ item.category.name if item.category else 'News' }}</span>
+      <h3 class="card-title"><a href="/news/{{ item.slug }}">{{ item.title }}</a></h3>
+      <p class="card-summary">{{ item.summary }}</p>
+      <div class="card-meta">
+        <span>{{ item.published_at.strftime('%d %b %Y') if item.published_at }}</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% else %}
+<div class="section-header">
+  <h1 class="section-title">
+    {% if category %}
+    News in "{{ category.name }}"
+    {% else %}
+    Garment Hub News
+    {% endif %}
+  </h1>
+</div>
+
+<!-- Category Chips Filter -->
+<div style="display: flex; gap: var(--space-xs); margin-bottom: var(--space-lg); flex-wrap: wrap;">
+  <a href="/news"
+    style="padding: 0.4rem 0.8rem; border-radius: var(--border-radius-sm); font-size: 0.85rem; font-weight: 600; text-decoration: none;
+        {% if not category %}background-color: var(--primary-color); color: white;{% else %}background-color: var(--surface-color); color: var(--text-secondary); border: 1px solid var(--border-color);{% endif %}">
+    All News
+  </a>
+  {% for cat in categories %}
+  <a href="{{ url_for('web.news_category_list', slug=cat.slug) }}"
+    style="padding: 0.4rem 0.8rem; border-radius: var(--border-radius-sm); font-size: 0.85rem; font-weight: 600; text-decoration: none;
+          {% if category and category.id == cat.id %}background-color: var(--primary-color); color: white;{% else %}background-color: var(--surface-color); color: var(--text-secondary); border: 1px solid var(--border-color);{% endif %}">
+    {{ cat.name }}
+  </a>
+  {% endfor %}
+</div>
+
+{% if articles %}
+<div class="grid grid-3">
+  {% for item in articles %}
+  <div class="card">
+    <span class="card-tag">{{ item.category.name if item.category else 'News' }}</span>
+    <h3 class="card-title"><a href="/news/{{ item.slug }}">{{ item.title }}</a></h3>
+    <p class="card-summary">{{ item.summary }}</p>
+    <div class="card-meta">
+      <span>{{ item.published_at.strftime('%d %b %Y') if item.published_at }}</span>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Pagination Controls -->
+{% if pagination and pagination.pages > 1 %}
+<div
+  style="display: flex; justify-content: center; gap: var(--space-md); margin-top: var(--space-xl); align-items: center;">
+  {% if pagination.has_prev %}
+  <a href="{% if category %}{{ url_for('web.news_category_list', slug=category.slug, page=pagination.prev_num) }}{% else %}{{ url_for('web.news_list', page=pagination.prev_num) }}{% endif %}"
+    class="btn btn-secondary btn-sm">&larr; Prev</a>
+  {% endif %}
+  <span style="font-weight: 600; color: var(--text-secondary); font-size: 0.9rem;">Page {{ pagination.page }} of {{
+    pagination.pages }}</span>
+  {% if pagination.has_next %}
+  <a href="{% if category %}{{ url_for('web.news_category_list', slug=category.slug, page=pagination.next_num) }}{% else %}{{ url_for('web.news_list', page=pagination.next_num) }}{% endif %}"
+    class="btn btn-secondary btn-sm">Next &rarr;</a>
+  {% endif %}
+</div>
+{% endif %}
+{% else %}
+<p style="color: var(--text-light); text-align: center; padding: var(--space-xl) 0;">No news articles have been
+  published in this category yet.</p>
+{% endif %}
+{% endif %}
+{% endblock %}
