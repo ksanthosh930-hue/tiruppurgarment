@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{% if company %}
+{{ company.seo_title or company.name }} — Garment Manufacturer
+{% else %}
+Garment Companies & Manufacturers Directory — Tirupur Garments
+{% endif %}
+{% endblock %}
+
+{% block meta_description %}
+{% if company %}
+{{ company.seo_description or company.description[:150] }}
+{% else %}
+Search our business directory of knitwear exporters, fabric dyers, thread spinners, packing accessories suppliers in
+Tirupur.
+{% endif %}
+{% endblock %}
+
+{% block breadcrumbs %}
+{% if company %}
+<li><a href="/companies">Companies</a></li>
+<li>{{ company.name }}</li>
+{% else %}
+<li>Companies</li>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{% if company %}
+<div class="card" style="padding: var(--space-xl); margin-bottom: var(--space-xl);">
+  <span class="card-tag">{{ company.category.name if company.category else 'Company' }}</span>
+  <h1 class="article-title">{{ company.name }}</h1>
+  <p style="color: var(--text-secondary); margin-bottom: var(--space-md);">{{ company.address }}</p>
+
+  <div
+    style="background-color: var(--background-color); padding: var(--space-md); border-radius: var(--border-radius-md); margin-bottom: var(--space-lg); border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: var(--space-xs); font-size: 0.95rem;">
+    {% if company.website %}
+    <div>🌐 <strong>Website:</strong> <a href="{{ company.website }}" target="_blank" rel="noopener">{{ company.website
+        }}</a></div>
+    {% endif %}
+    {% if company.email %}
+    <div>✉️ <strong>Email:</strong> <a href="mailto:{{ company.email }}">{{ company.email }}</a></div>
+    {% endif %}
+    {% if company.phone %}
+    <div>📞 <strong>Phone:</strong> {{ company.phone }}</div>
+    {% endif %}
+  </div>
+
+  <div class="article-body" style="margin-bottom: var(--space-xl);">
+    <h2 style="margin-bottom: var(--space-sm); font-weight: 700;">About the Company</h2>
+    {{ company.description | replace('\n', '<br>') | safe }}
+  </div>
+
+  <div class="grid grid-2" style="border-top: 1px solid var(--border-color); padding-top: var(--space-xl);">
+    <!-- Active Jobs -->
+    <div>
+      <h3 style="margin-bottom: var(--space-md); font-weight: 700;">Active Jobs</h3>
+      {% if company_jobs %}
+      <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
+        {% for job in company_jobs %}
+        <div
+          style="border: 1px solid var(--border-color); padding: var(--space-sm); border-radius: var(--border-radius-sm); background-color: var(--background-color);">
+          <h4 style="margin: 0; font-size: 0.95rem;"><a href="/jobs/{{ job.slug }}">{{ job.title }}</a></h4>
+          <span style="font-size: 0.75rem; color: var(--text-light);">{{ job.job_type }} | {{ job.location }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p style="color: var(--text-light); font-size: 0.9rem;">No active vacancies for this company.</p>
+      {% endif %}
+    </div>
+
+    <!-- Company Services -->
+    <div>
+      <h3 style="margin-bottom: var(--space-md); font-weight: 700;">Offered Services</h3>
+      {% if company_services %}
+      <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
+        {% for service in company_services %}
+        <div
+          style="border: 1px solid var(--border-color); padding: var(--space-sm); border-radius: var(--border-radius-sm); background-color: var(--background-color);">
+          <h4 style="margin: 0; font-size: 0.95rem;"><a href="/services/{{ service.slug }}">{{ service.name }}</a></h4>
+          <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">{{ service.description[:100]
+            }}...</p>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p style="color: var(--text-light); font-size: 0.9rem;">No services registered for this supplier.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="section-header">
+  <h1 class="section-title">Manufacturers & Suppliers Directory</h1>
+</div>
+
+{% if companies %}
+<div class="grid grid-3">
+  {% for c in companies %}
+  <div class="card">
+    <span class="card-tag">{{ c.category.name if c.category else 'Manufacturer' }}</span>
+    <h3 class="card-title"><a href="/companies/{{ c.slug }}">{{ c.name }}</a></h3>
+    <p class="card-summary">{{ c.description[:120] }}...</p>
+    <span class="card-meta" style="border: none; padding: 0;">📍 {{ c.address }}</span>
+    <a href="/companies/{{ c.slug }}" class="btn btn-secondary btn-sm" style="margin-top: var(--space-md);">View
+      Profile</a>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Pagination Controls -->
+{% if pagination and pagination.pages > 1 %}
+<div
+  style="display: flex; justify-content: center; gap: var(--space-md); margin-top: var(--space-xl); align-items: center;">
+  {% if pagination.has_prev %}
+  <a href="{{ url_for('web.companies_list', page=pagination.prev_num) }}" class="btn btn-secondary btn-sm">&larr;
+    Prev</a>
+  {% endif %}
+  <span style="font-weight: 600; color: var(--text-secondary); font-size: 0.9rem;">Page {{ pagination.page }} of {{
+    pagination.pages }}</span>
+  {% if pagination.has_next %}
+  <a href="{{ url_for('web.companies_list', page=pagination.next_num) }}" class="btn btn-secondary btn-sm">Next
+    &rarr;</a>
+  {% endif %}
+</div>
+{% endif %}
+{% else %}
+<p style="color: var(--text-light); text-align: center; padding: var(--space-xl) 0;">No companies listed in directory.
+  Run the database seed script to import sample data.</p>
+{% endif %}
+{% endif %}
+{% endblock %}

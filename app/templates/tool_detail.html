@@ -1,0 +1,827 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ tool.seo_title or tool.name }} — Tirupur Garments{% endblock %}
+
+{% block meta_description %}{{ tool.seo_description or tool.description }}{% endblock %}
+
+{% block schema_json %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "{{ tool.name }}",
+  "description": "{{ tool.description }}",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "All"
+}
+</script>
+{% endblock %}
+
+{% block breadcrumbs %}
+<li><a href="/tools">Tools</a></li>
+<li>{{ tool.name }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <h1 class="section-title">{{ tool.name }}</h1>
+</div>
+
+<p style="color: var(--text-secondary); margin-bottom: var(--space-xl); max-width: 800px;">
+    {{ tool.description }}
+</p>
+
+{% if tool.slug == 'sam-calculator' %}
+<div class="calc-container">
+    <div>
+        <h3 style="margin-bottom: var(--space-md); font-weight: 700;">Calculator Inputs</h3>
+        <form id="sam-form">
+            <div class="form-group">
+                <label for="smv" class="form-label">Basic SMV (Standard Minute Value)</label>
+                <input type="number" id="smv" class="form-control" step="0.001" min="0.001" placeholder="e.g. 0.450"
+                    required>
+                <small style="color: var(--text-light); font-size: 0.75rem;">Basic operation time in minutes, excluding
+                    allowances.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="allowance" class="form-label">Allowance Percentage (%)</label>
+                <input type="number" id="allowance" class="form-control" step="0.1" min="0" placeholder="e.g. 15.0"
+                    value="15.0">
+                <small style="color: var(--text-light); font-size: 0.75rem;">Operator personal, fatigue, and delay
+                    allowances. Standard is 10%-20%.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="efficiency" class="form-label">Expected Operator Efficiency (%)</label>
+                <input type="number" id="efficiency" class="form-control" step="1" min="1" max="150"
+                    placeholder="e.g. 80" value="80">
+                <small style="color: var(--text-light); font-size: 0.75rem;">Average operator production efficiency for
+                    hourly target calculation.</small>
+            </div>
+
+            <div style="display: flex; gap: var(--space-sm); margin-top: var(--space-md);">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">Calculate SAM</button>
+                <button type="reset" class="btn btn-secondary">Reset</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="calc-results">
+        <div id="result-placeholder" class="result-placeholder">
+            <i>⚙️</i>
+            <p>Enter details on the left and click "Calculate SAM" to view results.</p>
+        </div>
+
+        <div id="result-output" style="display: none;">
+            <h3 style="text-align: center; margin-bottom: var(--space-md); font-weight: 700;">Calculated Output</h3>
+
+            <div class="result-item">
+                <span class="result-label">Standard Allowed Minutes (SAM)</span>
+                <span class="result-value" id="calc-sam-val">0.000 mins</span>
+            </div>
+
+            <div class="result-item">
+                <span class="result-label">Operator Hourly Target (100% Eff)</span>
+                <span class="result-num" id="calc-target-100">-</span>
+            </div>
+
+            <div class="result-item">
+                <span class="result-label">Expected Target Output (at Eff)</span>
+                <span class="result-value" id="calc-target-val" style="font-size: 2rem;">0.0 pcs/hr</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: var(--space-xl);">
+    <h3 style="margin-bottom: var(--space-sm); font-weight: 700;">Formula & Methodology</h3>
+    <p style="margin-bottom: var(--space-sm);">The standard formula used to compute Standard Allowed Minutes (SAM) is:
+    </p>
+    <code
+        style="background-color: var(--background-color); padding: var(--space-sm); display: block; border-radius: var(--border-radius-sm); margin-bottom: var(--space-md); font-weight: 600; font-family: monospace;">
+        SAM = Basic SMV * (1 + Allowance Percentage / 100)
+    </code>
+    <p>Hourly production target per operator is calculated as:</p>
+    <code
+        style="background-color: var(--background-color); padding: var(--space-sm); display: block; border-radius: var(--border-radius-sm); font-family: monospace; font-weight: 600;">
+        Target / Operator / Hour = (60 / SAM) * (Expected Efficiency / 100)
+    </code>
+</div>
+
+{% elif tool.slug == 'fabric-gsm-calculator' %}
+<div class="calc-container">
+    <div>
+        <h3 style="margin-bottom: var(--space-md); font-weight: 700;">Calculator Inputs</h3>
+        <form id="gsm-form">
+            <div class="form-group">
+                <label for="swatch-type" class="form-label">Swatch Sample Shape</label>
+                <select id="swatch-type" class="form-control">
+                    <option value="circular">Circular Swatch (Standard GSM Cutter - 100 cm²)</option>
+                    <option value="rectangular">Rectangular Swatch (Custom Dimension)</option>
+                </select>
+            </div>
+
+            <div id="rectangular-fields" style="display: none;">
+                <div class="grid grid-2" style="gap: var(--space-sm); margin-bottom: var(--space-md);">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="swatch-length" class="form-label">Swatch Length (cm)</label>
+                        <input type="number" id="swatch-length" class="form-control" step="0.1" min="0.1"
+                            placeholder="e.g. 10.0">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="swatch-width" class="form-label">Swatch Width (cm)</label>
+                        <input type="number" id="swatch-width" class="form-control" step="0.1" min="0.1"
+                            placeholder="e.g. 10.0">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="swatch-weight" class="form-label">Swatch Weight (grams)</label>
+                <input type="number" id="swatch-weight" class="form-control" step="0.01" min="0.01"
+                    placeholder="e.g. 1.65" required>
+                <small style="color: var(--text-light); font-size: 0.75rem;">Weight of cut swatch measured on
+                    high-precision electronic scale.</small>
+            </div>
+
+            <div style="display: flex; gap: var(--space-sm); margin-top: var(--space-md);">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">Calculate GSM</button>
+                <button type="reset" class="btn btn-secondary">Reset</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="calc-results">
+        <div id="result-placeholder" class="result-placeholder">
+            <i>⚖️</i>
+            <p>Enter details on the left and click "Calculate GSM" to view results.</p>
+        </div>
+
+        <div id="result-output" style="display: none;">
+            <h3 style="text-align: center; margin-bottom: var(--space-md); font-weight: 700;">Calculated Output</h3>
+
+            <div class="result-item">
+                <span class="result-label">Calculated Fabric GSM</span>
+                <span class="result-value" id="calc-gsm-val">0.0 g/m²</span>
+            </div>
+
+            <div class="result-item">
+                <span class="result-label">Swatch Surface Area</span>
+                <span class="result-num" id="calc-area-val">100.0 cm²</span>
+            </div>
+
+            <div class="result-item">
+                <span class="result-label">Weight Classification</span>
+                <span class="result-num" id="calc-class-val" style="color: var(--primary-color);">Light Weight</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: var(--space-xl);">
+    <h3 style="margin-bottom: var(--space-sm); font-weight: 700;">Formula & Weight Classification</h3>
+    <p style="margin-bottom: var(--space-sm);">The standard formula used to compute fabric Grams per Square Meter (GSM)
+        is:</p>
+    <code
+        style="background-color: var(--background-color); padding: var(--space-sm); display: block; border-radius: var(--border-radius-sm); margin-bottom: var(--space-md); font-weight: 600; font-family: monospace;">
+        GSM = (Weight in grams * 10,000) / Swatch Area in cm²
+    </code>
+    <p>For standard circular cutters with a diameter of 11.28cm, the area is exactly 100 cm² (0.01 m²), simplifying the
+        calculation to:</p>
+    <code
+        style="background-color: var(--background-color); padding: var(--space-sm); display: block; border-radius: var(--border-radius-sm); font-family: monospace; font-weight: 600;">
+        GSM = Swatch Weight in grams * 100
+    </code>
+</div>
+{% elif tool.slug == 'thread-consumption-calculator' %}
+<div class="calc-container">
+    <div>
+        <h3 style="margin-bottom: var(--space-md); font-weight: 700;">Calculator Inputs</h3>
+        <form id="thread-form">
+            <div class="form-group">
+                <label for="seam-length" class="form-label">Total Seam Length (meters)</label>
+                <input type="number" id="seam-length" class="form-control" step="0.1" min="0.1" placeholder="e.g. 1.2"
+                    required>
+                <small style="color: var(--text-light); font-size: 0.75rem;">Length of the seam to be stitched, in
+                    meters.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="stitch-class" class="form-label">Stitch Class / Configuration</label>
+                <select id="stitch-class" class="form-control">
+                    <option value="301">Stitch Class 301 (Standard Lockstitch) [Multiplier: 2.5x]</option>
+                    <option value="401">Stitch Class 401 (Standard Chainstitch) [Multiplier: 4.5x]</option>
+                    <option value="504">Stitch Class 504 (3-Thread Overlock) [Multiplier: 14.0x]</option>
+                </select>
+                <small style="color: var(--text-light); font-size: 0.75rem;">Stitch type determines thread consumption
+                    multiplier factor.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="wastage" class="form-label">Wastage Allowance (%)</label>
+                <input type="number" id="wastage" class="form-control" step="1" min="0" max="100" value="15"
+                    placeholder="e.g. 15">
+                <small style="color: var(--text-light); font-size: 0.75rem;">Thread lost during machine threading,
+                    sewing margins, and trimming.</small>
+            </div>
+
+            <div style="display: flex; gap: var(--space-sm); margin-top: var(--space-md);">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">Calculate Thread</button>
+                <button type="reset" class="btn btn-secondary">Reset</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="calc-results">
+        <div id="result-placeholder" class="result-placeholder">
+            <i>🧵</i>
+            <p>Enter details on the left and click "Calculate Thread" to view results.</p>
+        </div>
+
+        <div id="result-output" style="display: none;">
+            <h3 style="text-align: center; margin-bottom: var(--space-md); font-weight: 700;">Calculated Output</h3>
+
+            <div class="result-item">
+                <span class="result-label">Estimated Thread Required</span>
+                <span class="result-value" id="calc-thread-val" style="font-size: 2rem;">0.00 m</span>
+            </div>
+
+            <div class="result-item">
+                <span class="result-label">Stitch Multiplier</span>
+                <span class="result-num" id="calc-multiplier">2.5x</span>
+            </div>
+
+            <div class="result-item">
+                <span class="result-label">Raw Thread (No Wastage)</span>
+                <span class="result-num" id="calc-raw-val">0.00 m</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: var(--space-xl); padding: var(--space-md);">
+    <h4 style="font-weight: 700; margin-bottom: var(--space-xs);">How this calculation works</h4>
+    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: var(--space-sm);">
+        Estimated Thread Consumption — calculated based on the selected stitch class and the stated assumptions.
+        Thread length consumed is proportional to seam length and loop structure, plus wastage:
+    </p>
+    <code
+        style="background-color: var(--background-color); padding: var(--space-sm); display: block; border-radius: var(--border-radius-sm); margin-bottom: var(--space-sm); font-family: monospace; font-size: 0.85rem; font-weight: 600;">
+        Thread Consumed = Seam Length * Stitch Multiplier * (1 + Wastage % / 100)
+    </code>
+
+    <h4 style="font-weight: 700; margin-bottom: var(--space-xs); margin-top: var(--space-md);">Important assumptions
+    </h4>
+    <ul
+        style="font-size: 0.9rem; color: var(--text-secondary); padding-left: var(--space-lg); margin-bottom: var(--space-sm);">
+        <li><strong>Stitch Class:</strong> Standard garment loops (301 lock, 401 chain, 504 overlock).</li>
+        <li><strong>Stitch Multiplier:</strong> Lockstitch uses 2.5x; Chainstitch uses 4.5x; 3-Thread Overlock uses
+            14.0x seam length.</li>
+        <li><strong>Stitch Density:</strong> Assumes a standard sewing density of 10-12 Stitches Per Inch (SPI).</li>
+        <li><strong>Fabric Thickness:</strong> Average knit/woven assembly of approximately 1.5mm compressed seam
+            thickness.</li>
+        <li><strong>Wastage:</strong> Default 15% allowance factors in sewing ends, thread breaks, and machine styling
+            scrap.</li>
+    </ul>
+
+    <h4 style="font-weight: 700; margin-bottom: var(--space-xs); margin-top: var(--space-md);">Example calculation</h4>
+    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: var(--space-sm);">
+        For a 1.2-meter seam using a 3-Thread Overlock (Stitch 504) with a 15% wastage allowance:
+        <br><code>1.2m * 14.0 (multiplier) * 1.15 (wastage) = 19.32 meters of estimated thread.</code>
+    </p>
+
+    <p
+        style="font-size: 0.8rem; color: var(--text-light); border-top: 1px solid var(--border-color); padding-top: var(--space-xs); margin-top: var(--space-md); font-style: italic;">
+        Disclaimer: Actual thread consumption may vary depending on stitch density, machine settings, seam construction,
+        fabric type, thread type, and garment construction.
+    </p>
+</div>
+
+{% elif tool.slug == 'fabric-consumption-calculator' %}
+<div class="calc-container">
+    <div>
+        <h3 style="margin-bottom: var(--space-md); font-weight: 700;">Calculator Inputs</h3>
+        <form id="fabric-cons-form">
+            <div class="form-group">
+                <label for="chest-width" class="form-label">Chest Flat Width (cm)</label>
+                <input type="number" id="chest-width" class="form-control" step="0.1" min="10" placeholder="e.g. 50.0"
+                    required>
+                <small style="color: var(--text-light); font-size: 0.75rem;">Half chest width of T-shirt, measured flat
+                    (pit-to-pit).</small>
+            </div>
+
+            <div class="form-group">
+                <label for="body-length" class="form-label">Body Length (cm)</label>
+                <input type="number" id="body-length" class="form-control" step="0.1" min="10" placeholder="e.g. 70.0"
+                    required>
+                <small style="color: var(--text-light); font-size: 0.75rem;">Shoulder high point to hem length.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="gsm" class="form-label">Fabric Weight (GSM - g/m²)</label>
+                <input type="number" id="gsm" class="form-control" step="1" min="20" placeholder="e.g. 180" required>
+                <small style="color: var(--text-light); font-size: 0.75rem;">Weight of jersey or fabric style in Grams
+                    per Square Meter.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="wastage" class="form-label">Wastage Allowance (%)</label>
+                <input type="number" id="wastage" class="form-control" step="1" min="0" max="100" value="10"
+                    placeholder="e.g. 10">
+                <small style="color: var(--text-light); font-size: 0.75rem;">Cutting, marker waste, fabric rolls end,
+                    and panel inspection waste.</small>
+            </div>
+
+            <div style="display: flex; gap: var(--space-sm); margin-top: var(--space-md);">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">Calculate Fabric</button>
+                <button type="reset" class="btn btn-secondary">Reset</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="calc-results">
+        <div id="result-placeholder" class="result-placeholder">
+            <i>👕</i>
+            <p>Enter details on the left and click "Calculate Fabric" to view results.</p>
+        </div>
+
+        <div id="result-output" style="display: none;">
+            <h3 style="text-align: center; margin-bottom: var(--space-md); font-weight: 700;">Calculated Output</h3>
+
+            <div class="result-item">
+                <span class="result-label">Estimated Fabric Weight</span>
+                <span class="result-value" id="calc-weight-val" style="font-size: 2rem;">0.0 g</span>
+            </div>
+
+            <div class="result-item">
+                <span class="result-label">Weight per Dozen (12 pcs)</span>
+                <span class="result-value" id="calc-dozen-val"
+                    style="font-size: 1.5rem; color: var(--primary-color);">0.00 kg</span>
+            </div>
+
+            <div class="result-item">
+                <span class="result-label">Raw Weight (No Wastage)</span>
+                <span class="result-num" id="calc-raw-weight">0.0 g</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: var(--space-xl); padding: var(--space-md);">
+    <h4 style="font-weight: 700; margin-bottom: var(--space-xs);">How this calculation works</h4>
+    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: var(--space-sm);">
+        Estimated Fabric Consumption — Basic Knit T-Shirt/Polo Model.
+        Calculates front and back body panel surface areas using flat width and length parameters, factoring in seam
+        allowances and fabric density:
+    </p>
+    <code
+        style="background-color: var(--background-color); padding: var(--space-sm); display: block; border-radius: var(--border-radius-sm); margin-bottom: var(--space-sm); font-family: monospace; font-size: 0.85rem; font-weight: 600;">
+        Garment Weight (g) = [ ((Body Length + Hem Allow) * (Chest Width + Seam Allow) * 2 * GSM) / 10,000 ] * (1 + Wastage % / 100)
+    </code>
+
+    <h4 style="font-weight: 700; margin-bottom: var(--space-xs); margin-top: var(--space-md);">Important assumptions
+    </h4>
+    <ul
+        style="font-size: 0.9rem; color: var(--text-secondary); padding-left: var(--space-lg); margin-bottom: var(--space-sm);">
+        <li><strong>Garment Style:</strong> Designed strictly for standard rectangular-cut knit structures (basic
+            short-sleeve crewneck or Polo).</li>
+        <li><strong>Chest Width Flat:</strong> Measured flat pit-to-pit. A seam allowance factor (+2cm total flat
+            margin) is added to cover joining stitches.</li>
+        <li><strong>Body Length:</strong> Shoulder high point to bottom edge. A hem allowance factor (+4cm total margin)
+            is added for bottom folding.</li>
+        <li><strong>Fabric GSM:</strong> Grams per Square Meter. Assumes density is uniform across the fabric roll.</li>
+        <li><strong>Wastage:</strong> Standard 10% allowance accommodates cutting margins, panel faults, and roll ends.
+        </li>
+        <li><strong>Exclusions:</strong> This model is NOT intended as a universal formula for: raglan garments,
+            trousers, leggings, complex panel garments, highly shaped garments, or garments requiring marker-based
+            consumption.</li>
+    </ul>
+
+    <h4 style="font-weight: 700; margin-bottom: var(--space-xs); margin-top: var(--space-md);">Example calculation</h4>
+    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: var(--space-sm);">
+        For a T-shirt with Body Length = 70cm (+4cm), Chest Width = 50cm (+2cm), GSM = 180, and Wastage = 10%:
+        <br><code>Weight = [ (74 * 52 * 2 * 180) / 10000 ] * 1.10 = 138.52g * 1.10 = 152.4 grams/garment (1.83 kg per dozen).</code>
+    </p>
+
+    <p
+        style="font-size: 0.8rem; color: var(--text-light); border-top: 1px solid var(--border-color); padding-top: var(--space-xs); margin-top: var(--space-md); font-style: italic;">
+        Disclaimer: Actual production consumption may vary based on pattern shape, marker efficiency, size ratio, fabric
+        width, shrinkage, and garment construction.
+    </p>
+</div>
+
+{% elif tool.slug == 'garment-costing-calculator' %}
+<div class="calc-container">
+    <div>
+        <h3 style="margin-bottom: var(--space-md); font-weight: 700;">Calculator Inputs</h3>
+        <form id="garment-cost-form">
+            <div class="form-group">
+                <label for="fabric-cost-input" class="form-label">Fabric Cost per Garment ($)</label>
+                <input type="number" id="fabric-cost-input" class="form-control" step="0.01" min="0"
+                    placeholder="e.g. 1.50" required>
+                <small style="color: var(--text-light); font-size: 0.75rem;">Yarn/fabric raw weight cost allocated per
+                    piece.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="cm-cost-input" class="form-label">Cut & Make (CM) Cost ($)</label>
+                <input type="number" id="cm-cost-input" class="form-control" step="0.01" min="0" placeholder="e.g. 0.50"
+                    required>
+                <small style="color: var(--text-light); font-size: 0.75rem;">Sewing, tailoring and cutting charges per
+                    piece.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="trims-cost-input" class="form-label">Trims Cost ($)</label>
+                <input type="number" id="trims-cost-input" class="form-control" step="0.01" min="0"
+                    placeholder="e.g. 0.20">
+                <small style="color: var(--text-light); font-size: 0.75rem;">Buttons, threads, labels, size tags, care
+                    slips cost.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="acc-cost-input" class="form-label">Accessories & Packing Cost ($)</label>
+                <input type="number" id="acc-cost-input" class="form-control" step="0.01" min="0"
+                    placeholder="e.g. 0.15">
+                <small style="color: var(--text-light); font-size: 0.75rem;">Polybags, inner boards, tags, master carton
+                    packing.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="log-cost-input" class="form-label">Port Logistics & Fees ($)</label>
+                <input type="number" id="log-cost-input" class="form-control" step="0.01" min="0"
+                    placeholder="e.g. 0.10">
+                <small style="color: var(--text-light); font-size: 0.75rem;">Internal trucking, port documentation,
+                    container clearing fee per piece.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="margin-percent" class="form-label">Profit Markup (%)</label>
+                <input type="number" id="margin-percent" class="form-control" step="0.1" min="-50" max="200" value="15"
+                    placeholder="e.g. 15">
+                <small style="color: var(--text-light); font-size: 0.75rem;">Target markup. Supports negative value for
+                    clearance cost calculations.</small>
+            </div>
+
+            <div style="display: flex; gap: var(--space-sm); margin-top: var(--space-md);">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">Calculate Cost</button>
+                <button type="reset" class="btn btn-secondary">Reset</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="calc-results">
+        <div id="result-placeholder" class="result-placeholder">
+            <i>💵</i>
+            <p>Enter details on the left and click "Calculate Cost" to view results.</p>
+        </div>
+
+        <div id="result-output" style="display: none;">
+            <h3 style="text-align: center; margin-bottom: var(--space-md); font-weight: 700;">Calculated Output</h3>
+
+            <div class="result-item">
+                <span class="result-label">Estimated FOB Cost per Piece</span>
+                <span class="result-value" id="calc-fob-val"
+                    style="font-size: 2rem; color: var(--primary-color);">$0.00</span>
+            </div>
+
+            <div class="result-item">
+                <span class="result-label">Total Manufacturing Cost</span>
+                <span class="result-num" id="calc-base-val">$0.00</span>
+            </div>
+
+            <div class="result-item">
+                <span class="result-label">Profit Value per Piece</span>
+                <span class="result-num" id="calc-profit-val">$0.00</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: var(--space-xl); padding: var(--space-md);">
+    <h4 style="font-weight: 700; margin-bottom: var(--space-xs);">How this calculation works</h4>
+    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: var(--space-sm);">
+        Estimates total FOB export price by summing manufacturing layers (fabric, CM, trim, accessories, logistics) and
+        applying profit markups:
+    </p>
+    <code
+        style="background-color: var(--background-color); padding: var(--space-sm); display: block; border-radius: var(--border-radius-sm); margin-bottom: var(--space-sm); font-family: monospace; font-size: 0.85rem; font-weight: 600;">
+        FOB Cost = (Fabric + CM + Trims + Packing + Logistics) * (1 + Profit Markup % / 100)
+    </code>
+
+    <h4 style="font-weight: 700; margin-bottom: var(--space-xs); margin-top: var(--space-md);">Important assumptions
+    </h4>
+    <ul
+        style="font-size: 0.9rem; color: var(--text-secondary); padding-left: var(--space-lg); margin-bottom: var(--space-sm);">
+        <li><strong>FOB Pricing:</strong> Free On Board port of origin pricing. Excludes marine shipping freight
+            charges, destination port tariffs, and custom duties.</li>
+        <li><strong>Profit Margin:</strong> Percent markup. A 15% markup multiplies total factory cost by 1.15.</li>
+        <li><strong>Unit Currency:</strong> Calculations are currency-agnostic (commonly quoted in USD).</li>
+    </ul>
+
+    <h4 style="font-weight: 700; margin-bottom: var(--space-xs); margin-top: var(--space-md);">Example calculation</h4>
+    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: var(--space-sm);">
+        For costs of Fabric = $1.50, CM = $0.50, Trims = $0.20, Accessories = $0.15, Logistics = $0.10, and Profit
+        Markup = 15%:
+        <br><code>Total cost = $2.45. FOB price = $2.45 * 1.15 = $2.82 per garment.</code>
+    </p>
+
+    <p
+        style="font-size: 0.8rem; color: var(--text-light); border-top: 1px solid var(--border-color); padding-top: var(--space-xs); margin-top: var(--space-md); font-style: italic;">
+        Disclaimer: This estimate represents the FOB cost at port of origin and does not include international shipping
+        tariffs, freight forwarder handling fees, or marine insurance.
+    </p>
+</div>
+
+{% elif tool.slug == 'fabric-cost-calculator' %}
+<div class="calc-container">
+    <div>
+        <h3 style="margin-bottom: var(--space-md); font-weight: 700;">Calculator Inputs</h3>
+        <form id="fabric-cost-form">
+            <div class="form-group">
+                <label for="yarn-cost" class="form-label">Yarn Cost per kg</label>
+                <input type="number" id="yarn-cost" class="form-control" step="0.01" min="0" placeholder="e.g. 3.20"
+                    required>
+                <small style="color: var(--text-light); font-size: 0.75rem;">Price of cotton/polyester raw yarn per
+                    kg.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="knitting-rate" class="form-label">Knitting Rate per kg</label>
+                <input type="number" id="knitting-rate" class="form-control" step="0.01" min="0" placeholder="e.g. 0.30"
+                    required>
+                <small style="color: var(--text-light); font-size: 0.75rem;">Circular knitting mill processing charges
+                    per kg.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="dyeing-rate" class="form-label">Dyeing & Finishing Rate per kg</label>
+                <input type="number" id="dyeing-rate" class="form-control" step="0.01" min="0" placeholder="e.g. 1.20"
+                    required>
+                <small style="color: var(--text-light); font-size: 0.75rem;">Dyehouse chemical processing, washing and
+                    soft compacting rate.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="fabric-wastage" class="form-label">Process Wastage (%)</label>
+                <input type="number" id="fabric-wastage" class="form-control" step="0.1" min="0" max="49.9" value="5"
+                    placeholder="e.g. 5">
+                <small style="color: var(--text-light); font-size: 0.75rem;">Yarn lint loss, dyeing shrinkage, and
+                    fabric roll edge trimming loss.</small>
+            </div>
+
+            <div style="display: flex; gap: var(--space-sm); margin-top: var(--space-md);">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">Calculate Fabric Cost</button>
+                <button type="reset" class="btn btn-secondary">Reset</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="calc-results">
+        <div id="result-placeholder" class="result-placeholder">
+            <i>⚖️</i>
+            <p>Enter details on the left and click "Calculate Fabric Cost" to view results.</p>
+        </div>
+
+        <div id="result-output" style="display: none;">
+            <h3 style="text-align: center; margin-bottom: var(--space-md); font-weight: 700;">Calculated Output</h3>
+
+            <div class="result-item">
+                <span class="result-label">Estimated Finished Fabric Cost per kg</span>
+                <span class="result-value" style="font-size: 2rem; color: var(--primary-color);">$<span
+                        id="calc-total-cost">0.00</span></span>
+            </div>
+
+            <div class="result-item">
+                <span class="result-label">Raw Sum (Yarn + Knit + Dye)</span>
+                <span class="result-num">$<span id="calc-raw-sum">0.00</span></span>
+            </div>
+
+            <div class="result-item">
+                <span class="result-label">Wastage Loss Value / kg</span>
+                <span class="result-num">$<span id="calc-wastage-cost">0.00</span></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: var(--space-xl); padding: var(--space-md);">
+    <h4 style="font-weight: 700; margin-bottom: var(--space-xs);">How this calculation works</h4>
+    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: var(--space-sm);">
+        Estimates total finished fabric cost per kg by summing material costs and dividing by yield margin:
+    </p>
+    <code
+        style="background-color: var(--background-color); padding: var(--space-sm); display: block; border-radius: var(--border-radius-sm); margin-bottom: var(--space-sm); font-family: monospace; font-size: 0.85rem; font-weight: 600;">
+        Fabric Cost/kg = (Yarn Cost + Knitting Rate + Dyeing Rate) / (1 - Wastage % / 100)
+    </code>
+
+    <h4 style="font-weight: 700; margin-bottom: var(--space-xs); margin-top: var(--space-md);">Important assumptions
+    </h4>
+    <ul
+        style="font-size: 0.9rem; color: var(--text-secondary); padding-left: var(--space-lg); margin-bottom: var(--space-sm);">
+        <li><strong>Fabric type:</strong> Knitting mill parameters. Excludes woven sizing and weaving loom setup fees.
+        </li>
+        <li><strong>Process wastage:</strong> Includes yarn lint loss, knitting faults, dyeing shrinkage, and edge trim
+            waste.</li>
+    </ul>
+
+    <h4 style="font-weight: 700; margin-bottom: var(--space-xs); margin-top: var(--space-md);">Example calculation</h4>
+    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: var(--space-sm);">
+        For Yarn = $3.20/kg, Knitting = $0.30/kg, Dyeing = $1.20/kg, and process wastage = 5%:
+        <br><code>Raw sum = $4.70/kg. Finished cost = $4.70 / (1 - 0.05) = $4.70 / 0.95 = $4.95 per kg.</code>
+    </p>
+
+    <p
+        style="font-size: 0.8rem; color: var(--text-light); border-top: 1px solid var(--border-color); padding-top: var(--space-xs); margin-top: var(--space-md); font-style: italic;">
+        Disclaimer: Estimates finished cost per kg at mill door. Excludes bulk shipping from dyehouse, yarn testing
+        laboratory fees, and color-matching surcharge costs.
+    </p>
+</div>
+
+{% elif tool.slug == 'cm-calculator' %}
+<div class="calc-container">
+    <div>
+        <h3 style="margin-bottom: var(--space-md); font-weight: 700;">Calculator Inputs</h3>
+        <form id="cm-form">
+            <div class="form-group">
+                <label for="operators-count" class="form-label">Number of Sewing Operators</label>
+                <input type="number" id="operators-count" class="form-control" step="1" min="1" placeholder="e.g. 20"
+                    required>
+                <small style="color: var(--text-light); font-size: 0.75rem;">Total workers on the sewing line.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="operator-wage" class="form-label">Average Operator Daily Wage</label>
+                <input type="number" id="operator-wage" class="form-control" step="0.01" min="0"
+                    placeholder="e.g. 10.00" required>
+                <small style="color: var(--text-light); font-size: 0.75rem;">Average daily wage paid per worker.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="line-overhead" class="form-label">Daily Line Overhead Expenses</label>
+                <input type="number" id="line-overhead" class="form-control" step="0.01" min="0"
+                    placeholder="e.g. 150.00" required>
+                <small style="color: var(--text-light); font-size: 0.75rem;">Factory line utilities, supervisor
+                    allocation, machinery lease, electricity per day.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="target-output" class="form-label">Target Output per Day (100% Eff)</label>
+                <input type="number" id="target-output" class="form-control" step="1" min="1" placeholder="e.g. 2000"
+                    required>
+                <small style="color: var(--text-light); font-size: 0.75rem;">Theoretical maximum production output at
+                    100% line efficiency.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="line-efficiency" class="form-label">Expected Line Efficiency (%)</label>
+                <input type="number" id="line-efficiency" class="form-control" step="1" min="1" max="150" value="80"
+                    placeholder="e.g. 80" required>
+                <small style="color: var(--text-light); font-size: 0.75rem;">Actual sewing line running efficiency
+                    percentage.</small>
+            </div>
+
+            <div style="display: flex; gap: var(--space-sm); margin-top: var(--space-md);">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">Calculate CM</button>
+                <button type="reset" class="btn btn-secondary">Reset</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="calc-results">
+        <div id="result-placeholder" class="result-placeholder">
+            <i>⚙️</i>
+            <p>Enter details on the left and click "Calculate CM" to view results.</p>
+        </div>
+
+        <div id="result-output" style="display: none;">
+            <h3 style="text-align: center; margin-bottom: var(--space-md); font-weight: 700;">Calculated Output</h3>
+
+            <div class="result-item">
+                <span class="result-label">Estimated CM Cost per Piece</span>
+                <span class="result-value" style="font-size: 2rem; color: var(--primary-color);">$<span
+                        id="calc-cm-cost">0.00</span></span>
+            </div>
+
+            <div class="result-item">
+                <span class="result-label">Total Daily Operating Cost</span>
+                <span class="result-num">$<span id="calc-daily-operating">0.00</span></span>
+            </div>
+
+            <div class="result-item">
+                <span class="result-label">Expected Actual Production Output</span>
+                <span class="result-num" id="calc-expected-target">0 pcs</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: var(--space-xl); padding: var(--space-md);">
+    <h4 style="font-weight: 700; margin-bottom: var(--space-xs);">How this calculation works</h4>
+    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: var(--space-sm);">
+        Calculates Cut & Make (CM) cost per piece by dividing the total daily operating cost of a sewing line by its
+        expected output:
+    </p>
+    <code
+        style="background-color: var(--background-color); padding: var(--space-sm); display: block; border-radius: var(--border-radius-sm); margin-bottom: var(--space-sm); font-family: monospace; font-size: 0.85rem; font-weight: 600;">
+        CM Cost/Piece = (Daily Overhead + (Operators Count * Daily Operator Wage)) / (Target Output * Efficiency % / 100)
+    </code>
+
+    <h4 style="font-weight: 700; margin-bottom: var(--space-xs); margin-top: var(--space-md);">Important assumptions
+    </h4>
+    <ul
+        style="font-size: 0.9rem; color: var(--text-secondary); padding-left: var(--space-lg); margin-bottom: var(--space-sm);">
+        <li><strong>Line overhead:</strong> Daily running cost of sewing machine depreciation, supervision, line
+            checking, and utilities.</li>
+        <li><strong>Distribution:</strong> Assumes overhead and target allocations are distributed uniformly across the
+            active machines in the line.</li>
+    </ul>
+
+    <h4 style="font-weight: 700; margin-bottom: var(--space-xs); margin-top: var(--space-md);">Example calculation</h4>
+    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: var(--space-sm);">
+        For Operators = 20, Daily Wage = $10, Daily Overhead = $150, Target Output = 2000 pcs, and Line Efficiency =
+        80%:
+        <br><code>Daily Cost = $350. Expected output = 1600 pcs. CM cost = $350 / 1600 = $0.22 per piece.</code>
+    </p>
+
+    <p
+        style="font-size: 0.8rem; color: var(--text-light); border-top: 1px solid var(--border-color); padding-top: var(--space-xs); margin-top: var(--space-md); font-style: italic;">
+        Disclaimer: CM calculation is based on distributed line overhead allocations. Actual plant-wide CM cost per
+        garment may differ based on downtime, sampling rounds, pattern grading, and machine layouts.
+    </p>
+</div>
+
+{% endif %}
+
+<!-- Related Elements (Internal Linking) -->
+<div class="grid grid-2" style="margin-top: var(--space-xxl);">
+    {% if related_tools %}
+    <div>
+        <h3
+            style="margin-bottom: var(--space-md); border-bottom: 2px solid var(--border-color); padding-bottom: var(--space-xs); font-weight: 700;">
+            Related Calculators</h3>
+        <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
+            {% for t in related_tools %}
+            <div class="card"
+                style="padding: var(--space-sm) var(--space-md); flex-direction: row; align-items: center; justify-content: space-between;">
+                <a href="/tools/{{ t.slug }}" style="font-weight: 600;">{{ t.name }}</a>
+                <span style="font-size: 0.75rem; color: var(--text-light); text-transform: uppercase;">{{
+                    t.category.name if t.category }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if related_knowledge %}
+    <div>
+        <h3
+            style="margin-bottom: var(--space-md); border-bottom: 2px solid var(--border-color); padding-bottom: var(--space-xs); font-weight: 700;">
+            Garment Knowledge & Guides</h3>
+        <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
+            {% for art in related_knowledge %}
+            <div class="card"
+                style="padding: var(--space-sm) var(--space-md); flex-direction: row; align-items: center; justify-content: space-between;">
+                <a href="/knowledge/{{ art.slug }}" style="font-weight: 600;">{{ art.title }}</a>
+                <span style="font-size: 0.75rem; color: var(--text-light);">{{ art.category.name if art.category
+                    }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if tool.slug == 'sam-calculator' %}
+<script src="{{ url_for('static', filename='js/tools/sam.js') }}"></script>
+<script>
+    // Extra operational hooks for SAM calculation
+    document.addEventListener('DOMContentLoaded', () => {
+        const samForm = document.getElementById('sam-form');
+        if (samForm) {
+            samForm.addEventListener('submit', () => {
+                const smv = parseFloat(document.getElementById('smv').value);
+                const allowance = parseFloat(document.getElementById('allowance').value) || 0;
+                const sam = smv * (1 + (allowance / 100));
+                document.getElementById('calc-target-100').innerText = (60 / sam).toFixed(1) + ' pcs/hr';
+            });
+        }
+    });
+</script>
+{% elif tool.slug == 'fabric-gsm-calculator' %}
+<script src="{{ url_for('static', filename='js/tools/gsm.js') }}"></script>
+{% elif tool.slug == 'thread-consumption-calculator' %}
+<script src="{{ url_for('static', filename='js/tools/thread-consumption.js') }}"></script>
+{% elif tool.slug == 'fabric-consumption-calculator' %}
+<script src="{{ url_for('static', filename='js/tools/fabric-consumption.js') }}"></script>
+{% elif tool.slug == 'garment-costing-calculator' %}
+<script src="{{ url_for('static', filename='js/tools/garment-costing.js') }}"></script>
+{% elif tool.slug == 'fabric-cost-calculator' %}
+<script src="{{ url_for('static', filename='js/tools/fabric-cost.js') }}"></script>
+{% elif tool.slug == 'cm-calculator' %}
+<script src="{{ url_for('static', filename='js/tools/cm.js') }}"></script>
+{% endif %}
+{% endblock %}

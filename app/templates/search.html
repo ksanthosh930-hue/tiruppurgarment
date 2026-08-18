@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Results for "{{ query }}" — Tirupur Garments{% endblock %}
+
+{% block breadcrumbs %}
+<li>Search Results</li>
+{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <h1 class="section-title">Search Results for "{{ query }}"</h1>
+</div>
+
+<div class="card" style="padding: var(--space-lg); margin-bottom: var(--space-xl);">
+    <form action="/search" method="GET" style="display: flex; gap: var(--space-sm);">
+        <input type="text" name="q" class="form-control" value="{{ query }}"
+            placeholder="Search news, guides, jobs, directories, tools..." required style="flex: 1;">
+        <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+</div>
+
+{% set total_results = results.news|length + results.knowledge|length + results.jobs|length + results.companies|length +
+results.tools|length %}
+
+{% if total_results > 0 %}
+<p style="margin-bottom: var(--space-lg); font-weight: 600; color: var(--text-secondary);">
+    Found {{ total_results }} result(s) matching your query.
+</p>
+
+<!-- News Results -->
+{% if results.news %}
+<section style="margin-bottom: var(--space-xl);">
+    <h2
+        style="font-size: 1.4rem; font-weight: 800; border-bottom: 2px solid var(--primary-color); padding-bottom: 5px; margin-bottom: var(--space-md); color: var(--text-primary);">
+        News Articles
+    </h2>
+    <div class="grid grid-2" style="gap: var(--space-md);">
+        {% for art in results.news %}
+        <div class="card" style="padding: var(--space-md); display: flex; flex-direction: column;">
+            <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 5px;">
+                <a href="/news/{{ art.slug }}" style="color: var(--primary-color); text-decoration: none;">{{ art.title
+                    }}</a>
+            </h3>
+            <p style="font-size: 0.9rem; color: var(--text-light); margin-bottom: var(--space-sm);">
+                Published on {{ art.published_at.strftime('%d-%m-%Y') }}
+            </p>
+            <p style="font-size: 0.9rem; color: var(--text-secondary);">{{ art.summary }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Knowledge Base Guides -->
+{% if results.knowledge %}
+<section style="margin-bottom: var(--space-xl);">
+    <h2
+        style="font-size: 1.4rem; font-weight: 800; border-bottom: 2px solid var(--primary-color); padding-bottom: 5px; margin-bottom: var(--space-md); color: var(--text-primary);">
+        Knowledge & Resource Guides
+    </h2>
+    <div class="grid grid-2" style="gap: var(--space-md);">
+        {% for art in results.knowledge %}
+        <div class="card" style="padding: var(--space-md); display: flex; flex-direction: column;">
+            <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 5px;">
+                <a href="/knowledge/{{ art.slug }}" style="color: var(--primary-color); text-decoration: none;">{{
+                    art.title }}</a>
+            </h3>
+            <p style="font-size: 0.9rem; color: var(--text-light); margin-bottom: var(--space-sm);">
+                Category: {{ art.category.name if art.category else 'General' }}
+            </p>
+            <p style="font-size: 0.9rem; color: var(--text-secondary);">{{ art.summary }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Calculators / Tools -->
+{% if results.tools %}
+<section style="margin-bottom: var(--space-xl);">
+    <h2
+        style="font-size: 1.4rem; font-weight: 800; border-bottom: 2px solid var(--primary-color); padding-bottom: 5px; margin-bottom: var(--space-md); color: var(--text-primary);">
+        Garment Tools & Calculators
+    </h2>
+    <div class="grid grid-2" style="gap: var(--space-md);">
+        {% for t in results.tools %}
+        <div class="card" style="padding: var(--space-md); display: flex; flex-direction: column;">
+            <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 5px;">
+                <a href="/tools/{{ t.slug }}" style="color: var(--primary-color); text-decoration: none;">{{ t.name
+                    }}</a>
+            </h3>
+            <p style="font-size: 0.9rem; color: var(--text-secondary);">{{ t.description }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Job Vacancies -->
+{% if results.jobs %}
+<section style="margin-bottom: var(--space-xl);">
+    <h2
+        style="font-size: 1.4rem; font-weight: 800; border-bottom: 2px solid var(--primary-color); padding-bottom: 5px; margin-bottom: var(--space-md); color: var(--text-primary);">
+        Job Listings
+    </h2>
+    <div class="grid grid-2" style="gap: var(--space-md);">
+        {% for job in results.jobs %}
+        <div class="card" style="padding: var(--space-md); display: flex; flex-direction: column;">
+            <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 5px;">
+                <a href="/jobs/{{ job.slug }}" style="color: var(--primary-color); text-decoration: none;">{{ job.title
+                    }}</a>
+            </h3>
+            <p style="font-size: 0.9rem; color: var(--text-light); margin-bottom: var(--space-xs);">
+                Company: <strong>{{ job.company.name }}</strong> | Location: {{ job.location }}
+            </p>
+            <p style="font-size: 0.9rem; color: var(--text-secondary);">{{ job.description|truncate(150) }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Company Profiles -->
+{% if results.companies %}
+<section style="margin-bottom: var(--space-xl);">
+    <h2
+        style="font-size: 1.4rem; font-weight: 800; border-bottom: 2px solid var(--primary-color); padding-bottom: 5px; margin-bottom: var(--space-md); color: var(--text-primary);">
+        Companies Directory
+    </h2>
+    <div class="grid grid-2" style="gap: var(--space-md);">
+        {% for comp in results.companies %}
+        <div class="card" style="padding: var(--space-md); display: flex; flex-direction: column;">
+            <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 5px;">
+                <a href="/companies/{{ comp.slug }}" style="color: var(--primary-color); text-decoration: none;">{{
+                    comp.name }}</a>
+            </h3>
+            <p style="font-size: 0.9rem; color: var(--text-light); margin-bottom: var(--space-xs);">
+                Address: {{ comp.address }}
+            </p>
+            <p style="font-size: 0.9rem; color: var(--text-secondary);">{{ comp.description|truncate(150) }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% else %}
+<div class="card" style="padding: var(--space-xl); text-align: center; color: var(--text-light);">
+    <p style="font-size: 1.2rem; margin-bottom: var(--space-sm);">No results found for "{{ query }}".</p>
+    <p>Try searching using different terms, check spelling, or browse by categories.</p>
+</div>
+{% endif %}
+{% endblock %}

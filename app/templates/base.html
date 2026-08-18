@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- SEO Meta Tags -->
+    <title>{% block title %}Tirupur Garments — Digital Platform for the Tirupur Garment Industry{% endblock %}</title>
+    <meta name="description"
+        content="{% block meta_description %}Tirupur Garments is the digital platform for the Tirupur garment industry, featuring news, articles, jobs, directory, calculators, and AI design solutions.{% endblock %}">
+    <link rel="canonical" href="{% block canonical_url %}{{ request.url }}{% endblock %}">
+
+    {% if request.path.startswith('/admin') or request.path.startswith('/api') %}
+    <meta name="robots" content="noindex, nofollow">
+    {% endif %}
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:title" content="{% block og_title %}Tirupur Garments — Garment Industry Hub{% endblock %}">
+    <meta property="og:description"
+        content="{% block og_description %}Industry platform for the Tirupur apparel manufacturing ecosystem. Tools, Calculators, Directory, Jobs and News.{% endblock %}">
+    <meta property="og:image"
+        content="{% block og_image %}{{ request.url_root.rstrip('/') }}{{ url_for('static', filename='images/og-share.jpg') }}{% endblock %}">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{ request.url }}">
+    <meta property="twitter:title"
+        content="{% block twitter_title %}Tirupur Garments — Garment Industry Hub{% endblock %}">
+    <meta property="twitter:description"
+        content="{% block twitter_description %}Industry platform for the Tirupur apparel manufacturing ecosystem. Tools, Calculators, Directory, Jobs and News.{% endblock %}">
+    <meta property="twitter:image"
+        content="{% block twitter_image %}{{ request.url_root.rstrip('/') }}{{ url_for('static', filename='images/og-share.jpg') }}{% endblock %}">
+
+    <!-- CSS Design System -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Page Specific Head Elements -->
+    {% block head %}{% endblock %}
+
+    <!-- Structured Data / Schema.org JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Tirupur Garments",
+      "url": "{{ request.url_root }}",
+      "description": "Digital platform for the Tirupur garment industry featuring news, jobs, companies and calculation tools.",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "{{ request.url_root }}search?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+    {% block schema_json %}{% endblock %}
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="container header-container">
+            <a href="/" class="logo-link" id="site-logo">
+                <span>TIRUPUR</span> GARMENTS
+            </a>
+
+            <button class="menu-toggle" id="menu-toggle" aria-label="Toggle Menu">
+                ☰
+            </button>
+
+            <nav style="display: flex; align-items: center; gap: var(--space-md); flex-wrap: wrap;">
+                <ul class="nav-menu" id="nav-menu" style="margin-bottom: 0;">
+                    <li><a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
+                    <li><a href="/news"
+                            class="nav-link {% if request.path.startswith('/news') %}active{% endif %}">Garment Hub</a>
+                    </li>
+                    <li><a href="/tools"
+                            class="nav-link {% if request.path.startswith('/tools') %}active{% endif %}">Garment
+                            Tools</a></li>
+                    <li><a href="/ai-studio"
+                            class="nav-link {% if request.path == '/ai-studio' %}active{% endif %}">Garment AI
+                            Studio</a></li>
+                    <li><a href="/admin"
+                            class="nav-link {% if request.path.startswith('/admin') %}active{% endif %}">Admin</a></li>
+                </ul>
+                <form action="/search" method="GET" style="margin: 0; display: flex; align-items: center;">
+                    <input type="text" name="q" placeholder="Search..." required
+                        style="padding: 0.35rem var(--space-sm); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); font-size: 0.85rem; width: 120px; transition: width 0.3s ease; background-color: var(--surface-color); color: var(--text-primary);"
+                        onfocus="this.style.width='180px'" onblur="this.style.width='120px'">
+                </form>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            {% block breadcrumbs_block %}
+            <!-- Breadcrumbs dynamic structure -->
+            <ul class="breadcrumbs">
+                <li><a href="/">Home</a></li>
+                {% block breadcrumbs %}{% endblock %}
+            </ul>
+            {% endblock %}
+
+            <!-- Global Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div style="margin-bottom: var(--space-md);">
+                {% for category, message in messages %}
+                <div style="padding: var(--space-sm) var(--space-md); border-radius: var(--border-radius-sm); margin-bottom: var(--space-xs); font-weight: 600; font-size: 0.95rem;
+                                background-color: {% if category == 'success' %}#d1fae5{% else %}#fee2e2{% endif %}; 
+                                color: {% if category == 'success' %}#065f46{% else %}#991b1b{% endif %}; 
+                                border: 1px solid {% if category == 'success' %}#a7f3d0{% else %}#fca5a5{% endif %};">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <h3 class="footer-heading">Tirupur Garments</h3>
+                    <p>A comprehensive digital platform for the Tirupur garment industry. Discover news, jobs, textile
+                        calculators, service providers, and AI solutions.</p>
+                </div>
+                <div>
+                    <h3 class="footer-heading">Garment Hub</h3>
+                    <ul class="footer-links">
+                        <li><a href="/news">Latest News</a></li>
+                        <li><a href="/knowledge">Knowledge Base</a></li>
+                        <li><a href="/jobs">Jobs Directory</a></li>
+                        <li><a href="/companies">Company Directory</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="footer-heading">Garment Tools</h3>
+                    <ul class="footer-links">
+                        <li><a href="/tools/sam-calculator">SAM Calculator</a></li>
+                        <li><a href="/tools/fabric-gsm-calculator">Fabric GSM Calculator</a></li>
+                        <li><a href="/tools">All Calculators</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="footer-heading">Garment AI Studio</h3>
+                    <ul class="footer-links">
+                        <li><a href="/ai-studio">AI Garment Assistant</a></li>
+                        <li><a href="/ai-studio">AI Tools Hub</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Tirupur Garments. All rights reserved.</p>
+                <div style="display: flex; gap: var(--space-md);">
+                    <a href="/sitemap.xml" style="color: #94a3b8;">Sitemap</a>
+                    <a href="/robots.txt" style="color: #94a3b8;">Robots.txt</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Main JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <!-- Page Specific Script Block -->
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

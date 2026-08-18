@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage {{ model_type.capitalize() }} — Admin Dashboard{% endblock %}
+
+{% block breadcrumbs %}
+    <li><a href="/admin">Dashboard</a></li>
+    <li>Manage {{ model_type.capitalize() }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <h1 class="section-title">Manage {{ model_type.capitalize() }}</h1>
+    
+    {% if model_type == 'news' %}
+        <a href="{{ url_for('admin.news_new') }}" class="btn btn-primary">Create News Article</a>
+    {% elif model_type == 'knowledge' %}
+        <a href="{{ url_for('admin.knowledge_new') }}" class="btn btn-primary">Create Knowledge Guide</a>
+    {% elif model_type == 'jobs' %}
+        <a href="{{ url_for('admin.jobs_new') }}" class="btn btn-primary">Post Job vacancy</a>
+    {% elif model_type == 'companies' %}
+        <a href="{{ url_for('admin.companies_new') }}" class="btn btn-primary">Add Company Profile</a>
+    {% endif %}
+</div>
+
+<div class="card" style="padding: var(--space-lg); overflow-x: auto;">
+    {% if items %}
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    {% if model_type == 'news' or model_type == 'knowledge' %}
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Published Date</th>
+                    {% elif model_type == 'jobs' %}
+                        <th>Job Title</th>
+                        <th>Company</th>
+                        <th>Location</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                    {% elif model_type == 'companies' %}
+                        <th>Company Name</th>
+                        <th>Slug</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                    {% endif %}
+                    <th style="width: 150px; text-align: center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                    <tr>
+                        <td>{{ item.id }}</td>
+                        {% if model_type == 'news' or model_type == 'knowledge' %}
+                            <td style="font-weight: 600;">{{ item.title }}</td>
+                            <td>{{ item.category.name if item.category else 'None' }}</td>
+                            <td>
+                                <span style="padding: 0.2rem 0.5rem; border-radius: var(--border-radius-sm); font-size: 0.8rem; font-weight: 700;
+                                    {% if item.status == 'published' %}background-color: #d1fae5; color: #065f46;
+                                    {% elif item.status == 'draft' %}background-color: #f1f5f9; color: #475569;
+                                    {% else %}background-color: #fef3c7; color: #92400e;{% endif %}">
+                                    {{ item.status.upper() }}
+                                </span>
+                            </td>
+                            <td>{{ item.published_at.strftime('%d-%m-%Y') if item.published_at else 'Not Published' }}</td>
+                        {% elif model_type == 'jobs' %}
+                            <td style="font-weight: 600;">{{ item.title }}</td>
+                            <td>{{ item.company.name }}</td>
+                            <td>{{ item.location }}</td>
+                            <td>{{ item.job_type }}</td>
+                            <td>
+                                <span style="padding: 0.2rem 0.5rem; border-radius: var(--border-radius-sm); font-size: 0.8rem; font-weight: 700;
+                                    {% if item.status == 'published' %}background-color: #d1fae5; color: #065f46;
+                                    {% else %}background-color: #fee2e2; color: #991b1b;{% endif %}">
+                                    {{ item.status.upper() }}
+                                </span>
+                            </td>
+                        {% elif model_type == 'companies' %}
+                            <td style="font-weight: 600;">{{ item.name }}</td>
+                            <td><code>{{ item.slug }}</code></td>
+                            <td>{{ item.category.name if item.category else 'None' }}</td>
+                            <td>
+                                <span style="padding: 0.2rem 0.5rem; border-radius: var(--border-radius-sm); font-size: 0.8rem; font-weight: 700;
+                                    {% if item.status == 'published' %}background-color: #d1fae5; color: #065f46;
+                                    {% else %}background-color: #fee2e2; color: #991b1b;{% endif %}">
+                                    {{ item.status.upper() }}
+                                </span>
+                            </td>
+                        {% endif %}
+                        <td style="text-align: center; white-space: nowrap;">
+                            {% if model_type == 'news' %}
+                                <a href="{{ url_for('admin.news_edit', id=item.id) }}" class="btn btn-secondary btn-sm" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; margin-right: 5px;">Edit</a>
+                                <form action="{{ url_for('admin.news_delete', id=item.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this news article?');">
+                                    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+                                    <button type="submit" class="btn btn-secondary btn-sm" style="background-color: var(--error-color); color: white; border: none; padding: 0.25rem 0.5rem; border-radius: var(--border-radius-sm); font-size: 0.8rem; cursor: pointer;">Delete</button>
+                                </form>
+                            {% elif model_type == 'knowledge' %}
+                                <a href="{{ url_for('admin.knowledge_edit', id=item.id) }}" class="btn btn-secondary btn-sm" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; margin-right: 5px;">Edit</a>
+                                <form action="{{ url_for('admin.knowledge_delete', id=item.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this guide?');">
+                                    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+                                    <button type="submit" class="btn btn-secondary btn-sm" style="background-color: var(--error-color); color: white; border: none; padding: 0.25rem 0.5rem; border-radius: var(--border-radius-sm); font-size: 0.8rem; cursor: pointer;">Delete</button>
+                                </form>
+                            {% elif model_type == 'jobs' %}
+                                <a href="{{ url_for('admin.jobs_edit', id=item.id) }}" class="btn btn-secondary btn-sm" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; margin-right: 5px;">Edit</a>
+                                <form action="{{ url_for('admin.jobs_delete', id=item.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this job vacancy?');">
+                                    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+                                    <button type="submit" class="btn btn-secondary btn-sm" style="background-color: var(--error-color); color: white; border: none; padding: 0.25rem 0.5rem; border-radius: var(--border-radius-sm); font-size: 0.8rem; cursor: pointer;">Delete</button>
+                                </form>
+                            {% elif model_type == 'companies' %}
+                                <a href="{{ url_for('admin.companies_edit', id=item.id) }}" class="btn btn-secondary btn-sm" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; margin-right: 5px;">Edit</a>
+                                <form action="{{ url_for('admin.companies_delete', id=item.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this company profile?');">
+                                    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+                                    <button type="submit" class="btn btn-secondary btn-sm" style="background-color: var(--error-color); color: white; border: none; padding: 0.25rem 0.5rem; border-radius: var(--border-radius-sm); font-size: 0.8rem; cursor: pointer;">Delete</button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p style="text-align: center; color: var(--text-light); padding: var(--space-lg) 0;">
+            No items created yet. Click the button above to add one.
+        </p>
+    {% endif %}
+</div>
+{% endblock %}

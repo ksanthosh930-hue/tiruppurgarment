@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard — Tirupur Garments{% endblock %}
+
+{% block breadcrumbs %}
+    <li>Admin Dashboard</li>
+{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <h1 class="section-title">Admin Dashboard</h1>
+    <div style="font-size: 0.95rem; color: var(--text-secondary); display: flex; align-items: center; gap: var(--space-md);">
+        <span>Logged in as <strong>{{ session.username }}</strong></span>
+        <a href="{{ url_for('admin.logout') }}" class="btn btn-secondary btn-sm" style="padding: 0.4rem 0.8rem;">Logout</a>
+    </div>
+</div>
+
+<div class="admin-grid">
+    <a href="{{ url_for('admin.news_list') }}" class="stat-card" style="display: block; text-decoration: none; color: inherit;">
+        <div class="stat-num">{{ news_count }}</div>
+        <div class="stat-label">News Articles</div>
+        <span style="font-size: 0.85rem; color: var(--primary-color); display: block; margin-top: 5px; font-weight: 600;">Manage &rarr;</span>
+    </a>
+    <a href="{{ url_for('admin.knowledge_list') }}" class="stat-card" style="display: block; text-decoration: none; color: inherit;">
+        <div class="stat-num">{{ knowledge_count }}</div>
+        <div class="stat-label">Knowledge Articles</div>
+        <span style="font-size: 0.85rem; color: var(--primary-color); display: block; margin-top: 5px; font-weight: 600;">Manage &rarr;</span>
+    </a>
+    <a href="{{ url_for('admin.jobs_list') }}" class="stat-card" style="display: block; text-decoration: none; color: inherit;">
+        <div class="stat-num">{{ jobs_count }}</div>
+        <div class="stat-label">Job Listings</div>
+        <span style="font-size: 0.85rem; color: var(--primary-color); display: block; margin-top: 5px; font-weight: 600;">Manage &rarr;</span>
+    </a>
+    <a href="{{ url_for('admin.companies_list') }}" class="stat-card" style="display: block; text-decoration: none; color: inherit;">
+        <div class="stat-num">{{ companies_count }}</div>
+        <div class="stat-label">Companies Directory</div>
+        <span style="font-size: 0.85rem; color: var(--primary-color); display: block; margin-top: 5px; font-weight: 600;">Manage &rarr;</span>
+    </a>
+    <a href="{{ url_for('admin.media_list') }}" class="stat-card" style="display: block; text-decoration: none; color: inherit;">
+        <div class="stat-num">{{ tools_count }}</div>
+        <div class="stat-label">Media & Uploads</div>
+        <span style="font-size: 0.85rem; color: var(--primary-color); display: block; margin-top: 5px; font-weight: 600;">Upload &rarr;</span>
+    </a>
+</div>
+
+<section class="card" style="padding: var(--space-lg); margin-top: var(--space-xl);">
+    <h2 style="font-weight: 700; margin-bottom: var(--space-md); font-size: 1.3rem;">Recent Inquiries / Contact Messages</h2>
+    
+    {% if messages %}
+        <div style="overflow-x: auto;">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Subject</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for msg in messages %}
+                        <tr>
+                            <td style="white-space: nowrap; font-size: 0.85rem;">{{ msg.created_at.strftime('%d-%m-%Y %H:%M') }}</td>
+                            <td style="font-weight: 600;">{{ msg.name }}</td>
+                            <td><a href="mailto:{{ msg.email }}">{{ msg.email }}</a></td>
+                            <td style="font-weight: 600;">{{ msg.subject }}</td>
+                            <td style="font-size: 0.85rem; max-width: 400px; word-wrap: break-word;">{{ msg.message }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p style="color: var(--text-light); text-align: center; padding: var(--space-md) 0;">No messages received yet.</p>
+    {% endif %}
+</section>
+{% endblock %}

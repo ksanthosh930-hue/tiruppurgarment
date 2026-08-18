@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{% if job %}
+{{ job.seo_title or job.title }} — Garment Jobs Tirupur
+{% else %}
+Garment Industry Jobs in Tirupur — Tirupur Garments
+{% endif %}
+{% endblock %}
+
+{% block meta_description %}
+{% if job %}
+{{ job.seo_description or job.description[:150] }}
+{% else %}
+Apply for textile jobs, industrial engineer vacancies, sewing supervisor roles, and merchandising jobs in Tirupur.
+{% endif %}
+{% endblock %}
+
+{% block breadcrumbs %}
+{% if job %}
+<li><a href="/jobs">Jobs</a></li>
+<li>{{ job.title }}</li>
+{% else %}
+<li>Jobs</li>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{% if job %}
+<div class="card" style="padding: var(--space-xl); margin-bottom: var(--space-xl);">
+  <h3 class="card-tag">{{ job.job_type }}</h3>
+  <h1 class="article-title">{{ job.title }}</h1>
+  <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: var(--space-md);">
+    Company: <strong><a href="/companies/{{ job.company.slug }}">{{ job.company.name }}</a></strong> | Location:
+    <strong>{{ job.location }}</strong>
+  </p>
+
+  <div
+    style="background-color: var(--background-color); padding: var(--space-md); border-radius: var(--border-radius-md); margin-bottom: var(--space-lg); border: 1px solid var(--border-color);">
+    <div style="margin-bottom: var(--space-xs);">💵 <strong>Salary:</strong> {{ job.salary_range or 'Negotiable' }}
+    </div>
+    <div>🗓️ <strong>Posted:</strong> {{ job.created_at.strftime('%d %B %Y') }}</div>
+  </div>
+
+  <div class="article-body">
+    <h2 style="margin-bottom: var(--space-sm); font-weight: 700;">Job Description</h2>
+    {{ job.description | replace('\n', '<br>') | safe }}
+  </div>
+
+  <div style="margin-top: var(--space-lg); border-top: 1px solid var(--border-color); padding-top: var(--space-md);">
+    <button class="btn btn-primary" onclick="alert('This feature is coming soon in Phase 1B.')">Apply for Job</button>
+  </div>
+</div>
+{% else %}
+<div class="section-header">
+  <h1 class="section-title">Garment Industry Jobs</h1>
+</div>
+
+{% if jobs %}
+<div class="grid grid-3">
+  {% for j in jobs %}
+  <div class="card">
+    <span class="card-tag">{{ j.job_type }}</span>
+    <h3 class="card-title"><a href="/jobs/{{ j.slug }}">{{ j.title }}</a></h3>
+    <p class="card-summary" style="margin-bottom: var(--space-sm);">{{ j.company.name }} — {{ j.location }}</p>
+    <span class="card-meta" style="border: none; padding: 0;">Salary: {{ j.salary_range or 'Negotiable' }}</span>
+    <a href="/jobs/{{ j.slug }}" class="btn btn-secondary btn-sm" style="margin-top: var(--space-md);">View details</a>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Pagination Controls -->
+{% if pagination and pagination.pages > 1 %}
+<div
+  style="display: flex; justify-content: center; gap: var(--space-md); margin-top: var(--space-xl); align-items: center;">
+  {% if pagination.has_prev %}
+  <a href="{{ url_for('web.jobs_list', page=pagination.prev_num) }}" class="btn btn-secondary btn-sm">&larr; Prev</a>
+  {% endif %}
+  <span style="font-weight: 600; color: var(--text-secondary); font-size: 0.9rem;">Page {{ pagination.page }} of {{
+    pagination.pages }}</span>
+  {% if pagination.has_next %}
+  <a href="{{ url_for('web.jobs_list', page=pagination.next_num) }}" class="btn btn-secondary btn-sm">Next &rarr;</a>
+  {% endif %}
+</div>
+{% endif %}
+{% else %}
+<p style="color: var(--text-light); text-align: center; padding: var(--space-xl) 0;">No job postings available. Run the
+  database seed script to import sample data.</p>
+{% endif %}
+{% endif %}
+{% endblock %}

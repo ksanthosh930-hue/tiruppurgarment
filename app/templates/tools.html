@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}Garment Industry Calculators & Tools — Tirupur Garments{% endblock %}
+
+{% block meta_description %}Access standard garment calculators: Standard Allowed Minutes (SAM), Fabric GSM, thread
+consumption, order target estimation, costing sheets and margins.{% endblock %}
+
+{% block breadcrumbs %}
+<li>Tools</li>
+{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <h1 class="section-title">Garment Industry Calculators</h1>
+</div>
+
+<p style="margin-bottom: var(--space-xl); color: var(--text-secondary); max-width: 800px;">
+    Boost your operational efficiency with our suite of specialized garment calculations. Designed for industrial
+    engineers, planners, textile operators, and merchandisers in Tirupur.
+</p>
+
+<!-- Production & IE Tools -->
+<section style="margin-bottom: var(--space-xxl);">
+    <div class="section-header">
+        <h2 class="section-title">Production & Industrial Engineering Tools</h2>
+    </div>
+    <div class="grid grid-3">
+        <div class="card">
+            <span class="card-tag">Production / IE</span>
+            <h3 class="card-title"><a href="/tools/sam-calculator">SAM Calculator</a></h3>
+            <p class="card-summary">Calculate Standard Allowed Minutes (SAM) / Standard Minute Value (SMV) for apparel
+                operations including custom allowances.</p>
+            <a href="/tools/sam-calculator" class="btn btn-secondary btn-sm" style="margin-top: auto;">Open SAM
+                Calculator</a>
+        </div>
+        <div class="card" style="opacity: 0.85;">
+            <span class="card-tag">Production / IE</span>
+            <h3 class="card-title">SMV Calculator</h3>
+            <p class="card-summary">Compute basic sewing machine cycle times, operator adjustments and raw operation
+                minute values. (Coming Soon)</p>
+            <span class="btn btn-secondary btn-sm"
+                style="margin-top: auto; cursor: not-allowed; opacity: 0.6;">Unavailable</span>
+        </div>
+        <div class="card" style="opacity: 0.85;">
+            <span class="card-tag">Production / IE</span>
+            <h3 class="card-title">Efficiency Calculator</h3>
+            <p class="card-summary">Calculate operator or line performance efficiency percentage relative to target
+                production output. (Coming Soon)</p>
+            <span class="btn btn-secondary btn-sm"
+                style="margin-top: auto; cursor: not-allowed; opacity: 0.6;">Unavailable</span>
+        </div>
+    </div>
+</section>
+
+<!-- Fabric & Consumption Tools -->
+<section style="margin-bottom: var(--space-xxl);">
+    <div class="section-header">
+        <h2 class="section-title">Fabric & Consumption Tools</h2>
+    </div>
+    <div class="grid grid-3">
+        <div class="card">
+            <span class="card-tag">Fabric / Consumption</span>
+            <h3 class="card-title"><a href="/tools/fabric-gsm-calculator">Fabric GSM Calculator</a></h3>
+            <p class="card-summary">Determine fabric weight in Grams per Square Meter (GSM) for circular cutting swatch
+                or rectangular samples.</p>
+            <a href="/tools/fabric-gsm-calculator" class="btn btn-secondary btn-sm" style="margin-top: auto;">Open GSM
+                Calculator</a>
+        </div>
+        <div class="card" style="opacity: 0.85;">
+            <span class="card-tag">Fabric / Consumption</span>
+            <h3 class="card-title">Thread Consumption Calculator</h3>
+            <p class="card-summary">Estimate total thread requirement per garment considering seam lengths, stitch
+                classes (301, 401, 504) and waste factor. (Coming Soon)</p>
+            <span class="btn btn-secondary btn-sm"
+                style="margin-top: auto; cursor: not-allowed; opacity: 0.6;">Unavailable</span>
+        </div>
+        <div class="card" style="opacity: 0.85;">
+            <span class="card-tag">Fabric / Consumption</span>
+            <h3 class="card-title">Fabric Consumption Calculator</h3>
+            <p class="card-summary">Calculate total weight of fabric required per dozen garments for T-shirts, Polos, or
+                Leggings. (Coming Soon)</p>
+            <span class="btn btn-secondary btn-sm"
+                style="margin-top: auto; cursor: not-allowed; opacity: 0.6;">Unavailable</span>
+        </div>
+    </div>
+</section>
+
+<!-- Costing & Planning Tools -->
+<section>
+    <div class="section-header">
+        <h2 class="section-title">Costing & Planning Tools</h2>
+    </div>
+    <div class="grid grid-3">
+        <div class="card" style="opacity: 0.85;">
+            <span class="card-tag">Costing</span>
+            <h3 class="card-title">Garment Costing Sheet</h3>
+            <p class="card-summary">Calculate fabric consumption, yarn price index, accessories, CM charges, and final
+                FOB prices. (Coming Soon)</p>
+            <span class="btn btn-secondary btn-sm"
+                style="margin-top: auto; cursor: not-allowed; opacity: 0.6;">Unavailable</span>
+        </div>
+        <div class="card" style="opacity: 0.85;">
+            <span class="card-tag">Planning</span>
+            <h3 class="card-title">TNA (Time and Action) Calendar</h3>
+            <p class="card-summary">Plan critical paths and schedule timeline milestones from purchase order receipt to
+                shipment delivery. (Coming Soon)</p>
+            <span class="btn btn-secondary btn-sm"
+                style="margin-top: auto; cursor: not-allowed; opacity: 0.6;">Unavailable</span>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{% if service %}
+{{ service.name }} — Textile Service
+{% else %}
+Garment & Textile Services in Tirupur — Tirupur Garments
+{% endif %}
+{% endblock %}
+
+{% block meta_description %}
+{% if service %}
+{{ service.description[:150] }}
+{% else %}
+Browse industrial sewing machine services, embroidery, circular knitting, compacting and fabric washing providers in
+Tirupur.
+{% endif %}
+{% endblock %}
+
+{% block breadcrumbs %}
+{% if service %}
+<li><a href="/services">Services</a></li>
+<li>{{ service.name }}</li>
+{% else %}
+<li>Services</li>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{% if service %}
+<div class="card" style="padding: var(--space-xl); margin-bottom: var(--space-xl);">
+  <span class="card-tag">Garment Service</span>
+  <h1 class="article-title">{{ service.name }}</h1>
+  <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: var(--space-md);">
+    Provider: <strong><a href="/companies/{{ service.provider.slug }}">{{ service.provider.name }}</a></strong>
+  </p>
+
+  <div class="article-body">
+    <h2 style="margin-bottom: var(--space-sm); font-weight: 700;">Service Description</h2>
+    {{ service.description | replace('\n', '<br>') | safe }}
+  </div>
+
+  <div
+    style="margin-top: var(--space-lg); border-top: 1px solid var(--border-color); padding-top: var(--space-md); display: flex; gap: var(--space-md);">
+    <a href="/companies/{{ service.provider.slug }}" class="btn btn-primary">Contact Provider</a>
+    <a href="/services" class="btn btn-secondary">Back to Services</a>
+  </div>
+</div>
+{% else %}
+<div class="section-header">
+  <h1 class="section-title">Garment & Textile Services Directory</h1>
+</div>
+
+{% if services %}
+<div class="grid grid-3">
+  {% for s in services %}
+  <div class="card">
+    <span class="card-tag">Industrial Service</span>
+    <h3 class="card-title"><a href="/services/{{ s.slug }}">{{ s.name }}</a></h3>
+    <p class="card-summary">{{ s.description[:150] }}...</p>
+    <span class="card-meta" style="border: none; padding: 0;">Provider: <strong>{{ s.provider.name }}</strong></span>
+    <a href="/services/{{ s.slug }}" class="btn btn-secondary btn-sm" style="margin-top: var(--space-md);">Service
+      Details</a>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p style="color: var(--text-light); text-align: center;">No industry services listed. Run the database seed script to
+  import sample data.</p>
+{% endif %}
+{% endif %}
+{% endblock %}

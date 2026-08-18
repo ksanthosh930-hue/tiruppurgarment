@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block title %}Garment AI Studio — Tirupur Garments{% endblock %}
+
+{% block meta_description %}Automate garment scheduling, estimate costing structures, generate production reports, and
+consult our AI Garment Assistant.{% endblock %}
+
+{% block breadcrumbs %}
+<li>AI Studio</li>
+{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <h1 class="section-title">Garment AI Studio</h1>
+</div>
+
+<p style="color: var(--text-secondary); margin-bottom: var(--space-xl); max-width: 800px;">
+    Consult our specialized intelligence model built for the garment and textile industry. Get instant recommendations
+    on operation breakdowns, costing parameters, fabric structures, and planning benchmarks.
+</p>
+
+<div class="ai-studio-container">
+    <div class="ai-chat-header">
+        <div class="ai-avatar">AI</div>
+        <div>
+            <div class="ai-chat-title">AI Garment Assistant</div>
+            <div class="ai-chat-subtitle">Trained on Tirupur Apparel Manufacturing & Sourcing</div>
+        </div>
+    </div>
+
+    <div class="ai-messages" id="chat-messages">
+        <div class="chat-message ai">
+            <strong>Assistant:</strong><br>
+            Welcome to the Tirupur Garments AI Studio. I can provide industry benchmarks for costing, operation layout
+            SAM, fabric structures, or planning. Try asking:
+            <ul
+                style="margin-left: 20px; margin-top: var(--space-sm); display: flex; flex-direction: column; gap: var(--space-xs);">
+                <li><em>"What is the average sewing SAM for a Polo T-shirt?"</em></li>
+                <li><em>"Estimate Cut & Make (CM) costs in Tirupur."</em></li>
+                <li><em>"Which fabric structure is standard for hoodies?"</em></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="ai-input-area">
+        <input type="text" id="chat-input" class="form-control"
+            placeholder="Ask about costing, SAM, fabrics or planning..." style="flex: 1;" aria-label="Query Input">
+        <button id="chat-send" class="btn btn-primary">Send Query</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const chatInput = document.getElementById('chat-input');
+        const chatSend = document.getElementById('chat-send');
+        const chatMessages = document.getElementById('chat-messages');
+
+        if (chatSend && chatInput) {
+            chatSend.addEventListener('click', sendMessage);
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        }
+
+        function sendMessage() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            // Append user message
+            appendMessage('user', 'You', text);
+            chatInput.value = '';
+
+            // Auto-scroll
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Mock response after short delay
+            setTimeout(() => {
+                const responseText = getMockResponse(text);
+                appendMessage('ai', 'Assistant', responseText);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 600);
+        }
+
+        function appendMessage(sender, senderLabel, content) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `chat-message ${sender}`;
+            msgDiv.innerHTML = `<strong>${senderLabel}:</strong><br>${content}`;
+            chatMessages.appendChild(msgDiv);
+        }
+
+        function getMockResponse(query) {
+            const q = query.toLowerCase();
+
+            if (q.includes('sam') || q.includes('smv') || q.includes('operation')) {
+                return "Based on Tirupur production logs, here are the average operation SAM benchmarks:<br>" +
+                    "• <strong>Basic Round Neck T-Shirt:</strong> 12.5 - 15.0 SAM (Sewing: 10.5, Checking/Packing: 2.5)<br>" +
+                    "• <strong>Polo shirt (with placket):</strong> 18.0 - 22.0 SAM (Sewing: 16.0, Collar attachment adds 3.5)<br>" +
+                    "• <strong>Full Zip Hoodie:</strong> 28.0 - 34.0 SAM (Sewing: 27.5, Pocket attachment: 4.5)<br>" +
+                    "In Phase 1B, you will be able to generate full operation sequence charts using this interface.";
+            }
+
+            if (q.includes('cost') || q.includes('cm') || q.includes('costing') || q.includes('fob')) {
+                return "Cut and Make (CM) and costing metrics for Tirupur factories typically follow these rates:<br>" +
+                    "• <strong>Average CM cost (T-shirt):</strong> $0.35 - $0.55 per piece depending on quantities.<br>" +
+                    "• <strong>Yarn Raw Material Index:</strong> 30s combed cotton is currently around $3.15 - $3.40 / kg.<br>" +
+                    "• <strong>Polo Pique knit CM:</strong> $0.60 - $0.85 per piece due to placket and collar complex sewing.<br>" +
+                    "Please note that accessories, tag labels, and transport logistics usually add another 12-18% onto fabric cost.";
+            }
+
+            if (q.includes('fabric') || q.includes('structure') || q.includes('jersey') || q.includes('hoodie')) {
+                return "Standard fabric weight and structures used in the cluster:<br>" +
+                    "• <strong>Standard T-shirt:</strong> Single Jersey fabric (100% cotton, 140 - 180 GSM).<br>" +
+                    "• <strong>Polo T-shirt:</strong> Pique knit (60% Cotton / 40% Poly, 220 - 240 GSM).<br>" +
+                    "• <strong>Sweatshirts/Hoodies:</strong> 2-Thread or 3-Thread fleece (brushed backing, 280 - 340 GSM).<br>" +
+                    "Use the <strong>Fabric GSM Calculator</strong> in the Tools section to evaluate actual fabric weights.";
+            }
+
+            return "Thank you for query. Your request: <em>\"" + query + "\"</em> has been logged.<br>" +
+                "This module is running in <strong>Phase 1A Prototype Mode</strong>. In the next development cycle, this chat interface will connect to a secure Python NLP service to automate costing sheets and query active suppliers.";
+        }
+    });
+</script>
+{% endblock %}

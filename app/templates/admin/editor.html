@@ -1,0 +1,349 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{% if item %}Edit{% else %}Create{% endif %} {{ model_type.capitalize() }} — Admin
+{% endblock %}
+
+{% block breadcrumbs %}
+<li><a href="/admin">Dashboard</a></li>
+{% if model_type == 'news' %}
+<li><a href="{{ url_for('admin.news_list') }}">News</a></li>
+{% elif model_type == 'knowledge' %}
+<li><a href="{{ url_for('admin.knowledge_list') }}">Knowledge</a></li>
+{% elif model_type == 'jobs' %}
+<li><a href="{{ url_for('admin.jobs_list') }}">Jobs</a></li>
+{% elif model_type == 'companies' %}
+<li><a href="{{ url_for('admin.companies_list') }}">Companies</a></li>
+{% endif %}
+<li>{% if item %}Edit{% else %}New{% endif %} {{ model_type.capitalize() }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <h1 class="section-title">
+        {% if item %}Edit{% else %}New{% endif %}
+        {% if model_type == 'news' %}News Article
+        {% elif model_type == 'knowledge' %}Knowledge Guide
+        {% elif model_type == 'jobs' %}Job vacancy
+        {% elif model_type == 'companies' %}Company Profile
+        {% endif %}
+    </h1>
+</div>
+
+<div class="card" style="padding: var(--space-xl); max-width: 800px; margin: 0 auto;">
+    {% if model_type == 'news' %}
+    <form
+        action="{% if item %}{{ url_for('admin.news_edit', id=item.id) }}{% else %}{{ url_for('admin.news_new') }}{% endif %}"
+        method="POST">
+        {% elif model_type == 'knowledge' %}
+        <form
+            action="{% if item %}{{ url_for('admin.knowledge_edit', id=item.id) }}{% else %}{{ url_for('admin.knowledge_new') }}{% endif %}"
+            method="POST">
+            {% elif model_type == 'jobs' %}
+            <form
+                action="{% if item %}{{ url_for('admin.jobs_edit', id=item.id) }}{% else %}{{ url_for('admin.jobs_new') }}{% endif %}"
+                method="POST">
+                {% elif model_type == 'companies' %}
+                <form
+                    action="{% if item %}{{ url_for('admin.companies_edit', id=item.id) }}{% else %}{{ url_for('admin.companies_new') }}{% endif %}"
+                    method="POST">
+                    {% endif %}
+
+                    <!-- CSRF Token Input (Enforces authentication protection) -->
+                    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+
+                    <!-- Common Content Elements -->
+                    {% if model_type == 'news' or model_type == 'knowledge' %}
+                    <div class="form-group">
+                        <label for="title" class="form-label">Article Title</label>
+                        <input type="text" id="title" name="title" class="form-control"
+                            value="{{ item.title if item else '' }}" required placeholder="Enter descriptive title">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="slug" class="form-label">URL Slug</label>
+                        <input type="text" id="slug" name="slug" class="form-control"
+                            value="{{ item.slug if item else '' }}" placeholder="auto-generated-if-blank"
+                            pattern="[a-z0-9\-]+">
+                        <small style="color: var(--text-light); font-size: 0.75rem;">Lowercase alphanumeric characters
+                            and hyphens only.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category_id" class="form-label">Category</label>
+                        <select id="category_id" name="category_id" class="form-control">
+                            <option value="">-- Select Category --</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.id }}" {% if item and item.category_id==cat.id %}selected{% endif %}>
+                                {{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="summary" class="form-label">Short Summary</label>
+                        <textarea id="summary" name="summary" class="form-control" rows="3" required
+                            placeholder="Brief introductory summary (150-250 characters)">{{ item.summary if item else '' }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="content" class="form-label">Main Content Body</label>
+                        <textarea id="content" name="content" class="form-control" rows="12" required
+                            placeholder="Enter markdown or plain text content">{{ item.content if item else '' }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="featured_image" class="form-label">Featured Image URL</label>
+                        <input type="text" id="featured_image" name="featured_image" class="form-control"
+                            value="{{ item.featured_image if item else '' }}"
+                            placeholder="/static/uploads/image-hash.png">
+                        <small style="color: var(--text-light); font-size: 0.75rem;">Upload files inside <a
+                                href="/admin/media" target="_blank">Media Manager</a> first, then paste the file URL
+                            here.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="status" class="form-label">Status</label>
+                        <select id="status" name="status" class="form-control">
+                            <option value="draft" {% if item and item.status=='draft' %}selected{% endif %}>Draft
+                            </option>
+                            <option value="review" {% if item and item.status=='review' %}selected{% endif %}>Under
+                                Review</option>
+                            <option value="published" {% if item and item.status=='published' %}selected{% endif %}>
+                                Published</option>
+                            <option value="archived" {% if item and item.status=='archived' %}selected{% endif %}>
+                                Archived</option>
+                        </select>
+                    </div>
+
+                    <div
+                        style="margin: var(--space-lg) 0; border-top: 1px solid var(--border-color); padding-top: var(--space-md);">
+                        <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: var(--space-sm);">SEO
+                            Specifications</h3>
+
+                        <div class="form-group">
+                            <label for="seo_title" class="form-label">SEO Meta Title</label>
+                            <input type="text" id="seo_title" name="seo_title" class="form-control"
+                                value="{{ item.seo_title if item else '' }}" placeholder="custom title tag content">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="seo_description" class="form-label">SEO Meta Description</label>
+                            <input type="text" id="seo_description" name="seo_description" class="form-control"
+                                value="{{ item.seo_description if item else '' }}"
+                                placeholder="custom meta description description">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="canonical_url" class="form-label">Canonical URL Override</label>
+                            <input type="text" id="canonical_url" name="canonical_url" class="form-control"
+                                value="{{ item.canonical_url if item else '' }}"
+                                placeholder="https://example.com/original-article">
+                        </div>
+                    </div>
+
+                    {% elif model_type == 'jobs' %}
+                    <div class="form-group">
+                        <label for="title" class="form-label">Job Title</label>
+                        <input type="text" id="title" name="title" class="form-control"
+                            value="{{ item.title if item else '' }}" required placeholder="e.g. Production Manager">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="slug" class="form-label">URL Slug</label>
+                        <input type="text" id="slug" name="slug" class="form-control"
+                            value="{{ item.slug if item else '' }}" placeholder="auto-generated-if-blank"
+                            pattern="[a-z0-9\-]+">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="company_id" class="form-label">Hiring Company</label>
+                        <select id="company_id" name="company_id" class="form-control" required>
+                            <option value="">-- Select Company --</option>
+                            {% for comp in companies %}
+                            <option value="{{ comp.id }}" {% if item and item.company_id==comp.id %}selected{% endif %}>
+                                {{ comp.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="location" class="form-label">Job Location</label>
+                        <input type="text" id="location" name="location" class="form-control"
+                            value="{{ item.location if item else 'Tirupur, TN' }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="salary_range" class="form-label">Salary Range</label>
+                        <input type="text" id="salary_range" name="salary_range" class="form-control"
+                            value="{{ item.salary_range if item else '' }}"
+                            placeholder="e.g. ₹5,00,000 - ₹8,00,000 P.A.">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="job_type" class="form-label">Job Type</label>
+                        <select id="job_type" name="job_type" class="form-control">
+                            <option value="Full-time" {% if item and item.job_type=='Full-time' %}selected{% endif %}>
+                                Full-time</option>
+                            <option value="Part-time" {% if item and item.job_type=='Part-time' %}selected{% endif %}>
+                                Part-time</option>
+                            <option value="Contract" {% if item and item.job_type=='Contract' %}selected{% endif %}>
+                                Contract</option>
+                            <option value="Internship" {% if item and item.job_type=='Internship' %}selected{% endif %}>
+                                Internship</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description" class="form-label">Job Description</label>
+                        <textarea id="description" name="description" class="form-control" rows="10" required
+                            placeholder="Enter job description, criteria and candidate requirements">{{ item.description if item else '' }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="status" class="form-label">Status</label>
+                        <select id="status" name="status" class="form-control">
+                            <option value="published" {% if item and item.status=='published' %}selected{% endif %}>
+                                Published / Active</option>
+                            <option value="draft" {% if item and item.status=='draft' %}selected{% endif %}>Draft
+                            </option>
+                            <option value="archived" {% if item and item.status=='archived' %}selected{% endif %}>
+                                Archived / Filled</option>
+                        </select>
+                    </div>
+
+                    <div
+                        style="margin: var(--space-lg) 0; border-top: 1px solid var(--border-color); padding-top: var(--space-md);">
+                        <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: var(--space-sm);">SEO
+                            Specifications</h3>
+
+                        <div class="form-group">
+                            <label for="seo_title" class="form-label">SEO Meta Title</label>
+                            <input type="text" id="seo_title" name="seo_title" class="form-control"
+                                value="{{ item.seo_title if item else '' }}" placeholder="Job details SEO title">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="seo_description" class="form-label">SEO Meta Description</label>
+                            <input type="text" id="seo_description" name="seo_description" class="form-control"
+                                value="{{ item.seo_description if item else '' }}"
+                                placeholder="Job details SEO description">
+                        </div>
+                    </div>
+
+                    {% elif model_type == 'companies' %}
+                    <div class="form-group">
+                        <label for="name" class="form-label">Company Name</label>
+                        <input type="text" id="name" name="name" class="form-control"
+                            value="{{ item.name if item else '' }}" required
+                            placeholder="e.g. Tirupur Apparel Exporters">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="slug" class="form-label">URL Slug</label>
+                        <input type="text" id="slug" name="slug" class="form-control"
+                            value="{{ item.slug if item else '' }}" placeholder="auto-generated-if-blank"
+                            pattern="[a-z0-9\-]+">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category_id" class="form-label">Directory Category</label>
+                        <select id="category_id" name="category_id" class="form-control">
+                            <option value="">-- Select Category --</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.id }}" {% if item and item.category_id==cat.id %}selected{% endif %}>
+                                {{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description" class="form-label">Company Overview</label>
+                        <textarea id="description" name="description" class="form-control" rows="8" required
+                            placeholder="Overview of company history, manufacturing capabilities, products and certifications">{{ item.description if item else '' }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="logo" class="form-label">Company Logo URL</label>
+                        <input type="text" id="logo" name="logo" class="form-control"
+                            value="{{ item.logo if item else '' }}" placeholder="/static/uploads/logo-hash.png">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="website" class="form-label">Website URL</label>
+                        <input type="url" id="website" name="website" class="form-control"
+                            value="{{ item.website if item else '' }}" placeholder="https://www.example.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email" class="form-label">Contact Email</label>
+                        <input type="email" id="email" name="email" class="form-control"
+                            value="{{ item.email if item else '' }}" placeholder="sales@example.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone" class="form-label">Contact Phone</label>
+                        <input type="text" id="phone" name="phone" class="form-control"
+                            value="{{ item.phone if item else '' }}" placeholder="+91-421-XXXXXXX">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address" class="form-label">Street Address</label>
+                        <textarea id="address" name="address" class="form-control" rows="3"
+                            placeholder="Enter full address">{{ item.address if item else '' }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="status" class="form-label">Status</label>
+                        <select id="status" name="status" class="form-control">
+                            <option value="published" {% if item and item.status=='published' %}selected{% endif %}>
+                                Published / Public</option>
+                            <option value="draft" {% if item and item.status=='draft' %}selected{% endif %}>Draft
+                            </option>
+                            <option value="archived" {% if item and item.status=='archived' %}selected{% endif %}>
+                                Archived</option>
+                        </select>
+                    </div>
+
+                    <div
+                        style="margin: var(--space-lg) 0; border-top: 1px solid var(--border-color); padding-top: var(--space-md);">
+                        <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: var(--space-sm);">SEO
+                            Specifications</h3>
+
+                        <div class="form-group">
+                            <label for="seo_title" class="form-label">SEO Meta Title</label>
+                            <input type="text" id="seo_title" name="seo_title" class="form-control"
+                                value="{{ item.seo_title if item else '' }}" placeholder="Company SEO title">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="seo_description" class="form-label">SEO Meta Description</label>
+                            <input type="text" id="seo_description" name="seo_description" class="form-control"
+                                value="{{ item.seo_description if item else '' }}"
+                                placeholder="Company SEO description">
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div style="display: flex; gap: var(--space-sm); margin-top: var(--space-lg);">
+                        <button type="submit" class="btn btn-primary" style="flex: 1; padding: 0.75rem;">
+                            Save Changes
+                        </button>
+
+                        {% if model_type == 'news' %}
+                        <a href="{{ url_for('admin.news_list') }}" class="btn btn-secondary"
+                            style="padding: 0.75rem;">Cancel</a>
+                        {% elif model_type == 'knowledge' %}
+                        <a href="{{ url_for('admin.knowledge_list') }}" class="btn btn-secondary"
+                            style="padding: 0.75rem;">Cancel</a>
+                        {% elif model_type == 'jobs' %}
+                        <a href="{{ url_for('admin.jobs_list') }}" class="btn btn-secondary"
+                            style="padding: 0.75rem;">Cancel</a>
+                        {% elif model_type == 'companies' %}
+                        <a href="{{ url_for('admin.companies_list') }}" class="btn btn-secondary"
+                            style="padding: 0.75rem;">Cancel</a>
+                        {% endif %}
+                    </div>
+                </form>
+</div>
+{% endblock %}
