@@ -2,14 +2,21 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyc
 
 # Environment files
 .env
 
 # Virtual environment
 .venv/
-env/
+venv/
+venv.bak/
 ENV/
+env/
+instance/
+
+# Logs
+*.log
 
 # IDE / Editors
 .vscode/
