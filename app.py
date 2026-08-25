@@ -49,7 +49,8 @@ else:
     logger.warning("DATABASE_URL environment variable is missing. Database endpoints will use fallback data.")
 
 # Create assets uploads folder
-UPLOAD_DIR = os.path.join(os.getcwd(), "assets", "uploads")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_DIR = os.path.join(BASE_DIR, "assets", "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @asynccontextmanager
@@ -669,7 +670,7 @@ def delete_media(media_id: int, admin = Depends(get_current_admin)):
         raise HTTPException(status_code=404, detail="Media file not found.")
         
     filepath = rows[0]["filepath"]
-    full_path = os.path.join(os.getcwd(), filepath.replace("/", "\\"))
+    full_path = os.path.join(BASE_DIR, filepath.replace("/", os.sep))
     
     # Delete from disk
     if os.path.exists(full_path):
@@ -709,7 +710,7 @@ def get_admin_login(session_id: str = Cookie(None)):
                 return RedirectResponse(url="/admin")
         except Exception:
             pass
-    return FileResponse("login.html")
+    return FileResponse(os.path.join(BASE_DIR, "login.html"))
 
 @app.get("/admin")
 def get_admin_dashboard(session_id: str = Cookie(None)):
@@ -723,27 +724,28 @@ def get_admin_dashboard(session_id: str = Cookie(None)):
     except Exception:
         return RedirectResponse(url="/admin/login")
         
-    return FileResponse("admin.html")
+    return FileResponse(os.path.join(BASE_DIR, "admin.html"))
 
 @app.get("/")
 def get_index():
-    return FileResponse("index.html")
+    return FileResponse(os.path.join(BASE_DIR, "index.html"))
 
 @app.get("/tools/sam-calculator")
 def get_sam_calculator():
-    return FileResponse("sam_calculator.html")
+    return FileResponse(os.path.join(BASE_DIR, "sam_calculator.html"))
 
 @app.get("/logo.png")
 def get_logo():
-    if os.path.exists("logo.png"):
-        return FileResponse("logo.png")
+    logo_path = os.path.join(BASE_DIR, "logo.png")
+    if os.path.exists(logo_path):
+        return FileResponse(logo_path)
     raise HTTPException(status_code=404, detail="logo.png not found")
 
 # Serve upload assets dynamically
 app.mount("/assets/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
-app.mount("/css", StaticFiles(directory="css"), name="css")
-app.mount("/js", StaticFiles(directory="js"), name="js")
-app.mount("/assets", StaticFiles(directory="assets"), name="assets")
+app.mount("/css", StaticFiles(directory=os.path.join(BASE_DIR, "css")), name="css")
+app.mount("/js", StaticFiles(directory=os.path.join(BASE_DIR, "js")), name="js")
+app.mount("/assets", StaticFiles(directory=os.path.join(BASE_DIR, "assets")), name="assets")
 
 if __name__ == "__main__":
     import uvicorn
