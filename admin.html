@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DigiGarment CMS Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <img src="/assets/images/logo-light.png" alt="DigiGarment Logo">
+            </div>
+            <ul class="sidebar-menu">
+                <li class="sidebar-menu-item active" data-tab="dashboard"><a><span>📊</span> Dashboard</a></li>
+                <li class="sidebar-menu-item" data-tab="settings"><a><span>⚙️</span> Website & SEO Settings</a></li>
+                <li class="sidebar-menu-item" data-tab="hero"><a><span>🏠</span> Hero Section</a></li>
+                <li class="sidebar-menu-item" data-tab="about"><a><span>📖</span> About Section</a></li>
+                <li class="sidebar-menu-item" data-tab="tools"><a><span>🛠️</span> Tools CMS</a></li>
+                <li class="sidebar-menu-item" data-tab="services"><a><span>💼</span> Services CMS</a></li>
+                <li class="sidebar-menu-item" data-tab="comingsoon"><a><span>⏳</span> Coming Soon CMS</a></li>
+                <li class="sidebar-menu-item" data-tab="media"><a><span>🖼️</span> Media Library</a></li>
+                <li class="sidebar-menu-item" data-tab="enquiries"><a><span>📨</span> Enquiries</a></li>
+                <li class="sidebar-menu-item" data-tab="password"><a><span>🔒</span> Change Password</a></li>
+            </ul>
+            <div class="sidebar-footer">
+                <div class="sidebar-user" id="adminUser">admin@tirupurgarments.com</div>
+                <a class="sidebar-logout" id="logoutBtn"><span>↪️</span> Logout</a>
+            </div>
+        </aside>
+
+        <!-- Main Content Section -->
+        <main class="main-content">
+            <header class="top-bar">
+                <h1 id="tabTitle">Dashboard</h1>
+                <div class="admin-profile">
+                    <strong>Super Admin</strong>
+                </div>
+            </header>
+
+            <div class="content-pane">
+                <!-- 1. Dashboard Tab -->
+                <div id="tab-dashboard" class="tab-content active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">📨</div>
+                            <div class="stat-info">
+                                <h3 id="statEnquiries">0</h3>
+                                <p>New Enquiries</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🛠️</div>
+                            <div class="stat-info">
+                                <h3 id="statTools">0</h3>
+                                <p>Total Tools</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">💼</div>
+                            <div class="stat-info">
+                                <h3 id="statServices">0</h3>
+                                <p>Active Services</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🖼️</div>
+                            <div class="stat-info">
+                                <h3 id="statMedia">0</h3>
+                                <p>Media Uploads</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-panel">
+                        <h2 class="card-panel-title">System Overview</h2>
+                        <p>Welcome to the DigiGarment CMS dashboard. Use the sidebar menu to update website titles, contact info, configure tools (like the SAM Calculator URL), edit services, upload images, and manage customer inquiries.</p>
+                    </div>
+                </div>
+
+                <!-- 2. Settings Tab -->
+                <div id="tab-settings" class="tab-content">
+                    <form id="settingsForm">
+                        <div class="card-panel">
+                            <h2 class="card-panel-title">Website Settings</h2>
+                            <div class="grid-cols-2">
+                                <div class="form-group">
+                                    <label>Website Name</label>
+                                    <input type="text" name="site_name" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Tagline</label>
+                                    <input type="text" name="tagline" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="grid-cols-2">
+                                <div class="form-group">
+                                    <label>Contact Email</label>
+                                    <input type="email" name="contact_email" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Contact Phone</label>
+                                    <input type="text" name="contact_phone" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="grid-cols-2">
+                                <div class="form-group">
+                                    <label>WhatsApp Number (Optional)</label>
+                                    <input type="text" name="whatsapp_number" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>Address</label>
+                                    <input type="text" name="address" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="grid-cols-2">
+                                <div class="form-group">
+                                    <label>Logo File URL</label>
+                                    <input type="text" name="logo_url" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Favicon File URL</label>
+                                    <input type="text" name="favicon_url" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Footer Copyright Text</label>
+                                <input type="text" name="footer_text" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>SAM Calculator URL (External target for tools iframe)</label>
+                                <input type="text" name="sam_calculator_url" class="form-control" required>
+                            </div>
+                            <h3 style="font-size: 14px; margin: 20px 0 10px 0; color: var(--bg-navy);">Social Media Links</h3>
+                            <div class="grid-cols-2">
+                                <div class="form-group">
+                                    <label>Facebook URL</label>
+                                    <input type="text" name="social_facebook" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>LinkedIn URL</label>
+                                    <input type="text" name="social_linkedin" class="form-control">
+                                </div>
+                            </div>
+                            <div class="grid-cols-2">
+                                <div class="form-group">
+                                    <label>YouTube URL</label>
+                                    <input type="text" name="social_youtube" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>Instagram URL</label>
+                                    <input type="text" name="social_instagram" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-panel">
+                            <h2 class="card-panel-title">SEO Settings</h2>
+                            <div class="form-group">
+                                <label>Meta Title</label>
+                                <input type="text" name="seo_meta_title" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Meta Description</label>
+                                <textarea name="seo_meta_description" class="form-control" rows="3" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Keywords (comma separated)</label>
+                                <input type="text" name="seo_default_keywords" class="form-control" required>
+                            </div>
+                            <div class="grid-cols-2">
+                                <div class="form-group">
+                                    <label>OG Title</label>
+                                    <input type="text" name="seo_og_title" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>OG Description</label>
+                                    <input type="text" name="seo_og_description" class="form-control">
+                                </div>
+                            </div>
+                            <div class="grid-cols-2">
+                                <div class="form-group">
+                                    <label>OG Image URL</label>
+                                    <input type="text" name="seo_og_image" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>Google Analytics ID</label>
+                                    <input type="text" name="seo_google_analytics_id" class="form-control">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Settings</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- 3. Hero Section Tab -->
+                <div id="tab-hero" class="tab-content">
+                    <form id="heroForm">
+                        <div class="card-panel">
+                            <h2 class="card-panel-title">Hero Section Content</h2>
+                            <div class="form-group">
+                                <label>Eyebrow Label</label>
+                                <input type="text" id="heroEyebrowInput" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Main Heading (Use &lt;span&gt;Heading&lt;/span&gt; for highlighted text)</label>
+                                <input type="text" id="heroHeadingInput" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Description</label>
+                                <textarea id="heroDescInput" class="form-control" rows="3" required></textarea>
+                            </div>
+                            <div class="grid-cols-2">
+                                <div class="form-group">
+                                    <label>Primary Button Text</label>
+                                    <input type="text" id="heroBtn1TextInput" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Primary Button URL</label>
+                                    <input type="text" id="heroBtn1UrlInput" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="grid-cols-2">
+                                <div class="form-group">
+                                    <label>Secondary Button Text</label>
+                                    <input type="text" id="heroBtn2TextInput" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Secondary Button URL</label>
+                                    <input type="text" id="heroBtn2UrlInput" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Hero Image URL</label>
+                                <input type="text" id="heroImageInput" class="form-control" required>
+                            </div>
+                            
+                            <h3 style="font-size: 14px; margin: 20px 0 10px 0; color: var(--bg-navy);">Capability Highlights (4 Bullets)</h3>
+                            <div id="heroHighlightsInputs">
+                                <!-- Rendered dynamically -->
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary" style="margin-top: 20px;">Save Hero Section</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- 4. About Section Tab -->
+                <div id="tab-about" class="tab-content">
+                    <form id="aboutForm">
+                        <div class="card-panel">
+                            <h2 class="card-panel-title">About Us Section</h2>
+                            <div class="form-group">
+                                <label>Heading</label>
+                                <input type="text" id="aboutHeadingInput" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Description</label>
+                                <textarea id="aboutDescInput" class="form-control" rows="4" required></textarea>
+                            </div>
+                            <div class="grid-cols-2">
+                                <div class="form-group">
+                                    <label>Mission Statement</label>
+                                    <input type="text" id="aboutMissionInput" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Vision Statement</label>
+                                    <input type="text" id="aboutVisionInput" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="grid-cols-2">
+                                <div class="form-group">
+                                    <label>About Image URL</label>
+                                    <input type="text" id="aboutImageInput" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>CTA Button Text</label>
+                                    <input type="text" id="aboutCtaTextInput" class="form-control" required>
+                                </div>
+                            </div>
+                            
+                            <h3 style="font-size: 14px; margin: 20px 0 10px 0; color: var(--bg-navy);">Key Points (5 Items)</h3>
+                            <div id="aboutPointsInputs">
+                                <!-- Rendered dynamically -->
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary" style="margin-top: 20px;">Save About Section</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- 5. Tools Tab -->
+                <div id="tab-tools" class="tab-content">
+                    <div class="card-panel">
+                        <div class="card-panel-title">
+                            <h2>Software Tools</h2>
+                            <button class="btn btn-primary" onclick="openToolModal()">Add Active Tool</button>
+                        </div>
+                        <div class="admin-table-wrap">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Icon</th>
+                                        <th>Name</th>
+                                        <th>External URL</th>
+                                        <th>Status</th>
+                                        <th>Display Order</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="toolsTableBody">
+                                    <!-- Rendered dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. Services Tab -->
+                <div id="tab-services" class="tab-content">
+                    <div class="card-panel">
+                        <div class="card-panel-title">
+                            <h2>Services CMS</h2>
+                            <button class="btn btn-primary" onclick="openServiceModal()">Add Service</button>
+                        </div>
+                        <div class="admin-table-wrap">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Icon</th>
+                                        <th>Name</th>
+                                        <th>Short Description</th>
+                                        <th>Status</th>
+                                        <th>Display Order</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="servicesTableBody">
+                                    <!-- Rendered dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7. Coming Soon Tab -->
+                <div id="tab-comingsoon" class="tab-content">
+                    <div class="card-panel">
+                        <div class="card-panel-title">
+                            <h2>Coming Soon Tools</h2>
+                            <button class="btn btn-primary" onclick="openComingSoonModal()">Add Upcoming Tool</button>
+                        </div>
+                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Upcoming tools are displayed on the public home page as deactivated cards to tease future development without direct hyperlinks.</p>
+                        <div class="admin-table-wrap">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Icon</th>
+                                        <th>Upcoming Tool Name</th>
+                                        <th>Description</th>
+                                        <th>Display Order</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="comingSoonTableBody">
+                                    <!-- Rendered dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 8. Media Library Tab -->
+                <div id="tab-media" class="tab-content">
+                    <div class="card-panel">
+                        <h2 class="card-panel-title">Media Upload</h2>
+                        <div class="media-upload-zone" id="dropzone" onclick="document.getElementById('mediaFileInput').click()">
+                            <p style="font-weight: 600; color: var(--bg-navy);">Drag and drop your images here or click to select files</p>
+                            <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">Allowed formats: JPG, JPEG, PNG, WEBP, SVG. Max file size: 5MB.</p>
+                            <input type="file" id="mediaFileInput" style="display: none;" accept=".jpg,.jpeg,.png,.webp,.svg">
+                        </div>
+                        
+                        <h2 class="card-panel-title">Gallery</h2>
+                        <div class="media-grid" id="mediaGallery">
+                            <!-- Rendered dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 9. Enquiries Tab -->
+                <div id="tab-enquiries" class="tab-content">
+                    <div class="card-panel">
+                        <h2 class="card-panel-title">Customer Enquiries</h2>
+                        
+                        <div class="controls-bar">
+                            <div class="search-input-wrap">
+                                <input type="text" id="enquirySearchInput" class="form-control" placeholder="Search enquiries (name, company, email, text)...">
+                            </div>
+                            <div class="filter-select-wrap">
+                                <select id="enquiryFilterSelect" class="form-control">
+                                    <option value="All">All Statuses</option>
+                                    <option value="New">New</option>
+                                    <option value="Contacted">Contacted</option>
+                                    <option value="Closed">Closed</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="admin-table-wrap">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Name</th>
+                                        <th>Company</th>
+                                        <th>Email</th>
+                                        <th>Message</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="enquiriesTableBody">
+                                    <!-- Rendered dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 10. Password Tab -->
+                <div id="tab-password" class="tab-content">
+                    <form id="passwordForm">
+                        <div class="card-panel" style="max-width: 500px;">
+                            <h2 class="card-panel-title">Change Password</h2>
+                            <div class="form-group">
+                                <label>Current Password</label>
+                                <input type="password" name="current_password" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>New Password</label>
+                                <input type="password" name="new_password" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Confirm New Password</label>
+                                <input type="password" name="confirm_new_password" class="form-control" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Update Password</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast notification element -->
+    <div id="toast" class="toast-notify"></div>
+
+    <!-- Tools Modal Dialog -->
+    <div class="modal" id="toolModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 id="toolModalTitle">Add Software Tool</h3>
+                <button class="modal-close" onclick="closeToolModal()">×</button>
+            </div>
+            <form id="toolForm">
+                <div class="modal-body">
+                    <input type="hidden" id="toolIdInput">
+                    <input type="hidden" id="toolStatusInput" value="ACTIVE">
+                    <div class="form-group">
+                        <label>Tool Name</label>
+                        <input type="text" id="toolNameInput" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="toolDescInput" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Icon Symbol (Unicode Emojis or Icons)</label>
+                        <input type="text" id="toolIconInput" class="form-control" placeholder="e.g., ⚒" required>
+                    </div>
+                    <div class="form-group">
+                        <label>External URL</label>
+                        <input type="text" id="toolUrlInput" class="form-control" required>
+                    </div>
+                    <div class="grid-cols-2">
+                        <div class="form-group">
+                            <label>Display Order</label>
+                            <input type="number" id="toolOrderInput" class="form-control" value="0" required>
+                        </div>
+                        <div class="form-group" style="display: flex; align-items: flex-end; padding-bottom: 12px;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; text-transform: none; font-size: 14px;">
+                                <input type="checkbox" id="toolFeaturedInput"> Featured on Hero
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeToolModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Tool</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Coming Soon Modal Dialog -->
+    <div class="modal" id="comingSoonModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 id="comingSoonModalTitle">Add Upcoming Product</h3>
+                <button class="modal-close" onclick="closeComingSoonModal()">×</button>
+            </div>
+            <form id="comingSoonForm">
+                <div class="modal-body">
+                    <input type="hidden" id="csIdInput">
+                    <div class="form-group">
+                        <label>Upcoming Tool Name</label>
+                        <input type="text" id="csNameInput" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="csDescInput" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Icon Symbol</label>
+                        <input type="text" id="csIconInput" class="form-control" placeholder="e.g., ▥" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Display Order</label>
+                        <input type="number" id="csOrderInput" class="form-control" value="0" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeComingSoonModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Services Modal Dialog -->
+    <div class="modal" id="serviceModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 id="serviceModalTitle">Add Service</h3>
+                <button class="modal-close" onclick="closeServiceModal()">×</button>
+            </div>
+            <form id="serviceForm">
+                <div class="modal-body">
+                    <input type="hidden" id="serviceIdInput">
+                    <div class="form-group">
+                        <label>Service Name</label>
+                        <input type="text" id="serviceNameInput" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Short Description (Displays on card)</label>
+                        <textarea id="serviceShortDescInput" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Icon Symbol</label>
+                        <input type="text" id="serviceIconInput" class="form-control" placeholder="e.g., ⌁" required>
+                    </div>
+                    <div class="grid-cols-2">
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select id="serviceStatusSelect" class="form-control">
+                                <option value="ACTIVE">ACTIVE</option>
+                                <option value="INACTIVE">INACTIVE</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Display Order</label>
+                            <input type="number" id="serviceOrderInput" class="form-control" value="0" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeServiceModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Service</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Enquiry Detail Modal -->
+    <div class="modal" id="enquiryModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3>View Lead Details</h3>
+                <button class="modal-close" onclick="closeEnquiryModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Submitted Date</label>
+                    <div id="enqDate" style="font-weight: 500;"></div>
+                </div>
+                <div class="grid-cols-2">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <div id="enqName" style="font-weight: 500;"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Company</label>
+                        <div id="enqCompany" style="font-weight: 500;"></div>
+                    </div>
+                </div>
+                <div class="grid-cols-2">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <div id="enqEmail" style="font-weight: 500;"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <div id="enqPhone" style="font-weight: 500;"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Requirements Message</label>
+                    <div id="enqMessage" style="background-color: #F8FAFC; border: 1px solid var(--border-color); border-radius: 6px; padding: 16px; white-space: pre-wrap; font-size: 14px; max-height: 200px; overflow-y: auto;"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeEnquiryModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SPA Router & Page controllers Script -->
+    <script>
+        // --- Core UI Logic & Navigation ---
+        
+        function showToast(message, isSuccess = true) {
+            const toast = document.getElementById("toast");
+            toast.className = `toast-notify ${isSuccess ? 'toast-success' : 'toast-error'}`;
+            toast.textContent = message;
+            toast.style.display = "flex";
+            setTimeout(() => {
+                toast.style.display = "none";
+            }, 4000);
+        }
+
+        async function checkSession() {
+            try {
+                const res = await fetch("/api/admin/check-session");
+                const data = await res.json();
+                if (!res.ok || !data.logged_in) {
+                    window.location.href = "/admin/login";
+                } else {
+                    document.getElementById("adminUser").textContent = data.user.email;
+                }
+            } catch (err) {
+                window.location.href = "/admin/login";
+            }
+        }
+
+        // Tab Switching
+        document.querySelectorAll(".sidebar-menu-item").forEach(item => {
+            item.addEventListener("click", () => {
+                const tab = item.getAttribute("data-tab");
+                
+                // Update active states in menu
+                document.querySelectorAll(".sidebar-menu-item").forEach(i => i.classList.remove("active"));
+                item.classList.add("active");
+                
+                // Update active tab content pane
+                document.querySelectorAll(".tab-content").forEach(pane => pane.classList.remove("active"));
+                document.getElementById(`tab-${tab}`).classList.add("active");
+                
+                // Update title bar
+                document.getElementById("tabTitle").textContent = item.querySelector("a").textContent.replace(/[^\w\s&]/g, "").trim();
+                
+                // Trigger content loading
+                loadTabContent(tab);
+            });
+        });
+
+        // Trigger individual tab loader
+        function loadTabContent(tab) {
+            switch(tab) {
+                case "dashboard": loadDashboardStats(); break;
+                case "settings": loadSettings(); break;
+                case "hero": loadHero(); break;
+                case "about": loadAbout(); break;
+                case "tools": loadTools(); break;
+                case "services": loadServices(); break;
+                case "comingsoon": loadComingSoon(); break;
+                case "media": loadMedia(); break;
+                case "enquiries": loadEnquiries(); break;
+            }
+        }
+
+        // --- API Integration Handlers ---
+
+        // 1. Dashboard Tab
+        async function loadDashboardStats() {
+            try {
+                const res = await fetch("/api/admin/dashboard-stats");
+                const data = await res.json();
+                document.getElementById("statEnquiries").textContent = data.enquiries_count;
+                document.getElementById("statTools").textContent = data.tools_count;
+                document.getElementById("statServices").textContent = data.services_count;
+                document.getElementById("statMedia").textContent = data.media_count;
+            } catch(e) {
+                showToast("Failed to load dashboard metrics.", false);
+            }
+        }
+
+        // 2. Settings Tab
+        async function loadSettings() {
+            try {
+                const res = await fetch("/api/admin/settings");
+                const data = await res.json();
+                const form = document.getElementById("settingsForm");
+                
+                for(let key in data) {
+                    const input = form.elements[key];
+                    if (input) input.value = data[key];
+                }
+            } catch(e) {
+                showToast("Failed to retrieve website settings.", false);
+            }
+        }
+
+        document.getElementById("settingsForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const settings = {};
+            formData.forEach((value, key) => settings[key] = value);
+            
+            try {
+                const res = await fetch("/api/admin/settings", {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(settings)
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showToast(data.message, true);
+                } else {
+                    showToast("Error updating settings.", false);
+                }
+            } catch(err) {
+                showToast("Network error updating settings.", false);
+            }
+        });
+
+        // 3. Hero Section
+        async function loadHero() {
+            try {
+                const res = await fetch("/api/admin/sections/hero");
+                const data = await res.json();
+                
+                document.getElementById("heroEyebrowInput").value = data.eyebrow || "";
+                document.getElementById("heroHeadingInput").value = data.heading || "";
+                document.getElementById("heroDescInput").value = data.description || "";
+                document.getElementById("heroBtn1TextInput").value = data.primary_btn_text || "";
+                document.getElementById("heroBtn1UrlInput").value = data.primary_btn_url || "";
+                document.getElementById("heroBtn2TextInput").value = data.secondary_btn_text || "";
+                document.getElementById("heroBtn2UrlInput").value = data.secondary_btn_url || "";
+                document.getElementById("heroImageInput").value = data.image_url || "";
+                
+                const highlightsInputs = document.getElementById("heroHighlightsInputs");
+                highlightsInputs.innerHTML = "";
+                
+                const highlights = data.highlights || ["", "", "", ""];
+                for (let i = 0; i < 4; i++) {
+                    highlightsInputs.insertAdjacentHTML("beforeend", `
+                        <div class="highlight-input-group">
+                            <input type="text" class="form-control hero-highlight-val" value="${highlights[i] || ''}" placeholder="Highlight bullet point ${i+1}" required>
+                        </div>
+                    `);
+                }
+            } catch(e) {
+                showToast("Failed to load hero content.", false);
+            }
+        }
+
+        document.getElementById("heroForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            const highlights = [];
+            document.querySelectorAll(".hero-highlight-val").forEach(input => {
+                highlights.push(input.value);
+            });
+            
+            const heroContent = {
+                eyebrow: document.getElementById("heroEyebrowInput").value,
+                heading: document.getElementById("heroHeadingInput").value,
+                description: document.getElementById("heroDescInput").value,
+                primary_btn_text: document.getElementById("heroBtn1TextInput").value,
+                primary_btn_url: document.getElementById("heroBtn1UrlInput").value,
+                secondary_btn_text: document.getElementById("heroBtn2TextInput").value,
+                secondary_btn_url: document.getElementById("heroBtn2UrlInput").value,
+                image_url: document.getElementById("heroImageInput").value,
+                highlights: highlights
+            };
+            
+            try {
+                const res = await fetch("/api/admin/sections/hero", {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(heroContent)
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showToast(data.message, true);
+                } else {
+                    showToast("Failed to update Hero section.", false);
+                }
+            } catch(err) {
+                showToast("Network error updating Hero section.", false);
+            }
+        });
+
+        // 4. About Section
+        async function loadAbout() {
+            try {
+                const res = await fetch("/api/admin/sections/about");
+                const data = await res.json();
+                
+                document.getElementById("aboutHeadingInput").value = data.heading || "";
+                document.getElementById("aboutDescInput").value = data.description || "";
+                document.getElementById("aboutMissionInput").value = data.mission || "";
+                document.getElementById("aboutVisionInput").value = data.vision || "";
+                document.getElementById("aboutImageInput").value = data.image_url || "";
+                document.getElementById("aboutCtaTextInput").value = data.cta_text || "";
+                
+                const pointsInputs = document.getElementById("aboutPointsInputs");
+                pointsInputs.innerHTML = "";
+                
+                const points = data.key_points || ["", "", "", "", ""];
+                for (let i = 0; i < 5; i++) {
+                    pointsInputs.insertAdjacentHTML("beforeend", `
+                        <div class="highlight-input-group">
+                            <input type="text" class="form-control about-point-val" value="${points[i] || ''}" placeholder="Key point ${i+1}" required>
+                        </div>
+                    `);
+                }
+            } catch(e) {
+                showToast("Failed to load About section.", false);
+            }
+        }
+
+        document.getElementById("aboutForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            const points = [];
+            document.querySelectorAll(".about-point-val").forEach(input => {
+                points.push(input.value);
+            });
+            
+            const aboutContent = {
+                heading: document.getElementById("aboutHeadingInput").value,
+                description: document.getElementById("aboutDescInput").value,
+                mission: document.getElementById("aboutMissionInput").value,
+                vision: document.getElementById("aboutVisionInput").value,
+                image_url: document.getElementById("aboutImageInput").value,
+                cta_text: document.getElementById("aboutCtaTextInput").value,
+                key_points: points
+            };
+            
+            try {
+                const res = await fetch("/api/admin/sections/about", {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(aboutContent)
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showToast(data.message, true);
+                } else {
+                    showToast("Failed to update About section.", false);
+                }
+            } catch(err) {
+                showToast("Network error updating About section.", false);
+            }
+        });
+
+        // 5. Tools CMS
+        async function loadTools() {
+            try {
+                const res = await fetch("/api/admin/tools");
+                const tools = await res.json();
+                
+                const body = document.getElementById("toolsTableBody");
+                body.innerHTML = "";
+                
+                // Separate active tools (non-COMING_SOON)
+                const activeTools = tools.filter(t => t.status !== "COMING_SOON");
+                
+                activeTools.forEach(t => {
+                    body.insertAdjacentHTML("beforeend", `
+                        <tr>
+                            <td style="font-size: 20px;">${t.icon}</td>
+                            <td><strong>${t.name}</strong><br><small style="color: var(--text-muted);">${t.description}</small></td>
+                            <td><a href="${t.url}" target="_blank" style="color: var(--accent-red); font-weight: 500;">${t.url}</a></td>
+                            <td><span class="badge ${t.status === 'ACTIVE' ? 'badge-success' : 'badge-secondary'}">${t.status}</span></td>
+                            <td>${t.display_order}</td>
+                            <td>
+                                <button class="btn btn-secondary" style="padding: 6px 12px; font-size:12px; margin-right:6px;" onclick="editTool(${t.id}, '${escapeHtml(t.name)}', '${escapeHtml(t.description)}', '${escapeHtml(t.icon)}', '${escapeHtml(t.url)}', '${t.status}', ${t.display_order}, ${t.featured})">Edit</button>
+                                <button class="btn btn-danger" style="padding: 6px 12px; font-size:12px;" onclick="deleteTool(${t.id})">Delete</button>
+                            </td>
+                        </tr>
+                    `);
+                });
+            } catch(e) {
+                showToast("Failed to load tools database.", false);
+            }
+        }
+
+        // 6. Coming Soon CMS
+        async function loadComingSoon() {
+            try {
+                const res = await fetch("/api/admin/tools");
+                const tools = await res.json();
+                
+                const body = document.getElementById("comingSoonTableBody");
+                body.innerHTML = "";
+                
+                const comingSoonTools = tools.filter(t => t.status === "COMING_SOON");
+                
+                comingSoonTools.forEach(t => {
+                    body.insertAdjacentHTML("beforeend", `
+                        <tr>
+                            <td style="font-size: 20px;">${t.icon}</td>
+                            <td><strong>${t.name}</strong></td>
+                            <td><small style="color: var(--text-muted);">${t.description}</small></td>
+                            <td>${t.display_order}</td>
+                            <td>
+                                <button class="btn btn-secondary" style="padding: 6px 12px; font-size:12px; margin-right:6px;" onclick="editComingSoon(${t.id}, '${escapeHtml(t.name)}', '${escapeHtml(t.description)}', '${escapeHtml(t.icon)}', ${t.display_order})">Edit</button>
+                                <button class="btn btn-danger" style="padding: 6px 12px; font-size:12px;" onclick="deleteComingSoon(${t.id})">Delete</button>
+                            </td>
+                        </tr>
+                    `);
+                });
+            } catch(e) {
+                showToast("Failed to load Coming Soon products.", false);
+            }
+        }
+
+        // Helper escape HTML
+        function escapeHtml(text) {
+            if (!text) return "";
+            return text.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+        }
+
+        // Tool Modal logic
+        function openToolModal() {
+            document.getElementById("toolModalTitle").textContent = "Add Software Tool";
+            document.getElementById("toolIdInput").value = "";
+            document.getElementById("toolNameInput").value = "";
+            document.getElementById("toolDescInput").value = "";
+            document.getElementById("toolIconInput").value = "⚒";
+            document.getElementById("toolUrlInput").value = "";
+            document.getElementById("toolOrderInput").value = "0";
+            document.getElementById("toolFeaturedInput").checked = false;
+            document.getElementById("toolStatusInput").value = "ACTIVE";
+            document.getElementById("toolModal").style.display = "flex";
+        }
+
+        function closeToolModal() {
+            document.getElementById("toolModal").style.display = "none";
+        }
+
+        function editTool(id, name, description, icon, url, status, display_order, featured) {
+            document.getElementById("toolModalTitle").textContent = "Edit Software Tool";
+            document.getElementById("toolIdInput").value = id;
+            document.getElementById("toolNameInput").value = name;
+            document.getElementById("toolDescInput").value = description;
+            document.getElementById("toolIconInput").value = icon;
+            document.getElementById("toolUrlInput").value = url;
+            document.getElementById("toolOrderInput").value = display_order;
+            document.getElementById("toolFeaturedInput").checked = featured;
+            document.getElementById("toolStatusInput").value = status;
+            document.getElementById("toolModal").style.display = "flex";
+        }
+
+        document.getElementById("toolForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById("toolIdInput").value;
+            const formData = new FormData();
+            formData.append("name", document.getElementById("toolNameInput").value);
+            formData.append("description", document.getElementById("toolDescInput").value);
+            formData.append("icon", document.getElementById("toolIconInput").value);
+            formData.append("url", document.getElementById("toolUrlInput").value);
+            formData.append("status", document.getElementById("toolStatusInput").value);
+            formData.append("display_order", document.getElementById("toolOrderInput").value);
+            formData.append("featured", document.getElementById("toolFeaturedInput").checked);
+            
+            const method = id ? "PUT" : "POST";
+            const url = id ? `/api/admin/tools/${id}` : "/api/admin/tools";
+            
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    body: formData
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showToast(data.message, true);
+                    closeToolModal();
+                    loadTools();
+                } else {
+                    showToast("Error saving tool: " + (data.detail || ""), false);
+                }
+            } catch(err) {
+                showToast("Network error saving tool.", false);
+            }
+        });
+
+        async function deleteTool(id) {
+            if (!confirm("Are you sure you want to delete this tool card?")) return;
+            try {
+                const res = await fetch(`/api/admin/tools/${id}`, { method: "DELETE" });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showToast(data.message, true);
+                    loadTools();
+                } else {
+                    showToast("Failed to delete tool.", false);
+                }
+            } catch(err) {
+                showToast("Network error deleting tool.", false);
+            }
+        }
+
+        // Coming Soon Modal logic
+        function openComingSoonModal() {
+            document.getElementById("comingSoonModalTitle").textContent = "Add Upcoming Product";
+            document.getElementById("csIdInput").value = "";
+            document.getElementById("csNameInput").value = "";
+            document.getElementById("csDescInput").value = "";
+            document.getElementById("csIconInput").value = "▥";
+            document.getElementById("csOrderInput").value = "0";
+            document.getElementById("comingSoonModal").style.display = "flex";
+        }
+
+        function closeComingSoonModal() {
+            document.getElementById("comingSoonModal").style.display = "none";
+        }
+
+        function editComingSoon(id, name, description, icon, display_order) {
+            document.getElementById("comingSoonModalTitle").textContent = "Edit Upcoming Product";
+            document.getElementById("csIdInput").value = id;
+            document.getElementById("csNameInput").value = name;
+            document.getElementById("csDescInput").value = description;
+            document.getElementById("csIconInput").value = icon;
+            document.getElementById("csOrderInput").value = display_order;
+            document.getElementById("comingSoonModal").style.display = "flex";
+        }
+
+        document.getElementById("comingSoonForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById("csIdInput").value;
+            const formData = new FormData();
+            formData.append("name", document.getElementById("csNameInput").value);
+            formData.append("description", document.getElementById("csDescInput").value);
+            formData.append("icon", document.getElementById("csIconInput").value);
+            formData.append("url", "#");
+            formData.append("status", "COMING_SOON");
+            formData.append("display_order", document.getElementById("csOrderInput").value);
+            formData.append("featured", false);
+            
+            const method = id ? "PUT" : "POST";
+            const url = id ? `/api/admin/tools/${id}` : "/api/admin/tools";
+            
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    body: formData
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showToast(data.message, true);
+                    closeComingSoonModal();
+                    loadComingSoon();
+                } else {
+                    showToast("Error saving product.", false);
+                }
+            } catch(err) {
+                showToast("Network error saving product.", false);
+            }
+        });
+
+        async function deleteComingSoon(id) {
+            if (!confirm("Are you sure you want to delete this upcoming product?")) return;
+            try {
+                const res = await fetch(`/api/admin/tools/${id}`, { method: "DELETE" });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showToast(data.message, true);
+                    loadComingSoon();
+                } else {
+                    showToast("Failed to delete product.", false);
+                }
+            } catch(err) {
+                showToast("Network error deleting product.", false);
+            }
+        }
+
+        // 7. Services CMS Tab
+        async function loadServices() {
+            try {
+                const res = await fetch("/api/admin/services");
+                const services = await res.json();
+                
+                const body = document.getElementById("servicesTableBody");
+                body.innerHTML = "";
+                
+                services.forEach(s => {
+                    body.insertAdjacentHTML("beforeend", `
+                        <tr>
+                            <td style="font-size: 20px;">${s.icon}</td>
+                            <td><strong>${s.name}</strong></td>
+                            <td><small style="color: var(--text-muted);">${s.short_description}</small></td>
+                            <td><span class="badge ${s.status === 'ACTIVE' ? 'badge-success' : 'badge-secondary'}">${s.status}</span></td>
+                            <td>${s.display_order}</td>
+                            <td>
+                                <button class="btn btn-secondary" style="padding: 6px 12px; font-size:12px; margin-right:6px;" onclick="editService(${s.id}, '${escapeHtml(s.name)}', '${escapeHtml(s.short_description)}', '${escapeHtml(s.icon)}', '${s.status}', ${s.display_order})">Edit</button>
+                                <button class="btn btn-danger" style="padding: 6px 12px; font-size:12px;" onclick="deleteService(${s.id})">Delete</button>
+                            </td>
+                        </tr>
+                    `);
+                });
+            } catch(e) {
+                showToast("Failed to load services database.", false);
+            }
+        }
+
+        function openServiceModal() {
+            document.getElementById("serviceModalTitle").textContent = "Add Service";
+            document.getElementById("serviceIdInput").value = "";
+            document.getElementById("serviceNameInput").value = "";
+            document.getElementById("serviceShortDescInput").value = "";
+            document.getElementById("serviceIconInput").value = "⚙";
+            document.getElementById("serviceStatusSelect").value = "ACTIVE";
+            document.getElementById("serviceOrderInput").value = "0";
+            document.getElementById("serviceModal").style.display = "flex";
+        }
+
+        function closeServiceModal() {
+            document.getElementById("serviceModal").style.display = "none";
+        }
+
+        function editService(id, name, short_description, icon, status, display_order) {
+            document.getElementById("serviceModalTitle").textContent = "Edit Service";
+            document.getElementById("serviceIdInput").value = id;
+            document.getElementById("serviceNameInput").value = name;
+            document.getElementById("serviceShortDescInput").value = short_description;
+            document.getElementById("serviceIconInput").value = icon;
+            document.getElementById("serviceStatusSelect").value = status;
+            document.getElementById("serviceOrderInput").value = display_order;
+            document.getElementById("serviceModal").style.display = "flex";
+        }
+
+        document.getElementById("serviceForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById("serviceIdInput").value;
+            const formData = new FormData();
+            formData.append("name", document.getElementById("serviceNameInput").value);
+            formData.append("short_description", document.getElementById("serviceShortDescInput").value);
+            formData.append("icon", document.getElementById("serviceIconInput").value);
+            formData.append("status", document.getElementById("serviceStatusSelect").value);
+            formData.append("display_order", document.getElementById("serviceOrderInput").value);
+            
+            const method = id ? "PUT" : "POST";
+            const url = id ? `/api/admin/services/${id}` : "/api/admin/services";
+            
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    body: formData
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showToast(data.message, true);
+                    closeServiceModal();
+                    loadServices();
+                } else {
+                    showToast("Error saving service.", false);
+                }
+            } catch(err) {
+                showToast("Network error saving service.", false);
+            }
+        });
+
+        async function deleteService(id) {
+            if (!confirm("Are you sure you want to delete this service?")) return;
+            try {
+                const res = await fetch(`/api/admin/services/${id}`, { method: "DELETE" });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showToast(data.message, true);
+                    loadServices();
+                } else {
+                    showToast("Failed to delete service.", false);
+                }
+            } catch(err) {
+                showToast("Network error deleting service.", false);
+            }
+        }
+
+        // 8. Media Library Tab
+        async function loadMedia() {
+            try {
+                const res = await fetch("/api/admin/media");
+                const media = await res.json();
+                
+                const gallery = document.getElementById("mediaGallery");
+                gallery.innerHTML = "";
+                
+                if (media.length === 0) {
+                    gallery.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;'>No images uploaded yet.</p>";
+                    return;
+                }
+                
+                media.forEach(m => {
+                    gallery.insertAdjacentHTML("beforeend", `
+                        <div class="media-item">
+                            <div class="media-thumb">
+                                <img src="/${m.filepath}" alt="${m.filename}">
+                            </div>
+                            <div class="media-item-info">
+                                <div class="media-item-name" title="${m.filename}">${m.filename}</div>
+                                <div class="media-item-actions">
+                                    <button class="media-btn media-btn-copy" onclick="copyMediaUrl('/${m.filepath}')">Copy Link</button>
+                                    <button class="media-btn media-btn-delete" onclick="deleteMedia(${m.id})">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    `);
+                });
+            } catch(e) {
+                showToast("Failed to load media files.", false);
+            }
+        }
+
+        // Upload handler
+        document.getElementById("mediaFileInput").addEventListener("change", async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const formData = new FormData();
+            formData.append("file", file);
+            
+            try {
+                showToast("Uploading image...", true);
+                const res = await fetch("/api/admin/media", {
+                    method: "POST",
+                    body: formData
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showToast(data.message, true);
+                    loadMedia();
+                } else {
+                    showToast("Upload failed: " + (data.detail || ""), false);
+                }
+            } catch(err) {
+                showToast("Network error uploading image.", false);
+            } finally {
+                e.target.value = ""; // reset input
+            }
+        });
+
+        // Dropzone drag-over animations
+        const dropzone = document.getElementById("dropzone");
+        dropzone.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            dropzone.style.borderColor = "var(--accent-red)";
+            dropzone.style.backgroundColor = "#FFF5F5";
+        });
+        dropzone.addEventListener("dragleave", () => {
+            dropzone.style.borderColor = "#CBD5E1";
+            dropzone.style.backgroundColor = "#F8FAFC";
+        });
+        dropzone.addEventListener("drop", async (e) => {
+            e.preventDefault();
+            dropzone.style.borderColor = "#CBD5E1";
+            dropzone.style.backgroundColor = "#F8FAFC";
+            
+            const file = e.dataTransfer.files[0];
+            if (!file) return;
+            
+            const formData = new FormData();
+            formData.append("file", file);
+            
+            try {
+                showToast("Uploading image...", true);
+                const res = await fetch("/api/admin/media", {
+                    method: "POST",
+                    body: formData
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showToast(data.message, true);
+                    loadMedia();
+                } else {
+                    showToast("Upload failed: " + (data.detail || ""), false);
+                }
+            } catch(err) {
+                showToast("Network error uploading image.", false);
+            }
+        });
+
+        function copyMediaUrl(path) {
+            const absoluteUrl = window.location.origin + path;
+            navigator.clipboard.writeText(absoluteUrl).then(() => {
+                showToast("Image URL copied to clipboard!", true);
+            }).catch(() => {
+                // Fallback
+                const input = document.createElement("input");
+                input.value = absoluteUrl;
+                document.body.appendChild(input);
+                input.select();
+                document.execCommand("copy");
+                document.body.removeChild(input);
+                showToast("Image URL copied to clipboard!", true);
+            });
+        }
+
+        async function deleteMedia(id) {
+            if (!confirm("Are you sure you want to delete this image permanently? Any webpage using this URL will display a broken link.")) return;
+            try {
+                const res = await fetch(`/api/admin/media/${id}`, { method: "DELETE" });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showToast(data.message, true);
+                    loadMedia();
+                } else {
+                    showToast("Failed to delete media.", false);
+                }
+            } catch(err) {
+                showToast("Network error deleting media.", false);
+            }
+        }
+
+        // 9. Enquiries Tab
+        async function loadEnquiries() {
+            const queryVal = document.getElementById("enquirySearchInput").value;
+            const filterVal = document.getElementById("enquiryFilterSelect").value;
+            
+            let url = `/api/admin/enquiries?status=${filterVal}`;
+            if (queryVal) url += `&search=${encodeURIComponent(queryVal)}`;
+            
+            try {
+                const res = await fetch(url);
+                const enquiries = await res.json();
+                
+                const body = document.getElementById("enquiriesTableBody");
+                body.innerHTML = "";
+                
+                if (enquiries.length === 0) {
+                    body.innerHTML = "<tr><td colspan='7' style='text-align: center; color: var(--text-muted); padding: 30px;'>No enquiries match this search.</td></tr>";
+                    return;
+                }
+                
+                enquiries.forEach(e => {
+                    const date = new Date(e.created_date).toLocaleString();
+                    const statusBadge = e.status === 'New' 
+                        ? 'badge-danger' 
+                        : (e.status === 'Contacted' ? 'badge-warning' : 'badge-success');
+                        
+                    body.insertAdjacentHTML("beforeend", `
+                        <tr>
+                            <td>${date}</td>
+                            <td><strong>${e.name}</strong></td>
+                            <td>${e.company || '-'}</td>
+                            <td><a href="mailto:${e.email}" style="color: var(--accent-red);">${e.email}</a><br><small style="color: var(--text-muted);">${e.phone || ''}</small></td>
+                            <td><div style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;" onclick="viewEnquiry(${JSON.stringify(e).replace(/"/g, '&quot;')})">${e.message}</div></td>
+                            <td><span class="badge ${statusBadge}">${e.status}</span></td>
+                            <td>
+                                <button class="btn btn-secondary" style="padding: 6px 12px; font-size:12px; margin-right:6px;" onclick="changeEnquiryStatus(${e.id}, 'Contacted')">Mark Contacted</button>
+                                <button class="btn btn-secondary" style="padding: 6px 12px; font-size:12px; margin-right:6px;" onclick="changeEnquiryStatus(${e.id}, 'Closed')">Close</button>
+                                <button class="btn btn-danger" style="padding: 6px 12px; font-size:12px;" onclick="deleteEnquiry(${e.id})">Delete</button>
+                            </td>
+                        </tr>
+                    `);
+                });
+            } catch(err) {
+                showToast("Failed to retrieve enquiries.", false);
+            }
+        }
+
+        // Enquiry Search & Filters
+        document.getElementById("enquirySearchInput").addEventListener("input", loadEnquiries);
+        document.getElementById("enquiryFilterSelect").addEventListener("change", loadEnquiries);
+
+        function viewEnquiry(e) {
+            document.getElementById("enqDate").textContent = new Date(e.created_date).toLocaleString();
+            document.getElementById("enqName").textContent = e.name;
+            document.getElementById("enqCompany").textContent = e.company || "-";
+            document.getElementById("enqEmail").textContent = e.email;
+            document.getElementById("enqPhone").textContent = e.phone || "-";
+            document.getElementById("enqMessage").textContent = e.message;
+            
+            // Auto mark as contacted if it was new
+            if (e.status === "New") {
+                changeEnquiryStatus(e.id, "Contacted");
+            }
+            
+            document.getElementById("enquiryModal").style.display = "flex";
+        }
+
+        function closeEnquiryModal() {
+            document.getElementById("enquiryModal").style.display = "none";
+        }
+
+        async function changeEnquiryStatus(id, status) {
+            const formData = new FormData();
+            formData.append("status", status);
+            try {
+                const res = await fetch(`/api/admin/enquiries/${id}`, {
+                    method: "PUT",
+                    body: formData
+                });
+                if (res.ok) {
+                    loadEnquiries();
+                }
+            } catch(e) {
+                showToast("Failed to update status.", false);
+            }
+        }
+
+        async function deleteEnquiry(id) {
+            if (!confirm("Are you sure you want to delete this enquiry?")) return;
+            try {
+                const res = await fetch(`/api/admin/enquiries/${id}`, { method: "DELETE" });
+                if (res.ok) {
+                    showToast("Enquiry deleted successfully.", true);
+                    loadEnquiries();
+                }
+            } catch(e) {
+                showToast("Failed to delete enquiry.", false);
+            }
+        }
+
+        // 10. Change Password Tab
+        document.getElementById("passwordForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            
+            const btn = e.target.querySelector("button");
+            btn.disabled = true;
+            btn.textContent = "Updating...";
+            
+            try {
+                const res = await fetch("/api/admin/change-password", {
+                    method: "POST",
+                    body: formData
+                });
+                const data = await res.json();
+                
+                if (res.ok && data.success) {
+                    showToast(data.message, true);
+                    e.target.reset();
+                    // Force log out and redirect to login page after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = "/admin/login";
+                    }, 2000);
+                } else {
+                    showToast(data.detail || "Failed to update password.", false);
+                }
+            } catch(err) {
+                showToast("Network error updating password.", false);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Update Password";
+            }
+        });
+
+        // Logout
+        document.getElementById("logoutBtn").addEventListener("click", async () => {
+            if (!confirm("Are you sure you want to sign out?")) return;
+            try {
+                await fetch("/api/admin/logout", { method: "POST" });
+                window.location.href = "/admin/login";
+            } catch(err) {
+                window.location.href = "/admin/login";
+            }
+        });
+
+        // --- Initialization ---
+        checkSession().then(() => {
+            loadDashboardStats();
+        });
+    </script>
+</body>
+</html>
