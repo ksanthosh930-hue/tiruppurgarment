@@ -78,19 +78,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.exception_handler(Exception)
-async def global_exception_handler(request, exc: Exception):
-    import traceback
-    from fastapi.responses import PlainTextResponse
-    logger.error(f"Global unhandled exception: {exc}", exc_info=True)
-    tb_str = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
-    return PlainTextResponse(
-        f"Internal Server Error (Debug Mode)\n\n"
-        f"Exception: {type(exc).__name__}: {exc}\n\n"
-        f"Traceback:\n{tb_str}",
-        status_code=500
-    )
-
 # --- Fallback Datasets ---
 FALLBACK_SETTINGS = {
     "site_name": "DigiGarment",
