@@ -1,6 +1,39 @@
+# Environment & Secrets (NEVER push to GitHub)
 .env
+.env.local
+.env.*.local
+*.env
+
+# Python Bytecode & Cache
 __pycache__/
-*.pyc
-.venv/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual Environments
 venv/
+.venv/
+env/
+ENV/
+
+# IDE / Editor Files
 .vscode/
+.idea/
+*.swp
+*.swo
+
+# OS Artifacts
+.DS_Store
+Thumbs.db
+
+# Scratch / Development Temp Scripts (optional local test files)
+scratch/
+
+# Local Uploads Cache (Keep directory structure, ignore transient generated files)
+assets/uploads/resumes/*.pdf
+assets/uploads/resumes/*.docx
+assets/uploads/source_vault/*
+!assets/uploads/resumes/.gitkeep
+!assets/uploads/source_vault/.gitkeep
