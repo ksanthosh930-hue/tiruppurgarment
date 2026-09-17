@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garment Manufacturing Tools & Calculators | DigiGarment</title>
+    <meta name="description" content="Free engineering tools and calculations for garment manufacturing. Use our technical SAM/SMV calculator, line balancing targets, and cycle time estimators.">
+    <link rel="canonical" href="https://tirupurgarment.in/tools">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Garment Manufacturing Tools & Calculators | DigiGarment">
+    <meta property="og:description" content="Free engineering tools and calculations for garment manufacturing. Use our technical SAM/SMV calculator, line balancing targets, and cycle time estimators.">
+    <meta property="og:url" content="https://tirupurgarment.in/tools">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://tirupurgarment.in/assets/images/hero-automation.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": "Garment Manufacturing Tools & Calculators",
+      "url": "https://tirupurgarment.in/tools",
+      "description": "Practical calculation and engineering tools built specifically for garment manufacturing and apparel industrial engineering.",
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://tirupurgarment.in/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Tools",
+            "item": "https://tirupurgarment.in/tools"
+          }
+        ]
+      }
+    }
+    </script>
+    <style>
+        :root {
+            --dg-navy: #081226;
+            --dg-red: #9E1B32;
+            --dg-red-hover: #b92a43;
+            --dg-slate: #64748B;
+            --dg-bg: #F8FAFC;
+        }
+
+        body {
+            background-color: var(--dg-bg);
+            font-family: 'Inter', sans-serif;
+            color: #0F172A;
+            margin: 0;
+            padding: 0;
+        }
+
+        .tools-hero {
+            background: linear-gradient(135deg, #081226 0%, #111E38 100%);
+            color: #ffffff;
+            padding: 60px 0 48px 0;
+            text-align: center;
+        }
+
+        .tools-hero h1 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 36px;
+            font-weight: 800;
+            margin: 0 0 16px 0;
+        }
+
+        .tools-hero p {
+            color: #94A3B8;
+            font-size: 16px;
+            max-width: 650px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .breadcrumbs-bar {
+            background: #ffffff;
+            border-bottom: 1px solid #E2E8F0;
+            padding: 12px 0;
+            font-size: 13px;
+        }
+
+        .breadcrumbs-bar a {
+            color: var(--dg-slate);
+            text-decoration: none;
+        }
+
+        .breadcrumbs-bar a:hover {
+            color: var(--dg-red);
+        }
+
+        .breadcrumbs-bar span {
+            color: #CBD5E1;
+            margin: 0 8px;
+        }
+
+        .breadcrumbs-bar strong {
+            color: var(--dg-navy);
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 28px;
+            padding: 60px 0;
+        }
+
+        .tool-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(14, 28, 56, 0.06);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .tool-card.coming-soon {
+            background: rgba(241, 245, 249, 0.6);
+            border: 1px dashed #CBD5E1;
+            opacity: 0.85;
+        }
+
+        .tool-card.coming-soon:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .tool-badge {
+            align-self: flex-start;
+            padding: 4px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 20px;
+        }
+
+        .badge-active {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #10B981;
+        }
+
+        .badge-coming {
+            background-color: rgba(100, 116, 139, 0.1);
+            color: #64748B;
+        }
+
+        .tool-card h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0 0 12px 0;
+            color: var(--dg-navy);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tool-card p {
+            color: var(--dg-slate);
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 0 0 24px 0;
+        }
+
+        .tool-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .tool-btn-primary {
+            background-color: var(--dg-navy);
+            color: #ffffff;
+        }
+
+        .tool-btn-primary:hover {
+            background-color: var(--dg-red);
+        }
+
+        .tool-btn-disabled {
+            background-color: #E2E8F0;
+            color: #94A3B8;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="container nav-wrap">
+            <a class="brand" href="/">
+                <img src="/assets/images/logo-light.png" alt="DigiGarment Logo" style="height: 38px;">
+            </a>
+            <nav class="nav">
+                <a href="/">Home</a>
+                <a href="/jobs">Tiruppur Jobs</a>
+                <a class="active" href="/tools">Tools</a>
+                <a href="/services">Services</a>
+                <a href="/blog">Blog</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="breadcrumbs-bar">
+        <div class="container">
+            <a href="/">Home</a>
+            <span>›</span>
+            <strong>Tools</strong>
+        </div>
+    </div>
+
+    <section class="tools-hero">
+        <div class="container">
+            <h1>Garment Manufacturing Tools & Calculators</h1>
+            <p>Accurate, practical apparel industrial engineering calculation tools designed to measure Standard Allowed Minutes, line output, and operational speed.</p>
+        </div>
+    </section>
+
+    <main class="container">
+        <div class="tools-grid">
+            <!-- Active Tool: Technical SAM/SMV Calculator -->
+            <div class="tool-card">
+                <div>
+                    <span class="tool-badge badge-active">Live & Ready</span>
+                    <h2><span>⚒</span> Technical SAM / SMV Calculator</h2>
+                    <p>Professional garment operation-based Standard Allowed Minutes (SAM) & Standard Minute Value (SMV) calculator with machine presets, seam length, stitch density (SPI/SPC), handling duration, and manufacturing allowance parameters.</p>
+                </div>
+                <a class="tool-btn tool-btn-primary" href="/tools/sam-calculator">Open Calculator →</a>
+            </div>
+
+            <!-- In-Development Tool: Line Planning -->
+            <div class="tool-card coming-soon">
+                <div>
+                    <span class="tool-badge badge-coming">Under Engineering</span>
+                    <h2><span>▥</span> Line Balancing & Pitch Calculator</h2>
+                    <p>Garment production line pitch time, bottleneck operation analyzer, and workstation operator allocation planner.</p>
+                </div>
+                <span class="tool-btn tool-btn-disabled">Coming Soon</span>
+            </div>
+
+            <!-- In-Development Tool: Production Tracker -->
+            <div class="tool-card coming-soon">
+                <div>
+                    <span class="tool-badge badge-coming">Under Engineering</span>
+                    <h2><span>⌁</span> Shift Production Target Calculator</h2>
+                    <p>Calculates operator and line hourly targets dynamically against target operator efficiency percentages.</p>
+                </div>
+                <span class="tool-btn tool-btn-disabled">Coming Soon</span>
+            </div>
+        </div>
+    </main>
+
+    <footer id="footer" style="background: #081226; color: #94A3B8; padding: 40px 0 20px 0;">
+        <div class="container" style="text-align: center; font-size: 14px;">
+            <p style="margin-bottom: 12px;">© 2026 DigiGarment. Practical automation and software tools for the garment industry.</p>
+            <div>
+                <a href="/" style="color: #94A3B8; margin: 0 10px; text-decoration: none;">Home</a>
+                <a href="/jobs" style="color: #94A3B8; margin: 0 10px; text-decoration: none;">Tiruppur Jobs</a>
+                <a href="/tools/sam-calculator" style="color: #94A3B8; margin: 0 10px; text-decoration: none;">SAM Calculator</a>
+                <a href="/services" style="color: #94A3B8; margin: 0 10px; text-decoration: none;">Services</a>
+                <a href="/blog" style="color: #94A3B8; margin: 0 10px; text-decoration: none;">Blog</a>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

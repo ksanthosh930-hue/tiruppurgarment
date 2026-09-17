@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found | DigiGarment</title>
+    <meta name="description" content="The page you are looking for does not exist. Browse Tiruppur garment jobs, SAM/SMV calculators, and automation tools on DigiGarment.">
+    <meta name="robots" content="noindex, follow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        :root {
+            --dg-navy: #081226;
+            --dg-red: #9E1B32;
+            --dg-red-hover: #b92a43;
+            --dg-slate: #64748B;
+            --dg-bg: #F8FAFC;
+        }
+
+        body {
+            background-color: var(--dg-bg);
+            font-family: 'Inter', sans-serif;
+            color: #0F172A;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .error-hero {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 24px;
+            text-align: center;
+        }
+
+        .error-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 48px 36px;
+            max-width: 640px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            border: 1px solid #E2E8F0;
+        }
+
+        .error-code {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 80px;
+            font-weight: 800;
+            color: var(--dg-red);
+            line-height: 1;
+            margin: 0 0 16px 0;
+        }
+
+        .error-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--dg-navy);
+            margin: 0 0 12px 0;
+        }
+
+        .error-text {
+            color: var(--dg-slate);
+            font-size: 15px;
+            line-height: 1.6;
+            margin: 0 0 32px 0;
+        }
+
+        .error-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .btn-nav-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary-action {
+            background-color: var(--dg-red);
+            color: #ffffff;
+        }
+
+        .btn-primary-action:hover {
+            background-color: var(--dg-red-hover);
+        }
+
+        .btn-secondary-action {
+            background-color: #F1F5F9;
+            color: var(--dg-navy);
+            border: 1px solid #CBD5E1;
+        }
+
+        .btn-secondary-action:hover {
+            background-color: #E2E8F0;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="container nav-wrap">
+            <a class="brand" href="/">
+                <img src="/assets/images/logo-light.png" alt="DigiGarment Logo" style="height: 38px;">
+            </a>
+            <nav class="nav">
+                <a href="/">Home</a>
+                <a href="/jobs">Jobs</a>
+                <a href="/tools">Tools</a>
+                <a href="/services">Services</a>
+                <a href="/blog">Blog</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="error-hero">
+        <div class="error-card">
+            <div class="error-code">404</div>
+            <h1 class="error-title">Page Not Found</h1>
+            <p class="error-text">The page or resource you are trying to access does not exist, may have been archived, or the link may be outdated.</p>
+            <div class="error-links">
+                <a href="/" class="btn-nav-action btn-primary-action">🏠 Home</a>
+                <a href="/jobs" class="btn-nav-action btn-secondary-action">💼 Tiruppur Jobs</a>
+                <a href="/tools/sam-calculator" class="btn-nav-action btn-secondary-action">⚒ SAM Calculator</a>
+                <a href="/services" class="btn-nav-action btn-secondary-action">⚙ Services</a>
+            </div>
+        </div>
+    </main>
+
+    <footer style="background: #081226; color: #94A3B8; text-align: center; padding: 24px; font-size: 13px;">
+        © 2026 DigiGarment. All rights reserved. Practical digital solutions for garment manufacturing.
+    </footer>
+</body>
+
+</html>

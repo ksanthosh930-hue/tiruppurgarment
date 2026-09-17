@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garment Industry Blog & Technical Guides | DigiGarment</title>
+    <meta name="description" content="Technical apparel manufacturing guides, SAM/SMV calculations, production planning tips, and garment career insights for Tiruppur textile industries.">
+    <link rel="canonical" href="https://tirupurgarment.in/blog">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Garment Industry Blog & Technical Guides | DigiGarment">
+    <meta property="og:description" content="Technical apparel manufacturing guides, SAM/SMV calculations, production planning tips, and garment career insights for Tiruppur textile industries.">
+    <meta property="og:url" content="https://tirupurgarment.in/blog">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://tirupurgarment.in/assets/images/hero-automation.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": "Garment Industry Blog & Technical Guides",
+      "url": "https://tirupurgarment.in/blog",
+      "description": "Technical insights, calculations, and practical guides on garment manufacturing and industrial engineering.",
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://tirupurgarment.in/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Blog",
+            "item": "https://tirupurgarment.in/blog"
+          }
+        ]
+      }
+    }
+    </script>
+    <style>
+        :root {
+            --dg-navy: #081226;
+            --dg-red: #9E1B32;
+            --dg-red-hover: #b92a43;
+            --dg-slate: #64748B;
+            --dg-bg: #F8FAFC;
+        }
+
+        body {
+            background-color: var(--dg-bg);
+            font-family: 'Inter', sans-serif;
+            color: #0F172A;
+            margin: 0;
+            padding: 0;
+        }
+
+        .blog-hero {
+            background: linear-gradient(135deg, #081226 0%, #111E38 100%);
+            color: #ffffff;
+            padding: 60px 0 48px 0;
+            text-align: center;
+        }
+
+        .blog-hero h1 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 36px;
+            font-weight: 800;
+            margin: 0 0 16px 0;
+        }
+
+        .blog-hero p {
+            color: #94A3B8;
+            font-size: 16px;
+            max-width: 650px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .breadcrumbs-bar {
+            background: #ffffff;
+            border-bottom: 1px solid #E2E8F0;
+            padding: 12px 0;
+            font-size: 13px;
+        }
+
+        .breadcrumbs-bar a {
+            color: var(--dg-slate);
+            text-decoration: none;
+        }
+
+        .breadcrumbs-bar a:hover {
+            color: var(--dg-red);
+        }
+
+        .breadcrumbs-bar span {
+            color: #CBD5E1;
+            margin: 0 8px;
+        }
+
+        .breadcrumbs-bar strong {
+            color: var(--dg-navy);
+        }
+
+        .articles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 28px;
+            padding: 60px 0;
+        }
+
+        .article-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(14, 28, 56, 0.06);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+
+        .article-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+            border-color: rgba(158, 27, 50, 0.3);
+        }
+
+        .article-category {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--dg-red);
+            margin-bottom: 12px;
+        }
+
+        .article-card h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0 0 12px 0;
+            color: var(--dg-navy);
+            line-height: 1.4;
+        }
+
+        .article-card p {
+            color: var(--dg-slate);
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 0 0 24px 0;
+        }
+
+        .article-link {
+            color: var(--dg-red);
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .article-link:hover {
+            color: var(--dg-red-hover);
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="container nav-wrap">
+            <a class="brand" href="/">
+                <img src="/assets/images/logo-light.png" alt="DigiGarment Logo" style="height: 38px;">
+            </a>
+            <nav class="nav">
+                <a href="/">Home</a>
+                <a href="/jobs">Tiruppur Jobs</a>
+                <a href="/tools">Tools</a>
+                <a href="/services">Services</a>
+                <a class="active" href="/blog">Blog</a>
+                <a href="/#contact">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="breadcrumbs-bar">
+        <div class="container">
+            <a href="/">Home</a>
+            <span>›</span>
+            <strong>Blog & Knowledge Guides</strong>
+        </div>
+    </div>
+
+    <section class="blog-hero">
+        <div class="container">
+            <h1>Garment Industry Knowledge & Technical Guides</h1>
+            <p>Practical engineering insights, cycle time calculations, and industrial career knowledge for apparel manufacturing professionals.</p>
+        </div>
+    </section>
+
+    <main class="container">
+        <div class="articles-grid">
+            <!-- Article 1: What is SAM -->
+            <article class="article-card">
+                <div>
+                    <div class="article-category">Industrial Engineering</div>
+                    <h2>What is SAM in Garment Manufacturing? Complete Guide to Standard Allowed Minutes</h2>
+                    <p>Learn how Standard Allowed Minutes (SAM) and Standard Minute Value (SMV) are calculated across apparel sewing operations, with allowance formulas and cycle time examples.</p>
+                </div>
+                <a class="article-link" href="/blog/what-is-sam-in-garment-manufacturing">Read Complete Guide →</a>
+            </article>
+
+            <!-- Article 2: Production Target and Efficiency -->
+            <article class="article-card">
+                <div>
+                    <div class="article-category">Production Planning</div>
+                    <h2>How to Calculate Garment Production Target and Sewing Line Efficiency</h2>
+                    <p>Step-by-step formula guide to calculating operator hourly targets, pitch time, and overall line efficiency percentages on garment shopfloors.</p>
+                </div>
+                <a class="article-link" href="/blog/how-to-calculate-garment-production-target-and-efficiency">Read Guide →</a>
+            </article>
+
+            <!-- Article 3: Tiruppur Jobs Guide -->
+            <article class="article-card">
+                <div>
+                    <div class="article-category">Careers & Industry</div>
+                    <h2>Tiruppur Garment Industry Career Guide: Roles, Skills, and Hiring Insights</h2>
+                    <p>Comprehensive overview of key job roles in Tiruppur garment export houses including Merchandisers, Pattern Masters, Quality Supervisors, and Cutting Masters.</p>
+                </div>
+                <a class="article-link" href="/blog/tiruppur-garment-industry-jobs-and-hiring-guide">Read Career Guide →</a>
+            </article>
+
+            <!-- Article 4: Excel Automation vs ERP -->
+            <article class="article-card">
+                <div>
+                    <div class="article-category">Digital Transformation</div>
+                    <h2>Garment Excel Automation vs ERP: Choosing the Right Solution for Your Factory</h2>
+                    <p>Practical comparison between custom Excel/macro automation workflows and full ERP deployments for small and medium garment manufacturers.</p>
+                </div>
+                <a class="article-link" href="/blog/garment-excel-automation-vs-erp">Read Guide →</a>
+            </article>
+        </div>
+    </main>
+
+    <footer id="footer" style="background: #081226; color: #94A3B8; padding: 40px 0 20px 0;">
+        <div class="container" style="text-align: center; font-size: 14px;">
+            <p style="margin-bottom: 12px;">© 2026 DigiGarment. Practical digital transformation for garment manufacturing.</p>
+            <div>
+                <a href="/" style="color: #94A3B8; margin: 0 10px; text-decoration: none;">Home</a>
+                <a href="/jobs" style="color: #94A3B8; margin: 0 10px; text-decoration: none;">Tiruppur Jobs</a>
+                <a href="/tools/sam-calculator" style="color: #94A3B8; margin: 0 10px; text-decoration: none;">SAM Calculator</a>
+                <a href="/tools" style="color: #94A3B8; margin: 0 10px; text-decoration: none;">Tools Hub</a>
+                <a href="/services" style="color: #94A3B8; margin: 0 10px; text-decoration: none;">Services</a>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

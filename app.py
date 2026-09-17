@@ -8,10 +8,11 @@ import shutil
 import mimetypes
 from contextlib import asynccontextmanager
 from typing import List, Dict, Any, Optional
-from fastapi import FastAPI, HTTPException, Cookie, Depends, Response, Form, UploadFile, File
+from fastapi import FastAPI, HTTPException, Cookie, Depends, Response, Form, UploadFile, File, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, RedirectResponse, JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from dotenv import load_dotenv
 import psycopg2
 from psycopg2.pool import ThreadedConnectionPool
@@ -860,14 +861,6 @@ def get_index():
 def get_jobs_page():
     return FileResponse(os.path.join(BASE_DIR, "jobs.html"))
 
-@app.get("/jobs/{slug}")
-def get_jobs_detail_page(slug: str):
-    return FileResponse(os.path.join(BASE_DIR, "jobs.html"))
-
-@app.get("/tools/sam-calculator")
-def get_sam_calculator():
-    return FileResponse(os.path.join(BASE_DIR, "sam_calculator.html"))
-
 @app.get("/logo.png")
 def get_logo():
     logo_path = os.path.join(BASE_DIR, "logo.png")
@@ -879,14 +872,26 @@ def get_logo():
 import routers.jobs
 import routers.admin_jobs
 import routers.admin_ingestion
+import routers.seo
 
 routers.jobs.init_db_helpers(db_enabled, query_db, execute_db, execute_db_returning)
 routers.admin_jobs.init_admin_helpers(db_enabled, query_db, execute_db, execute_db_returning, get_current_admin)
 routers.admin_ingestion.init_ingestion_router(query_db, execute_db, execute_db_returning, db_enabled, FALLBACK_ADMIN_SESSIONS, BASE_DIR)
+routers.seo.init_seo_db_helpers(db_enabled, query_db)
 
 app.include_router(routers.jobs.router)
 app.include_router(routers.admin_jobs.router)
 app.include_router(routers.admin_ingestion.router)
+app.include_router(routers.seo.router)
+
+# Custom 404 Exception Handler returning HTTP 404 status code and friendly 404.html
+@app.exception_handler(StarletteHTTPException)
+async def custom_http_exception_handler(request: Request, exc: StarletteHTTPException):
+    if exc.status_code == 404:
+        four_oh_four_path = os.path.join(BASE_DIR, "404.html")
+        if os.path.exists(four_oh_four_path):
+            return FileResponse(four_oh_four_path, status_code=404)
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
 
 # Serve upload assets dynamically
 RESUME_UPLOAD_DIR = os.path.join(BASE_DIR, "assets", "uploads", "resumes")
