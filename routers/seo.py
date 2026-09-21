@@ -1138,9 +1138,12 @@ def get_job_or_category_page(slug: str):
                    j.requirements, j.skills, j.qualification, j.gender,
                    j.contact_phone, j.contact_whatsapp, j.contact_email, j.application_url,
                    j.published_at, j.created_at,
-                   c.name AS company_name, c.logo_url AS company_logo, c.location AS company_location
+                   COALESCE(cp.company_name, c.name, '') AS company_name,
+                   COALESCE(cp.company_logo, c.logo_url, '') AS company_logo,
+                   COALESCE(cp.location, c.location, j.location) AS company_location
             FROM jobs j
             LEFT JOIN companies c ON j.company_id = c.id
+            LEFT JOIN company_profiles cp ON j.company_profile_id = cp.id
             WHERE (j.slug = %s OR CAST(j.id AS VARCHAR) = %s)
               AND (LOWER(j.status) = 'published' OR j.status = 'ACTIVE')
               AND COALESCE(j.is_archived, FALSE) = FALSE;

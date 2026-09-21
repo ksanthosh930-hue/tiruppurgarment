@@ -2955,7 +2955,8 @@
                 currentAdminJobsList.forEach(j => {
                     const isSelected = selectedAdminJobs.has(j.id);
                     const stLower = (j.status || '').toLowerCase();
-                    const statusBadgeClass = stLower === 'published' ? 'badge-success' : (stLower === 'draft' ? 'badge-warning' : (stLower === 'archived' ? 'badge-danger' : 'badge-secondary'));
+                    const isPending = stLower === 'pending_review';
+                    const statusBadgeClass = stLower === 'published' ? 'badge-success' : (stLower === 'draft' ? 'badge-warning' : (stLower === 'pending_review' ? 'badge-warning' : (stLower === 'rejected' ? 'badge-danger' : (stLower === 'archived' ? 'badge-danger' : 'badge-secondary'))));
                     const verifBadgeClass = j.verification_status === 'verified' ? 'badge-success' : (j.verification_status === 'rejected' ? 'badge-danger' : 'badge-secondary');
                     const expSalary = `${j.experience_min || 0}y | ${j.salary_text || (j.salary_min ? '₹' + j.salary_min : 'Negotiable')}`;
                     const featuredStar = j.is_featured ? ' <span style="color: #F59E0B;" title="Featured Job">★</span>' : '';
@@ -2981,13 +2982,18 @@
                             <td><span class="badge badge-secondary">${escapeHtml(j.department || '-')}</span></td>
                             <td><small>${escapeHtml(j.location || '-')}</small></td>
                             <td><small>${escapeHtml(expSalary)}</small></td>
-                            <td><span class="badge ${statusBadgeClass}">${(j.status || '').toUpperCase()}</span></td>
+                            <td><span class="badge ${statusBadgeClass}">${(j.status || '').toUpperCase().replace('_', ' ')}</span></td>
                             <td><span class="badge ${verifBadgeClass}">${j.verification_status}</span></td>
                             <td style="white-space: nowrap;" onclick="event.stopPropagation()">
+                                ${isPending ? `
+                                    <button class="btn btn-primary" style="padding: 4px 8px; font-size: 11px; background: #10B981; border-color: #10B981; margin-right: 4px;" onclick="approveJob(${j.id})" title="Approve and publish job to public site">✓ Approve</button>
+                                    <button class="btn btn-danger" style="padding: 4px 8px; font-size: 11px; margin-right: 4px;" onclick="rejectJob(${j.id})" title="Reject with feedback reason">✕ Reject</button>
+                                ` : ''}
                                 <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 11px; margin-right: 4px;" onclick="editJob(${j.id})">Edit</button>
                                 <select onchange="quickStatusJob(${j.id}, this.value)" style="padding: 3px 6px; font-size: 11px; border-radius: 4px; border: 1px solid #CBD5E1; margin-right: 4px;">
                                     <option value="">Status...</option>
                                     <option value="published">Publish</option>
+                                    <option value="pending_review">Pending</option>
                                     <option value="draft">Draft</option>
                                     <option value="closed">Close</option>
                                     <option value="expired">Expire</option>
@@ -3349,6 +3355,45 @@
                 }
             } catch (e) {
                 showToast("Network error archiving job.", false);
+            }
+        }
+
+        async function approveJob(id) {
+            if (!confirm("Approve and publish this job opening to public listings now?")) return;
+            try {
+                const res = await fetch(`/api/admin/jobs/${id}/approve`, { method: "POST" });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showToast(data.message || "Job approved and published!", true);
+                    loadAdminJobs();
+                    loadAdminJobsStats();
+                } else {
+                    showToast("Failed to approve job: " + (data.detail || ""), false);
+                }
+            } catch (e) {
+                showToast("Network error approving job.", false);
+            }
+        }
+
+        async function rejectJob(id) {
+            const reason = prompt("Enter feedback / rejection reason for employer (optional):", "Job requirements incomplete or missing contact details.");
+            if (reason === null) return;
+            try {
+                const res = await fetch(`/api/admin/jobs/${id}/reject`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ reason: reason })
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showToast(data.message || "Job rejected.", true);
+                    loadAdminJobs();
+                    loadAdminJobsStats();
+                } else {
+                    showToast("Failed to reject job: " + (data.detail || ""), false);
+                }
+            } catch (e) {
+                showToast("Network error rejecting job.", false);
             }
         }
 

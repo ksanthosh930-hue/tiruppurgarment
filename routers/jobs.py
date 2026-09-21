@@ -322,10 +322,15 @@ def get_public_jobs(
                 j.gender, j.contact_phone, j.contact_whatsapp, j.contact_email, j.application_url,
                 j.source_type, j.source_name, j.poster_image_url, j.status, j.is_featured,
                 j.verification_status, j.published_at, j.expires_at, j.created_at,
-                c.name AS company_name, c.logo_url AS company_logo, c.slug AS company_slug,
-                c.location AS company_location, c.is_verified AS company_is_verified
+                COALESCE(cp.company_name, c.name, '') AS company_name,
+                COALESCE(cp.company_logo, c.logo_url, '') AS company_logo,
+                c.slug AS company_slug,
+                COALESCE(cp.location, c.location, j.location) AS company_location,
+                CASE WHEN cp.verification_status = 'verified' THEN TRUE WHEN c.is_verified = TRUE THEN TRUE ELSE FALSE END AS company_is_verified,
+                COALESCE(cp.verification_status, 'pending') AS employer_verification_status
             FROM jobs j
             LEFT JOIN companies c ON j.company_id = c.id
+            LEFT JOIN company_profiles cp ON j.company_profile_id = cp.id
             {where_clause}
             {order_clause}
             LIMIT %s OFFSET %s;
@@ -353,7 +358,7 @@ def get_public_jobs(
             "limit": limit_num,
             "total": 0,
             "total_pages": 1,
-            "error": f"Database error: {e}"
+            "error": "Failed to load jobs."
         }
 
 @router.get("/jobs/{slug}")
@@ -370,17 +375,23 @@ def get_public_job_detail(slug: str):
     try:
         query = """
             SELECT 
-                j.id, j.company_id, j.title, j.slug, j.department, j.job_role, j.job_type,
+                j.id, j.company_id, j.company_profile_id, j.title, j.slug, j.department, j.job_role, j.job_type,
                 j.location, j.openings_count, j.experience_min, j.experience_max, j.salary_min, j.salary_max,
                 j.salary_text, j.description, j.requirements, j.skills, j.qualification,
                 j.gender, j.contact_phone, j.contact_whatsapp, j.contact_email, j.application_url,
                 j.source_type, j.source_name, j.poster_image_url, j.status, j.is_featured,
                 j.verification_status, j.published_at, j.expires_at, j.created_at,
-                c.name AS company_name, c.logo_url AS company_logo, c.slug AS company_slug,
-                c.description AS company_description, c.website AS company_website,
-                c.location AS company_location, c.is_verified AS company_is_verified
+                COALESCE(cp.company_name, c.name, '') AS company_name,
+                COALESCE(cp.company_logo, c.logo_url, '') AS company_logo,
+                c.slug AS company_slug,
+                COALESCE(cp.company_description, c.description, '') AS company_description,
+                COALESCE(cp.website, c.website, '') AS company_website,
+                COALESCE(cp.location, c.location, j.location) AS company_location,
+                CASE WHEN cp.verification_status = 'verified' THEN TRUE WHEN c.is_verified = TRUE THEN TRUE ELSE FALSE END AS company_is_verified,
+                COALESCE(cp.verification_status, 'pending') AS employer_verification_status
             FROM jobs j
             LEFT JOIN companies c ON j.company_id = c.id
+            LEFT JOIN company_profiles cp ON j.company_profile_id = cp.id
             WHERE (j.slug = %s OR CAST(j.id AS VARCHAR) = %s)
               AND (LOWER(j.status) = 'published' OR j.status = 'ACTIVE')
               AND COALESCE(j.is_archived, FALSE) = FALSE;

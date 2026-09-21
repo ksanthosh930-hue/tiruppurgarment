@@ -2,7 +2,7 @@ import re
 import uuid
 import logging
 from typing import List, Dict, Any, Optional
-from fastapi import APIRouter, HTTPException, Depends, Form, Query, Body, Request
+from fastapi import APIRouter, HTTPException, Depends, Form, Query, Body, Request, Cookie
 
 logger = logging.getLogger(__name__)
 
@@ -24,8 +24,11 @@ def init_admin_helpers(enabled: bool, query_fn, exec_fn, exec_ret_fn, auth_fn):
     db_helpers["execute_db_returning"] = exec_ret_fn
     db_helpers["get_current_admin"] = auth_fn
 
-async def require_admin(admin = Depends(lambda: db_helpers["get_current_admin"]() if db_helpers["get_current_admin"] else None)):
-    return admin
+async def require_admin(session_id: Optional[str] = Cookie(None)):
+    auth_fn = db_helpers.get("get_current_admin")
+    if not auth_fn:
+        raise HTTPException(status_code=401, detail="Unauthorized: Admin auth service unavailable.")
+    return await auth_fn(session_id=session_id)
 
 def slugify(text: str) -> str:
     text = text.lower().strip()
@@ -36,7 +39,7 @@ def slugify(text: str) -> str:
 # --- 1. JOBS STATS ---
 
 @router.get("/jobs/dashboard-stats")
-def get_jobs_dashboard_stats(admin = Depends(lambda: db_helpers["get_current_admin"]() if db_helpers["get_current_admin"] else None)):
+def get_jobs_dashboard_stats(admin: Dict[str, Any] = Depends(require_admin)):
     if not db_helpers["db_enabled"] or not db_helpers["query_db"]:
         from routers.jobs import FALLBACK_JOBS
         total = len(FALLBACK_JOBS)
@@ -85,7 +88,7 @@ def get_admin_jobs(
     search: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
-    admin = Depends(lambda: db_helpers["get_current_admin"]() if db_helpers["get_current_admin"] else None)
+    admin: Dict[str, Any] = Depends(require_admin)
 ):
     """
     Paginated jobs list for Admin table.
@@ -148,21 +151,32 @@ def get_admin_jobs(
         where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
 
         # Total count
-        count_q = f"SELECT COUNT(*) FROM jobs j LEFT JOIN companies c ON j.company_id = c.id {where_clause};"
+        count_q = f"""
+            SELECT COUNT(*) 
+            FROM jobs j 
+            LEFT JOIN companies c ON j.company_id = c.id
+            LEFT JOIN company_profiles cp ON j.company_profile_id = cp.id
+            {where_clause};
+        """
         total = db_helpers["query_db"](count_q, tuple(params) if params else None)[0]["count"]
 
         offset = (page_num - 1) * limit_num
         data_q = f"""
             SELECT 
-                j.id, j.company_id, j.title, j.slug, j.department, j.job_role, j.job_type,
-                j.location, j.openings_count, j.experience_min, j.experience_max, j.salary_min, j.salary_max,
-                j.salary_text, j.description, j.requirements, j.skills, j.qualification,
-                j.gender, j.contact_phone, j.contact_whatsapp, j.contact_email, j.application_url,
-                j.source_type, j.source_name, j.poster_image_url, j.status, j.is_featured,
-                j.is_archived, j.verification_status, j.published_at, j.expires_at, j.created_at,
-                c.name AS company_name, c.logo_url AS company_logo
+                j.id, j.company_id, j.company_profile_id, j.employer_user_id, j.title, j.slug,
+                j.department, j.job_role, j.job_type, j.location, j.openings_count,
+                j.experience_min, j.experience_max, j.salary_min, j.salary_max, j.salary_text,
+                j.description, j.requirements, j.skills, j.qualification, j.gender,
+                j.contact_phone, j.contact_whatsapp, j.contact_email, j.application_url,
+                j.source_type, j.source_name, j.poster_image_url, j.status, j.rejection_reason,
+                j.is_featured, j.is_archived, j.verification_status, j.published_at, j.expires_at, j.created_at,
+                COALESCE(cp.company_name, c.name) AS company_name,
+                COALESCE(cp.company_logo, c.logo_url) AS company_logo,
+                cp.contact_person AS employer_contact_person,
+                COALESCE(cp.verification_status, 'pending') AS employer_verification_status
             FROM jobs j
             LEFT JOIN companies c ON j.company_id = c.id
+            LEFT JOIN company_profiles cp ON j.company_profile_id = cp.id
             {where_clause}
             ORDER BY j.created_at DESC
             LIMIT %s OFFSET %s;
@@ -185,7 +199,7 @@ def get_admin_jobs(
         raise HTTPException(status_code=500, detail=f"Database error loading jobs: {e}")
 
 @router.get("/jobs/{job_id}")
-def get_admin_job(job_id: int, admin = Depends(lambda: db_helpers["get_current_admin"]() if db_helpers["get_current_admin"] else None)):
+def get_admin_job(job_id: int, admin: Dict[str, Any] = Depends(require_admin)):
     if not db_helpers["db_enabled"] or not db_helpers["query_db"]:
         from routers.jobs import FALLBACK_JOBS
         match = next((j for j in FALLBACK_JOBS if j["id"] == job_id), None)
@@ -261,7 +275,7 @@ def create_admin_job(
     status: str = Form("draft"),
     is_featured: bool = Form(False),
     verification_status: str = Form("unverified"),
-    admin = Depends(lambda: db_helpers["get_current_admin"]() if db_helpers["get_current_admin"] else None)
+    admin: Dict[str, Any] = Depends(require_admin)
 ):
     """
     Creates a new job vacancy. Generates unique slug.
@@ -405,7 +419,7 @@ def update_admin_job(
     status: str = Form("draft"),
     is_featured: bool = Form(False),
     verification_status: str = Form("unverified"),
-    admin = Depends(lambda: db_helpers["get_current_admin"]() if db_helpers["get_current_admin"] else None)
+    admin: Dict[str, Any] = Depends(require_admin)
 ):
     """
     Updates an existing job.
@@ -506,7 +520,7 @@ def update_admin_job(
 def update_job_status(
     job_id: int,
     status: str = Form(...),
-    admin = Depends(lambda: db_helpers["get_current_admin"]() if db_helpers["get_current_admin"] else None)
+    admin: Dict[str, Any] = Depends(require_admin)
 ):
     """
     Quick status toggle (e.g. published, closed, expired, draft, archived).
@@ -542,12 +556,79 @@ def update_job_status(
         logger.error(f"Error updating status for job {job_id}: {e}")
         raise HTTPException(status_code=500, detail=f"Database error updating status: {e}")
 
+@router.post("/jobs/{job_id}/approve")
+def approve_admin_job(
+    job_id: int,
+    admin: Dict[str, Any] = Depends(require_admin)
+):
+    """
+    Approves a job and sets its status to 'published' with timestamp.
+    """
+    if not db_helpers["db_enabled"] or not db_helpers["execute_db"]:
+        return {"success": True, "message": "Job approved and published."}
+
+    try:
+        query = """
+            UPDATE jobs
+            SET status = 'published',
+                rejection_reason = NULL,
+                published_at = CASE WHEN published_at IS NULL THEN CURRENT_TIMESTAMP ELSE published_at END,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = %s;
+        """
+        db_helpers["execute_db"](query, (job_id,))
+        return {"success": True, "message": "Job approved and published successfully."}
+    except Exception as e:
+        logger.error(f"Error approving job {job_id}: {e}")
+        raise HTTPException(status_code=500, detail="Database error approving job.")
+
+@router.post("/jobs/{job_id}/reject")
+async def reject_admin_job(
+    job_id: int,
+    request: Request = None,
+    reason: Optional[str] = Form(None),
+    payload: Optional[Dict[str, Any]] = Body(None),
+    admin: Dict[str, Any] = Depends(require_admin)
+):
+    """
+    Rejects a job with a reason.
+    """
+    rejection_reason = reason
+    if not rejection_reason and payload and isinstance(payload, dict):
+        rejection_reason = payload.get("reason")
+    elif not rejection_reason and request:
+        try:
+            body = await request.json()
+            if isinstance(body, dict):
+                rejection_reason = body.get("reason")
+        except Exception:
+            pass
+
+    clean_reason = (rejection_reason or "").strip() or "Job details require revision."
+
+    if not db_helpers["db_enabled"] or not db_helpers["execute_db"]:
+        return {"success": True, "message": "Job rejected."}
+
+    try:
+        query = """
+            UPDATE jobs
+            SET status = 'rejected',
+                rejection_reason = %s,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = %s;
+        """
+        db_helpers["execute_db"](query, (clean_reason, job_id))
+        return {"success": True, "message": "Job rejected successfully."}
+    except Exception as e:
+        logger.error(f"Error rejecting job {job_id}: {e}")
+        raise HTTPException(status_code=500, detail="Database error rejecting job.")
+
 @router.delete("/jobs/bulk")
 @router.post("/jobs/bulk-delete")
 async def bulk_delete_admin_jobs(
     request: Request = None,
     payload: Optional[Dict[str, Any]] = Body(None),
-    admin = Depends(lambda: db_helpers["get_current_admin"]() if db_helpers["get_current_admin"] else None)
+    admin: Dict[str, Any] = Depends(require_admin)
 ):
     """
     BULK DELETE JOBS
@@ -632,7 +713,7 @@ async def bulk_delete_admin_jobs(
 @router.delete("/jobs/{job_id}")
 def archive_admin_job(
     job_id: int,
-    admin = Depends(lambda: db_helpers["get_current_admin"]() if db_helpers["get_current_admin"] else None)
+    admin: Dict[str, Any] = Depends(require_admin)
 ):
     """
     SOFT DELETE / ARCHIVE JOB
@@ -661,7 +742,7 @@ def archive_admin_job(
 @router.delete("/jobs/{job_id}/delete")
 def delete_single_admin_job(
     job_id: int,
-    admin = Depends(lambda: db_helpers["get_current_admin"]() if db_helpers["get_current_admin"] else None)
+    admin: Dict[str, Any] = Depends(require_admin)
 ):
     """
     PERMANENT / HARD DELETE SINGLE JOB
@@ -698,7 +779,7 @@ def delete_single_admin_job(
 # --- 3. COMPANIES CRUD ---
 
 @router.get("/companies")
-def get_admin_companies(admin = Depends(lambda: db_helpers["get_current_admin"]() if db_helpers["get_current_admin"] else None)):
+def get_admin_companies(admin: Dict[str, Any] = Depends(require_admin)):
     if not db_helpers["db_enabled"] or not db_helpers["query_db"]:
         from routers.jobs import FALLBACK_COMPANIES
         return FALLBACK_COMPANIES
@@ -727,7 +808,7 @@ def create_admin_company(
     contact_phone: Optional[str] = Form(None),
     is_verified: bool = Form(False),
     status: str = Form("ACTIVE"),
-    admin = Depends(lambda: db_helpers["get_current_admin"]() if db_helpers["get_current_admin"] else None)
+    admin: Dict[str, Any] = Depends(require_admin)
 ):
     n_clean = str(name).strip() if name else ""
     logo_clean = _clean_str(logo_url)
@@ -786,7 +867,7 @@ def update_admin_company(
     contact_phone: Optional[str] = Form(None),
     is_verified: bool = Form(False),
     status: str = Form("ACTIVE"),
-    admin = Depends(lambda: db_helpers["get_current_admin"]() if db_helpers["get_current_admin"] else None)
+    admin: Dict[str, Any] = Depends(require_admin)
 ):
     n_clean = str(name).strip() if name else ""
     logo_clean = _clean_str(logo_url)

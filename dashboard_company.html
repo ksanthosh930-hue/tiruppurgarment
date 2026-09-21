@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Company Employer Dashboard | TirupurGarment.in</title>
+    <meta name="robots" content="noindex, nofollow">
+    <title>Employer Dashboard | TirupurGarment.in</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
@@ -18,6 +19,9 @@
             --dg-bg: #F8FAFC;
             --dg-white: #FFFFFF;
             --dg-border: #E2E8F0;
+            --dg-success: #10B981;
+            --dg-amber: #F59E0B;
+            --dg-blue: #2563EB;
         }
 
         body {
@@ -83,21 +87,21 @@
         }
 
         .welcome-card {
-            background: linear-gradient(135deg, #0f2b48 0%, var(--dg-navy) 100%);
+            background: linear-gradient(135deg, #091a33 0%, var(--dg-navy) 100%);
             color: #fff;
             border-radius: 12px;
-            padding: 32px;
+            padding: 28px 32px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 28px;
+            margin-bottom: 24px;
             box-shadow: 0 4px 20px rgba(8, 18, 38, 0.1);
         }
 
         .welcome-card h1 {
-            font-size: 26px;
+            font-size: 24px;
             font-weight: 800;
-            margin: 0 0 8px 0;
+            margin: 0 0 6px 0;
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
@@ -107,30 +111,81 @@
             margin: 0;
         }
 
-        .badge-verified {
-            background: rgba(16, 185, 129, 0.2);
-            color: #10B981;
+        .status-badge-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .badge-role {
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
             padding: 4px 10px;
             border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            margin-top: 8px;
         }
 
-        .grid-2col {
-            display: grid;
-            grid-template-columns: 380px 1fr;
-            gap: 24px;
+        .badge-pending {
+            background: rgba(234, 179, 8, 0.15);
+            color: #facc15;
+            border: 1px solid rgba(234, 179, 8, 0.3);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-verified {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10B981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Tabs */
+        .dash-tabs {
+            display: flex;
+            gap: 8px;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 28px;
+            overflow-x: auto;
+            padding-bottom: 2px;
+        }
+
+        .dash-tab-btn {
+            background: none;
+            border: none;
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--dg-slate);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .dash-tab-btn:hover {
+            color: var(--dg-navy);
+        }
+
+        .dash-tab-btn.active {
+            color: var(--dg-red);
+            border-bottom-color: var(--dg-red);
         }
 
         .dash-card {
             background: var(--dg-white);
-            border-radius: 10px;
+            border-radius: 12px;
             border: 1px solid var(--dg-border);
-            padding: 24px;
+            padding: 28px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.02);
             margin-bottom: 24px;
         }
@@ -139,35 +194,52 @@
             font-size: 18px;
             font-weight: 700;
             color: var(--dg-navy);
-            margin: 0 0 16px 0;
+            margin: 0 0 20px 0;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #f1f5f9;
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .grid-3col {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
             font-size: 13.5px;
-        }
-
-        .info-row:last-child {
-            border-bottom: none;
-        }
-
-        .info-label {
-            color: var(--dg-slate);
-            font-weight: 500;
-        }
-
-        .info-val {
-            color: var(--dg-navy);
             font-weight: 600;
-            text-align: right;
-            max-width: 60%;
-            word-break: break-word;
+            color: var(--dg-navy);
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1px solid var(--dg-border);
+            border-radius: 8px;
+            font-size: 14px;
+            color: var(--dg-navy);
+            font-family: inherit;
+            box-sizing: border-box;
+            background: #fff;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--dg-red);
+            box-shadow: 0 0 0 3px rgba(158, 27, 50, 0.12);
         }
 
         .btn-action {
@@ -176,11 +248,13 @@
             justify-content: center;
             background: var(--dg-red);
             color: #fff;
-            padding: 10px 18px;
+            padding: 10px 20px;
             border-radius: 6px;
             text-decoration: none;
-            font-size: 13.5px;
+            font-size: 14px;
             font-weight: 600;
+            border: none;
+            cursor: pointer;
             transition: background 0.2s;
         }
 
@@ -188,26 +262,252 @@
             background: var(--dg-red-hover);
         }
 
-        .empty-state {
-            text-align: center;
-            padding: 36px 20px;
-            color: var(--dg-slate);
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #f1f5f9;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
         }
 
-        .empty-state span {
-            font-size: 36px;
+        .btn-secondary:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .btn-success {
+            background: #10B981;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        /* Extraction Upload Card */
+        .extraction-box {
+            background: #f0fdf4;
+            border: 1.5px dashed #86efac;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .extraction-box h3 {
+            margin: 0 0 6px 0;
+            font-size: 15px;
+            font-weight: 700;
+            color: #166534;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .extraction-box p {
+            font-size: 13px;
+            color: #374151;
+            margin: 0 0 14px 0;
+        }
+
+        .poster-upload-zone {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* Status Badges for Jobs */
+        .badge-status-draft {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-status-pending {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-status-published {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-status-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Job Card */
+        .job-item-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 16px;
+            background: #fff;
+            transition: box-shadow 0.2s;
+        }
+
+        .job-item-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .job-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .job-item-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--dg-navy);
+            margin: 0 0 4px 0;
+        }
+
+        .job-item-meta {
+            font-size: 13px;
+            color: var(--dg-slate);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-bottom: 12px;
+        }
+
+        .rejection-banner {
+            background: #fff1f2;
+            border-left: 4px solid #e11d48;
+            padding: 10px 14px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #9f1239;
+            margin-bottom: 14px;
+        }
+
+        .job-item-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .coming-soon-box {
+            text-align: center;
+            padding: 48px 24px;
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .coming-soon-box .cs-icon {
+            font-size: 40px;
+            margin-bottom: 12px;
             display: block;
-            margin-bottom: 8px;
+        }
+
+        .coming-soon-box h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--dg-navy);
+            margin: 0 0 6px 0;
+        }
+
+        .coming-soon-box p {
+            font-size: 14px;
+            color: var(--dg-slate);
+            max-width: 440px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+
+        .msg-alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .msg-success {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+
+        .msg-error {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
+        /* Modal */
+        .preview-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(8, 18, 38, 0.7);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .preview-modal-content {
+            background: #fff;
+            max-width: 680px;
+            width: 100%;
+            border-radius: 12px;
+            padding: 28px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);
+            position: relative;
         }
 
         @media (max-width: 768px) {
-            .grid-2col {
-                grid-template-columns: 1fr;
-            }
             .welcome-card {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 16px;
+            }
+            .grid-2col, .grid-3col {
+                grid-template-columns: 1fr;
+                gap: 0;
             }
         }
     </style>
@@ -229,121 +529,804 @@
         <!-- Welcome Banner -->
         <div class="welcome-card">
             <div>
-                <h1 id="companyGreeting">Welcome, Employer</h1>
-                <p id="companyEmailDisplay">Loading your company profile...</p>
-                <div class="badge-verified">✓ Verified Employer / Company Profile</div>
+                <h1 id="userGreeting">Welcome, Employer</h1>
+                <p id="companyNameDisplay">Loading company profile...</p>
+                <div class="status-badge-wrap">
+                    <span class="badge-role">🏢 Garment Employer Account</span>
+                    <span id="verificationBadge" class="badge-pending">⏳ Verification: Pending</span>
+                </div>
             </div>
             <div>
-                <a href="/jobs" class="btn-action">View Job Openings Portal →</a>
+                <button type="button" class="btn-action" onclick="showTab('post-job')">+ Post a Job</button>
             </div>
         </div>
 
-        <div class="grid-2col">
-            <!-- Company Profile Overview Card -->
-            <div>
-                <div class="dash-card">
-                    <h2>
-                        🏢 Company Details
-                    </h2>
-                    <div class="info-row">
-                        <span class="info-label">Company Name</span>
-                        <span class="info-val" id="compName">-</span>
+        <!-- Navigation Tabs -->
+        <div class="dash-tabs">
+            <button type="button" class="dash-tab-btn" onclick="showTab('profile')">Company Profile</button>
+            <button type="button" class="dash-tab-btn active" onclick="showTab('post-job')">Post a Job</button>
+            <button type="button" class="dash-tab-btn" onclick="showTab('my-jobs')">My Jobs</button>
+            <button type="button" class="dash-tab-btn" onclick="showTab('applications')">Applications</button>
+        </div>
+
+        <div id="alertBox" class="msg-alert"></div>
+
+        <!-- TAB 1: Company Profile -->
+        <div id="tabProfile" class="dash-tab-content" style="display: none;">
+            <div class="dash-card">
+                <h2>Company Profile Foundation</h2>
+                <form id="employerProfileForm" onsubmit="handleEmployerProfileUpdate(event)">
+                    <div class="grid-2col">
+                        <div class="form-group">
+                            <label>Company / Mill Name *</label>
+                            <input type="text" id="emprCompanyName" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>HR / Recruiter Name *</label>
+                            <input type="text" id="emprContactPerson" class="form-control" required>
+                        </div>
                     </div>
-                    <div class="info-row">
-                        <span class="info-label">Contact Person</span>
-                        <span class="info-val" id="compContact">-</span>
+
+                    <div class="grid-2col">
+                        <div class="form-group">
+                            <label>Official Mobile Number</label>
+                            <input type="tel" id="emprMobile" class="form-control" maxlength="10">
+                        </div>
+                        <div class="form-group">
+                            <label>Official WhatsApp Number</label>
+                            <input type="tel" id="emprWhatsapp" class="form-control" maxlength="10">
+                        </div>
                     </div>
-                    <div class="info-row">
-                        <span class="info-label">Business Type</span>
-                        <span class="info-val" id="compType">-</span>
+
+                    <div class="grid-2col">
+                        <div class="form-group">
+                            <label>Area / Industrial Cluster</label>
+                            <input type="text" id="emprArea" class="form-control" placeholder="e.g. Angeripalayam, Netaji Apparel Park">
+                        </div>
+                        <div class="form-group">
+                            <label>Business Type</label>
+                            <input type="text" id="emprBusinessType" class="form-control" placeholder="e.g. 100% Export Garments, Knitting, Dyeing, Printing">
+                        </div>
                     </div>
-                    <div class="info-row">
-                        <span class="info-label">Contact Mobile</span>
-                        <span class="info-val" id="compMobile">-</span>
+
+                    <div class="grid-2col">
+                        <div class="form-group">
+                            <label>Location / City</label>
+                            <input type="text" id="emprLocation" class="form-control" placeholder="e.g. Tiruppur, Tamil Nadu">
+                        </div>
+                        <div class="form-group">
+                            <label>Official Website URL</label>
+                            <input type="url" id="emprWebsite" class="form-control" placeholder="https://example.com">
+                        </div>
                     </div>
-                    <div class="info-row">
-                        <span class="info-label">Location</span>
-                        <span class="info-val" id="compLocation">-</span>
+
+                    <div class="form-group">
+                        <label>Factory / Office Address</label>
+                        <textarea id="emprAddress" class="form-control" rows="2" placeholder="Full postal address"></textarea>
                     </div>
-                    <div class="info-row">
-                        <span class="info-label">Website</span>
-                        <span class="info-val" id="compWebsite">-</span>
+
+                    <div class="form-group">
+                        <label>About the Company</label>
+                        <textarea id="emprDescription" class="form-control" rows="3" placeholder="Brief overview of products, capacity, certifications (WRAP, OEKO-TEX, SEDEX, etc.)"></textarea>
                     </div>
-                    <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid #f1f5f9;">
-                        <span class="info-label" style="display: block; margin-bottom: 4px;">About Company:</span>
-                        <p id="compDescription" style="font-size: 13px; color: var(--dg-navy); margin: 0; line-height: 1.5;">-</p>
-                    </div>
+
+                    <button type="submit" id="saveEmprProfileBtn" class="btn-action">Save Company Profile</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- TAB 2: Post a Job -->
+        <div id="tabPostJob" class="dash-tab-content">
+            <!-- AI Poster Extraction Assistant -->
+            <div class="extraction-box">
+                <h3>⚡ Upload Recruitment Poster / Pamphlet (AI Assistant)</h3>
+                <p>Upload your garment recruitment poster image or paste poster text. Our extractor will auto-fill the job fields below into a draft for your review.</p>
+                <div class="poster-upload-zone">
+                    <input type="file" id="posterFileInput" accept="image/*" class="form-control" style="flex: 1; min-width: 200px;">
+                    <button type="button" class="btn-secondary" id="extractPosterBtn" onclick="handleExtractPoster()">
+                        🔍 Extract Job Details
+                    </button>
                 </div>
+                <div id="extractionStatusText" style="font-size: 12.5px; color: #15803d; margin-top: 8px; font-weight: 600; display: none;"></div>
             </div>
 
-            <!-- Employer Functions & Listings -->
-            <div>
-                <div class="dash-card">
-                    <h2>
-                        📢 Job Postings
-                        <span style="font-size: 12px; background: #E0E7FF; color: #3730A3; padding: 2px 8px; border-radius: 12px;">Employer Portal</span>
-                    </h2>
-                    <div class="empty-state">
-                        <span>📋</span>
-                        <p style="margin: 0 0 12px 0;">Post direct garment vacancies in Tiruppur to attract candidates.</p>
-                        <a href="#post-job" onclick="alert('Employer self-serve job posting integration is coming in next phase. Your company profile is active and verified.')" class="btn-action" style="font-size: 12.5px; padding: 8px 14px;">+ Post a New Garment Vacancy</a>
-                    </div>
-                </div>
+            <!-- Job Creation Form -->
+            <div class="dash-card">
+                <h2 id="jobFormHeader">Create Garment Job Opening</h2>
+                <input type="hidden" id="editingJobId" value="">
 
-                <div class="dash-card">
-                    <h2>
-                        👥 Applicant Management
-                    </h2>
-                    <div class="empty-state">
-                        <span>📥</span>
-                        <p style="margin: 0;">Applicants applying to your company openings will appear here.</p>
+                <form id="jobPostingForm" onsubmit="event.preventDefault()">
+                    <div class="form-group">
+                        <label>Job Title *</label>
+                        <input type="text" id="jobTitle" class="form-control" placeholder="e.g. Senior Merchandiser - Knits" required>
                     </div>
+
+                    <div class="grid-2col">
+                        <div class="form-group">
+                            <label>Garment Department *</label>
+                            <select id="jobDepartment" class="form-control" required>
+                                <option value="Merchandising">Merchandising</option>
+                                <option value="Quality">Quality</option>
+                                <option value="Production">Production</option>
+                                <option value="Cutting">Cutting</option>
+                                <option value="Sewing">Sewing</option>
+                                <option value="Finishing">Finishing</option>
+                                <option value="Sampling">Sampling</option>
+                                <option value="Printing">Printing</option>
+                                <option value="Embroidery">Embroidery</option>
+                                <option value="Accounts">Accounts & Finance</option>
+                                <option value="HR / Admin">HR / Admin</option>
+                                <option value="Maintenance">Maintenance & Electrical</option>
+                                <option value="Other">Other Garment Role</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Specific Job Role / Designation</label>
+                            <input type="text" id="jobRole" class="form-control" placeholder="e.g. Senior Merchandiser">
+                        </div>
+                    </div>
+
+                    <div class="grid-3col">
+                        <div class="form-group">
+                            <label>Job Type</label>
+                            <select id="jobType" class="form-control">
+                                <option value="Full Time">Full Time</option>
+                                <option value="Part Time">Part Time</option>
+                                <option value="Contract">Contract</option>
+                                <option value="Freelance">Freelance</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Workplace Type</label>
+                            <select id="jobWorkplace" class="form-control">
+                                <option value="On-site / Factory">On-site / Factory</option>
+                                <option value="Hybrid">Hybrid</option>
+                                <option value="Remote">Remote</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Experience Required</label>
+                            <select id="jobExpLevel" class="form-control">
+                                <option value="Any">Any / Freshers Welcome</option>
+                                <option value="1-3 Years">1-3 Years</option>
+                                <option value="3-5 Years">3-5 Years</option>
+                                <option value="5-8 Years">5-8 Years</option>
+                                <option value="8+ Years">8+ Years</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid-3col">
+                        <div class="form-group">
+                            <label>Min Salary (₹/month)</label>
+                            <input type="number" id="jobSalaryMin" class="form-control" placeholder="e.g. 25000">
+                        </div>
+                        <div class="form-group">
+                            <label>Max Salary (₹/month)</label>
+                            <input type="number" id="jobSalaryMax" class="form-control" placeholder="e.g. 40000">
+                        </div>
+                        <div class="form-group">
+                            <label>Number of Vacancies</label>
+                            <input type="number" id="jobVacancies" class="form-control" value="1" min="1">
+                        </div>
+                    </div>
+
+                    <div class="grid-3col">
+                        <div class="form-group">
+                            <label>Location / Area *</label>
+                            <input type="text" id="jobLocationArea" class="form-control" placeholder="e.g. Angeripalayam" required>
+                        </div>
+                        <div class="form-group">
+                            <label>City</label>
+                            <input type="text" id="jobLocationCity" class="form-control" value="Tiruppur" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Pincode</label>
+                            <input type="text" id="jobPinCode" class="form-control" placeholder="e.g. 641602">
+                        </div>
+                    </div>
+
+                    <div class="grid-3col">
+                        <div class="form-group">
+                            <label>Contact Person</label>
+                            <input type="text" id="jobContactPerson" class="form-control" placeholder="HR Manager">
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Phone / Mobile *</label>
+                            <input type="tel" id="jobContactPhone" class="form-control" placeholder="10-digit mobile" required>
+                        </div>
+                        <div class="form-group">
+                            <label>WhatsApp Number</label>
+                            <input type="tel" id="jobContactWhatsapp" class="form-control" placeholder="WhatsApp number">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Job Description & Responsibilities *</label>
+                        <textarea id="jobDescription" class="form-control" rows="4" placeholder="Detail the duties, factory machinery, fabric types (Knits/Woven), buyer accounts, etc." required></textarea>
+                    </div>
+
+                    <div class="grid-2col">
+                        <div class="form-group">
+                            <label>Requirements & Candidate Criteria</label>
+                            <textarea id="jobRequirements" class="form-control" rows="3" placeholder="Education, machine skills, language proficiency..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Key Skills (Comma separated)</label>
+                            <textarea id="jobSkills" class="form-control" rows="3" placeholder="e.g. CAD, Gerber, FastReact, Circular Knitting, Fabric Inspection"></textarea>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap;">
+                        <button type="button" class="btn-secondary" onclick="openJobPreviewModal()">👁️ Preview Job</button>
+                        <button type="button" class="btn-secondary" id="btnSaveDraft" onclick="handleSaveJob('draft')">💾 Save as Draft</button>
+                        <button type="button" class="btn-action" id="btnSubmitReview" onclick="handleSaveJob('pending_review')">🚀 Submit for Admin Review</button>
+                        <button type="button" class="btn-secondary" id="btnCancelEdit" onclick="cancelJobEdit()" style="display: none;">Cancel Edit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- TAB 3: My Jobs -->
+        <div id="tabMyJobs" class="dash-tab-content" style="display: none;">
+            <div class="dash-card">
+                <h2>
+                    <span>My Garment Job Vacancies</span>
+                    <button type="button" class="btn-action" style="padding: 6px 14px; font-size: 13px;" onclick="showTab('post-job')">+ Post New Job</button>
+                </h2>
+                
+                <div id="myJobsListContainer">
+                    <p style="color: var(--dg-slate); font-size: 14px;">Loading your job vacancies...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: Applications (Coming Soon) -->
+        <div id="tabApplications" class="dash-tab-content" style="display: none;">
+            <div class="dash-card">
+                <h2>Candidate Applications</h2>
+                <div class="coming-soon-box">
+                    <span class="cs-icon">👥</span>
+                    <h3>Candidate Applications — Coming Soon</h3>
+                    <p>Review candidate profiles, download resumes, and contact verified applicants in real time.</p>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Live Preview Modal -->
+    <div id="previewModal" class="preview-modal-overlay">
+        <div class="preview-modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 16px;">
+                <h3 style="margin: 0; font-size: 18px; color: var(--dg-navy);">Candidate Job Preview</h3>
+                <button type="button" onclick="closeJobPreviewModal()" style="background:none; border:none; font-size: 20px; cursor: pointer;">&times;</button>
+            </div>
+            <div>
+                <h2 id="prevTitle" style="color: var(--dg-navy); margin: 0 0 6px 0; font-size: 20px;"></h2>
+                <p id="prevCompany" style="color: var(--dg-slate); font-size: 14px; margin: 0 0 12px 0; font-weight: 600;"></p>
+                
+                <div style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 13.5px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <div><strong>Department:</strong> <span id="prevDept"></span></div>
+                    <div><strong>Location:</strong> <span id="prevLocation"></span></div>
+                    <div><strong>Salary:</strong> <span id="prevSalary"></span></div>
+                    <div><strong>Experience:</strong> <span id="prevExp"></span></div>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <h4 style="margin: 0 0 6px 0; font-size: 14px;">Job Description</h4>
+                    <p id="prevDesc" style="font-size: 13.5px; line-height: 1.5; color: #334155; margin: 0; white-space: pre-line;"></p>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <h4 style="margin: 0 0 6px 0; font-size: 14px;">Requirements</h4>
+                    <p id="prevReq" style="font-size: 13.5px; line-height: 1.5; color: #334155; margin: 0; white-space: pre-line;"></p>
+                </div>
+
+                <div style="background: #ecfdf5; padding: 12px; border-radius: 8px; font-size: 13.5px; color: #065f46;">
+                    <strong>Contact:</strong> <span id="prevContact"></span>
+                </div>
+            </div>
+            <div style="text-align: right; margin-top: 20px;">
+                <button type="button" class="btn-secondary" onclick="closeJobPreviewModal()">Close Preview</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        async function loadProfile() {
+        let currentUser = null;
+        let employerProfile = null;
+
+        function showTab(tabName) {
+            const tabs = ['profile', 'post-job', 'my-jobs', 'applications'];
+            const btns = document.querySelectorAll('.dash-tab-btn');
+            
+            tabs.forEach((t, i) => {
+                let id = 'tab';
+                if (t === 'profile') id = 'tabProfile';
+                else if (t === 'post-job') id = 'tabPostJob';
+                else if (t === 'my-jobs') id = 'tabMyJobs';
+                else if (t === 'applications') id = 'tabApplications';
+
+                const content = document.getElementById(id);
+                if (content) {
+                    if (t === tabName) {
+                        content.style.display = 'block';
+                        btns[i].classList.add('active');
+                    } else {
+                        content.style.display = 'none';
+                        btns[i].classList.remove('active');
+                    }
+                }
+            });
+
+            if (tabName === 'my-jobs') {
+                loadMyJobs();
+            }
+        }
+
+        async function loadEmployerDashboard() {
             try {
                 const res = await fetch("/api/auth/me");
                 if (!res.ok) {
-                    window.location.href = "/login";
+                    window.location.href = "/employer/login";
                     return;
                 }
 
                 const data = await res.json();
-                const user = data.user;
-                if (user.account_type !== "company") {
+                if (!data.logged_in || !data.user) {
+                    window.location.href = "/employer/login";
+                    return;
+                }
+
+                currentUser = data.user;
+                if (currentUser.account_type === "individual") {
                     window.location.href = "/dashboard/individual";
                     return;
                 }
 
-                const p = user.profile || {};
-                document.getElementById("companyGreeting").textContent = `Welcome, ${p.company_name || "Garment Employer"}`;
-                document.getElementById("companyEmailDisplay").textContent = user.email;
-                document.getElementById("compName").textContent = p.company_name || "-";
-                document.getElementById("compContact").textContent = p.contact_person || "-";
-                document.getElementById("compType").textContent = p.business_type || "Garment Business";
-                document.getElementById("compMobile").textContent = p.mobile || "Not specified";
-                document.getElementById("compLocation").textContent = p.location || "Tiruppur";
-                document.getElementById("compWebsite").innerHTML = p.website ? `<a href="${p.website}" target="_blank" style="color: var(--dg-red);">${p.website}</a>` : "Not provided";
-                document.getElementById("compDescription").textContent = p.company_description || "No overview provided.";
-            } catch (e) {
-                console.error("Failed to load company profile:", e);
-                window.location.href = "/login";
+                employerProfile = currentUser.profile || {};
+                const contactPerson = employerProfile.contact_person || "Employer";
+                const companyName = employerProfile.company_name || currentUser.email;
+
+                document.getElementById("userGreeting").textContent = "Welcome, " + contactPerson;
+                document.getElementById("companyNameDisplay").textContent = companyName + " (" + currentUser.email + ")";
+
+                // Verification status badge
+                const vStatus = employerProfile.verification_status || "pending";
+                const vBadge = document.getElementById("verificationBadge");
+                if (vStatus === "verified") {
+                    vBadge.className = "badge-verified";
+                    vBadge.textContent = "✓ Verified Company Account";
+                } else if (vStatus === "rejected") {
+                    vBadge.className = "badge-pending";
+                    vBadge.style.background = "#fee2e2";
+                    vBadge.style.color = "#b91c1c";
+                    vBadge.textContent = "✕ Account Verification Rejected";
+                } else {
+                    vBadge.className = "badge-pending";
+                    vBadge.textContent = "⏳ Verification: Pending";
+                }
+
+                // Populate profile form fields
+                document.getElementById("emprCompanyName").value = employerProfile.company_name || "";
+                document.getElementById("emprContactPerson").value = employerProfile.contact_person || "";
+                document.getElementById("emprMobile").value = employerProfile.mobile || "";
+                document.getElementById("emprWhatsapp").value = employerProfile.whatsapp || "";
+                document.getElementById("emprArea").value = employerProfile.area || "";
+                document.getElementById("emprBusinessType").value = employerProfile.business_type || "";
+                document.getElementById("emprLocation").value = employerProfile.location || "";
+                document.getElementById("emprWebsite").value = employerProfile.website || "";
+                document.getElementById("emprAddress").value = employerProfile.address || "";
+                document.getElementById("emprDescription").value = employerProfile.company_description || "";
+
+                // Pre-fill job posting form defaults
+                if (!document.getElementById("editingJobId").value) {
+                    document.getElementById("jobLocationArea").value = employerProfile.area || "";
+                    document.getElementById("jobLocationCity").value = employerProfile.location || "Tiruppur";
+                    document.getElementById("jobContactPerson").value = employerProfile.contact_person || "";
+                    document.getElementById("jobContactPhone").value = employerProfile.mobile || "";
+                    document.getElementById("jobContactWhatsapp").value = employerProfile.whatsapp || employerProfile.mobile || "";
+                }
+            } catch (err) {
+                console.error("Failed to load employer dashboard:", err);
             }
+        }
+
+        function showAlert(msg, isSuccess = true) {
+            const el = document.getElementById("alertBox");
+            el.textContent = msg;
+            el.className = "msg-alert " + (isSuccess ? "msg-success" : "msg-error");
+            el.style.display = "block";
+            el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+
+        async function handleEmployerProfileUpdate(e) {
+            e.preventDefault();
+            const btn = document.getElementById("saveEmprProfileBtn");
+            btn.disabled = true;
+            btn.textContent = "Saving...";
+
+            try {
+                const res = await fetch("/api/auth/employer/profile", {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        company_name: document.getElementById("emprCompanyName").value.trim(),
+                        contact_person: document.getElementById("emprContactPerson").value.trim(),
+                        mobile: document.getElementById("emprMobile").value.trim() || null,
+                        whatsapp: document.getElementById("emprWhatsapp").value.trim() || null,
+                        area: document.getElementById("emprArea").value.trim() || null,
+                        location: document.getElementById("emprLocation").value.trim() || null,
+                        business_type: document.getElementById("emprBusinessType").value.trim() || null,
+                        website: document.getElementById("emprWebsite").value.trim() || null,
+                        address: document.getElementById("emprAddress").value.trim() || null,
+                        company_description: document.getElementById("emprDescription").value.trim() || null
+                    })
+                });
+
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.detail || "Failed to update company profile.");
+                }
+
+                showAlert("Company profile updated successfully!");
+                document.getElementById("userGreeting").textContent = "Welcome, " + document.getElementById("emprContactPerson").value.trim();
+                document.getElementById("companyNameDisplay").textContent = document.getElementById("emprCompanyName").value.trim();
+            } catch (err) {
+                showAlert(err.message || "Failed to save company profile changes.", false);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Save Company Profile";
+            }
+        }
+
+        // --- POSTER AI EXTRACTION ASSISTANT ---
+        async function handleExtractPoster() {
+            const fileInput = document.getElementById("posterFileInput");
+            const btn = document.getElementById("extractPosterBtn");
+            const statusEl = document.getElementById("extractionStatusText");
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert("Please select a poster image file first.");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append("poster_file", file);
+
+            btn.disabled = true;
+            btn.textContent = "⏳ Extracting details...";
+            statusEl.style.display = "block";
+            statusEl.textContent = "Scanning poster text with OCR and structuring fields...";
+
+            try {
+                const res = await fetch("/api/employer/jobs/extract-poster", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await res.json();
+                if (!res.ok || !data.success) {
+                    throw new Error(data.detail || "Extraction could not parse this poster.");
+                }
+
+                const draft = data.draft_job || {};
+                
+                // Populate form fields
+                if (draft.title) document.getElementById("jobTitle").value = draft.title;
+                if (draft.department) document.getElementById("jobDepartment").value = draft.department;
+                if (draft.job_role) document.getElementById("jobRole").value = draft.job_role;
+                if (draft.salary_min) document.getElementById("jobSalaryMin").value = draft.salary_min;
+                if (draft.salary_max) document.getElementById("jobSalaryMax").value = draft.salary_max;
+                if (draft.vacancies) document.getElementById("jobVacancies").value = draft.vacancies;
+                if (draft.location_area) document.getElementById("jobLocationArea").value = draft.location_area;
+                if (draft.contact_person) document.getElementById("jobContactPerson").value = draft.contact_person;
+                if (draft.contact_phone) document.getElementById("jobContactPhone").value = draft.contact_phone;
+                if (draft.contact_whatsapp) document.getElementById("jobContactWhatsapp").value = draft.contact_whatsapp;
+                if (draft.description) document.getElementById("jobDescription").value = draft.description;
+                if (draft.requirements) document.getElementById("jobRequirements").value = draft.requirements;
+                if (draft.skills && Array.isArray(draft.skills)) document.getElementById("jobSkills").value = draft.skills.join(", ");
+
+                statusEl.textContent = "✓ Extracted details filled below! Please review and edit before saving/submitting.";
+                showAlert("Poster extraction successful! Review and edit the fields below.", true);
+            } catch (err) {
+                statusEl.style.display = "none";
+                showAlert("Poster extraction error: " + err.message, false);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "🔍 Extract Job Details";
+            }
+        }
+
+        // --- JOB SAVE & SUBMIT ---
+        async function handleSaveJob(targetStatus) {
+            const title = document.getElementById("jobTitle").value.trim();
+            const dept = document.getElementById("jobDepartment").value;
+            const locationArea = document.getElementById("jobLocationArea").value.trim();
+            const phone = document.getElementById("jobContactPhone").value.trim();
+            const desc = document.getElementById("jobDescription").value.trim();
+
+            if (!title || !dept || !locationArea || !phone || !desc) {
+                alert("Please fill in the required fields (*): Title, Department, Location Area, Contact Phone, and Description.");
+                return;
+            }
+
+            const editingId = document.getElementById("editingJobId").value;
+            const payload = {
+                title: title,
+                department: dept,
+                job_role: document.getElementById("jobRole").value.trim() || title,
+                job_type: document.getElementById("jobType").value,
+                workplace_type: document.getElementById("jobWorkplace").value,
+                experience_level: document.getElementById("jobExpLevel").value,
+                salary_min: document.getElementById("jobSalaryMin").value ? parseInt(document.getElementById("jobSalaryMin").value) : null,
+                salary_max: document.getElementById("jobSalaryMax").value ? parseInt(document.getElementById("jobSalaryMax").value) : null,
+                salary_period: "month",
+                vacancies: document.getElementById("jobVacancies").value ? parseInt(document.getElementById("jobVacancies").value) : 1,
+                location_area: locationArea,
+                location_city: document.getElementById("jobLocationCity").value.trim() || "Tiruppur",
+                pin_code: document.getElementById("jobPinCode").value.trim() || null,
+                contact_person: document.getElementById("jobContactPerson").value.trim() || null,
+                contact_phone: phone,
+                contact_whatsapp: document.getElementById("jobContactWhatsapp").value.trim() || null,
+                description: desc,
+                requirements: document.getElementById("jobRequirements").value.trim() || null,
+                skills: document.getElementById("jobSkills").value.split(",").map(s => s.trim()).filter(Boolean),
+                status: targetStatus
+            };
+
+            const btnSave = document.getElementById("btnSaveDraft");
+            const btnSubmit = document.getElementById("btnSubmitReview");
+            btnSave.disabled = true;
+            btnSubmit.disabled = true;
+
+            try {
+                let res;
+                if (editingId) {
+                    res = await fetch(`/api/employer/jobs/${editingId}`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
+                    });
+                } else {
+                    res = await fetch("/api/employer/jobs", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
+                    });
+                }
+
+                const data = await res.json();
+                if (!res.ok || !data.success) {
+                    throw new Error(data.detail || "Failed to save job opening.");
+                }
+
+                showAlert(targetStatus === "pending_review" ? "🚀 Job submitted for admin review successfully!" : "💾 Job saved as draft successfully!", true);
+                cancelJobEdit();
+                showTab("my-jobs");
+            } catch (err) {
+                showAlert(err.message, false);
+            } finally {
+                btnSave.disabled = false;
+                btnSubmit.disabled = false;
+            }
+        }
+
+        // --- MY JOBS LISTING ---
+        async function loadMyJobs() {
+            const container = document.getElementById("myJobsListContainer");
+            container.innerHTML = `<p style="color: var(--dg-slate); font-size: 14px;">Loading your job vacancies...</p>`;
+
+            try {
+                const res = await fetch("/api/employer/jobs");
+                const data = await res.json();
+
+                if (!res.ok || !data.success) {
+                    throw new Error(data.detail || "Failed to load jobs");
+                }
+
+                const jobs = data.jobs || [];
+                if (jobs.length === 0) {
+                    container.innerHTML = `
+                        <div class="coming-soon-box" style="padding: 32px 16px;">
+                            <span class="cs-icon">📝</span>
+                            <h3>No job postings yet</h3>
+                            <p>You haven't posted any garment job vacancies yet. Click the button below to create your first vacancy.</p>
+                            <button type="button" class="btn-action" style="margin-top: 14px;" onclick="showTab('post-job')">+ Create Your First Job</button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = "";
+                jobs.forEach(j => {
+                    const st = (j.status || "").toLowerCase();
+                    let badgeClass = "badge-status-draft";
+                    let badgeText = "Draft";
+
+                    if (st === "published") {
+                        badgeClass = "badge-status-published";
+                        badgeText = "✓ Live & Published";
+                    } else if (st === "pending_review") {
+                        badgeClass = "badge-status-pending";
+                        badgeText = "⏳ Pending Review";
+                    } else if (st === "rejected") {
+                        badgeClass = "badge-status-rejected";
+                        badgeText = "✕ Changes Requested / Rejected";
+                    }
+
+                    const exp = j.experience_level || (j.experience_min ? `${j.experience_min}+ Yrs` : "Any Experience");
+                    const salary = j.salary_min ? `₹${j.salary_min.toLocaleString()} - ₹${(j.salary_max || j.salary_min).toLocaleString()}` : "Salary Negotiable";
+
+                    html += `
+                        <div class="job-item-card">
+                            <div class="job-item-header">
+                                <div>
+                                    <h3 class="job-item-title">${escapeHtml(j.title)}</h3>
+                                    <span style="font-size: 13px; color: var(--dg-red); font-weight: 600;">Department: ${escapeHtml(j.department || 'Garments')}</span>
+                                </div>
+                                <div>
+                                    <span class="${badgeClass}">${badgeText}</span>
+                                </div>
+                            </div>
+
+                            <div class="job-item-meta">
+                                <span>📍 ${escapeHtml(j.location_area || j.location || 'Tiruppur')}</span>
+                                <span>💼 ${escapeHtml(j.job_type || 'Full Time')}</span>
+                                <span>🎓 ${escapeHtml(exp)}</span>
+                                <span>💰 ${escapeHtml(salary)}</span>
+                                <span>👥 Vacancies: ${j.vacancies || 1}</span>
+                            </div>
+
+                            ${st === 'rejected' && j.rejection_reason ? `
+                                <div class="rejection-banner">
+                                    <strong>Admin Feedback:</strong> ${escapeHtml(j.rejection_reason)}
+                                </div>
+                            ` : ''}
+
+                            <div class="job-item-actions">
+                                ${st === 'draft' || st === 'rejected' ? `
+                                    <button type="button" class="btn-action" style="padding: 6px 14px; font-size: 13px;" onclick="editEmployerJob(${j.id})">
+                                        ✏️ ${st === 'rejected' ? 'Edit & Resubmit' : 'Edit Draft'}
+                                    </button>
+                                ` : ''}
+
+                                ${st === 'draft' ? `
+                                    <button type="button" class="btn-secondary" style="padding: 6px 14px; font-size: 13px; color: #b91c1c;" onclick="deleteEmployerDraft(${j.id})">
+                                        🗑️ Delete Draft
+                                    </button>
+                                ` : ''}
+
+                                ${st === 'published' && j.slug ? `
+                                    <a href="/jobs/${encodeURIComponent(j.slug)}" target="_blank" class="btn-secondary" style="padding: 6px 14px; font-size: 13px; text-decoration: none;">
+                                        🔗 View Public Listing
+                                    </a>
+                                ` : ''}
+
+                                ${st === 'pending_review' ? `
+                                    <span style="font-size: 13px; color: var(--dg-slate); font-style: italic;">
+                                        Job is undergoing admin moderation. It will be published upon approval.
+                                    </span>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+            } catch (err) {
+                container.innerHTML = `<p style="color: #b91c1c;">Error loading jobs: ${err.message}</p>`;
+            }
+        }
+
+        async function editEmployerJob(jobId) {
+            try {
+                const res = await fetch(`/api/employer/jobs/${jobId}`);
+                const data = await res.json();
+                if (!res.ok || !data.success) throw new Error(data.detail || "Could not load job details");
+
+                const j = data.job;
+                document.getElementById("editingJobId").value = j.id;
+                document.getElementById("jobFormHeader").textContent = `Edit Job: ${j.title}`;
+                document.getElementById("jobTitle").value = j.title || "";
+                document.getElementById("jobDepartment").value = j.department || "Merchandising";
+                document.getElementById("jobRole").value = j.job_role || "";
+                document.getElementById("jobType").value = j.job_type || "Full Time";
+                document.getElementById("jobWorkplace").value = j.workplace_type || "On-site / Factory";
+                document.getElementById("jobExpLevel").value = j.experience_level || "Any";
+                document.getElementById("jobSalaryMin").value = j.salary_min || "";
+                document.getElementById("jobSalaryMax").value = j.salary_max || "";
+                document.getElementById("jobVacancies").value = j.vacancies || 1;
+                document.getElementById("jobLocationArea").value = j.location_area || "";
+                document.getElementById("jobLocationCity").value = j.location_city || "Tiruppur";
+                document.getElementById("jobPinCode").value = j.pin_code || "";
+                document.getElementById("jobContactPerson").value = j.contact_person || "";
+                document.getElementById("jobContactPhone").value = j.contact_phone || "";
+                document.getElementById("jobContactWhatsapp").value = j.contact_whatsapp || "";
+                document.getElementById("jobDescription").value = j.description || "";
+                document.getElementById("jobRequirements").value = j.requirements || "";
+                document.getElementById("jobSkills").value = (j.skills || []).join(", ");
+
+                document.getElementById("btnCancelEdit").style.display = "inline-flex";
+                showTab("post-job");
+            } catch (e) {
+                showAlert("Error loading job for edit: " + e.message, false);
+            }
+        }
+
+        function cancelJobEdit() {
+            document.getElementById("editingJobId").value = "";
+            document.getElementById("jobFormHeader").textContent = "Create Garment Job Opening";
+            document.getElementById("jobPostingForm").reset();
+            document.getElementById("btnCancelEdit").style.display = "none";
+            if (employerProfile) {
+                document.getElementById("jobLocationArea").value = employerProfile.area || "";
+                document.getElementById("jobLocationCity").value = employerProfile.location || "Tiruppur";
+                document.getElementById("jobContactPerson").value = employerProfile.contact_person || "";
+                document.getElementById("jobContactPhone").value = employerProfile.mobile || "";
+                document.getElementById("jobContactWhatsapp").value = employerProfile.whatsapp || employerProfile.mobile || "";
+            }
+        }
+
+        async function deleteEmployerDraft(jobId) {
+            if (!confirm("Are you sure you want to delete this draft job vacancy?")) return;
+            try {
+                const res = await fetch(`/api/employer/jobs/${jobId}`, { method: "DELETE" });
+                const data = await res.json();
+                if (!res.ok || !data.success) throw new Error(data.detail || "Failed to delete draft");
+                showAlert("Draft job deleted successfully!", true);
+                loadMyJobs();
+            } catch (err) {
+                showAlert(err.message, false);
+            }
+        }
+
+        // --- PREVIEW MODAL ---
+        function openJobPreviewModal() {
+            const title = document.getElementById("jobTitle").value.trim() || "Untitled Garment Position";
+            const company = (employerProfile ? employerProfile.company_name : "") || "Your Garment Company";
+            const dept = document.getElementById("jobDepartment").value;
+            const area = document.getElementById("jobLocationArea").value.trim() || "Tiruppur";
+            const minSal = document.getElementById("jobSalaryMin").value;
+            const maxSal = document.getElementById("jobSalaryMax").value;
+            const salary = minSal ? `₹${Number(minSal).toLocaleString()} - ₹${Number(maxSal || minSal).toLocaleString()}` : "Negotiable";
+            const exp = document.getElementById("jobExpLevel").value;
+            const desc = document.getElementById("jobDescription").value.trim() || "No description provided.";
+            const req = document.getElementById("jobRequirements").value.trim() || "Standard garment industry experience required.";
+            const contact = `${document.getElementById("jobContactPerson").value.trim() || 'HR'} | 📞 ${document.getElementById("jobContactPhone").value.trim() || '-'}`;
+
+            document.getElementById("prevTitle").textContent = title;
+            document.getElementById("prevCompany").textContent = company;
+            document.getElementById("prevDept").textContent = dept;
+            document.getElementById("prevLocation").textContent = area + ", Tiruppur";
+            document.getElementById("prevSalary").textContent = salary;
+            document.getElementById("prevExp").textContent = exp;
+            document.getElementById("prevDesc").textContent = desc;
+            document.getElementById("prevReq").textContent = req;
+            document.getElementById("prevContact").textContent = contact;
+
+            document.getElementById("previewModal").style.display = "flex";
+        }
+
+        function closeJobPreviewModal() {
+            document.getElementById("previewModal").style.display = "none";
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
         }
 
         async function handleLogout() {
             try {
                 await fetch("/api/auth/logout", { method: "POST" });
             } finally {
-                window.location.href = "/login";
+                window.location.href = "/";
             }
         }
 
-        loadProfile();
+        document.addEventListener("DOMContentLoaded", loadEmployerDashboard);
     </script>
 </body>
 </html>

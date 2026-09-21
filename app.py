@@ -80,10 +80,25 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Enable CORS for frontend integration
+# Enable CORS for frontend integration with strict origins
+raw_cors = os.getenv("ALLOWED_ORIGINS", "")
+if raw_cors:
+    ALLOWED_ORIGINS = [o.strip() for o in raw_cors.split(",") if o.strip()]
+else:
+    ALLOWED_ORIGINS = [
+        "https://tirupurgarment.in",
+        "https://www.tirupurgarment.in",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        "http://localhost:5000",
+        "http://127.0.0.1:5000",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000"
+    ]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -863,10 +878,14 @@ def get_jobs_page():
 
 @app.get("/signup")
 @app.get("/register")
+@app.get("/jobseeker/register")
+@app.get("/employer/register")
 def get_signup_page():
     return FileResponse(os.path.join(BASE_DIR, "signup.html"))
 
 @app.get("/login")
+@app.get("/jobseeker/login")
+@app.get("/employer/login")
 def get_public_login_page():
     return FileResponse(os.path.join(BASE_DIR, "public_login.html"))
 
@@ -875,12 +894,30 @@ def get_forgot_password_page():
     return FileResponse(os.path.join(BASE_DIR, "forgot_password.html"))
 
 @app.get("/dashboard/individual")
+@app.get("/jobseeker/dashboard")
+@app.get("/jobseeker/profile")
 def get_individual_dashboard():
     return FileResponse(os.path.join(BASE_DIR, "dashboard_individual.html"))
 
 @app.get("/dashboard/company")
+@app.get("/employer/dashboard")
+@app.get("/employer/profile")
+@app.get("/employer/post-job")
+@app.get("/employer/jobs")
+@app.get("/post-a-job")
 def get_company_dashboard():
     return FileResponse(os.path.join(BASE_DIR, "dashboard_company.html"))
+
+@app.get("/logout")
+def get_logout_redirect(public_session_id: Optional[str] = Cookie(None)):
+    if public_session_id and db_enabled:
+        try:
+            execute_db("DELETE FROM public_user_sessions WHERE token = %s;", (public_session_id,))
+        except Exception:
+            pass
+    res = RedirectResponse(url="/", status_code=302)
+    res.delete_cookie(key="public_session_id", samesite="lax")
+    return res
 
 @app.get("/tools")
 def get_tools_page():
@@ -911,18 +948,21 @@ import routers.admin_jobs
 import routers.admin_ingestion
 import routers.seo
 import routers.public_auth
+import routers.employer_jobs
 
 routers.jobs.init_db_helpers(db_enabled, query_db, execute_db, execute_db_returning)
 routers.admin_jobs.init_admin_helpers(db_enabled, query_db, execute_db, execute_db_returning, get_current_admin)
 routers.admin_ingestion.init_ingestion_router(query_db, execute_db, execute_db_returning, db_enabled, FALLBACK_ADMIN_SESSIONS, BASE_DIR)
 routers.seo.init_seo_db_helpers(db_enabled, query_db)
 routers.public_auth.init_public_auth_helpers(db_enabled, query_db, execute_db, execute_db_returning)
+routers.employer_jobs.init_employer_jobs_helpers(db_enabled, query_db, execute_db, execute_db_returning, BASE_DIR)
 
 app.include_router(routers.jobs.router)
 app.include_router(routers.admin_jobs.router)
 app.include_router(routers.admin_ingestion.router)
 app.include_router(routers.seo.router)
 app.include_router(routers.public_auth.router)
+app.include_router(routers.employer_jobs.router)
 
 # Custom 404 Exception Handler returning HTTP 404 status code and friendly 404.html
 @app.exception_handler(StarletteHTTPException)

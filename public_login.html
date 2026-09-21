@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
     <title>Sign In | TirupurGarment.in</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -70,12 +71,12 @@
         .auth-container {
             max-width: 440px;
             width: 90%;
-            margin: 60px auto;
+            margin: 50px auto;
             background: var(--dg-white);
-            border-radius: 12px;
+            border-radius: 14px;
             box-shadow: 0 10px 30px rgba(8, 18, 38, 0.06);
             border: 1px solid var(--dg-border);
-            padding: 40px;
+            padding: 40px 32px;
             flex-grow: 1;
         }
 
@@ -113,7 +114,7 @@
 
         .form-group label {
             display: block;
-            font-size: 13px;
+            font-size: 13.5px;
             font-weight: 600;
             color: var(--dg-navy);
             margin-bottom: 6px;
@@ -122,106 +123,106 @@
         .form-control {
             width: 100%;
             padding: 12px 14px;
-            border-radius: 6px;
             border: 1px solid var(--dg-border);
-            font-family: inherit;
+            border-radius: 8px;
             font-size: 14px;
-            color: #0F172A;
+            color: var(--dg-navy);
+            font-family: inherit;
             box-sizing: border-box;
-            transition: border-color 0.2s;
+            background: #fff;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         .form-control:focus {
             outline: none;
             border-color: var(--dg-red);
-            box-shadow: 0 0 0 3px rgba(158, 27, 50, 0.1);
+            box-shadow: 0 0 0 3px rgba(158, 27, 50, 0.12);
         }
 
-        .password-wrap {
-            position: relative;
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .password-toggle {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: var(--dg-slate);
-            cursor: pointer;
+        .forgot-link {
             font-size: 13px;
-            font-weight: 600;
-            padding: 4px;
+            color: var(--dg-red);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .forgot-link:hover {
+            text-decoration: underline;
         }
 
         .btn-submit {
-            background-color: var(--dg-red);
-            color: #FFFFFF;
-            border: none;
             width: 100%;
-            padding: 14px;
-            font-weight: 700;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.2s;
+            padding: 13px;
+            background: var(--dg-navy);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
             font-size: 15px;
-            margin-top: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
         }
 
-        .btn-submit:hover {
-            background-color: var(--dg-red-hover);
+        .btn-submit:hover:not(:disabled) {
+            background: var(--dg-red);
+            transform: translateY(-1px);
         }
 
         .btn-submit:disabled {
-            background-color: #94A3B8;
+            opacity: 0.6;
             cursor: not-allowed;
         }
 
-        .alert-danger {
-            background: #FEF2F2;
-            border: 1px solid #FECACA;
-            color: #991B1B;
+        .msg-alert {
             padding: 12px 16px;
-            border-radius: 6px;
-            font-size: 13px;
+            border-radius: 8px;
+            font-size: 13.5px;
             margin-bottom: 20px;
             display: none;
+            line-height: 1.4;
         }
 
-        .form-links {
-            display: flex;
-            justify-content: flex-end;
-            margin-top: -10px;
-            margin-bottom: 16px;
+        .msg-error {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
         }
 
-        .form-links a {
-            color: var(--dg-red);
-            font-size: 13px;
-            font-weight: 500;
-            text-decoration: none;
+        .msg-success {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
         }
 
-        .form-links a:hover {
-            text-decoration: underline;
-        }
-
-        .auth-footer {
+        .auth-footer-links {
             text-align: center;
             margin-top: 24px;
-            font-size: 14px;
+            font-size: 13.5px;
             color: var(--dg-slate);
         }
 
-        .auth-footer a {
+        .auth-footer-links a {
             color: var(--dg-red);
             font-weight: 600;
             text-decoration: none;
         }
 
-        .auth-footer a:hover {
+        .auth-footer-links a:hover {
             text-decoration: underline;
+        }
+
+        @media (max-width: 480px) {
+            .auth-container {
+                padding: 28px 20px;
+                margin: 30px auto;
+            }
         }
     </style>
 </head>
@@ -231,91 +232,85 @@
             <img src="/assets/images/logo-light.png" alt="DigiGarment Logo">
         </a>
         <div>
-            <a href="/">← Back to Home</a>
+            <a href="/jobs">Tiruppur Jobs</a>
             <a href="/signup" class="nav-signup-btn">Create Account</a>
         </div>
     </nav>
 
     <div class="auth-container">
         <div class="auth-header">
-            <p class="eyebrow">User Access</p>
+            <p class="eyebrow">DIGIGARMENT JOBS</p>
             <h1>Welcome Back</h1>
-            <p>Sign in to access your TirupurGarment profile and dashboard.</p>
+            <p>Sign in to your Job Seeker or Employer account</p>
         </div>
 
-        <div id="errorAlert" class="alert-danger"></div>
+        <div id="alertBox" class="msg-alert"></div>
 
         <form id="loginForm" onsubmit="handleLogin(event)">
             <div class="form-group">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" class="form-control" placeholder="name@example.com" required>
+                <label>Email Address or Mobile Number</label>
+                <input type="text" id="loginIdentifier" class="form-control" placeholder="Email or 10-digit mobile number" required autocomplete="username">
             </div>
 
             <div class="form-group">
-                <label for="password">Password</label>
-                <div class="password-wrap">
-                    <input type="password" id="password" class="form-control" placeholder="Enter your password" required>
-                    <button type="button" class="password-toggle" onclick="togglePassword()">Show</button>
+                <div class="flex-between" style="margin-bottom: 6px;">
+                    <label style="margin-bottom: 0;">Password</label>
+                    <a href="/forgot-password" class="forgot-link">Forgot password?</a>
                 </div>
+                <input type="password" id="loginPassword" class="form-control" placeholder="Enter your password" required autocomplete="current-password">
             </div>
 
-            <div class="form-links">
-                <a href="/forgot-password">Forgot Password?</a>
-            </div>
-
-            <button type="submit" id="btnLogin" class="btn-submit">
-                Sign In
-            </button>
+            <button type="submit" id="submitBtn" class="btn-submit">Sign In</button>
         </form>
 
-        <div class="auth-footer">
-            Don't have an account yet? <a href="/signup">Sign Up for free</a>
+        <div class="auth-footer-links">
+            Don't have an account yet?<br>
+            <a href="/jobseeker/register">Register as Job Seeker</a> &bull; <a href="/employer/register">Register as Employer</a>
         </div>
     </div>
 
     <script>
-        function togglePassword() {
-            const pwd = document.getElementById("password");
-            const btn = document.querySelector(".password-toggle");
-            if (pwd.type === "password") {
-                pwd.type = "text";
-                btn.textContent = "Hide";
-            } else {
-                pwd.type = "password";
-                btn.textContent = "Show";
-            }
+        function showAlert(msg, isError = true) {
+            const el = document.getElementById("alertBox");
+            el.textContent = msg;
+            el.className = "msg-alert " + (isError ? "msg-error" : "msg-success");
+            el.style.display = "block";
+        }
+
+        function hideAlert() {
+            const el = document.getElementById("alertBox");
+            el.style.display = "none";
         }
 
         async function handleLogin(e) {
             e.preventDefault();
-            const errAlert = document.getElementById("errorAlert");
-            errAlert.style.display = "none";
+            hideAlert();
 
-            const btn = document.getElementById("btnLogin");
+            const identifier = document.getElementById("loginIdentifier").value.trim();
+            const password = document.getElementById("loginPassword").value;
+            const btn = document.getElementById("submitBtn");
+
             btn.disabled = true;
-            btn.textContent = "Signing In...";
-
-            const email = document.getElementById("email").value.trim();
-            const password = document.getElementById("password").value.trim();
+            btn.textContent = "Signing in...";
 
             try {
                 const res = await fetch("/api/auth/login", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email: email, password: password })
+                    body: JSON.stringify({ email: identifier, password: password })
                 });
 
                 const data = await res.json();
-                if (res.ok && data.success) {
-                    window.location.href = data.redirect_url || "/";
-                } else {
-                    errAlert.textContent = data.detail || "Invalid email or password.";
-                    errAlert.style.display = "block";
+                if (!res.ok) {
+                    throw new Error(data.detail || "Sign in failed. Please check your credentials.");
                 }
+
+                showAlert("Signed in successfully! Redirecting to your dashboard...", false);
+                setTimeout(() => {
+                    window.location.href = data.redirect_url || (data.role === "employer" ? "/dashboard/company" : "/dashboard/individual");
+                }, 600);
             } catch (err) {
-                errAlert.textContent = "Unable to connect to authentication server.";
-                errAlert.style.display = "block";
-            } finally {
+                showAlert(err.message || "Something went wrong. Please try again.");
                 btn.disabled = false;
                 btn.textContent = "Sign In";
             }

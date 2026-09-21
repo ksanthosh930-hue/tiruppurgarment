@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Job Seeker Dashboard | TirupurGarment.in</title>
+    <meta name="robots" content="noindex, nofollow">
+    <title>Employee Dashboard | TirupurGarment.in</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
@@ -86,18 +87,18 @@
             background: linear-gradient(135deg, var(--dg-navy) 0%, var(--dg-light-navy) 100%);
             color: #fff;
             border-radius: 12px;
-            padding: 32px;
+            padding: 28px 32px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 28px;
+            margin-bottom: 24px;
             box-shadow: 0 4px 20px rgba(8, 18, 38, 0.1);
         }
 
         .welcome-card h1 {
-            font-size: 26px;
+            font-size: 24px;
             font-weight: 800;
-            margin: 0 0 8px 0;
+            margin: 0 0 6px 0;
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
@@ -107,7 +108,7 @@
             margin: 0;
         }
 
-        .badge-verified {
+        .badge-role {
             background: rgba(16, 185, 129, 0.2);
             color: #10B981;
             padding: 4px 10px;
@@ -120,17 +121,44 @@
             margin-top: 8px;
         }
 
-        .grid-2col {
-            display: grid;
-            grid-template-columns: 360px 1fr;
-            gap: 24px;
+        /* Dashboard Navigation Tabs */
+        .dash-tabs {
+            display: flex;
+            gap: 8px;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 28px;
+            overflow-x: auto;
+            padding-bottom: 2px;
+        }
+
+        .dash-tab-btn {
+            background: none;
+            border: none;
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--dg-slate);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .dash-tab-btn:hover {
+            color: var(--dg-navy);
+        }
+
+        .dash-tab-btn.active {
+            color: var(--dg-red);
+            border-bottom-color: var(--dg-red);
         }
 
         .dash-card {
             background: var(--dg-white);
-            border-radius: 10px;
+            border-radius: 12px;
             border: 1px solid var(--dg-border);
-            padding: 24px;
+            padding: 28px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.02);
             margin-bottom: 24px;
         }
@@ -139,44 +167,46 @@
             font-size: 18px;
             font-weight: 700;
             color: var(--dg-navy);
-            margin: 0 0 16px 0;
+            margin: 0 0 20px 0;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #f1f5f9;
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
             font-size: 13.5px;
-        }
-
-        .info-row:last-child {
-            border-bottom: none;
-        }
-
-        .info-label {
-            color: var(--dg-slate);
-            font-weight: 500;
-        }
-
-        .info-val {
-            color: var(--dg-navy);
             font-weight: 600;
-            text-align: right;
+            color: var(--dg-navy);
+            margin-bottom: 6px;
         }
 
-        .skills-tag {
-            display: inline-block;
-            background: #f1f5f9;
+        .form-control {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1px solid var(--dg-border);
+            border-radius: 8px;
+            font-size: 14px;
             color: var(--dg-navy);
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 12px;
-            margin: 4px 4px 4px 0;
-            font-weight: 500;
+            font-family: inherit;
+            box-sizing: border-box;
+            background: #fff;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--dg-red);
+            box-shadow: 0 0 0 3px rgba(158, 27, 50, 0.12);
         }
 
         .btn-action {
@@ -185,11 +215,13 @@
             justify-content: center;
             background: var(--dg-red);
             color: #fff;
-            padding: 10px 18px;
+            padding: 10px 20px;
             border-radius: 6px;
             text-decoration: none;
-            font-size: 13.5px;
+            font-size: 14px;
             font-weight: 600;
+            border: none;
+            cursor: pointer;
             transition: background 0.2s;
         }
 
@@ -197,26 +229,64 @@
             background: var(--dg-red-hover);
         }
 
-        .empty-state {
+        .coming-soon-box {
             text-align: center;
-            padding: 36px 20px;
-            color: var(--dg-slate);
+            padding: 48px 24px;
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 10px;
         }
 
-        .empty-state span {
-            font-size: 36px;
+        .coming-soon-box .cs-icon {
+            font-size: 40px;
+            margin-bottom: 12px;
             display: block;
-            margin-bottom: 8px;
+        }
+
+        .coming-soon-box h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--dg-navy);
+            margin: 0 0 6px 0;
+        }
+
+        .coming-soon-box p {
+            font-size: 14px;
+            color: var(--dg-slate);
+            max-width: 440px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+
+        .msg-alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .msg-success {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+
+        .msg-error {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
         }
 
         @media (max-width: 768px) {
-            .grid-2col {
-                grid-template-columns: 1fr;
-            }
             .welcome-card {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 16px;
+            }
+            .grid-2col {
+                grid-template-columns: 1fr;
+                gap: 0;
             }
         }
     </style>
@@ -240,123 +310,204 @@
             <div>
                 <h1 id="userGreeting">Welcome, Job Seeker</h1>
                 <p id="userEmailDisplay">Loading your profile...</p>
-                <div class="badge-verified">✓ Email Verified Job Seeker Profile</div>
+                <div class="badge-role">👤 Job Seeker Account</div>
             </div>
             <div>
-                <a href="/jobs" class="btn-action">Browse Available Jobs →</a>
+                <a href="/jobs" class="btn-action">Find Jobs →</a>
             </div>
         </div>
 
-        <div class="grid-2col">
-            <!-- Profile Overview Card -->
-            <div>
-                <div class="dash-card">
-                    <h2>
-                        👤 My Profile
-                    </h2>
-                    <div class="info-row">
-                        <span class="info-label">Full Name</span>
-                        <span class="info-val" id="profFullName">-</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Designation</span>
-                        <span class="info-val" id="profJobTitle">-</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Experience</span>
-                        <span class="info-val" id="profExp">-</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Mobile</span>
-                        <span class="info-val" id="profMobile">-</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Location</span>
-                        <span class="info-val" id="profLocation">-</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Expected Salary</span>
-                        <span class="info-val" id="profSalary">-</span>
-                    </div>
-                    <div style="margin-top: 16px;">
-                        <span class="info-label" style="display: block; margin-bottom: 6px;">Skills:</span>
-                        <div id="profSkillsWrap">
-                            <span class="skills-tag">General Garment Operations</span>
+        <!-- Navigation Tabs -->
+        <div class="dash-tabs">
+            <button type="button" class="dash-tab-btn active" onclick="showTab('profile')">Profile & Details</button>
+            <button type="button" class="dash-tab-btn" onclick="showTab('resume')">My Resume</button>
+            <button type="button" class="dash-tab-btn" onclick="showTab('saved')">Saved Jobs</button>
+            <button type="button" class="dash-tab-btn" onclick="showTab('applications')">Applications</button>
+        </div>
+
+        <div id="alertBox" class="msg-alert"></div>
+
+        <!-- TAB 1: Profile -->
+        <div id="tabProfile" class="dash-tab-content">
+            <div class="dash-card">
+                <h2>My Profile Information</h2>
+                <form id="profileForm" onsubmit="handleProfileUpdate(event)">
+                    <div class="grid-2col">
+                        <div class="form-group">
+                            <label>Full Name *</label>
+                            <input type="text" id="profFullName" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Mobile Number</label>
+                            <input type="tel" id="profMobile" class="form-control" maxlength="10">
                         </div>
                     </div>
+
+                    <div class="grid-2col">
+                        <div class="form-group">
+                            <label>Preferred Location / Area</label>
+                            <input type="text" id="profLocation" class="form-control" placeholder="e.g. Tiruppur, Avinashi Road">
+                        </div>
+                        <div class="form-group">
+                            <label>Job Title / Designation</label>
+                            <input type="text" id="profJobTitle" class="form-control" placeholder="e.g. Merchandiser, Pattern Master, QC">
+                        </div>
+                    </div>
+
+                    <div class="grid-2col">
+                        <div class="form-group">
+                            <label>Total Experience (Years)</label>
+                            <input type="number" id="profExpYears" class="form-control" step="0.5" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Expected Salary (Monthly / Yearly)</label>
+                            <input type="text" id="profSalary" class="form-control" placeholder="e.g. ₹25,000 / month">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Key Skills</label>
+                        <input type="text" id="profSkills" class="form-control" placeholder="e.g. Pattern Making, Gerber, Costing, SAM Calculation, Fabric Sourcing">
+                    </div>
+
+                    <button type="submit" id="saveProfileBtn" class="btn-action">Save Profile Changes</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- TAB 2: Resume (Coming Soon) -->
+        <div id="tabResume" class="dash-tab-content" style="display: none;">
+            <div class="dash-card">
+                <h2>My Resume</h2>
+                <div class="coming-soon-box">
+                    <span class="cs-icon">📄</span>
+                    <h3>Resume Management — Coming Soon</h3>
+                    <p>Resume upload, preview, and automated ATS parser will be available in Phase 2 for streamlined one-click applications.</p>
                 </div>
             </div>
+        </div>
 
-            <!-- Job Seeker Functionality Cards -->
-            <div>
-                <div class="dash-card">
-                    <h2>
-                        💼 Job Applications
-                        <span style="font-size: 12px; background: #FEF3C7; color: #92400E; padding: 2px 8px; border-radius: 12px;">Active</span>
-                    </h2>
-                    <div class="empty-state">
-                        <span>📄</span>
-                        <p style="margin: 0 0 12px 0;">You have not applied to any job postings yet.</p>
-                        <a href="/jobs" class="btn-action" style="font-size: 12.5px; padding: 8px 14px;">Find Tiruppur Garment Openings</a>
-                    </div>
+        <!-- TAB 3: Saved Jobs (Coming Soon) -->
+        <div id="tabSaved" class="dash-tab-content" style="display: none;">
+            <div class="dash-card">
+                <h2>Saved Jobs</h2>
+                <div class="coming-soon-box">
+                    <span class="cs-icon">🔖</span>
+                    <h3>Saved Jobs — Coming Soon</h3>
+                    <p>Bookmark export garment job openings and save them to apply later from any device.</p>
                 </div>
+            </div>
+        </div>
 
-                <div class="dash-card">
-                    <h2>
-                        ⭐ Saved Jobs
-                    </h2>
-                    <div class="empty-state">
-                        <span>🔖</span>
-                        <p style="margin: 0;">Save jobs while browsing to review and apply later.</p>
-                    </div>
+        <!-- TAB 4: Applications (Coming Soon) -->
+        <div id="tabApplications" class="dash-tab-content" style="display: none;">
+            <div class="dash-card">
+                <h2>My Job Applications</h2>
+                <div class="coming-soon-box">
+                    <span class="cs-icon">📨</span>
+                    <h3>Application Tracking — Coming Soon</h3>
+                    <p>Track direct job application status, interview schedules, and employer responses in real time.</p>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        async function loadProfile() {
+        function showTab(tabName) {
+            const tabs = ['profile', 'resume', 'saved', 'applications'];
+            const btns = document.querySelectorAll('.dash-tab-btn');
+            
+            tabs.forEach((t, i) => {
+                const content = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
+                if (t === tabName) {
+                    content.style.display = 'block';
+                    btns[i].classList.add('active');
+                } else {
+                    content.style.display = 'none';
+                    btns[i].classList.remove('active');
+                }
+            });
+        }
+
+        async function loadEmployeeDashboard() {
             try {
                 const res = await fetch("/api/auth/me");
                 if (!res.ok) {
-                    window.location.href = "/login";
+                    window.location.href = "/jobseeker/login";
                     return;
                 }
 
                 const data = await res.json();
+                if (!data.logged_in || !data.user) {
+                    window.location.href = "/jobseeker/login";
+                    return;
+                }
+
                 const user = data.user;
-                if (user.account_type !== "individual") {
+                if (user.account_type === "company") {
                     window.location.href = "/dashboard/company";
                     return;
                 }
 
-                const p = user.profile || {};
-                document.getElementById("userGreeting").textContent = `Welcome, ${p.full_name || "Garment Professional"}`;
+                const profile = user.profile || {};
+                const displayName = profile.full_name || user.email.split("@")[0];
+                document.getElementById("userGreeting").textContent = "Welcome, " + displayName;
                 document.getElementById("userEmailDisplay").textContent = user.email;
-                document.getElementById("profFullName").textContent = p.full_name || "-";
-                document.getElementById("profJobTitle").textContent = p.job_title || "Not specified";
-                document.getElementById("profExp").textContent = p.experience_years ? `${p.experience_years} Year(s)` : "Fresher / Not specified";
-                document.getElementById("profMobile").textContent = p.mobile || "Not specified";
-                document.getElementById("profLocation").textContent = p.location || "Tiruppur";
-                document.getElementById("profSalary").textContent = p.expected_salary || "Negotiable";
 
-                if (p.skills) {
-                    const skillsWrap = document.getElementById("profSkillsWrap");
-                    skillsWrap.innerHTML = "";
-                    const list = p.skills.split(/[,;]/);
-                    list.forEach(s => {
-                        const clean = s.trim();
-                        if (clean) {
-                            const tag = document.createElement("span");
-                            tag.className = "skills-tag";
-                            tag.textContent = clean;
-                            skillsWrap.appendChild(tag);
-                        }
-                    });
+                // Populate profile form
+                document.getElementById("profFullName").value = profile.full_name || "";
+                document.getElementById("profMobile").value = profile.mobile || "";
+                document.getElementById("profLocation").value = profile.location || "";
+                document.getElementById("profJobTitle").value = profile.job_title || "";
+                document.getElementById("profExpYears").value = profile.experience_years || 0;
+                document.getElementById("profSalary").value = profile.expected_salary || "";
+                document.getElementById("profSkills").value = profile.skills || "";
+            } catch (err) {
+                console.error("Failed to load dashboard:", err);
+            }
+        }
+
+        function showAlert(msg, isSuccess = true) {
+            const el = document.getElementById("alertBox");
+            el.textContent = msg;
+            el.className = "msg-alert " + (isSuccess ? "msg-success" : "msg-error");
+            el.style.display = "block";
+            el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+
+        async function handleProfileUpdate(e) {
+            e.preventDefault();
+            const btn = document.getElementById("saveProfileBtn");
+            btn.disabled = true;
+            btn.textContent = "Saving...";
+
+            try {
+                const res = await fetch("/api/auth/employee/profile", {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        full_name: document.getElementById("profFullName").value.trim(),
+                        mobile: document.getElementById("profMobile").value.trim() || null,
+                        location: document.getElementById("profLocation").value.trim() || null,
+                        job_title: document.getElementById("profJobTitle").value.trim() || null,
+                        experience_years: parseFloat(document.getElementById("profExpYears").value) || 0,
+                        expected_salary: document.getElementById("profSalary").value.trim() || null,
+                        skills: document.getElementById("profSkills").value.trim() || null
+                    })
+                });
+
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.detail || "Failed to update profile.");
                 }
-            } catch (e) {
-                console.error("Failed to load user profile:", e);
-                window.location.href = "/login";
+
+                showAlert("Profile updated successfully!");
+                document.getElementById("userGreeting").textContent = "Welcome, " + document.getElementById("profFullName").value.trim();
+            } catch (err) {
+                showAlert(err.message || "Failed to save profile changes.", false);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Save Profile Changes";
             }
         }
 
@@ -364,11 +515,11 @@
             try {
                 await fetch("/api/auth/logout", { method: "POST" });
             } finally {
-                window.location.href = "/login";
+                window.location.href = "/";
             }
         }
 
-        loadProfile();
+        document.addEventListener("DOMContentLoaded", loadEmployeeDashboard);
     </script>
 </body>
 </html>
