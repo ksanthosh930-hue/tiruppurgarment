@@ -19,6 +19,7 @@
             --dg-bg: #F8FAFC;
             --dg-white: #FFFFFF;
             --dg-border: #E2E8F0;
+            --dg-success: #10B981;
         }
 
         body {
@@ -69,7 +70,7 @@
         }
 
         .auth-container {
-            max-width: 580px;
+            max-width: 540px;
             width: 92%;
             margin: 36px auto;
             background: var(--dg-white);
@@ -82,7 +83,7 @@
 
         .auth-header {
             text-align: center;
-            margin-bottom: 28px;
+            margin-bottom: 24px;
         }
 
         .auth-header .eyebrow {
@@ -95,7 +96,7 @@
         }
 
         .auth-header h1 {
-            font-size: 26px;
+            font-size: 24px;
             font-weight: 800;
             color: var(--dg-navy);
             margin: 0 0 8px 0;
@@ -108,14 +109,47 @@
             margin: 0;
         }
 
+        /* Stepper Indicators */
+        .step-indicators {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .step-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: #f1f5f9;
+            color: var(--dg-slate);
+            transition: all 0.2s;
+        }
+
+        .step-pill.active {
+            background: rgba(158, 27, 50, 0.12);
+            color: var(--dg-red);
+            border: 1px solid rgba(158, 27, 50, 0.25);
+        }
+
+        .step-pill.completed {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
         /* Role Selector Tabs */
         .role-selector {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 28px;
+            gap: 10px;
+            margin-bottom: 24px;
             background: #f1f5f9;
-            padding: 6px;
+            padding: 5px;
             border-radius: 10px;
         }
 
@@ -124,11 +158,11 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            padding: 12px 16px;
+            padding: 10px 14px;
             background: transparent;
             border: none;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 13.5px;
             font-weight: 700;
             color: var(--dg-slate);
             cursor: pointer;
@@ -138,22 +172,13 @@
         .role-btn.active {
             background: var(--dg-white);
             color: var(--dg-navy);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-
-        .role-btn svg {
-            width: 18px;
-            height: 18px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
         }
 
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-
-        .form-group-full {
-            grid-column: 1 / -1;
+            gap: 14px;
         }
 
         .form-group {
@@ -197,6 +222,47 @@
             box-shadow: 0 0 0 3px rgba(158, 27, 50, 0.12);
         }
 
+        .otp-input-wrap {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .otp-input-field {
+            width: 220px;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: 8px;
+            text-align: center;
+            font-family: monospace;
+            padding: 12px;
+            border: 2px solid var(--dg-border);
+            border-radius: 8px;
+            background: #f8fafc;
+            color: var(--dg-navy);
+            box-sizing: border-box;
+        }
+
+        .otp-input-field:focus {
+            outline: none;
+            border-color: var(--dg-red);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(158, 27, 50, 0.12);
+        }
+
+        .email-verified-badge {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: #065f46;
+            font-size: 13.5px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
         .btn-submit {
             width: 100%;
             padding: 13px;
@@ -208,7 +274,7 @@
             font-weight: 700;
             cursor: pointer;
             transition: all 0.2s;
-            margin-top: 10px;
+            margin-top: 6px;
         }
 
         .btn-submit:hover:not(:disabled) {
@@ -219,6 +285,21 @@
         .btn-submit:disabled {
             opacity: 0.6;
             cursor: not-allowed;
+        }
+
+        .btn-secondary-link {
+            background: none;
+            border: none;
+            color: var(--dg-slate);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 4px 8px;
+            text-decoration: underline;
+        }
+
+        .btn-secondary-link:hover {
+            color: var(--dg-navy);
         }
 
         .msg-alert {
@@ -268,9 +349,8 @@
                 grid-template-columns: 1fr;
                 gap: 0;
             }
-            .role-btn {
-                font-size: 13px;
-                padding: 10px 8px;
+            .step-indicators {
+                flex-wrap: wrap;
             }
         }
     </style>
@@ -290,114 +370,149 @@
         <div class="auth-header">
             <p class="eyebrow">DIGIGARMENT JOBS PLATFORM</p>
             <h1>Create Your Account</h1>
-            <p>Connect directly with verified Tiruppur garment export companies & candidates</p>
+            <p>Email OTP-verified registration for Tiruppur garment professionals & companies</p>
         </div>
 
-        <!-- Role Selector -->
-        <div class="role-selector">
-            <button type="button" class="role-btn active" id="btnRoleJobseeker" onclick="switchRole('jobseeker')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-                Job Seeker / Employee
-            </button>
-            <button type="button" class="role-btn" id="btnRoleEmployer" onclick="switchRole('employer')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-                </svg>
-                Employer / Company
-            </button>
+        <!-- Step Indicators -->
+        <div class="step-indicators">
+            <div class="step-pill active" id="pillStep1">1. Email</div>
+            <div class="step-pill" id="pillStep2">2. Verify OTP</div>
+            <div class="step-pill" id="pillStep3">3. Complete Profile</div>
         </div>
 
         <div id="alertBox" class="msg-alert"></div>
 
-        <!-- 1. Employee Form -->
-        <form id="employeeForm" onsubmit="handleEmployeeRegister(event)">
-            <div class="form-group">
-                <label>Full Name <span class="req">*</span></label>
-                <input type="text" id="empFullName" class="form-control" placeholder="e.g. Kumaravel S" required autocomplete="name">
+        <!-- ================= STEP 1: Email Input ================= -->
+        <div id="viewStep1">
+            <!-- Role Selector -->
+            <div class="role-selector">
+                <button type="button" class="role-btn active" id="btnRoleJobseeker" onclick="switchRole('individual')">
+                    👤 Job Seeker / Employee
+                </button>
+                <button type="button" class="role-btn" id="btnRoleEmployer" onclick="switchRole('company')">
+                    🏢 Employer / Company
+                </button>
             </div>
 
-            <div class="form-grid">
+            <form id="step1Form" onsubmit="handleSendOtp(event)">
                 <div class="form-group">
-                    <label>Mobile Number <span class="req">*</span></label>
-                    <input type="tel" id="empMobile" class="form-control" placeholder="10-digit mobile (e.g. 9876543210)" required maxlength="10" autocomplete="tel">
+                    <label id="emailLabel">Email Address <span class="req">*</span></label>
+                    <input type="email" id="userEmail" class="form-control" placeholder="name@example.com" required autocomplete="email">
                 </div>
-                <div class="form-group">
-                    <label>Email Address <span class="req">*</span></label>
-                    <input type="email" id="empEmail" class="form-control" placeholder="name@example.com" required autocomplete="email">
-                </div>
-            </div>
 
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Password <span class="req">*</span></label>
-                    <input type="password" id="empPassword" class="form-control" placeholder="Min. 8 characters" required minlength="8" autocomplete="new-password">
-                </div>
-                <div class="form-group">
-                    <label>Confirm Password <span class="req">*</span></label>
-                    <input type="password" id="empConfirmPassword" class="form-control" placeholder="Re-enter password" required minlength="8" autocomplete="new-password">
-                </div>
-            </div>
+                <p style="font-size: 13px; color: var(--dg-slate); margin: 0 0 16px 0; line-height: 1.5;">
+                    🔒 We will send a secure 6-digit verification code to your email address via Resend to verify your account.
+                </p>
 
-            <div class="form-group">
-                <label>Location / Area <span class="opt">(Optional)</span></label>
-                <input type="text" id="empLocation" class="form-control" placeholder="e.g. Tiruppur, Avinashi Road, Palladam">
-            </div>
+                <button type="submit" id="btnSendOtp" class="btn-submit">
+                    Send 6-Digit Verification Code (OTP)
+                </button>
+            </form>
+        </div>
 
-            <button type="submit" id="empSubmitBtn" class="btn-submit">Create Job Seeker Account</button>
-        </form>
-
-        <!-- 2. Employer Form -->
-        <form id="employerForm" style="display: none;" onsubmit="handleEmployerRegister(event)">
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Company / Mill Name <span class="req">*</span></label>
-                    <input type="text" id="emprCompanyName" class="form-control" placeholder="e.g. Apex Apparels Pvt Ltd" required>
-                </div>
-                <div class="form-group">
-                    <label>HR / Recruiter Name <span class="req">*</span></label>
-                    <input type="text" id="emprContactPerson" class="form-control" placeholder="e.g. Ramesh Kumar (HR Manager)" required>
+        <!-- ================= STEP 2: Enter OTP ================= -->
+        <div id="viewStep2" style="display: none;">
+            <div style="text-align: center; margin-bottom: 16px;">
+                <p style="font-size: 14px; color: var(--dg-slate); margin: 0 0 4px 0;">
+                    We've sent a 6-digit verification code to:
+                </p>
+                <strong id="displayTargetEmail" style="color: var(--dg-navy); font-size: 15px;"></strong>
+                <div>
+                    <button type="button" class="btn-secondary-link" onclick="goToStep1()">Change Email</button>
                 </div>
             </div>
 
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Official Mobile Number <span class="req">*</span></label>
-                    <input type="tel" id="emprMobile" class="form-control" placeholder="10-digit mobile" required maxlength="10" autocomplete="tel">
+            <form id="step2Form" onsubmit="handleVerifyOtp(event)">
+                <div class="otp-input-wrap">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: var(--dg-navy); margin-bottom: 8px;">Enter 6-Digit Code</label>
+                    <input type="text" id="otpCode" class="otp-input-field" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" placeholder="••••••" required autocomplete="one-time-code">
                 </div>
-                <div class="form-group">
-                    <label>Company Email <span class="req">*</span></label>
-                    <input type="email" id="emprEmail" class="form-control" placeholder="hr@company.com" required autocomplete="email">
+
+                <div style="text-align: center; margin-bottom: 18px; font-size: 13px; color: var(--dg-slate);">
+                    <span id="cooldownText">Resend code in <strong id="timerSeconds">60</strong>s</span>
+                    <button type="button" id="btnResend" class="btn-secondary-link" style="display: none;" onclick="handleResendOtp()">Resend Code Now</button>
                 </div>
+
+                <button type="submit" id="btnVerifyOtp" class="btn-submit">
+                    Verify Code &amp; Continue
+                </button>
+            </form>
+        </div>
+
+        <!-- ================= STEP 3: Complete Profile & Password ================= -->
+        <div id="viewStep3" style="display: none;">
+            <div class="email-verified-badge">
+                <span>✓ Verified Email: <strong id="verifiedEmailDisplay"></strong></span>
+                <span style="font-size: 12px; color: #047857;" id="roleBadgeDisplay">Job Seeker</span>
             </div>
 
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Password <span class="req">*</span></label>
-                    <input type="password" id="emprPassword" class="form-control" placeholder="Min. 8 characters" required minlength="8" autocomplete="new-password">
-                </div>
-                <div class="form-group">
-                    <label>Confirm Password <span class="req">*</span></label>
-                    <input type="password" id="emprConfirmPassword" class="form-control" placeholder="Re-enter password" required minlength="8" autocomplete="new-password">
-                </div>
-            </div>
+            <form id="step3Form" onsubmit="handleCompleteRegistration(event)">
+                <!-- Job Seeker Fields -->
+                <div id="fieldsJobseeker">
+                    <div class="form-group">
+                        <label>Full Name <span class="req">*</span></label>
+                        <input type="text" id="empFullName" class="form-control" placeholder="e.g. Kumaravel S" autocomplete="name">
+                    </div>
 
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>WhatsApp Number <span class="opt">(Optional)</span></label>
-                    <input type="tel" id="emprWhatsapp" class="form-control" placeholder="10-digit WhatsApp number" maxlength="10">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Mobile Number <span class="req">*</span></label>
+                            <input type="tel" id="empMobile" class="form-control" placeholder="10-digit mobile" maxlength="10" autocomplete="tel">
+                        </div>
+                        <div class="form-group">
+                            <label>Location / Area <span class="opt">(Optional)</span></label>
+                            <input type="text" id="empLocation" class="form-control" placeholder="e.g. Tiruppur, Angeripalayam">
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Area / Industrial Hub <span class="opt">(Optional)</span></label>
-                    <input type="text" id="emprArea" class="form-control" placeholder="e.g. Angeripalayam, Netaji Apparel Park">
-                </div>
-            </div>
 
-            <button type="submit" id="emprSubmitBtn" class="btn-submit">Register Garment Company</button>
-        </form>
+                <!-- Employer Fields -->
+                <div id="fieldsEmployer" style="display: none;">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Company / Mill Name <span class="req">*</span></label>
+                            <input type="text" id="emprCompanyName" class="form-control" placeholder="e.g. Apex Apparels Pvt Ltd">
+                        </div>
+                        <div class="form-group">
+                            <label>HR / Contact Person Name <span class="req">*</span></label>
+                            <input type="text" id="emprContactPerson" class="form-control" placeholder="e.g. Ramesh Kumar (HR)">
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Official Mobile Number <span class="req">*</span></label>
+                            <input type="tel" id="emprMobile" class="form-control" placeholder="10-digit mobile" maxlength="10" autocomplete="tel">
+                        </div>
+                        <div class="form-group">
+                            <label>WhatsApp Number <span class="opt">(Optional)</span></label>
+                            <input type="tel" id="emprWhatsapp" class="form-control" placeholder="10-digit WhatsApp" maxlength="10">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Area / Industrial Cluster <span class="opt">(Optional)</span></label>
+                        <input type="text" id="emprArea" class="form-control" placeholder="e.g. Angeripalayam, Netaji Apparel Park">
+                    </div>
+                </div>
+
+                <!-- Password Fields (Common) -->
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Set Password <span class="req">*</span></label>
+                        <input type="password" id="userPassword" class="form-control" placeholder="Min. 8 characters" required minlength="8" autocomplete="new-password">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm Password <span class="req">*</span></label>
+                        <input type="password" id="userConfirmPassword" class="form-control" placeholder="Re-enter password" required minlength="8" autocomplete="new-password">
+                    </div>
+                </div>
+
+                <button type="submit" id="btnComplete" class="btn-submit">
+                    Complete Registration &amp; Access Dashboard
+                </button>
+            </form>
+        </div>
 
         <div class="auth-footer-links">
             Already have an account? <a href="/login">Sign In here</a>
@@ -405,27 +520,28 @@
     </div>
 
     <script>
-        let currentRole = "jobseeker";
+        let currentRole = "individual"; // 'individual' or 'company'
+        let registeredEmail = "";
+        let verificationToken = "";
+        let timerInterval = null;
 
         function switchRole(role) {
             currentRole = role;
             const btnEmp = document.getElementById("btnRoleJobseeker");
             const btnEmpr = document.getElementById("btnRoleEmployer");
-            const formEmp = document.getElementById("employeeForm");
-            const formEmpr = document.getElementById("employerForm");
-            hideAlert();
+            const emailLabel = document.getElementById("emailLabel");
 
-            if (role === "jobseeker") {
+            if (role === "individual") {
                 btnEmp.classList.add("active");
                 btnEmpr.classList.remove("active");
-                formEmp.style.display = "block";
-                formEmpr.style.display = "none";
+                emailLabel.innerHTML = 'Personal Email Address <span class="req">*</span>';
+                document.getElementById("roleBadgeDisplay").textContent = "Job Seeker Account";
                 window.location.hash = "jobseeker";
             } else {
                 btnEmp.classList.remove("active");
                 btnEmpr.classList.add("active");
-                formEmp.style.display = "none";
-                formEmpr.style.display = "block";
+                emailLabel.innerHTML = 'Company / Official Email <span class="req">*</span>';
+                document.getElementById("roleBadgeDisplay").textContent = "Employer Account";
                 window.location.hash = "employer";
             }
         }
@@ -435,9 +551,9 @@
             const path = window.location.pathname.toLowerCase();
             const hash = window.location.hash.toLowerCase();
             if (path.includes("employer") || hash === "#employer") {
-                switchRole("employer");
+                switchRole("company");
             } else {
-                switchRole("jobseeker");
+                switchRole("individual");
             }
         });
 
@@ -450,111 +566,291 @@
         }
 
         function hideAlert() {
-            const el = document.getElementById("alertBox");
-            el.style.display = "none";
+            document.getElementById("alertBox").style.display = "none";
         }
 
-        async function handleEmployeeRegister(e) {
+        function goToStep1() {
+            hideAlert();
+            clearInterval(timerInterval);
+            document.getElementById("viewStep1").style.display = "block";
+            document.getElementById("viewStep2").style.display = "none";
+            document.getElementById("viewStep3").style.display = "none";
+
+            document.getElementById("pillStep1").className = "step-pill active";
+            document.getElementById("pillStep2").className = "step-pill";
+            document.getElementById("pillStep3").className = "step-pill";
+        }
+
+        function goToStep2(email) {
+            hideAlert();
+            registeredEmail = email;
+            document.getElementById("displayTargetEmail").textContent = email;
+            document.getElementById("otpCode").value = "";
+
+            document.getElementById("viewStep1").style.display = "none";
+            document.getElementById("viewStep2").style.display = "block";
+            document.getElementById("viewStep3").style.display = "none";
+
+            document.getElementById("pillStep1").className = "step-pill completed";
+            document.getElementById("pillStep2").className = "step-pill active";
+            document.getElementById("pillStep3").className = "step-pill";
+
+            startCountdown(60);
+        }
+
+        function goToStep3() {
+            hideAlert();
+            clearInterval(timerInterval);
+            document.getElementById("verifiedEmailDisplay").textContent = registeredEmail;
+
+            document.getElementById("viewStep1").style.display = "none";
+            document.getElementById("viewStep2").style.display = "none";
+            document.getElementById("viewStep3").style.display = "block";
+
+            document.getElementById("pillStep1").className = "step-pill completed";
+            document.getElementById("pillStep2").className = "step-pill completed";
+            document.getElementById("pillStep3").className = "step-pill active";
+
+            if (currentRole === "individual") {
+                document.getElementById("fieldsJobseeker").style.display = "block";
+                document.getElementById("fieldsEmployer").style.display = "none";
+                document.getElementById("empFullName").required = true;
+                document.getElementById("empMobile").required = true;
+                document.getElementById("emprCompanyName").required = false;
+                document.getElementById("emprContactPerson").required = false;
+                document.getElementById("emprMobile").required = false;
+            } else {
+                document.getElementById("fieldsJobseeker").style.display = "none";
+                document.getElementById("fieldsEmployer").style.display = "block";
+                document.getElementById("empFullName").required = false;
+                document.getElementById("empMobile").required = false;
+                document.getElementById("emprCompanyName").required = true;
+                document.getElementById("emprContactPerson").required = true;
+                document.getElementById("emprMobile").required = true;
+            }
+        }
+
+        function startCountdown(seconds) {
+            clearInterval(timerInterval);
+            let left = seconds;
+            const cooldownText = document.getElementById("cooldownText");
+            const btnResend = document.getElementById("btnResend");
+            const timerSeconds = document.getElementById("timerSeconds");
+
+            cooldownText.style.display = "inline";
+            btnResend.style.display = "none";
+            timerSeconds.textContent = left;
+
+            timerInterval = setInterval(() => {
+                left--;
+                timerSeconds.textContent = left;
+                if (left <= 0) {
+                    clearInterval(timerInterval);
+                    cooldownText.style.display = "none";
+                    btnResend.style.display = "inline";
+                }
+            }, 1000);
+        }
+
+        // --- 1. SEND OTP ---
+        async function handleSendOtp(e) {
             e.preventDefault();
             hideAlert();
 
-            const fullName = document.getElementById("empFullName").value.trim();
-            const mobile = document.getElementById("empMobile").value.trim();
-            const email = document.getElementById("empEmail").value.trim();
-            const password = document.getElementById("empPassword").value;
-            const confirmPassword = document.getElementById("empConfirmPassword").value;
-            const location = document.getElementById("empLocation").value.trim();
-
-            if (password !== confirmPassword) {
-                showAlert("Passwords do not match. Please re-enter.");
+            const email = document.getElementById("userEmail").value.trim();
+            if (!email) {
+                showAlert("Please enter your email address.");
                 return;
             }
 
-            const btn = document.getElementById("empSubmitBtn");
+            const btn = document.getElementById("btnSendOtp");
             btn.disabled = true;
-            btn.textContent = "Creating Account...";
+            btn.textContent = "Sending Verification Code...";
 
             try {
-                const res = await fetch("/api/auth/register/employee", {
+                const res = await fetch("/api/auth/register/send-otp", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: email })
+                });
+
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.detail || "Failed to send verification code.");
+                }
+
+                goToStep2(email);
+                showAlert("Verification code has been sent to your email.", false);
+            } catch (err) {
+                showAlert(err.message || "Failed to send verification code.");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Send 6-Digit Verification Code (OTP)";
+            }
+        }
+
+        async function handleResendOtp() {
+            hideAlert();
+            const btn = document.getElementById("btnResend");
+            btn.disabled = true;
+            btn.textContent = "Sending...";
+
+            try {
+                const res = await fetch("/api/auth/register/send-otp", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: registeredEmail })
+                });
+
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.detail || "Failed to resend verification code.");
+                }
+
+                showAlert("New verification code sent successfully.", false);
+                startCountdown(60);
+            } catch (err) {
+                showAlert(err.message || "Failed to resend code.");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Resend Code Now";
+            }
+        }
+
+        // --- 2. VERIFY OTP ---
+        async function handleVerifyOtp(e) {
+            e.preventDefault();
+            hideAlert();
+
+            const otp = document.getElementById("otpCode").value.trim();
+            if (otp.length !== 6 || !/^\d{6}$/.test(otp)) {
+                showAlert("Please enter the 6-digit numeric verification code.");
+                return;
+            }
+
+            const btn = document.getElementById("btnVerifyOtp");
+            btn.disabled = true;
+            btn.textContent = "Verifying Code...";
+
+            try {
+                const res = await fetch("/api/auth/register/verify-otp", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        full_name: fullName,
-                        mobile: mobile,
-                        email: email,
-                        password: password,
-                        confirm_password: confirmPassword,
-                        location: location || null
+                        email: registeredEmail,
+                        otp: otp
                     })
                 });
 
                 const data = await res.json();
                 if (!res.ok) {
-                    throw new Error(data.detail || "Registration failed. Please check details.");
+                    throw new Error(data.detail || "Invalid or expired verification code.");
                 }
 
-                showAlert("Registration successful! Redirecting to dashboard...", false);
-                setTimeout(() => {
-                    window.location.href = data.redirect_url || "/dashboard/individual";
-                }, 800);
+                verificationToken = data.verification_token;
+                goToStep3();
+                showAlert("Email verified! Complete your profile to finish registration.", false);
             } catch (err) {
-                showAlert(err.message || "Something went wrong. Please try again.");
+                showAlert(err.message || "Verification failed.");
+            } finally {
                 btn.disabled = false;
-                btn.textContent = "Create Job Seeker Account";
+                btn.textContent = "Verify Code & Continue";
             }
         }
 
-        async function handleEmployerRegister(e) {
+        // --- 3. COMPLETE REGISTRATION ---
+        async function handleCompleteRegistration(e) {
             e.preventDefault();
             hideAlert();
 
-            const companyName = document.getElementById("emprCompanyName").value.trim();
-            const contactPerson = document.getElementById("emprContactPerson").value.trim();
-            const mobile = document.getElementById("emprMobile").value.trim();
-            const email = document.getElementById("emprEmail").value.trim();
-            const password = document.getElementById("emprPassword").value;
-            const confirmPassword = document.getElementById("emprConfirmPassword").value;
-            const whatsapp = document.getElementById("emprWhatsapp").value.trim();
-            const area = document.getElementById("emprArea").value.trim();
+            const pwd = document.getElementById("userPassword").value;
+            const confirmPwd = document.getElementById("userConfirmPassword").value;
 
-            if (password !== confirmPassword) {
+            if (pwd.length < 8) {
+                showAlert("Password must be at least 8 characters long.");
+                return;
+            }
+
+            if (pwd !== confirmPwd) {
                 showAlert("Passwords do not match. Please re-enter.");
                 return;
             }
 
-            const btn = document.getElementById("emprSubmitBtn");
+            const payload = {
+                verification_token: verificationToken,
+                account_type: currentRole,
+                password: pwd,
+                confirm_password: confirmPwd
+            };
+
+            if (currentRole === "individual") {
+                const fullName = document.getElementById("empFullName").value.trim();
+                const mobile = document.getElementById("empMobile").value.trim();
+                const location = document.getElementById("empLocation").value.trim();
+
+                if (!fullName) {
+                    showAlert("Please enter your full name.");
+                    return;
+                }
+                if (!/^[6-9]\d{9}$/.test(mobile)) {
+                    showAlert("Please enter a valid 10-digit Indian mobile number.");
+                    return;
+                }
+
+                payload.full_name = fullName;
+                payload.mobile = mobile;
+                payload.location = location || null;
+            } else {
+                const companyName = document.getElementById("emprCompanyName").value.trim();
+                const contactPerson = document.getElementById("emprContactPerson").value.trim();
+                const mobile = document.getElementById("emprMobile").value.trim();
+                const whatsapp = document.getElementById("emprWhatsapp").value.trim();
+                const area = document.getElementById("emprArea").value.trim();
+
+                if (!companyName) {
+                    showAlert("Please enter your Company / Mill name.");
+                    return;
+                }
+                if (!contactPerson) {
+                    showAlert("Please enter the HR / Recruiter name.");
+                    return;
+                }
+                if (!/^[6-9]\d{9}$/.test(mobile)) {
+                    showAlert("Please enter a valid 10-digit official mobile number.");
+                    return;
+                }
+
+                payload.company_name = companyName;
+                payload.contact_person = contactPerson;
+                payload.mobile = mobile;
+                payload.whatsapp = whatsapp || null;
+                payload.area = area || null;
+            }
+
+            const btn = document.getElementById("btnComplete");
             btn.disabled = true;
-            btn.textContent = "Registering Company...";
+            btn.textContent = "Setting up your account...";
 
             try {
-                const res = await fetch("/api/auth/register/employer", {
+                const res = await fetch("/api/auth/register/complete", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        company_name: companyName,
-                        contact_person: contactPerson,
-                        mobile: mobile,
-                        email: email,
-                        password: password,
-                        confirm_password: confirmPassword,
-                        whatsapp: whatsapp || null,
-                        area: area || null
-                    })
+                    body: JSON.stringify(payload)
                 });
 
                 const data = await res.json();
                 if (!res.ok) {
-                    throw new Error(data.detail || "Company registration failed. Please check details.");
+                    throw new Error(data.detail || "Failed to complete registration.");
                 }
 
-                showAlert("Registration successful! Redirecting to Employer Dashboard...", false);
+                showAlert("Account created successfully! Redirecting to dashboard...", false);
                 setTimeout(() => {
-                    window.location.href = data.redirect_url || "/dashboard/company";
-                }, 800);
+                    window.location.href = data.redirect_url || (currentRole === "individual" ? "/dashboard/individual" : "/dashboard/company");
+                }, 1000);
             } catch (err) {
-                showAlert(err.message || "Something went wrong. Please try again.");
+                showAlert(err.message || "Failed to complete registration.");
                 btn.disabled = false;
-                btn.textContent = "Register Garment Company";
+                btn.textContent = "Complete Registration & Access Dashboard";
             }
         }
     </script>

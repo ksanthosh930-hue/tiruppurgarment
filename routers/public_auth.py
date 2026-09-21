@@ -694,6 +694,7 @@ class CompleteRegistrationRequest(BaseModel):
     verification_token: str
     account_type: str
     password: str
+    confirm_password: Optional[str] = None
     full_name: Optional[str] = None
     mobile: Optional[str] = None
     location: Optional[str] = None
@@ -714,12 +715,17 @@ def register_complete(req_data: CompleteRegistrationRequest, response: Response)
     if account_type not in ("individual", "company"):
         raise HTTPException(status_code=400, detail="Invalid account type.")
         
-    password = _validate_password_strength(req_data.password)
+    password = _validate_password_strength(req_data.password, req_data.confirm_password)
     
+    mobile_clean = _validate_optional_mobile(req_data.mobile)
+    whatsapp_clean = _validate_optional_mobile(req_data.whatsapp)
+
     if account_type == "individual":
         full_name = (req_data.full_name or "").strip()
         if not full_name:
             raise HTTPException(status_code=400, detail="Full name is required.")
+        if not mobile_clean:
+            raise HTTPException(status_code=400, detail="Please enter a valid 10-digit mobile number.")
     else:
         company_name = (req_data.company_name or "").strip()
         contact_person = (req_data.contact_person or "").strip()
@@ -727,6 +733,8 @@ def register_complete(req_data: CompleteRegistrationRequest, response: Response)
             raise HTTPException(status_code=400, detail="Company name is required.")
         if not contact_person:
             raise HTTPException(status_code=400, detail="HR / Recruiter name is required.")
+        if not mobile_clean:
+            raise HTTPException(status_code=400, detail="Please enter a valid 10-digit official mobile number.")
             
     if not _db_enabled:
         raise HTTPException(status_code=503, detail="Database service temporarily unavailable.")
