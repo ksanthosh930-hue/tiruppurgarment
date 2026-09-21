@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Employer Dashboard | TirupurGarment.in</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        :root {
+            --dg-navy: #081226;
+            --dg-light-navy: #0e1c38;
+            --dg-red: #9E1B32;
+            --dg-red-hover: #b92a43;
+            --dg-slate: #64748B;
+            --dg-bg: #F8FAFC;
+            --dg-white: #FFFFFF;
+            --dg-border: #E2E8F0;
+        }
+
+        body {
+            background-color: var(--dg-bg);
+            font-family: 'Inter', sans-serif;
+            color: #0F172A;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .dash-nav {
+            background: var(--dg-navy);
+            padding: 14px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .dash-nav .brand img {
+            height: 36px;
+        }
+
+        .dash-nav-links {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .dash-nav-links a {
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .dash-nav-links a:hover {
+            color: #ffffff;
+        }
+
+        .btn-logout {
+            background: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        .dash-container {
+            max-width: 1080px;
+            margin: 36px auto;
+            padding: 0 20px;
+        }
+
+        .welcome-card {
+            background: linear-gradient(135deg, #0f2b48 0%, var(--dg-navy) 100%);
+            color: #fff;
+            border-radius: 12px;
+            padding: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            box-shadow: 0 4px 20px rgba(8, 18, 38, 0.1);
+        }
+
+        .welcome-card h1 {
+            font-size: 26px;
+            font-weight: 800;
+            margin: 0 0 8px 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .welcome-card p {
+            color: #94a3b8;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .badge-verified {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10B981;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 8px;
+        }
+
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 24px;
+        }
+
+        .dash-card {
+            background: var(--dg-white);
+            border-radius: 10px;
+            border: 1px solid var(--dg-border);
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            margin-bottom: 24px;
+        }
+
+        .dash-card h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--dg-navy);
+            margin: 0 0 16px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 13.5px;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: var(--dg-slate);
+            font-weight: 500;
+        }
+
+        .info-val {
+            color: var(--dg-navy);
+            font-weight: 600;
+            text-align: right;
+            max-width: 60%;
+            word-break: break-word;
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--dg-red);
+            color: #fff;
+            padding: 10px 18px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 13.5px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .btn-action:hover {
+            background: var(--dg-red-hover);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 36px 20px;
+            color: var(--dg-slate);
+        }
+
+        .empty-state span {
+            font-size: 36px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2col {
+                grid-template-columns: 1fr;
+            }
+            .welcome-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="dash-nav">
+        <a class="brand" href="/">
+            <img src="/assets/images/logo-light.png" alt="DigiGarment Logo">
+        </a>
+        <div class="dash-nav-links">
+            <a href="/">Home</a>
+            <a href="/jobs">Tiruppur Jobs</a>
+            <a href="/tools">Tools</a>
+            <button type="button" class="btn-logout" onclick="handleLogout()">Sign Out</button>
+        </div>
+    </nav>
+
+    <div class="dash-container">
+        <!-- Welcome Banner -->
+        <div class="welcome-card">
+            <div>
+                <h1 id="companyGreeting">Welcome, Employer</h1>
+                <p id="companyEmailDisplay">Loading your company profile...</p>
+                <div class="badge-verified">✓ Verified Employer / Company Profile</div>
+            </div>
+            <div>
+                <a href="/jobs" class="btn-action">View Job Openings Portal →</a>
+            </div>
+        </div>
+
+        <div class="grid-2col">
+            <!-- Company Profile Overview Card -->
+            <div>
+                <div class="dash-card">
+                    <h2>
+                        🏢 Company Details
+                    </h2>
+                    <div class="info-row">
+                        <span class="info-label">Company Name</span>
+                        <span class="info-val" id="compName">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Contact Person</span>
+                        <span class="info-val" id="compContact">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Business Type</span>
+                        <span class="info-val" id="compType">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Contact Mobile</span>
+                        <span class="info-val" id="compMobile">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Location</span>
+                        <span class="info-val" id="compLocation">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Website</span>
+                        <span class="info-val" id="compWebsite">-</span>
+                    </div>
+                    <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid #f1f5f9;">
+                        <span class="info-label" style="display: block; margin-bottom: 4px;">About Company:</span>
+                        <p id="compDescription" style="font-size: 13px; color: var(--dg-navy); margin: 0; line-height: 1.5;">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Employer Functions & Listings -->
+            <div>
+                <div class="dash-card">
+                    <h2>
+                        📢 Job Postings
+                        <span style="font-size: 12px; background: #E0E7FF; color: #3730A3; padding: 2px 8px; border-radius: 12px;">Employer Portal</span>
+                    </h2>
+                    <div class="empty-state">
+                        <span>📋</span>
+                        <p style="margin: 0 0 12px 0;">Post direct garment vacancies in Tiruppur to attract candidates.</p>
+                        <a href="#post-job" onclick="alert('Employer self-serve job posting integration is coming in next phase. Your company profile is active and verified.')" class="btn-action" style="font-size: 12.5px; padding: 8px 14px;">+ Post a New Garment Vacancy</a>
+                    </div>
+                </div>
+
+                <div class="dash-card">
+                    <h2>
+                        👥 Applicant Management
+                    </h2>
+                    <div class="empty-state">
+                        <span>📥</span>
+                        <p style="margin: 0;">Applicants applying to your company openings will appear here.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadProfile() {
+            try {
+                const res = await fetch("/api/auth/me");
+                if (!res.ok) {
+                    window.location.href = "/login";
+                    return;
+                }
+
+                const data = await res.json();
+                const user = data.user;
+                if (user.account_type !== "company") {
+                    window.location.href = "/dashboard/individual";
+                    return;
+                }
+
+                const p = user.profile || {};
+                document.getElementById("companyGreeting").textContent = `Welcome, ${p.company_name || "Garment Employer"}`;
+                document.getElementById("companyEmailDisplay").textContent = user.email;
+                document.getElementById("compName").textContent = p.company_name || "-";
+                document.getElementById("compContact").textContent = p.contact_person || "-";
+                document.getElementById("compType").textContent = p.business_type || "Garment Business";
+                document.getElementById("compMobile").textContent = p.mobile || "Not specified";
+                document.getElementById("compLocation").textContent = p.location || "Tiruppur";
+                document.getElementById("compWebsite").innerHTML = p.website ? `<a href="${p.website}" target="_blank" style="color: var(--dg-red);">${p.website}</a>` : "Not provided";
+                document.getElementById("compDescription").textContent = p.company_description || "No overview provided.";
+            } catch (e) {
+                console.error("Failed to load company profile:", e);
+                window.location.href = "/login";
+            }
+        }
+
+        async function handleLogout() {
+            try {
+                await fetch("/api/auth/logout", { method: "POST" });
+            } finally {
+                window.location.href = "/login";
+            }
+        }
+
+        loadProfile();
+    </script>
+</body>
+</html>

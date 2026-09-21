@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In | TirupurGarment.in</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        :root {
+            --dg-navy: #081226;
+            --dg-light-navy: #0e1c38;
+            --dg-red: #9E1B32;
+            --dg-red-hover: #b92a43;
+            --dg-slate: #64748B;
+            --dg-bg: #F8FAFC;
+            --dg-white: #FFFFFF;
+            --dg-border: #E2E8F0;
+        }
+
+        body {
+            background-color: var(--dg-bg);
+            font-family: 'Inter', sans-serif;
+            color: #0F172A;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .auth-nav {
+            background: var(--dg-navy);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .auth-nav .brand img {
+            height: 38px;
+        }
+
+        .auth-nav a {
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .auth-nav a:hover {
+            color: #ffffff;
+        }
+
+        .auth-nav .nav-signup-btn {
+            background: var(--dg-red);
+            color: #fff;
+            padding: 8px 18px;
+            border-radius: 6px;
+            margin-left: 12px;
+            text-decoration: none;
+        }
+
+        .auth-nav .nav-signup-btn:hover {
+            background: var(--dg-red-hover);
+        }
+
+        .auth-container {
+            max-width: 440px;
+            width: 90%;
+            margin: 60px auto;
+            background: var(--dg-white);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(8, 18, 38, 0.06);
+            border: 1px solid var(--dg-border);
+            padding: 40px;
+            flex-grow: 1;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .auth-header .eyebrow {
+            color: var(--dg-red);
+            font-weight: 700;
+            font-size: 12px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .auth-header h1 {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--dg-navy);
+            margin: 0 0 8px 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .auth-header p {
+            color: var(--dg-slate);
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--dg-navy);
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 6px;
+            border: 1px solid var(--dg-border);
+            font-family: inherit;
+            font-size: 14px;
+            color: #0F172A;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--dg-red);
+            box-shadow: 0 0 0 3px rgba(158, 27, 50, 0.1);
+        }
+
+        .password-wrap {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--dg-slate);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 4px;
+        }
+
+        .btn-submit {
+            background-color: var(--dg-red);
+            color: #FFFFFF;
+            border: none;
+            width: 100%;
+            padding: 14px;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 15px;
+            margin-top: 8px;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--dg-red-hover);
+        }
+
+        .btn-submit:disabled {
+            background-color: #94A3B8;
+            cursor: not-allowed;
+        }
+
+        .alert-danger {
+            background: #FEF2F2;
+            border: 1px solid #FECACA;
+            color: #991B1B;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .form-links {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: -10px;
+            margin-bottom: 16px;
+        }
+
+        .form-links a {
+            color: var(--dg-red);
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .form-links a:hover {
+            text-decoration: underline;
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 14px;
+            color: var(--dg-slate);
+        }
+
+        .auth-footer a {
+            color: var(--dg-red);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <nav class="auth-nav">
+        <a class="brand" href="/">
+            <img src="/assets/images/logo-light.png" alt="DigiGarment Logo">
+        </a>
+        <div>
+            <a href="/">← Back to Home</a>
+            <a href="/signup" class="nav-signup-btn">Create Account</a>
+        </div>
+    </nav>
+
+    <div class="auth-container">
+        <div class="auth-header">
+            <p class="eyebrow">User Access</p>
+            <h1>Welcome Back</h1>
+            <p>Sign in to access your TirupurGarment profile and dashboard.</p>
+        </div>
+
+        <div id="errorAlert" class="alert-danger"></div>
+
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" class="form-control" placeholder="name@example.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="password-wrap">
+                    <input type="password" id="password" class="form-control" placeholder="Enter your password" required>
+                    <button type="button" class="password-toggle" onclick="togglePassword()">Show</button>
+                </div>
+            </div>
+
+            <div class="form-links">
+                <a href="/forgot-password">Forgot Password?</a>
+            </div>
+
+            <button type="submit" id="btnLogin" class="btn-submit">
+                Sign In
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            Don't have an account yet? <a href="/signup">Sign Up for free</a>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const pwd = document.getElementById("password");
+            const btn = document.querySelector(".password-toggle");
+            if (pwd.type === "password") {
+                pwd.type = "text";
+                btn.textContent = "Hide";
+            } else {
+                pwd.type = "password";
+                btn.textContent = "Show";
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const errAlert = document.getElementById("errorAlert");
+            errAlert.style.display = "none";
+
+            const btn = document.getElementById("btnLogin");
+            btn.disabled = true;
+            btn.textContent = "Signing In...";
+
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value.trim();
+
+            try {
+                const res = await fetch("/api/auth/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: email, password: password })
+                });
+
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    window.location.href = data.redirect_url || "/";
+                } else {
+                    errAlert.textContent = data.detail || "Invalid email or password.";
+                    errAlert.style.display = "block";
+                }
+            } catch (err) {
+                errAlert.textContent = "Unable to connect to authentication server.";
+                errAlert.style.display = "block";
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Sign In";
+            }
+        }
+    </script>
+</body>
+</html>

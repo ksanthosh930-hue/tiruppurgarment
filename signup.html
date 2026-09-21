@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | TirupurGarment.in</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        :root {
+            --dg-navy: #081226;
+            --dg-light-navy: #0e1c38;
+            --dg-red: #9E1B32;
+            --dg-red-hover: #b92a43;
+            --dg-slate: #64748B;
+            --dg-bg: #F8FAFC;
+            --dg-white: #FFFFFF;
+            --dg-border: #E2E8F0;
+        }
+
+        body {
+            background-color: var(--dg-bg);
+            font-family: 'Inter', sans-serif;
+            color: #0F172A;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .auth-nav {
+            background: var(--dg-navy);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .auth-nav .brand img {
+            height: 38px;
+        }
+
+        .auth-nav a {
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .auth-nav a:hover {
+            color: #ffffff;
+        }
+
+        .auth-nav .nav-login-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 8px 18px;
+            border-radius: 6px;
+            margin-left: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .auth-nav .nav-login-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .auth-container {
+            max-width: 680px;
+            width: 90%;
+            margin: 40px auto;
+            background: var(--dg-white);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(8, 18, 38, 0.06);
+            border: 1px solid var(--dg-border);
+            padding: 40px;
+            flex-grow: 1;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .auth-header .eyebrow {
+            color: var(--dg-red);
+            font-weight: 700;
+            font-size: 12px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .auth-header h1 {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--dg-navy);
+            margin: 0 0 8px 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .auth-header p {
+            color: var(--dg-slate);
+            font-size: 14px;
+            margin: 0;
+        }
+
+        /* Progress Steps */
+        .steps-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .step-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px;
+            background: #F1F5F9;
+            color: var(--dg-slate);
+            border: 1px solid var(--dg-border);
+            transition: all 0.3s;
+        }
+
+        .step-dot.active {
+            background: var(--dg-navy);
+            color: #fff;
+            border-color: var(--dg-navy);
+        }
+
+        .step-dot.completed {
+            background: #10B981;
+            color: #fff;
+            border-color: #10B981;
+        }
+
+        .step-line {
+            width: 40px;
+            height: 2px;
+            background: var(--dg-border);
+        }
+
+        .step-line.completed {
+            background: #10B981;
+        }
+
+        /* Category Choice Cards */
+        .category-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+
+        .category-card {
+            border: 2px solid var(--dg-border);
+            border-radius: 10px;
+            padding: 24px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            background: #FFFFFF;
+            position: relative;
+        }
+
+        .category-card:hover {
+            border-color: #94A3B8;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.04);
+        }
+
+        .category-card.selected {
+            border-color: var(--dg-red);
+            background: #FEF2F2;
+            box-shadow: 0 6px 20px rgba(158, 27, 50, 0.1);
+        }
+
+        .category-card .icon {
+            font-size: 38px;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .category-card h3 {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--dg-navy);
+            margin: 0 0 8px 0;
+        }
+
+        .category-card p {
+            font-size: 13px;
+            color: var(--dg-slate);
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--dg-navy);
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 6px;
+            border: 1px solid var(--dg-border);
+            font-family: inherit;
+            font-size: 14px;
+            color: #0F172A;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--dg-red);
+            box-shadow: 0 0 0 3px rgba(158, 27, 50, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .btn-submit {
+            background-color: var(--dg-red);
+            color: #FFFFFF;
+            border: none;
+            width: 100%;
+            padding: 14px;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--dg-red-hover);
+        }
+
+        .btn-submit:disabled {
+            background-color: #94A3B8;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #F1F5F9;
+            color: var(--dg-navy);
+            border: 1px solid var(--dg-border);
+            padding: 12px 20px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-secondary:hover {
+            background: #E2E8F0;
+        }
+
+        .alert-box {
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert-danger {
+            background: #FEF2F2;
+            border: 1px solid #FECACA;
+            color: #991B1B;
+        }
+
+        .alert-success {
+            background: #ECFDF5;
+            border: 1px solid #A7F3D0;
+            color: #065F46;
+        }
+
+        .otp-input-wrap {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .otp-digit {
+            width: 50px;
+            height: 56px;
+            font-size: 24px;
+            font-weight: 700;
+            text-align: center;
+            border: 2px solid var(--dg-border);
+            border-radius: 8px;
+            background: #F8FAFC;
+        }
+
+        .otp-digit:focus {
+            outline: none;
+            border-color: var(--dg-red);
+            background: #fff;
+        }
+
+        .timer-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #F1F5F9;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--dg-navy);
+            margin: 12px 0;
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 14px;
+            color: var(--dg-slate);
+        }
+
+        .auth-footer a {
+            color: var(--dg-red);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            .auth-container {
+                padding: 24px 18px;
+                margin: 20px auto;
+            }
+            .category-grid {
+                grid-template-columns: 1fr;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .otp-digit {
+                width: 42px;
+                height: 48px;
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="auth-nav">
+        <a class="brand" href="/">
+            <img src="/assets/images/logo-light.png" alt="DigiGarment Logo">
+        </a>
+        <div>
+            <a href="/">← Back to Home</a>
+            <a href="/login" class="nav-login-btn">Sign In</a>
+        </div>
+    </nav>
+
+    <div class="auth-container">
+        <!-- Progress Steps -->
+        <div class="steps-bar">
+            <div class="step-dot active" id="dot1">1</div>
+            <div class="step-line" id="line1"></div>
+            <div class="step-dot" id="dot2">2</div>
+            <div class="step-line" id="line2"></div>
+            <div class="step-dot" id="dot3">3</div>
+        </div>
+
+        <div id="errorAlert" class="alert-box alert-danger"></div>
+        <div id="successAlert" class="alert-box alert-success"></div>
+
+        <!-- STEP 1: CATEGORY SELECTION -->
+        <div id="step1">
+            <div class="auth-header">
+                <p class="eyebrow">Public Registration</p>
+                <h1>What are you signing up as?</h1>
+                <p>Select your account type to proceed with tailored features.</p>
+            </div>
+
+            <div class="category-grid">
+                <div class="category-card" id="cardIndividual" onclick="selectCategory('individual')">
+                    <span class="icon">👤</span>
+                    <h3>Individual / Job Seeker</h3>
+                    <p>Create your profile, find garment jobs and manage your job applications.</p>
+                </div>
+
+                <div class="category-card" id="cardCompany" onclick="selectCategory('company')">
+                    <span class="icon">🏢</span>
+                    <h3>Company / Employer</h3>
+                    <p>Create your company profile, post jobs and manage garment industry applicants.</p>
+                </div>
+            </div>
+
+            <button type="button" id="btnContinueStep1" class="btn-submit" disabled onclick="goToStep2()">
+                Continue to Email Verification →
+            </button>
+
+            <div class="auth-footer">
+                Already have an account? <a href="/login">Sign In here</a>
+            </div>
+        </div>
+
+        <!-- STEP 2: EMAIL & OTP VERIFICATION -->
+        <div id="step2" style="display: none;">
+            <div class="auth-header">
+                <p class="eyebrow" id="step2CategoryLabel">Verification</p>
+                <h1>Verify your email address</h1>
+                <p>We will send a 6-digit verification code to your email.</p>
+            </div>
+
+            <div id="emailFormWrap">
+                <div class="form-group">
+                    <label for="regEmail">Email Address</label>
+                    <input type="email" id="regEmail" class="form-control" placeholder="name@company.com" required>
+                </div>
+                <button type="button" id="btnSendOtp" class="btn-submit" onclick="handleSendOtp()">
+                    Send Verification Code
+                </button>
+            </div>
+
+            <!-- OTP Input Section -->
+            <div id="otpFormWrap" style="display: none; text-align: center;">
+                <p style="font-size: 14px; color: var(--dg-slate); margin-bottom: 8px;">
+                    Enter the 6-digit code sent to <strong id="displayTargetEmail" style="color: var(--dg-navy);"></strong>
+                </p>
+
+                <div class="timer-badge">
+                    ⏱ Code expires in: <span id="otpTimer" style="color: var(--dg-red); font-weight: 700;">05:00</span>
+                </div>
+
+                <div class="otp-input-wrap">
+                    <input type="text" class="otp-digit" maxlength="1" id="otp1" oninput="onOtpInput(this, 'otp2')" onkeydown="onOtpBackspace(event, this, null)">
+                    <input type="text" class="otp-digit" maxlength="1" id="otp2" oninput="onOtpInput(this, 'otp3')" onkeydown="onOtpBackspace(event, this, 'otp1')">
+                    <input type="text" class="otp-digit" maxlength="1" id="otp3" oninput="onOtpInput(this, 'otp4')" onkeydown="onOtpBackspace(event, this, 'otp2')">
+                    <input type="text" class="otp-digit" maxlength="1" id="otp4" oninput="onOtpInput(this, 'otp5')" onkeydown="onOtpBackspace(event, this, 'otp3')">
+                    <input type="text" class="otp-digit" maxlength="1" id="otp5" oninput="onOtpInput(this, 'otp6')" onkeydown="onOtpBackspace(event, this, 'otp4')">
+                    <input type="text" class="otp-digit" maxlength="1" id="otp6" oninput="onOtpInput(this, null)" onkeydown="onOtpBackspace(event, this, 'otp5')">
+                </div>
+
+                <button type="button" id="btnVerifyOtp" class="btn-submit" onclick="handleVerifyOtp()" style="margin-top: 16px;">
+                    Verify & Continue →
+                </button>
+
+                <div style="margin-top: 18px; font-size: 13px; color: var(--dg-slate);">
+                    Didn't receive the code? 
+                    <button type="button" id="btnResendOtp" style="background: none; border: none; color: var(--dg-red); font-weight: 600; cursor: pointer;" onclick="handleSendOtp()">
+                        Resend Code
+                    </button>
+                    <span id="resendCountdown" style="display: none; color: #94a3b8;"> (Wait 60s)</span>
+                </div>
+            </div>
+
+            <div style="margin-top: 24px; text-align: left;">
+                <button type="button" class="btn-secondary" onclick="backToStep1()">← Change Account Type</button>
+            </div>
+        </div>
+
+        <!-- STEP 3: PROFILE & PASSWORD SETUP -->
+        <div id="step3" style="display: none;">
+            <div class="auth-header">
+                <p class="eyebrow" id="step3CategoryLabel">Account Details</p>
+                <h1 id="step3Title">Complete Your Profile</h1>
+                <p>Set up your profile credentials to access your dashboard.</p>
+            </div>
+
+            <form id="profileForm" novalidate onsubmit="handleCompleteRegistration(event)">
+                <!-- Individual Specific Fields -->
+                <div id="individualFields" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="indFullName">Full Name *</label>
+                            <input type="text" id="indFullName" class="form-control" placeholder="e.g. Ramesh Kumar">
+                        </div>
+                        <div class="form-group">
+                            <label for="indMobile">Mobile Number</label>
+                            <input type="tel" id="indMobile" class="form-control" placeholder="e.g. +91 98765 43210">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="indJobTitle">Job Title / Designation</label>
+                            <input type="text" id="indJobTitle" class="form-control" placeholder="e.g. Senior Merchandiser / Quality Controller">
+                        </div>
+                        <div class="form-group">
+                            <label for="indExperience">Experience (Years)</label>
+                            <input type="number" step="0.5" min="0" max="50" id="indExperience" class="form-control" placeholder="e.g. 4.5">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="indLocation">Location / Area</label>
+                            <input type="text" id="indLocation" class="form-control" placeholder="e.g. Tiruppur / Avinashi">
+                        </div>
+                        <div class="form-group">
+                            <label for="indSalary">Expected Salary</label>
+                            <input type="text" id="indSalary" class="form-control" placeholder="e.g. ₹25,000 / month">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="indSkills">Key Skills</label>
+                        <input type="text" id="indSkills" class="form-control" placeholder="e.g. Garment Costing, Sampling, TNA, MS Excel">
+                    </div>
+                </div>
+
+                <!-- Company Specific Fields -->
+                <div id="companyFields" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="compName">Company Name *</label>
+                            <input type="text" id="compName" class="form-control" placeholder="e.g. Texworld Apparels Pvt Ltd">
+                        </div>
+                        <div class="form-group">
+                            <label for="compContactPerson">Contact Person *</label>
+                            <input type="text" id="compContactPerson" class="form-control" placeholder="e.g. S. Murugan (HR Manager)">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="compMobile">Contact Mobile</label>
+                            <input type="tel" id="compMobile" class="form-control" placeholder="e.g. +91 98420 12345">
+                        </div>
+                        <div class="form-group">
+                            <label for="compBusinessType">Business Type</label>
+                            <select id="compBusinessType" class="form-control">
+                                <option value="Garment Manufacturer">Garment Manufacturer</option>
+                                <option value="Export House">Export House</option>
+                                <option value="Knitting & Dyeing Unit">Knitting & Dyeing Unit</option>
+                                <option value="Printing & Embroidery">Printing & Embroidery</option>
+                                <option value="Accessories Supplier">Accessories Supplier</option>
+                                <option value="Other">Other Garment Allied Industry</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="compLocation">Location / City</label>
+                            <input type="text" id="compLocation" class="form-control" placeholder="e.g. Tiruppur, Tamil Nadu">
+                        </div>
+                        <div class="form-group">
+                            <label for="compWebsite">Website (Optional)</label>
+                            <input type="url" id="compWebsite" class="form-control" placeholder="https://texworld.example.com">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="compDescription">Company Overview</label>
+                        <textarea id="compDescription" class="form-control" rows="2" placeholder="Brief description of your products and operations"></textarea>
+                    </div>
+                </div>
+
+                <!-- Security Fields (Common) -->
+                <div class="form-row" style="margin-top: 24px; border-top: 1px solid var(--dg-border); padding-top: 20px;">
+                    <div class="form-group">
+                        <label for="password">Create Password * (min 6 chars)</label>
+                        <input type="password" id="password" class="form-control" placeholder="Enter secure password" minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password *</label>
+                        <input type="password" id="confirmPassword" class="form-control" placeholder="Repeat password" minlength="6">
+                    </div>
+                </div>
+
+                <button type="button" id="btnSubmitRegistration" class="btn-submit" style="margin-top: 12px;" onclick="handleCompleteRegistration(event)">
+                    Create Account & Go to Dashboard →
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let selectedAccountType = null;
+        let verifiedEmail = null;
+        let tempVerificationToken = null;
+        let otpCountdownInterval = null;
+        let resendCooldownInterval = null;
+
+        function showAlert(msg, isError = true) {
+            const errEl = document.getElementById("errorAlert");
+            const succEl = document.getElementById("successAlert");
+            if (isError) {
+                succEl.style.display = "none";
+                errEl.textContent = msg;
+                errEl.style.display = "block";
+            } else {
+                errEl.style.display = "none";
+                succEl.textContent = msg;
+                succEl.style.display = "block";
+            }
+        }
+
+        function clearAlerts() {
+            document.getElementById("errorAlert").style.display = "none";
+            document.getElementById("successAlert").style.display = "none";
+        }
+
+        // --- Step 1: Category Selection ---
+        function selectCategory(type) {
+            selectedAccountType = type;
+            document.getElementById("cardIndividual").classList.toggle("selected", type === "individual");
+            document.getElementById("cardCompany").classList.toggle("selected", type === "company");
+            document.getElementById("btnContinueStep1").disabled = false;
+        }
+
+        function goToStep2() {
+            if (!selectedAccountType) return;
+            clearAlerts();
+            document.getElementById("step1").style.display = "none";
+            document.getElementById("step2").style.display = "block";
+            
+            document.getElementById("dot1").classList.remove("active");
+            document.getElementById("dot1").classList.add("completed");
+            document.getElementById("line1").classList.add("completed");
+            document.getElementById("dot2").classList.add("active");
+
+            const label = selectedAccountType === "individual" ? "👤 Individual / Job Seeker" : "🏢 Company / Employer";
+            document.getElementById("step2CategoryLabel").textContent = label;
+        }
+
+        function backToStep1() {
+            clearAlerts();
+            clearInterval(otpCountdownInterval);
+            clearInterval(resendCooldownInterval);
+            document.getElementById("step2").style.display = "none";
+            document.getElementById("step1").style.display = "block";
+            
+            document.getElementById("dot1").classList.add("active");
+            document.getElementById("dot1").classList.remove("completed");
+            document.getElementById("line1").classList.remove("completed");
+            document.getElementById("dot2").classList.remove("active");
+        }
+
+        // --- Step 2: OTP Management ---
+        async function handleSendOtp() {
+            const emailInput = document.getElementById("regEmail");
+            const email = emailInput.value.trim();
+            if (!email || !email.includes("@")) {
+                showAlert("Please enter a valid email address.");
+                return;
+            }
+
+            clearAlerts();
+            const btn = document.getElementById("btnSendOtp");
+            btn.disabled = true;
+            btn.textContent = "Sending Verification Code...";
+
+            try {
+                const res = await fetch("/api/auth/register/send-otp", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: email })
+                });
+
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    verifiedEmail = email;
+                    document.getElementById("displayTargetEmail").textContent = email;
+                    document.getElementById("emailFormWrap").style.display = "none";
+                    document.getElementById("otpFormWrap").style.display = "block";
+                    showAlert("Verification code sent! Please check your inbox.", false);
+                    
+                    startOtpTimer(data.expires_in_seconds || 300);
+                    startResendCooldown(data.cooldown_seconds || 60);
+                    document.getElementById("otp1").focus();
+                } else {
+                    showAlert(data.detail || "Unable to send verification code. Please try again.");
+                }
+            } catch (err) {
+                showAlert("Network error connecting to verification server.");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Send Verification Code";
+            }
+        }
+
+        function startOtpTimer(duration) {
+            clearInterval(otpCountdownInterval);
+            let timer = duration;
+            const timerEl = document.getElementById("otpTimer");
+            
+            otpCountdownInterval = setInterval(() => {
+                const minutes = parseInt(timer / 60, 10);
+                const seconds = parseInt(timer % 60, 10);
+                timerEl.textContent = `${minutes < 10 ? "0" + minutes : minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
+
+                if (--timer < 0) {
+                    clearInterval(otpCountdownInterval);
+                    timerEl.textContent = "Expired";
+                    showAlert("Verification code has expired. Please click Resend Code.");
+                }
+            }, 1000);
+        }
+
+        function startResendCooldown(seconds) {
+            clearInterval(resendCooldownInterval);
+            let cooldown = seconds;
+            const resendBtn = document.getElementById("btnResendOtp");
+            const countEl = document.getElementById("resendCountdown");
+            
+            resendBtn.disabled = true;
+            resendBtn.style.color = "#94a3b8";
+            countEl.style.display = "inline";
+            countEl.textContent = ` (Wait ${cooldown}s)`;
+
+            resendCooldownInterval = setInterval(() => {
+                cooldown--;
+                countEl.textContent = ` (Wait ${cooldown}s)`;
+                if (cooldown <= 0) {
+                    clearInterval(resendCooldownInterval);
+                    resendBtn.disabled = false;
+                    resendBtn.style.color = "var(--dg-red)";
+                    countEl.style.display = "none";
+                }
+            }, 1000);
+        }
+
+        function onOtpInput(current, nextId) {
+            if (current.value.length === 1 && nextId) {
+                document.getElementById(nextId).focus();
+            }
+        }
+
+        function onOtpBackspace(event, current, prevId) {
+            if (event.key === "Backspace" && !current.value && prevId) {
+                document.getElementById(prevId).focus();
+            }
+        }
+
+        async function handleVerifyOtp() {
+            const code = [
+                document.getElementById("otp1").value,
+                document.getElementById("otp2").value,
+                document.getElementById("otp3").value,
+                document.getElementById("otp4").value,
+                document.getElementById("otp5").value,
+                document.getElementById("otp6").value
+            ].join("");
+
+            if (code.length !== 6 || !/^\d+$/.test(code)) {
+                showAlert("Please enter the complete 6-digit code.");
+                return;
+            }
+
+            clearAlerts();
+            const btn = document.getElementById("btnVerifyOtp");
+            btn.disabled = true;
+            btn.textContent = "Verifying...";
+
+            try {
+                const res = await fetch("/api/auth/register/verify-otp", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: verifiedEmail, otp: code })
+                });
+
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    tempVerificationToken = data.verification_token;
+                    clearInterval(otpCountdownInterval);
+                    clearInterval(resendCooldownInterval);
+                    goToStep3();
+                } else {
+                    showAlert(data.detail || "Invalid or expired verification code.");
+                }
+            } catch (err) {
+                showAlert("Verification failed due to connection error.");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Verify & Continue →";
+            }
+        }
+
+        // --- Step 3: Profile Completion ---
+        function goToStep3() {
+            clearAlerts();
+            document.getElementById("step2").style.display = "none";
+            document.getElementById("step3").style.display = "block";
+
+            document.getElementById("dot2").classList.remove("active");
+            document.getElementById("dot2").classList.add("completed");
+            document.getElementById("line2").classList.add("completed");
+            document.getElementById("dot3").classList.add("active");
+
+            if (selectedAccountType === "individual") {
+                document.getElementById("step3CategoryLabel").textContent = "👤 Individual / Job Seeker Profile";
+                document.getElementById("step3Title").textContent = "Personal & Career Details";
+                document.getElementById("individualFields").style.display = "block";
+                document.getElementById("companyFields").style.display = "none";
+            } else {
+                document.getElementById("step3CategoryLabel").textContent = "🏢 Company / Employer Profile";
+                document.getElementById("step3Title").textContent = "Company Information";
+                document.getElementById("individualFields").style.display = "none";
+                document.getElementById("companyFields").style.display = "block";
+            }
+        }
+
+        async function handleCompleteRegistration(e) {
+            if (e) e.preventDefault();
+            clearAlerts();
+
+            if (!tempVerificationToken) {
+                showAlert("Email verification token expired or missing. Please restart registration.");
+                return;
+            }
+
+            const pwd = (document.getElementById("password").value || "").trim();
+            const confirmPwd = (document.getElementById("confirmPassword").value || "").trim();
+
+            if (!pwd || pwd.length < 6) {
+                showAlert("Password must be at least 6 characters long.");
+                document.getElementById("password").focus();
+                return;
+            }
+            if (pwd !== confirmPwd) {
+                showAlert("Passwords do not match. Please verify.");
+                document.getElementById("confirmPassword").focus();
+                return;
+            }
+
+            const accountType = selectedAccountType || "individual";
+            const payload = {
+                verification_token: tempVerificationToken,
+                account_type: accountType,
+                password: pwd
+            };
+
+            if (accountType === "individual") {
+                const fullName = (document.getElementById("indFullName").value || "").trim();
+                if (!fullName) {
+                    showAlert("Please enter your full name.");
+                    document.getElementById("indFullName").focus();
+                    return;
+                }
+                payload.full_name = fullName;
+                payload.mobile = (document.getElementById("indMobile").value || "").trim();
+                payload.job_title = (document.getElementById("indJobTitle").value || "").trim();
+                payload.experience_years = parseFloat(document.getElementById("indExperience").value) || 0.0;
+                payload.location = (document.getElementById("indLocation").value || "").trim();
+                payload.expected_salary = (document.getElementById("indSalary").value || "").trim();
+                payload.skills = (document.getElementById("indSkills").value || "").trim();
+            } else {
+                const compName = (document.getElementById("compName").value || "").trim();
+                const contactPerson = (document.getElementById("compContactPerson").value || "").trim();
+                if (!compName) {
+                    showAlert("Please enter your company name.");
+                    document.getElementById("compName").focus();
+                    return;
+                }
+                if (!contactPerson) {
+                    showAlert("Please enter contact person name.");
+                    document.getElementById("compContactPerson").focus();
+                    return;
+                }
+                payload.company_name = compName;
+                payload.contact_person = contactPerson;
+                payload.mobile = (document.getElementById("compMobile").value || "").trim();
+                payload.business_type = document.getElementById("compBusinessType").value;
+                payload.location = (document.getElementById("compLocation").value || "").trim();
+                payload.website = (document.getElementById("compWebsite").value || "").trim();
+                payload.company_description = (document.getElementById("compDescription").value || "").trim();
+            }
+
+            const btn = document.getElementById("btnSubmitRegistration");
+            btn.disabled = true;
+            btn.textContent = "Creating Account...";
+
+            try {
+                const res = await fetch("/api/auth/register/complete", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showAlert("Registration successful! Redirecting to your dashboard...", false);
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url || "/";
+                    }, 1000);
+                } else {
+                    showAlert(data.detail || "Registration failed. Please check your information.");
+                    btn.disabled = false;
+                    btn.textContent = "Create Account & Go to Dashboard →";
+                }
+            } catch (err) {
+                console.error("Registration error:", err);
+                showAlert("Server connection error during account creation.");
+                btn.disabled = false;
+                btn.textContent = "Create Account & Go to Dashboard →";
+            }
+        }
+    </script>
+</body>
+</html>

@@ -861,6 +861,43 @@ def get_index():
 def get_jobs_page():
     return FileResponse(os.path.join(BASE_DIR, "jobs.html"))
 
+@app.get("/signup")
+@app.get("/register")
+def get_signup_page():
+    return FileResponse(os.path.join(BASE_DIR, "signup.html"))
+
+@app.get("/login")
+def get_public_login_page():
+    return FileResponse(os.path.join(BASE_DIR, "public_login.html"))
+
+@app.get("/forgot-password")
+def get_forgot_password_page():
+    return FileResponse(os.path.join(BASE_DIR, "forgot_password.html"))
+
+@app.get("/dashboard/individual")
+def get_individual_dashboard():
+    return FileResponse(os.path.join(BASE_DIR, "dashboard_individual.html"))
+
+@app.get("/dashboard/company")
+def get_company_dashboard():
+    return FileResponse(os.path.join(BASE_DIR, "dashboard_company.html"))
+
+@app.get("/tools")
+def get_tools_page():
+    return FileResponse(os.path.join(BASE_DIR, "tools.html"))
+
+@app.get("/services")
+def get_services_page():
+    return FileResponse(os.path.join(BASE_DIR, "services.html"))
+
+@app.get("/blog")
+def get_blog_page():
+    return FileResponse(os.path.join(BASE_DIR, "blog.html"))
+
+@app.get("/sam-calculator")
+def get_sam_calculator_page():
+    return FileResponse(os.path.join(BASE_DIR, "sam_calculator.html"))
+
 @app.get("/logo.png")
 def get_logo():
     logo_path = os.path.join(BASE_DIR, "logo.png")
@@ -873,16 +910,19 @@ import routers.jobs
 import routers.admin_jobs
 import routers.admin_ingestion
 import routers.seo
+import routers.public_auth
 
 routers.jobs.init_db_helpers(db_enabled, query_db, execute_db, execute_db_returning)
 routers.admin_jobs.init_admin_helpers(db_enabled, query_db, execute_db, execute_db_returning, get_current_admin)
 routers.admin_ingestion.init_ingestion_router(query_db, execute_db, execute_db_returning, db_enabled, FALLBACK_ADMIN_SESSIONS, BASE_DIR)
 routers.seo.init_seo_db_helpers(db_enabled, query_db)
+routers.public_auth.init_public_auth_helpers(db_enabled, query_db, execute_db, execute_db_returning)
 
 app.include_router(routers.jobs.router)
 app.include_router(routers.admin_jobs.router)
 app.include_router(routers.admin_ingestion.router)
 app.include_router(routers.seo.router)
+app.include_router(routers.public_auth.router)
 
 # Custom 404 Exception Handler returning HTTP 404 status code and friendly 404.html
 @app.exception_handler(StarletteHTTPException)
