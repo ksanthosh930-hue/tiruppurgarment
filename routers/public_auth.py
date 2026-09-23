@@ -5,7 +5,7 @@ import logging
 import datetime
 from typing import Dict, Any, Optional
 import re
-from fastapi import APIRouter, HTTPException, Cookie, Depends, Response, Form, Request
+from fastapi import APIRouter, HTTPException, Cookie, Depends, Response, Form, Request, UploadFile, File
 from pydantic import BaseModel, Field
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -432,10 +432,64 @@ class EmployeeProfileUpdateRequest(BaseModel):
     full_name: str
     mobile: Optional[str] = None
     location: Optional[str] = None
+    city: Optional[str] = None
+    district: Optional[str] = None
     job_title: Optional[str] = None
+    department: Optional[str] = None
     experience_years: Optional[float] = 0.0
-    skills: Optional[str] = None
     expected_salary: Optional[str] = None
+    preferred_job_role: Optional[str] = None
+    preferred_department: Optional[str] = None
+    preferred_location: Optional[str] = None
+    qualification: Optional[str] = None
+    course: Optional[str] = None
+    institution: Optional[str] = None
+    passing_year: Optional[str] = None
+    skills: Optional[str] = None
+
+def calculate_profile_completion(profile: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Deterministic field-level profile completion calculation (5 sections x 20% = 100%).
+    """
+    # 1. Personal (20%): full_name (7%), mobile (7%), location/city (6%)
+    personal_score = 0
+    if (profile.get("full_name") or "").strip(): personal_score += 7
+    if (profile.get("mobile") or "").strip(): personal_score += 7
+    if (profile.get("location") or profile.get("city") or "").strip(): personal_score += 6
+    
+    # 2. Professional (20%): job_title (7%), department (7%), experience_years (6%)
+    prof_score = 0
+    if (profile.get("job_title") or "").strip(): prof_score += 7
+    if (profile.get("department") or "").strip(): prof_score += 7
+    if profile.get("experience_years") is not None and float(profile.get("experience_years") or 0) > 0: prof_score += 6
+    
+    # 3. Preferences (20%): preferred_job_role (7%), expected_salary (7%), preferred_location (6%)
+    pref_score = 0
+    if (profile.get("preferred_job_role") or "").strip(): pref_score += 7
+    if (profile.get("expected_salary") or "").strip(): pref_score += 7
+    if (profile.get("preferred_location") or "").strip(): pref_score += 6
+    
+    # 4. Education (20%): qualification (10%), course/institution (10%)
+    edu_score = 0
+    if (profile.get("qualification") or "").strip(): edu_score += 10
+    if (profile.get("course") or profile.get("institution") or "").strip(): edu_score += 10
+    
+    # 5. Resume & Skills (20%): skills (10%), resume_url (10%)
+    skills_resume_score = 0
+    if (profile.get("skills") or "").strip(): skills_resume_score += 10
+    if (profile.get("resume_url") or "").strip(): skills_resume_score += 10
+    
+    total = personal_score + prof_score + pref_score + edu_score + skills_resume_score
+    return {
+        "percentage": min(total, 100),
+        "sections": {
+            "personal": {"score": personal_score, "complete": personal_score == 20},
+            "professional": {"score": prof_score, "complete": prof_score == 20},
+            "preferences": {"score": pref_score, "complete": pref_score == 20},
+            "education": {"score": edu_score, "complete": edu_score == 20},
+            "resume_skills": {"score": skills_resume_score, "complete": skills_resume_score == 20}
+        }
+    }
 
 @router.get("/employee/profile")
 def get_employee_profile(current_user: Dict[str, Any] = Depends(require_employee_user)):
@@ -443,7 +497,13 @@ def get_employee_profile(current_user: Dict[str, Any] = Depends(require_employee
     p_rows = _query_db("SELECT * FROM individual_profiles WHERE user_id = %s;", (user_id,))
     if not p_rows:
         raise HTTPException(status_code=404, detail="Profile not found.")
-    return {"success": True, "profile": p_rows[0]}
+    profile = p_rows[0]
+    completion = calculate_profile_completion(profile)
+    return {
+        "success": True,
+        "profile": profile,
+        "completion": completion
+    }
 
 @router.put("/employee/profile")
 def update_employee_profile(
@@ -457,9 +517,19 @@ def update_employee_profile(
         
     mobile = _validate_optional_mobile(req_data.mobile)
     location = (req_data.location or "").strip() or None
+    city = (req_data.city or "").strip() or None
+    district = (req_data.district or "").strip() or None
     job_title = (req_data.job_title or "").strip() or None
-    skills = (req_data.skills or "").strip() or None
+    department = (req_data.department or "").strip() or None
     expected_salary = (req_data.expected_salary or "").strip() or None
+    preferred_job_role = (req_data.preferred_job_role or "").strip() or None
+    preferred_department = (req_data.preferred_department or "").strip() or None
+    preferred_location = (req_data.preferred_location or "").strip() or None
+    qualification = (req_data.qualification or "").strip() or None
+    course = (req_data.course or "").strip() or None
+    institution = (req_data.institution or "").strip() or None
+    passing_year = (req_data.passing_year or "").strip() or None
+    skills = (req_data.skills or "").strip() or None
     
     try:
         # Check if mobile is used by another individual
@@ -470,17 +540,97 @@ def update_employee_profile(
                 
         _execute_db("""
             UPDATE individual_profiles
-            SET full_name = %s, mobile = %s, location = %s, job_title = %s,
-                experience_years = %s, skills = %s, expected_salary = %s, updated_at = CURRENT_TIMESTAMP
+            SET full_name = %s, mobile = %s, location = %s, city = %s, district = %s,
+                job_title = %s, department = %s, experience_years = %s, expected_salary = %s,
+                preferred_job_role = %s, preferred_department = %s, preferred_location = %s,
+                qualification = %s, course = %s, institution = %s, passing_year = %s,
+                skills = %s, updated_at = CURRENT_TIMESTAMP
             WHERE user_id = %s;
-        """, (full_name, mobile, location, job_title, req_data.experience_years or 0.0, skills, expected_salary, user_id))
+        """, (
+            full_name, mobile, location, city, district,
+            job_title, department, req_data.experience_years or 0.0, expected_salary,
+            preferred_job_role, preferred_department, preferred_location,
+            qualification, course, institution, passing_year,
+            skills, user_id
+        ))
         
-        return {"success": True, "message": "Profile updated successfully."}
+        # Load updated profile and completion
+        p_rows = _query_db("SELECT * FROM individual_profiles WHERE user_id = %s;", (user_id,))
+        updated_profile = p_rows[0] if p_rows else {}
+        completion = calculate_profile_completion(updated_profile)
+        
+        return {
+            "success": True,
+            "message": "Profile updated successfully.",
+            "profile": updated_profile,
+            "completion": completion
+        }
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error updating employee profile: {e}")
         raise HTTPException(status_code=500, detail="Something went wrong. Please try again.")
+
+@router.post("/employee/resume")
+async def upload_employee_resume(
+    file: UploadFile = File(...),
+    current_user: Dict[str, Any] = Depends(require_employee_user)
+):
+    """
+    Validates and stores candidate resume in existing /assets/uploads/resumes directory.
+    Updates candidate's individual_profiles.resume_url.
+    """
+    user_id = current_user["id"]
+    ext = os.path.splitext(file.filename or "")[1].lower()
+    allowed_exts = [".pdf", ".doc", ".docx"]
+    if ext not in allowed_exts:
+        raise HTTPException(status_code=400, detail="Invalid file type. Only PDF, DOC, and DOCX files are allowed.")
+
+    content = await file.read()
+    if len(content) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Resume file size must be less than 10MB.")
+
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    resume_dir = os.path.join(base_dir, "assets", "uploads", "resumes")
+    os.makedirs(resume_dir, exist_ok=True)
+
+    base = re.sub(r'[^a-zA-Z0-9_\-]', '_', os.path.splitext(file.filename or "resume")[0])
+    safe_name = f"candidate_resume_{user_id}_{base[:30]}_{uuid.uuid4().hex[:6]}{ext}"
+    dest_path = os.path.join(resume_dir, safe_name)
+
+    with open(dest_path, "wb") as f:
+        f.write(content)
+
+    rel_path = f"/assets/uploads/resumes/{safe_name}"
+    _execute_db("UPDATE individual_profiles SET resume_url = %s, updated_at = CURRENT_TIMESTAMP WHERE user_id = %s;", (rel_path, user_id))
+
+    p_rows = _query_db("SELECT * FROM individual_profiles WHERE user_id = %s;", (user_id,))
+    updated_profile = p_rows[0] if p_rows else {}
+    completion = calculate_profile_completion(updated_profile)
+
+    return {
+        "success": True,
+        "resume_url": rel_path,
+        "filename": file.filename,
+        "completion": completion,
+        "message": "Resume uploaded successfully."
+    }
+
+@router.delete("/employee/resume")
+def delete_employee_resume(current_user: Dict[str, Any] = Depends(require_employee_user)):
+    """
+    Removes candidate resume reference from individual_profiles.
+    """
+    user_id = current_user["id"]
+    _execute_db("UPDATE individual_profiles SET resume_url = NULL, updated_at = CURRENT_TIMESTAMP WHERE user_id = %s;", (user_id,))
+    p_rows = _query_db("SELECT * FROM individual_profiles WHERE user_id = %s;", (user_id,))
+    updated_profile = p_rows[0] if p_rows else {}
+    completion = calculate_profile_completion(updated_profile)
+    return {
+        "success": True,
+        "completion": completion,
+        "message": "Resume deleted successfully."
+    }
 
 
 # --- 6. Employer Company Profile Foundation APIs ---

@@ -19,6 +19,9 @@
             --dg-bg: #F8FAFC;
             --dg-white: #FFFFFF;
             --dg-border: #E2E8F0;
+            --dg-success: #10B981;
+            --dg-blue: #2563EB;
+            --dg-amber: #F59E0B;
         }
 
         body {
@@ -121,6 +124,71 @@
             margin-top: 8px;
         }
 
+        /* Profile Completion Meter */
+        .completion-meter-card {
+            background: #ffffff;
+            border: 1px solid var(--dg-border);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+
+        .meter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .meter-header h3 {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--dg-navy);
+        }
+
+        .meter-header span {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--dg-red);
+        }
+
+        .progress-bar-bg {
+            background: #E2E8F0;
+            border-radius: 8px;
+            height: 10px;
+            width: 100%;
+            overflow: hidden;
+            margin-bottom: 14px;
+        }
+
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #9E1B32 0%, #10B981 100%);
+            height: 100%;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .checklist-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+        }
+
+        .checklist-item {
+            font-size: 12.5px;
+            color: var(--dg-slate);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .checklist-item.done {
+            color: #166534;
+            font-weight: 600;
+        }
+
         /* Dashboard Navigation Tabs */
         .dash-tabs {
             display: flex;
@@ -173,9 +241,27 @@
             justify-content: space-between;
         }
 
+        .section-header-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--dg-navy);
+            margin: 24px 0 14px 0;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--dg-border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         .grid-2col {
             display: grid;
             grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .grid-3col {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 16px;
         }
 
@@ -229,33 +315,141 @@
             background: var(--dg-red-hover);
         }
 
-        .coming-soon-box {
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #f1f5f9;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .btn-danger {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-danger:hover {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        /* Resume Upload Box */
+        .resume-upload-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 32px 20px;
             text-align: center;
-            padding: 48px 24px;
             background: #f8fafc;
-            border: 1px dashed #cbd5e1;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .resume-upload-zone:hover {
+            border-color: var(--dg-red);
+            background: #fff;
+        }
+
+        .resume-attached-card {
+            background: #f0fdf4;
+            border: 1px solid #86efac;
             border-radius: 10px;
+            padding: 18px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
-        .coming-soon-box .cs-icon {
-            font-size: 40px;
-            margin-bottom: 12px;
-            display: block;
+        /* Application List Cards */
+        .app-item-card {
+            border: 1px solid var(--dg-border);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 16px;
+            background: #fff;
+            transition: box-shadow 0.2s;
         }
 
-        .coming-soon-box h3 {
-            font-size: 18px;
+        .app-item-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .app-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .app-item-title {
+            font-size: 16px;
             font-weight: 700;
             color: var(--dg-navy);
-            margin: 0 0 6px 0;
+            margin: 0 0 4px 0;
         }
 
-        .coming-soon-box p {
-            font-size: 14px;
-            color: var(--dg-slate);
-            max-width: 440px;
-            margin: 0 auto;
-            line-height: 1.5;
+        .badge-status-submitted {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-status-reviewed {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-status-shortlisted {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-status-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
         }
 
         .msg-alert {
@@ -284,7 +478,7 @@
                 align-items: flex-start;
                 gap: 16px;
             }
-            .grid-2col {
+            .grid-2col, .grid-3col {
                 grid-template-columns: 1fr;
                 gap: 0;
             }
@@ -317,12 +511,29 @@
             </div>
         </div>
 
+        <!-- Profile Completion Score Meter -->
+        <div class="completion-meter-card">
+            <div class="meter-header">
+                <h3>Profile Completion Score</h3>
+                <span id="completionPercentDisplay">0%</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div id="completionBarFill" class="progress-bar-fill"></div>
+            </div>
+            <div class="checklist-grid" id="checklistContainer">
+                <div class="checklist-item" id="checkPersonal"><span>○</span> 1. Personal Info (20%)</div>
+                <div class="checklist-item" id="checkProf"><span>○</span> 2. Professional (20%)</div>
+                <div class="checklist-item" id="checkPref"><span>○</span> 3. Preferences (20%)</div>
+                <div class="checklist-item" id="checkEdu"><span>○</span> 4. Education (20%)</div>
+                <div class="checklist-item" id="checkResume"><span>○</span> 5. Resume & Skills (20%)</div>
+            </div>
+        </div>
+
         <!-- Navigation Tabs -->
         <div class="dash-tabs">
             <button type="button" class="dash-tab-btn active" onclick="showTab('profile')">Profile & Details</button>
             <button type="button" class="dash-tab-btn" onclick="showTab('resume')">My Resume</button>
-            <button type="button" class="dash-tab-btn" onclick="showTab('saved')">Saved Jobs</button>
-            <button type="button" class="dash-tab-btn" onclick="showTab('applications')">Applications</button>
+            <button type="button" class="dash-tab-btn" onclick="showTab('applications')">My Applications</button>
         </div>
 
         <div id="alertBox" class="msg-alert"></div>
@@ -330,44 +541,114 @@
         <!-- TAB 1: Profile -->
         <div id="tabProfile" class="dash-tab-content">
             <div class="dash-card">
-                <h2>My Profile Information</h2>
+                <h2>Candidate Profile Details</h2>
                 <form id="profileForm" onsubmit="handleProfileUpdate(event)">
+                    <!-- 1. Personal -->
+                    <div class="section-header-title">👤 1. Personal Information</div>
                     <div class="grid-2col">
                         <div class="form-group">
                             <label>Full Name *</label>
-                            <input type="text" id="profFullName" class="form-control" required>
+                            <input type="text" id="profFullName" class="form-control" placeholder="Your full name" required>
                         </div>
                         <div class="form-group">
-                            <label>Mobile Number</label>
-                            <input type="tel" id="profMobile" class="form-control" maxlength="10">
+                            <label>Mobile Number *</label>
+                            <input type="tel" id="profMobile" class="form-control" maxlength="10" placeholder="10-digit mobile number">
+                        </div>
+                    </div>
+                    <div class="grid-3col">
+                        <div class="form-group">
+                            <label>Current Area / Location</label>
+                            <input type="text" id="profLocation" class="form-control" placeholder="e.g. Angeripalayam">
+                        </div>
+                        <div class="form-group">
+                            <label>City</label>
+                            <input type="text" id="profCity" class="form-control" placeholder="e.g. Tiruppur, Coimbatore">
+                        </div>
+                        <div class="form-group">
+                            <label>District</label>
+                            <input type="text" id="profDistrict" class="form-control" placeholder="e.g. Tiruppur">
                         </div>
                     </div>
 
-                    <div class="grid-2col">
+                    <!-- 2. Professional -->
+                    <div class="section-header-title">💼 2. Professional Details</div>
+                    <div class="grid-3col">
                         <div class="form-group">
-                            <label>Preferred Location / Area</label>
-                            <input type="text" id="profLocation" class="form-control" placeholder="e.g. Tiruppur, Avinashi Road">
+                            <label>Current / Recent Job Title</label>
+                            <input type="text" id="profJobTitle" class="form-control" placeholder="e.g. Senior Merchandiser">
                         </div>
                         <div class="form-group">
-                            <label>Job Title / Designation</label>
-                            <input type="text" id="profJobTitle" class="form-control" placeholder="e.g. Merchandiser, Pattern Master, QC">
+                            <label>Garment Department</label>
+                            <select id="profDepartment" class="form-control">
+                                <option value="">Select Department</option>
+                                <option value="Merchandising">Merchandising</option>
+                                <option value="Quality">Quality</option>
+                                <option value="Production">Production</option>
+                                <option value="Sampling">Sampling</option>
+                                <option value="Cutting">Cutting</option>
+                                <option value="Sewing">Sewing</option>
+                                <option value="Finishing">Finishing</option>
+                                <option value="Printing">Printing</option>
+                                <option value="Embroidery">Embroidery</option>
+                                <option value="Pattern / CAD">Pattern / CAD</option>
+                                <option value="Accounts / Admin">Accounts / Admin</option>
+                            </select>
                         </div>
-                    </div>
-
-                    <div class="grid-2col">
                         <div class="form-group">
                             <label>Total Experience (Years)</label>
-                            <input type="number" id="profExpYears" class="form-control" step="0.5" min="0">
-                        </div>
-                        <div class="form-group">
-                            <label>Expected Salary (Monthly / Yearly)</label>
-                            <input type="text" id="profSalary" class="form-control" placeholder="e.g. ₹25,000 / month">
+                            <input type="number" id="profExpYears" class="form-control" step="0.5" min="0" placeholder="e.g. 3.5">
                         </div>
                     </div>
 
+                    <!-- 3. Preferences -->
+                    <div class="section-header-title">🎯 3. Job Preferences</div>
+                    <div class="grid-3col">
+                        <div class="form-group">
+                            <label>Preferred Job Role</label>
+                            <input type="text" id="profPrefRole" class="form-control" placeholder="e.g. Production Merchandiser">
+                        </div>
+                        <div class="form-group">
+                            <label>Preferred Department</label>
+                            <input type="text" id="profPrefDept" class="form-control" placeholder="e.g. Merchandising">
+                        </div>
+                        <div class="form-group">
+                            <label>Preferred Work Location</label>
+                            <input type="text" id="profPrefLoc" class="form-control" placeholder="e.g. Tiruppur / Avinashi">
+                        </div>
+                    </div>
                     <div class="form-group">
-                        <label>Key Skills</label>
-                        <input type="text" id="profSkills" class="form-control" placeholder="e.g. Pattern Making, Gerber, Costing, SAM Calculation, Fabric Sourcing">
+                        <label>Expected Monthly Salary</label>
+                        <input type="text" id="profSalary" class="form-control" placeholder="e.g. ₹35,000 / month">
+                    </div>
+
+                    <!-- 4. Education -->
+                    <div class="section-header-title">🎓 4. Educational Qualifications</div>
+                    <div class="grid-2col">
+                        <div class="form-group">
+                            <label>Highest Qualification</label>
+                            <input type="text" id="profQual" class="form-control" placeholder="e.g. Diploma in Fashion Tech, B.Tech Costume">
+                        </div>
+                        <div class="form-group">
+                            <label>Course / Major</label>
+                            <input type="text" id="profCourse" class="form-control" placeholder="e.g. Apparel Manufacturing, Textile Tech">
+                        </div>
+                    </div>
+                    <div class="grid-2col">
+                        <div class="form-group">
+                            <label>College / Institution</label>
+                            <input type="text" id="profInst" class="form-control" placeholder="e.g. NIFT-TEA, SSM College">
+                        </div>
+                        <div class="form-group">
+                            <label>Passing Year</label>
+                            <input type="number" id="profPassYear" class="form-control" placeholder="e.g. 2021" min="1970" max="2035">
+                        </div>
+                    </div>
+
+                    <!-- 5. Key Skills -->
+                    <div class="section-header-title">⚡ 5. Key Skills & Software</div>
+                    <div class="form-group">
+                        <label>Key Skills (Comma separated)</label>
+                        <input type="text" id="profSkills" class="form-control" placeholder="e.g. Pattern Making, Gerber, Costing, SAM Calculation, FastReact, Fabric Sourcing">
                     </div>
 
                     <button type="submit" id="saveProfileBtn" class="btn-action">Save Profile Changes</button>
@@ -375,46 +656,48 @@
             </div>
         </div>
 
-        <!-- TAB 2: Resume (Coming Soon) -->
+        <!-- TAB 2: Resume Management -->
         <div id="tabResume" class="dash-tab-content" style="display: none;">
             <div class="dash-card">
-                <h2>My Resume</h2>
-                <div class="coming-soon-box">
-                    <span class="cs-icon">📄</span>
-                    <h3>Resume Management — Coming Soon</h3>
-                    <p>Resume upload, preview, and automated ATS parser will be available in Phase 2 for streamlined one-click applications.</p>
+                <h2>My Attached Resume</h2>
+                
+                <div id="resumePresentBox" class="resume-attached-card" style="display: none;">
+                    <div>
+                        <span style="font-size: 24px; margin-right: 8px;">📄</span>
+                        <strong>Active Resume:</strong>
+                        <span id="resumeFileName" style="color: #166534; font-weight: 600; margin-left: 6px;">resume.pdf</span>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <a id="resumePreviewLink" href="#" target="_blank" class="btn-secondary" style="padding: 6px 14px; font-size: 13px;">👁️ View / Download</a>
+                        <button type="button" class="btn-danger" onclick="handleDeleteResume()">🗑️ Remove</button>
+                    </div>
+                </div>
+
+                <div class="resume-upload-zone" onclick="document.getElementById('resumeFileInput').click()">
+                    <span style="font-size: 36px; display: block; margin-bottom: 8px;">📤</span>
+                    <h3 style="margin: 0 0 6px 0; font-size: 16px; color: var(--dg-navy);">Upload or Replace Resume</h3>
+                    <p style="margin: 0; font-size: 13.5px; color: var(--dg-slate);">Supported formats: PDF, DOC, DOCX (Max size: 10MB)</p>
+                    <input type="file" id="resumeFileInput" accept=".pdf,.doc,.docx" style="display: none;" onchange="handleResumeUpload(this)">
                 </div>
             </div>
         </div>
 
-        <!-- TAB 3: Saved Jobs (Coming Soon) -->
-        <div id="tabSaved" class="dash-tab-content" style="display: none;">
-            <div class="dash-card">
-                <h2>Saved Jobs</h2>
-                <div class="coming-soon-box">
-                    <span class="cs-icon">🔖</span>
-                    <h3>Saved Jobs — Coming Soon</h3>
-                    <p>Bookmark export garment job openings and save them to apply later from any device.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- TAB 4: Applications (Coming Soon) -->
+        <!-- TAB 3: Applications -->
         <div id="tabApplications" class="dash-tab-content" style="display: none;">
             <div class="dash-card">
                 <h2>My Job Applications</h2>
-                <div class="coming-soon-box">
-                    <span class="cs-icon">📨</span>
-                    <h3>Application Tracking — Coming Soon</h3>
-                    <p>Track direct job application status, interview schedules, and employer responses in real time.</p>
+                <div id="applicationsContainer">
+                    <p style="color: var(--dg-slate); font-size: 14px;">Loading your applications...</p>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        let currentUserProfile = {};
+
         function showTab(tabName) {
-            const tabs = ['profile', 'resume', 'saved', 'applications'];
+            const tabs = ['profile', 'resume', 'applications'];
             const btns = document.querySelectorAll('.dash-tab-btn');
             
             tabs.forEach((t, i) => {
@@ -427,6 +710,60 @@
                     btns[i].classList.remove('active');
                 }
             });
+
+            if (tabName === 'applications') {
+                loadCandidateApplications();
+            }
+        }
+
+        function updateCompletionDisplay(profile) {
+            // Field-level deterministic 5-section calculation
+            let pScore = 0;
+            if (profile.full_name) pScore += 7;
+            if (profile.mobile) pScore += 7;
+            if (profile.location || profile.city) pScore += 6;
+
+            let profScore = 0;
+            if (profile.job_title) profScore += 7;
+            if (profile.department) profScore += 7;
+            if (profile.experience_years !== undefined && profile.experience_years !== null && Number(profile.experience_years) > 0) profScore += 6;
+
+            let prefScore = 0;
+            if (profile.preferred_job_role) prefScore += 7;
+            if (profile.expected_salary) prefScore += 7;
+            if (profile.preferred_location) prefScore += 6;
+
+            let eduScore = 0;
+            if (profile.qualification) eduScore += 10;
+            if (profile.course || profile.institution) eduScore += 10;
+
+            let resScore = 0;
+            if (profile.skills) resScore += 10;
+            if (profile.resume_url) resScore += 10;
+
+            const totalScore = pScore + profScore + prefScore + eduScore + resScore;
+
+            document.getElementById("completionPercentDisplay").textContent = totalScore + "%";
+            document.getElementById("completionBarFill").style.width = totalScore + "%";
+
+            // Checklists
+            setCheckStatus("checkPersonal", pScore === 20, `1. Personal Info (${pScore}/20%)`);
+            setCheckStatus("checkProf", profScore === 20, `2. Professional (${profScore}/20%)`);
+            setCheckStatus("checkPref", prefScore === 20, `3. Preferences (${prefScore}/20%)`);
+            setCheckStatus("checkEdu", eduScore === 20, `4. Education (${eduScore}/20%)`);
+            setCheckStatus("checkResume", resScore === 20, `5. Resume & Skills (${resScore}/20%)`);
+        }
+
+        function setCheckStatus(elId, isComplete, label) {
+            const el = document.getElementById(elId);
+            if (!el) return;
+            if (isComplete) {
+                el.className = "checklist-item done";
+                el.innerHTML = `<span>✓</span> ${label}`;
+            } else {
+                el.className = "checklist-item";
+                el.innerHTML = `<span>○</span> ${label}`;
+            }
         }
 
         async function loadEmployeeDashboard() {
@@ -450,6 +787,7 @@
                 }
 
                 const profile = user.profile || {};
+                currentUserProfile = profile;
                 const displayName = profile.full_name || user.email.split("@")[0];
                 document.getElementById("userGreeting").textContent = "Welcome, " + displayName;
                 document.getElementById("userEmailDisplay").textContent = user.email;
@@ -458,12 +796,45 @@
                 document.getElementById("profFullName").value = profile.full_name || "";
                 document.getElementById("profMobile").value = profile.mobile || "";
                 document.getElementById("profLocation").value = profile.location || "";
+                document.getElementById("profCity").value = profile.city || "";
+                document.getElementById("profDistrict").value = profile.district || "";
+
                 document.getElementById("profJobTitle").value = profile.job_title || "";
+                document.getElementById("profDepartment").value = profile.department || "";
                 document.getElementById("profExpYears").value = profile.experience_years || 0;
+
+                document.getElementById("profPrefRole").value = profile.preferred_job_role || "";
+                document.getElementById("profPrefDept").value = profile.preferred_department || "";
+                document.getElementById("profPrefLoc").value = profile.preferred_location || "";
                 document.getElementById("profSalary").value = profile.expected_salary || "";
+
+                document.getElementById("profQual").value = profile.qualification || "";
+                document.getElementById("profCourse").value = profile.course || "";
+                document.getElementById("profInst").value = profile.institution || "";
+                document.getElementById("profPassYear").value = profile.passing_year || "";
+
                 document.getElementById("profSkills").value = profile.skills || "";
+
+                // Update Completion Meter
+                updateCompletionDisplay(profile);
+
+                // Update Resume UI
+                renderResumeUI(profile.resume_url);
             } catch (err) {
                 console.error("Failed to load dashboard:", err);
+            }
+        }
+
+        function renderResumeUI(resumeUrl) {
+            const box = document.getElementById("resumePresentBox");
+            if (resumeUrl && resumeUrl.trim()) {
+                box.style.display = "flex";
+                const cleanUrl = resumeUrl.startsWith('/') ? resumeUrl : '/' + resumeUrl;
+                document.getElementById("resumePreviewLink").href = cleanUrl;
+                const parts = resumeUrl.split('/');
+                document.getElementById("resumeFileName").textContent = parts[parts.length - 1];
+            } else {
+                box.style.display = "none";
             }
         }
 
@@ -481,19 +852,31 @@
             btn.disabled = true;
             btn.textContent = "Saving...";
 
+            const payload = {
+                full_name: document.getElementById("profFullName").value.trim(),
+                mobile: document.getElementById("profMobile").value.trim() || null,
+                location: document.getElementById("profLocation").value.trim() || null,
+                city: document.getElementById("profCity").value.trim() || null,
+                district: document.getElementById("profDistrict").value.trim() || null,
+                job_title: document.getElementById("profJobTitle").value.trim() || null,
+                department: document.getElementById("profDepartment").value.trim() || null,
+                experience_years: parseFloat(document.getElementById("profExpYears").value) || 0,
+                preferred_job_role: document.getElementById("profPrefRole").value.trim() || null,
+                preferred_department: document.getElementById("profPrefDept").value.trim() || null,
+                preferred_location: document.getElementById("profPrefLoc").value.trim() || null,
+                expected_salary: document.getElementById("profSalary").value.trim() || null,
+                qualification: document.getElementById("profQual").value.trim() || null,
+                course: document.getElementById("profCourse").value.trim() || null,
+                institution: document.getElementById("profInst").value.trim() || null,
+                passing_year: parseInt(document.getElementById("profPassYear").value) || null,
+                skills: document.getElementById("profSkills").value.trim() || null
+            };
+
             try {
                 const res = await fetch("/api/auth/employee/profile", {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        full_name: document.getElementById("profFullName").value.trim(),
-                        mobile: document.getElementById("profMobile").value.trim() || null,
-                        location: document.getElementById("profLocation").value.trim() || null,
-                        job_title: document.getElementById("profJobTitle").value.trim() || null,
-                        experience_years: parseFloat(document.getElementById("profExpYears").value) || 0,
-                        expected_salary: document.getElementById("profSalary").value.trim() || null,
-                        skills: document.getElementById("profSkills").value.trim() || null
-                    })
+                    body: JSON.stringify(payload)
                 });
 
                 const data = await res.json();
@@ -502,13 +885,126 @@
                 }
 
                 showAlert("Profile updated successfully!");
-                document.getElementById("userGreeting").textContent = "Welcome, " + document.getElementById("profFullName").value.trim();
+                document.getElementById("userGreeting").textContent = "Welcome, " + payload.full_name;
+                currentUserProfile = { ...currentUserProfile, ...payload };
+                updateCompletionDisplay(currentUserProfile);
             } catch (err) {
                 showAlert(err.message || "Failed to save profile changes.", false);
             } finally {
                 btn.disabled = false;
                 btn.textContent = "Save Profile Changes";
             }
+        }
+
+        async function handleResumeUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            showAlert("Uploading resume...", true);
+
+            try {
+                const res = await fetch("/api/auth/employee/resume", {
+                    method: "POST",
+                    body: formData
+                });
+                const data = await res.json();
+                if (!res.ok || !data.success) {
+                    throw new Error(data.detail || "Resume upload failed.");
+                }
+
+                showAlert("Resume uploaded and attached to profile successfully!", true);
+                currentUserProfile.resume_url = data.resume_url;
+                renderResumeUI(data.resume_url);
+                updateCompletionDisplay(currentUserProfile);
+            } catch (err) {
+                showAlert(err.message || "Failed to upload resume.", false);
+            } finally {
+                input.value = "";
+            }
+        }
+
+        async function handleDeleteResume() {
+            if (!confirm("Are you sure you want to remove your attached resume?")) return;
+
+            try {
+                const res = await fetch("/api/auth/employee/resume", {
+                    method: "DELETE"
+                });
+                const data = await res.json();
+                if (!res.ok || !data.success) {
+                    throw new Error(data.detail || "Failed to delete resume.");
+                }
+
+                showAlert("Resume removed successfully.", true);
+                currentUserProfile.resume_url = null;
+                renderResumeUI(null);
+                updateCompletionDisplay(currentUserProfile);
+            } catch (err) {
+                showAlert(err.message || "Failed to remove resume.", false);
+            }
+        }
+
+        async function loadCandidateApplications() {
+            const container = document.getElementById("applicationsContainer");
+            container.innerHTML = '<p style="color: var(--dg-slate); font-size: 14px;">Loading your applications...</p>';
+
+            try {
+                const res = await fetch("/api/public/employee/applications");
+                if (!res.ok) {
+                    throw new Error("Failed to load applications.");
+                }
+                const data = await res.json();
+                const apps = data.applications || [];
+
+                if (apps.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px 20px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px;">
+                            <span style="font-size: 36px; display: block; margin-bottom: 8px;">📨</span>
+                            <h3 style="margin: 0 0 6px 0; font-size: 16px; color: var(--dg-navy);">No Applications Submitted Yet</h3>
+                            <p style="margin: 0 0 16px 0; font-size: 13.5px; color: var(--dg-slate);">Explore active garment openings in Tiruppur and submit your direct applications.</p>
+                            <a href="/jobs" class="btn-action">Browse Verified Jobs →</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = "";
+                apps.forEach(app => {
+                    const card = document.createElement("div");
+                    card.className = "app-item-card";
+
+                    const statusClass = `badge-status-${app.status || 'submitted'}`;
+                    const appliedDate = app.applied_at ? new Date(app.applied_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'Recently';
+
+                    card.innerHTML = `
+                        <div class="app-item-header">
+                            <div>
+                                <h3 class="app-item-title">${escapeHtml(app.job_title || 'Garment Vacancy')}</h3>
+                                <div style="font-size: 13.5px; color: var(--dg-slate); font-weight: 500;">
+                                    🏢 ${escapeHtml(app.company_name || 'Direct Employer')} • 📍 ${escapeHtml(app.job_location || 'Tiruppur')}
+                                </div>
+                            </div>
+                            <span class="${statusClass}">● ${escapeHtml((app.status || 'submitted').toUpperCase())}</span>
+                        </div>
+
+                        <div style="font-size: 13px; color: var(--dg-slate); margin-top: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                            <span>Applied on: <strong>${appliedDate}</strong></span>
+                            <a href="/jobs" class="btn-secondary" style="padding: 4px 12px; font-size: 12.5px;">View Jobs Directory</a>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (err) {
+                container.innerHTML = `<p style="color: #b91c1c; font-size: 14px;">Error loading applications: ${err.message}</p>`;
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return "";
+            return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
         async function handleLogout() {

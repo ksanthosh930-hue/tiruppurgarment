@@ -781,15 +781,55 @@
             </div>
         </div>
 
-        <!-- TAB 4: Applications (Coming Soon) -->
+        <!-- TAB 4: Applications -->
         <div id="tabApplications" class="dash-tab-content" style="display: none;">
             <div class="dash-card">
-                <h2>Candidate Applications</h2>
-                <div class="coming-soon-box">
-                    <span class="cs-icon">👥</span>
-                    <h3>Candidate Applications — Coming Soon</h3>
-                    <p>Review candidate profiles, download resumes, and contact verified applicants in real time.</p>
+                <h2>
+                    <span>Candidate Applications</span>
+                    <button type="button" class="btn-secondary" style="padding: 6px 14px; font-size: 13px;" onclick="loadEmployerApplications()">🔄 Refresh</button>
+                </h2>
+                
+                <!-- Filter Bar -->
+                <div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="font-size: 12px; font-weight: 600; color: var(--dg-slate); display: block; margin-bottom: 4px;">Filter by Status</label>
+                        <select id="appStatusFilter" class="form-control" onchange="filterEmployerApplications()" style="padding: 8px 12px;">
+                            <option value="">All Application Statuses</option>
+                            <option value="submitted">Submitted (New)</option>
+                            <option value="reviewed">Reviewed</option>
+                            <option value="shortlisted">Shortlisted</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="font-size: 12px; font-weight: 600; color: var(--dg-slate); display: block; margin-bottom: 4px;">Filter by Job Vacancy</label>
+                        <select id="appJobFilter" class="form-control" onchange="filterEmployerApplications()" style="padding: 8px 12px;">
+                            <option value="">All Jobs</option>
+                        </select>
+                    </div>
                 </div>
+
+                <div id="applicationsListContainer">
+                    <p style="color: var(--dg-slate); font-size: 14px;">Loading candidate applications...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Candidate Application Detail Modal -->
+    <div id="appDetailModal" class="preview-modal-overlay">
+        <div class="preview-modal-content" style="max-width: 720px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 16px;">
+                <h3 style="margin: 0; font-size: 18px; color: var(--dg-navy);">Candidate Application Detail</h3>
+                <button type="button" onclick="closeAppDetailModal()" style="background:none; border:none; font-size: 20px; cursor: pointer;">&times;</button>
+            </div>
+            
+            <div id="appDetailContent">
+                <!-- Dynamically populated -->
+            </div>
+
+            <div id="appDetailActions" style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 16px; margin-top: 20px; flex-wrap: wrap; gap: 10px;">
+                <!-- Dynamically populated action buttons -->
             </div>
         </div>
     </div>
@@ -861,6 +901,8 @@
 
             if (tabName === 'my-jobs') {
                 loadMyJobs();
+            } else if (tabName === 'applications') {
+                loadEmployerApplications();
             }
         }
 
@@ -1311,6 +1353,237 @@
 
         function closeJobPreviewModal() {
             document.getElementById("previewModal").style.display = "none";
+        }
+
+        // --- APPLICATIONS MANAGEMENT ---
+        let allEmployerApplications = [];
+
+        async function loadEmployerApplications() {
+            const container = document.getElementById("applicationsListContainer");
+            container.innerHTML = '<p style="color: var(--dg-slate); font-size: 14px;">Loading candidate applications...</p>';
+
+            try {
+                const res = await fetch("/api/employer/applications");
+                if (!res.ok) {
+                    throw new Error("Failed to fetch applications.");
+                }
+                const data = await res.json();
+                allEmployerApplications = data.applications || [];
+
+                // Populate job filter dropdown
+                populateJobFilterDropdown();
+                renderEmployerApplications(allEmployerApplications);
+            } catch (err) {
+                container.innerHTML = `<p style="color: #b91c1c; font-size: 14px;">Error loading applications: ${err.message}</p>`;
+            }
+        }
+
+        function populateJobFilterDropdown() {
+            const select = document.getElementById("appJobFilter");
+            const currentVal = select.value;
+            select.innerHTML = '<option value="">All Jobs</option>';
+            
+            const jobsMap = new Map();
+            allEmployerApplications.forEach(a => {
+                if (a.job_id && a.job_title && !jobsMap.has(a.job_id)) {
+                    jobsMap.set(a.job_id, a.job_title);
+                }
+            });
+
+            jobsMap.forEach((title, id) => {
+                const opt = document.createElement("option");
+                opt.value = id;
+                opt.textContent = title;
+                select.appendChild(opt);
+            });
+
+            select.value = currentVal;
+        }
+
+        function filterEmployerApplications() {
+            const statusFilter = document.getElementById("appStatusFilter").value;
+            const jobFilter = document.getElementById("appJobFilter").value;
+
+            let filtered = allEmployerApplications;
+            if (statusFilter) {
+                filtered = filtered.filter(a => (a.status || '').toLowerCase() === statusFilter.toLowerCase());
+            }
+            if (jobFilter) {
+                filtered = filtered.filter(a => String(a.job_id) === String(jobFilter));
+            }
+
+            renderEmployerApplications(filtered);
+        }
+
+        function renderEmployerApplications(apps) {
+            const container = document.getElementById("applicationsListContainer");
+            if (!apps || apps.length === 0) {
+                container.innerHTML = `
+                    <div class="coming-soon-box">
+                        <span class="cs-icon">👥</span>
+                        <h3>No Candidate Applications Found</h3>
+                        <p>No candidate applications match the selected filter criteria.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = "";
+            apps.forEach(app => {
+                const card = document.createElement("div");
+                card.className = "job-item-card";
+
+                const statusClass = `badge-status-${(app.status || 'submitted').toLowerCase()}`;
+                const appliedDate = app.applied_at ? new Date(app.applied_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'Recently';
+                const candName = app.applicant_name || (app.candidate_profile ? app.candidate_profile.full_name : 'Applicant');
+                const candExp = app.candidate_profile && app.candidate_profile.experience_years ? `${app.candidate_profile.experience_years} Yrs Exp` : 'Experience not specified';
+                const candLoc = app.candidate_profile ? (app.candidate_profile.city || app.candidate_profile.location || 'Tiruppur') : 'Tiruppur';
+
+                card.innerHTML = `
+                    <div class="job-item-header">
+                        <div>
+                            <h3 class="job-item-title">${escapeHtml(candName)}</h3>
+                            <div style="font-size: 13.5px; color: var(--dg-slate); margin-top: 2px;">
+                                Applied for: <strong>${escapeHtml(app.job_title || 'Job Opening')}</strong>
+                            </div>
+                        </div>
+                        <span class="${statusClass}">● ${escapeHtml((app.status || 'submitted').toUpperCase())}</span>
+                    </div>
+
+                    <div class="job-item-meta">
+                        <span>📍 ${escapeHtml(candLoc)}</span>
+                        <span>💼 ${escapeHtml(candExp)}</span>
+                        <span>📅 Applied ${appliedDate}</span>
+                        ${app.resume_url ? '<span style="color: #166534; font-weight: 600;">📄 Resume Attached</span>' : ''}
+                    </div>
+
+                    <div class="job-item-actions">
+                        <button type="button" class="btn-action" style="padding: 6px 14px; font-size: 13px;" onclick="openAppDetailModal(${app.id})">
+                            👁️ View Application Details
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function openAppDetailModal(appId) {
+            const content = document.getElementById("appDetailContent");
+            const actions = document.getElementById("appDetailActions");
+            content.innerHTML = '<p style="color: var(--dg-slate); font-size: 14px;">Loading application details...</p>';
+            actions.innerHTML = '';
+            document.getElementById("appDetailModal").style.display = "flex";
+
+            try {
+                const res = await fetch(`/api/employer/applications/${appId}`);
+                if (!res.ok) {
+                    throw new Error("Failed to load application details.");
+                }
+                const data = await res.json();
+                const app = data.application;
+                const prof = app.candidate_profile || {};
+
+                const statusClass = `badge-status-${(app.status || 'submitted').toLowerCase()}`;
+                const appliedDate = app.applied_at ? new Date(app.applied_at).toLocaleString() : 'Recently';
+
+                let resumeHtml = '<span style="color: var(--dg-slate);">No resume attached</span>';
+                if (app.resume_url) {
+                    const cleanResume = app.resume_url.startsWith('/') ? app.resume_url : '/' + app.resume_url;
+                    resumeHtml = `<a href="${cleanResume}" target="_blank" class="btn-secondary" style="padding: 4px 12px; font-size: 13px; font-weight: 600;">📥 Download / View Resume</a>`;
+                }
+
+                content.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                        <div>
+                            <h2 style="margin: 0 0 4px 0; font-size: 20px; color: var(--dg-navy);">${escapeHtml(app.applicant_name || prof.full_name || 'Candidate')}</h2>
+                            <p style="margin: 0; color: var(--dg-slate); font-size: 14px;">Applied for: <strong>${escapeHtml(app.job_title || '-')}</strong></p>
+                        </div>
+                        <span class="${statusClass}" style="font-size: 13px;">● ${escapeHtml((app.status || 'submitted').toUpperCase())}</span>
+                    </div>
+
+                    <div style="background: #f8fafc; border: 1px solid var(--dg-border); border-radius: 8px; padding: 14px; margin-bottom: 16px; font-size: 13.5px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div><strong>📞 Phone / Mobile:</strong> ${escapeHtml(app.applicant_phone || prof.mobile || '-')}</div>
+                        <div><strong>✉️ Email:</strong> ${escapeHtml(app.applicant_email || '-')}</div>
+                        <div><strong>📍 Location:</strong> ${escapeHtml(prof.location || prof.city || '-')}</div>
+                        <div><strong>💼 Experience:</strong> ${prof.experience_years !== undefined ? prof.experience_years + ' Years' : '-'}</div>
+                        <div><strong>🎯 Target Role:</strong> ${escapeHtml(prof.job_title || prof.preferred_job_role || '-')}</div>
+                        <div><strong>🏢 Department:</strong> ${escapeHtml(prof.department || prof.preferred_department || '-')}</div>
+                        <div><strong>🎓 Qualification:</strong> ${escapeHtml(prof.qualification || '-')}${prof.course ? ' (' + escapeHtml(prof.course) + ')' : ''}</div>
+                        <div><strong>💰 Expected Salary:</strong> ${escapeHtml(prof.expected_salary || '-')}</div>
+                    </div>
+
+                    <div style="margin-bottom: 14px;">
+                        <h4 style="margin: 0 0 4px 0; font-size: 13.5px; color: var(--dg-navy);">Key Skills & Software</h4>
+                        <p style="margin: 0; font-size: 13px; color: #334155;">${escapeHtml(prof.skills || 'Not specified')}</p>
+                    </div>
+
+                    ${app.cover_message ? `
+                    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+                        <h4 style="margin: 0 0 4px 0; font-size: 13.5px; color: #166534;">Applicant Cover Message</h4>
+                        <p style="margin: 0; font-size: 13px; color: #1e293b; white-space: pre-line;">${escapeHtml(app.cover_message)}</p>
+                    </div>
+                    ` : ''}
+
+                    <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--dg-border); display: flex; align-items: center; justify-content: space-between;">
+                        <div><strong>Resume Document:</strong></div>
+                        <div>${resumeHtml}</div>
+                    </div>
+                `;
+
+                // Explicit Status Transition Buttons (Strict Rule 5)
+                const currSt = (app.status || 'submitted').toLowerCase();
+                let actionButtonsHtml = `<div><small style="color: var(--dg-slate);">Applied: ${appliedDate}</small></div><div style="display: flex; gap: 8px; flex-wrap: wrap;">`;
+
+                if (currSt === 'submitted') {
+                    actionButtonsHtml += `
+                        <button type="button" class="btn-secondary" onclick="updateAppStatus(${app.id}, 'reviewed')">Mark Reviewed</button>
+                        <button type="button" class="btn-success" onclick="updateAppStatus(${app.id}, 'shortlisted')">⭐ Shortlist</button>
+                        <button type="button" class="btn-danger" style="background:#fee2e2; color:#b91c1c; border:1px solid #fecaca; padding:8px 14px; border-radius:6px; font-weight:600; cursor:pointer;" onclick="updateAppStatus(${app.id}, 'rejected')">❌ Reject</button>
+                    `;
+                } else if (currSt === 'reviewed') {
+                    actionButtonsHtml += `
+                        <button type="button" class="btn-success" onclick="updateAppStatus(${app.id}, 'shortlisted')">⭐ Shortlist Candidate</button>
+                        <button type="button" class="btn-danger" style="background:#fee2e2; color:#b91c1c; border:1px solid #fecaca; padding:8px 14px; border-radius:6px; font-weight:600; cursor:pointer;" onclick="updateAppStatus(${app.id}, 'rejected')">❌ Reject</button>
+                    `;
+                } else if (currSt === 'shortlisted') {
+                    actionButtonsHtml += `
+                        <button type="button" class="btn-danger" style="background:#fee2e2; color:#b91c1c; border:1px solid #fecaca; padding:8px 14px; border-radius:6px; font-weight:600; cursor:pointer;" onclick="updateAppStatus(${app.id}, 'rejected')">❌ Reject Candidate</button>
+                    `;
+                } else if (currSt === 'rejected') {
+                    actionButtonsHtml += `<span style="font-size: 13px; color: #991b1b; font-weight: 600;">Status: Rejected (Terminal)</span>`;
+                }
+
+                actionButtonsHtml += `</div>`;
+                actions.innerHTML = actionButtonsHtml;
+            } catch (err) {
+                content.innerHTML = `<p style="color: #b91c1c; font-size: 14px;">Error: ${err.message}</p>`;
+            }
+        }
+
+        function closeAppDetailModal() {
+            document.getElementById("appDetailModal").style.display = "none";
+        }
+
+        async function updateAppStatus(appId, newStatus) {
+            if (!confirm(`Are you sure you want to update application status to "${newStatus.toUpperCase()}"?`)) return;
+
+            try {
+                const res = await fetch(`/api/employer/applications/${appId}/status`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.success) {
+                    throw new Error(data.detail || "Failed to update application status.");
+                }
+
+                showAlert(`Application status updated to ${newStatus.toUpperCase()}!`, true);
+                closeAppDetailModal();
+                loadEmployerApplications();
+            } catch (err) {
+                showAlert(err.message, false);
+            }
         }
 
         function escapeHtml(str) {

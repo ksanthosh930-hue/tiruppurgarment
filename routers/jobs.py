@@ -5,7 +5,8 @@ import shutil
 import mimetypes
 import logging
 from typing import List, Dict, Any, Optional
-from fastapi import APIRouter, HTTPException, Form, UploadFile, File, Query
+from fastapi import APIRouter, HTTPException, Form, UploadFile, File, Query, Request, Body
+from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -254,7 +255,7 @@ def get_public_jobs(
 
     try:
         conditions = [
-            "(LOWER(j.status) = 'published' OR j.status = 'ACTIVE')",
+            "LOWER(j.status) = 'published'",
             "COALESCE(j.is_archived, FALSE) = FALSE"
         ]
         params = []
@@ -393,7 +394,7 @@ def get_public_job_detail(slug: str):
             LEFT JOIN companies c ON j.company_id = c.id
             LEFT JOIN company_profiles cp ON j.company_profile_id = cp.id
             WHERE (j.slug = %s OR CAST(j.id AS VARCHAR) = %s)
-              AND (LOWER(j.status) = 'published' OR j.status = 'ACTIVE')
+              AND LOWER(j.status) = 'published'
               AND COALESCE(j.is_archived, FALSE) = FALSE;
         """
         rows = db_helpers["query_db"](query, (str(slug), str(slug)))
@@ -642,74 +643,235 @@ def upload_resume(file: UploadFile = File(...)):
         "message": "Resume uploaded successfully."
     }
 
+class JobApplicationRequest(BaseModel):
+    cover_message: Optional[str] = None
+    resume_url: Optional[str] = None
+    applicant_name: Optional[str] = None
+    applicant_phone: Optional[str] = None
+    applicant_email: Optional[str] = None
+
 @router.post("/jobs/{job_id}/apply")
-def submit_job_application(
+async def submit_job_application(
     job_id: int,
-    applicant_name: str = Form(...),
-    applicant_phone: str = Form(...),
+    req_body: Optional[JobApplicationRequest] = Body(None),
+    applicant_name: Optional[str] = Form(None),
+    applicant_phone: Optional[str] = Form(None),
     applicant_email: Optional[str] = Form(None),
     resume_url: Optional[str] = Form(None),
-    cover_letter: Optional[str] = Form(None)
+    cover_message: Optional[str] = Form(None),
+    cover_letter: Optional[str] = Form(None),
+    request: Request = None
 ):
     """
     Submits a direct application for a published job.
+    Enforces candidate authentication, role check, eligibility, and duplicate protection.
     """
-    app_name = str(applicant_name).strip() if applicant_name else ""
-    raw_phone = str(applicant_phone).strip() if applicant_phone else ""
-    app_phone = re.sub(r'[^0-9+]', '', raw_phone)
-    if not app_phone or len(app_phone) < 10:
-        raise HTTPException(status_code=400, detail="Please provide a valid applicant phone number.")
+    from routers.public_auth import get_current_public_user
+    
+    # 1. Authenticate candidate
+    session_cookie = request.cookies.get("public_session_id") if request else None
+    if not session_cookie:
+        raise HTTPException(
+            status_code=401,
+            detail="Authentication required. Please sign in or register as a Job Seeker to apply."
+        )
+    
+    current_user = await get_current_public_user(public_session_id=session_cookie)
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Authentication session invalid or expired.")
+        
+    if current_user.get("account_type") != "individual":
+        raise HTTPException(
+            status_code=403,
+            detail="Employers cannot apply for jobs. Please sign in with a Job Seeker account."
+        )
 
-    app_email = _clean_str(applicant_email)
-    app_resume = _clean_str(resume_url)
-    app_letter = _clean_str(cover_letter)
+    user_id = current_user["id"]
+    profile = current_user.get("profile") or {}
+    profile_id = profile.get("id")
 
-    if not db_helpers["db_enabled"] or not db_helpers["execute_db"]:
-        FALLBACK_APPLICATIONS.append({
+    # Extract input values (supports both JSON body and multipart form)
+    c_message = None
+    c_resume = None
+    c_name = None
+    c_phone = None
+    c_email = None
+
+    if req_body:
+        c_message = req_body.cover_message
+        c_resume = req_body.resume_url
+        c_name = req_body.applicant_name
+        c_phone = req_body.applicant_phone
+        c_email = req_body.applicant_email
+    
+    c_message = _clean_str(c_message) or _clean_str(cover_message) or _clean_str(cover_letter)
+    c_resume = _clean_str(c_resume) or _clean_str(resume_url) or profile.get("resume_url")
+    c_name = _clean_str(c_name) or _clean_str(applicant_name) or profile.get("full_name") or current_user.get("email")
+    c_phone = _clean_str(c_phone) or _clean_str(applicant_phone) or profile.get("mobile")
+    c_email = _clean_str(c_email) or _clean_str(applicant_email) or profile.get("email") or current_user.get("email")
+
+    if not db_helpers["db_enabled"] or not db_helpers["execute_db_returning"]:
+        # Fallback in-memory
+        for a in FALLBACK_APPLICATIONS:
+            if a.get("job_id") == job_id and a.get("candidate_user_id") == user_id:
+                raise HTTPException(status_code=400, detail="You have already applied for this job vacancy.")
+                
+        new_app = {
             "id": len(FALLBACK_APPLICATIONS) + 1,
             "job_id": job_id,
-            "applicant_name": app_name,
-            "applicant_phone": app_phone,
-            "applicant_email": app_email,
-            "resume_url": app_resume,
-            "cover_letter": app_letter,
-            "status": "applied"
-        })
-        return {"success": True, "message": "Thank you! Your application has been submitted successfully."}
+            "candidate_user_id": user_id,
+            "individual_profile_id": profile_id,
+            "applicant_name": c_name,
+            "applicant_phone": c_phone,
+            "applicant_email": c_email,
+            "resume_url": c_resume,
+            "cover_message": c_message,
+            "status": "submitted"
+        }
+        FALLBACK_APPLICATIONS.append(new_app)
+        return {
+            "success": True,
+            "application_id": new_app["id"],
+            "status": "submitted",
+            "message": "Application submitted successfully."
+        }
 
     try:
-        # Check job existence
-        job_rows = db_helpers["query_db"]("SELECT id, status FROM jobs WHERE id = %s AND COALESCE(is_archived, FALSE) = FALSE;", (job_id,))
-        if not job_rows or job_rows[0]["status"] != "published":
-            raise HTTPException(status_code=400, detail="This job is currently not accepting applications.")
+        # 2. Check Job Eligibility
+        job_rows = db_helpers["query_db"]("""
+            SELECT id, status, is_archived, expires_at 
+            FROM jobs 
+            WHERE id = %s;
+        """, (job_id,))
+        if not job_rows:
+            raise HTTPException(status_code=404, detail="Job vacancy not found.")
+            
+        job = job_rows[0]
+        st = (job.get("status") or "").lower()
+        if st != "published" or job.get("is_archived"):
+            raise HTTPException(status_code=400, detail="This job vacancy is no longer active or accepting applications.")
 
-        # Find profile id if candidate already registered
-        prof_rows = db_helpers["query_db"]("SELECT id, user_id FROM job_seeker_profiles WHERE mobile = %s;", (app_phone,))
-        profile_id = prof_rows[0]["id"] if prof_rows else None
-        user_id = prof_rows[0]["user_id"] if prof_rows else None
+        # 3. Duplicate Application Protection
+        dup_rows = db_helpers["query_db"]("""
+            SELECT id, status FROM job_applications 
+            WHERE job_id = %s AND candidate_user_id = %s;
+        """, (job_id, user_id))
+        if dup_rows:
+            raise HTTPException(
+                status_code=400,
+                detail="You have already submitted an application for this vacancy."
+            )
 
-        query = """
+        # 4. Insert Job Application
+        insert_query = """
             INSERT INTO job_applications (
-                job_id, user_id, job_seeker_profile_id, applicant_name,
-                applicant_phone, applicant_email, resume_url, cover_letter,
+                job_id, candidate_user_id, individual_profile_id,
+                applicant_name, applicant_phone, applicant_email,
+                resume_url, cover_message, cover_letter,
                 status, applied_at, updated_at
             ) VALUES (
-                %s, %s, %s, %s, %s, %s, %s, %s, 'applied', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
-            ) RETURNING id;
+                %s, %s, %s,
+                %s, %s, %s,
+                %s, %s, %s,
+                'submitted', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+            ) RETURNING id, status, applied_at;
         """
-        rows = db_helpers["execute_db_returning"](query, (
-            job_id, user_id, profile_id, app_name, app_phone,
-            app_email, app_resume, app_letter
+        rows = db_helpers["execute_db_returning"](insert_query, (
+            job_id, user_id, profile_id,
+            c_name or "Job Seeker", c_phone or "", c_email,
+            c_resume, c_message, c_message
         ))
-        app_id = rows[0]["id"] if rows else None
 
+        app_id = rows[0]["id"]
         return {
             "success": True,
             "application_id": app_id,
-            "message": "Thank you! Your application has been submitted successfully."
+            "status": "submitted",
+            "message": "Application submitted successfully."
         }
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error submitting job application: {e}")
-        raise HTTPException(status_code=500, detail=f"Database error submitting application: {e}")
+        raise HTTPException(status_code=500, detail="Something went wrong while submitting application. Please try again.")
+
+@router.get("/employee/applications")
+async def get_candidate_applications(request: Request):
+    """
+    Returns all applications submitted by the authenticated job seeker.
+    """
+    from routers.public_auth import get_current_public_user
+    session_cookie = request.cookies.get("public_session_id")
+    if not session_cookie:
+        raise HTTPException(status_code=401, detail="Authentication required.")
+        
+    current_user = await get_current_public_user(public_session_id=session_cookie)
+    if not current_user or current_user.get("account_type") != "individual":
+        raise HTTPException(status_code=403, detail="Access denied.")
+
+    user_id = current_user["id"]
+
+    if not db_helpers["db_enabled"] or not db_helpers["query_db"]:
+        my_apps = [a for a in FALLBACK_APPLICATIONS if a.get("candidate_user_id") == user_id]
+        return {"success": True, "applications": my_apps, "total": len(my_apps)}
+
+    try:
+        query = """
+            SELECT 
+                a.id, a.job_id, a.status, a.applied_at, a.cover_message, a.resume_url,
+                j.title AS job_title, j.slug AS job_slug, j.department AS job_department,
+                j.job_type, j.location AS job_location, j.salary_text,
+                COALESCE(cp.company_name, c.name, '') AS company_name,
+                COALESCE(cp.company_logo, c.logo_url, '') AS company_logo
+            FROM job_applications a
+            JOIN jobs j ON a.job_id = j.id
+            LEFT JOIN companies c ON j.company_id = c.id
+            LEFT JOIN company_profiles cp ON j.company_profile_id = cp.id
+            WHERE a.candidate_user_id = %s
+            ORDER BY a.applied_at DESC;
+        """
+        rows = db_helpers["query_db"](query, (user_id,))
+        return {
+            "success": True,
+            "applications": rows,
+            "total": len(rows)
+        }
+    except Exception as e:
+        logger.error(f"Error fetching candidate applications: {e}")
+        raise HTTPException(status_code=500, detail="Could not load your applications.")
+
+@router.get("/jobs/{job_id}/application-status")
+async def check_job_application_status(job_id: int, request: Request):
+    """
+    Checks if the currently authenticated job seeker has already applied for this job.
+    """
+    session_cookie = request.cookies.get("public_session_id")
+    if not session_cookie:
+        return {"has_applied": False, "status": None}
+
+    try:
+        from routers.public_auth import get_current_public_user
+        current_user = await get_current_public_user(public_session_id=session_cookie)
+        if not current_user or current_user.get("account_type") != "individual":
+            return {"has_applied": False, "status": None}
+
+        user_id = current_user["id"]
+        if not db_helpers["db_enabled"] or not db_helpers["query_db"]:
+            match = next((a for a in FALLBACK_APPLICATIONS if a.get("job_id") == job_id and a.get("candidate_user_id") == user_id), None)
+            return {"has_applied": bool(match), "status": match.get("status") if match else None}
+
+        rows = db_helpers["query_db"]("""
+            SELECT id, status, applied_at FROM job_applications 
+            WHERE job_id = %s AND candidate_user_id = %s;
+        """, (job_id, user_id))
+
+        if rows:
+            return {
+                "has_applied": True,
+                "application_id": rows[0]["id"],
+                "status": rows[0]["status"],
+                "applied_at": rows[0]["applied_at"]
+            }
+        return {"has_applied": False, "status": None}
+    except Exception:
+        return {"has_applied": False, "status": None}

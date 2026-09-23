@@ -12,7 +12,7 @@ from services.extractor import StructuredJobExtractor
 
 logger = logging.getLogger("DigiGarment.EmployerJobs")
 
-router = APIRouter(prefix="/api/employer/jobs", tags=["Employer Jobs"])
+router = APIRouter(prefix="/api/employer", tags=["Employer Jobs & Applications"])
 
 # Database helpers injected from app.py
 _query_db = None
@@ -109,7 +109,7 @@ class EmployerJobUpdateRequest(BaseModel):
 
 
 # --- 1. List Employer's Own Jobs ---
-@router.get("")
+@router.get("/jobs")
 def get_employer_jobs(current_user: Dict[str, Any] = Depends(require_employer_user)):
     user_id = current_user["id"]
     profile = current_user.get("profile", {})
@@ -147,7 +147,7 @@ def get_employer_jobs(current_user: Dict[str, Any] = Depends(require_employer_us
 
 
 # --- 2. Create New Job (Draft or Submit for Review) ---
-@router.post("")
+@router.post("/jobs")
 def create_employer_job(
     req: EmployerJobCreateRequest,
     current_user: Dict[str, Any] = Depends(require_employer_user)
@@ -263,7 +263,7 @@ def create_employer_job(
 
 
 # --- 3. Get Single Job Details (Ownership Enforced) ---
-@router.get("/{job_id}")
+@router.get("/jobs/{job_id}")
 def get_employer_job_detail(
     job_id: int,
     current_user: Dict[str, Any] = Depends(require_employer_user)
@@ -304,7 +304,7 @@ def get_employer_job_detail(
 
 
 # --- 4. Update Existing Job (Draft / Rejected jobs only) ---
-@router.put("/{job_id}")
+@router.put("/jobs/{job_id}")
 def update_employer_job(
     job_id: int,
     req: EmployerJobUpdateRequest,
@@ -411,7 +411,7 @@ def update_employer_job(
 
 
 # --- 5. Submit Draft/Rejected Job for Admin Review ---
-@router.post("/{job_id}/submit")
+@router.post("/jobs/{job_id}/submit")
 def submit_employer_job_for_review(
     job_id: int,
     current_user: Dict[str, Any] = Depends(require_employer_user)
@@ -459,7 +459,7 @@ def submit_employer_job_for_review(
 
 
 # --- 6. Delete Draft Job Only (Strict State Protection) ---
-@router.delete("/{job_id}")
+@router.delete("/jobs/{job_id}")
 def delete_employer_draft_job(
     job_id: int,
     current_user: Dict[str, Any] = Depends(require_employer_user)
@@ -497,7 +497,7 @@ def delete_employer_draft_job(
 
 
 # --- 7. Poster AI / OCR Extraction Assistant (Reusing Existing Pipeline) ---
-@router.post("/extract-poster")
+@router.post("/jobs/extract-poster")
 async def extract_poster_for_draft(
     file: Optional[UploadFile] = File(None),
     poster_file: Optional[UploadFile] = File(None),
@@ -590,3 +590,277 @@ async def extract_poster_for_draft(
             "extracted_data": fallback_data,
             "message": "Could not auto-extract details. You can enter the details manually."
         }
+
+
+# --- 8. Employer Applications Management APIs (Phase 3) ---
+
+class ApplicationStatusUpdateRequest(BaseModel):
+    status: str
+
+@router.get("/applications")
+def get_employer_applications(
+    job_id: Optional[int] = None,
+    status: Optional[str] = None,
+    current_user: Dict[str, Any] = Depends(require_employer_user)
+):
+    """
+    Fetches candidate applications received for jobs owned by the authenticated employer.
+    Derived securely via job ownership (company_profile_id or employer_user_id).
+    """
+    user_id = current_user["id"]
+    profile = current_user.get("profile", {})
+    profile_id = profile.get("id")
+
+    if not _db_enabled or not _query_db:
+        return {"success": True, "applications": [], "total": 0}
+
+    try:
+        conditions = ["(j.company_profile_id = %s OR j.employer_user_id = %s)"]
+        params = [profile_id, user_id]
+
+        if job_id:
+            conditions.append("a.job_id = %s")
+            params.append(job_id)
+
+        if status and status != "All":
+            conditions.append("LOWER(a.status) = LOWER(%s)")
+            params.append(status.strip())
+
+        where_clause = " WHERE " + " AND ".join(conditions)
+
+        query = f"""
+            SELECT 
+                a.id, a.job_id, a.candidate_user_id, a.individual_profile_id,
+                a.status, a.applied_at, a.cover_message, a.cover_letter, a.resume_url,
+                a.applicant_name, a.applicant_phone, a.applicant_email,
+                j.title AS job_title, j.department AS job_department, j.job_role,
+                p.full_name AS profile_name, p.mobile AS profile_mobile, p.email AS profile_email,
+                p.job_title AS candidate_role, p.department AS candidate_department,
+                p.experience_years, p.location AS candidate_location, p.city AS candidate_city,
+                p.district AS candidate_district, p.skills AS candidate_skills,
+                p.qualification AS candidate_qualification, p.course AS candidate_course,
+                p.institution AS candidate_institution, p.passing_year AS candidate_passing_year,
+                p.expected_salary AS candidate_expected_salary,
+                p.resume_url AS profile_resume_url
+            FROM job_applications a
+            JOIN jobs j ON a.job_id = j.id
+            LEFT JOIN individual_profiles p ON a.individual_profile_id = p.id
+            {where_clause}
+            ORDER BY a.applied_at DESC;
+        """
+        rows = _query_db(query, tuple(params))
+        
+        # Standardize display fields (prefer application snapshot, fallback to profile)
+        apps = []
+        for r in rows:
+            apps.append({
+                "id": r["id"],
+                "job_id": r["job_id"],
+                "job_title": r["job_title"],
+                "job_department": r["job_department"] or "",
+                "job_role": r["job_role"] or "",
+                "candidate_name": r["applicant_name"] or r["profile_name"] or "Candidate",
+                "candidate_phone": r["applicant_phone"] or r["profile_mobile"] or "-",
+                "candidate_email": r["applicant_email"] or r["profile_email"] or "-",
+                "candidate_role": r["candidate_role"] or "-",
+                "candidate_department": r["candidate_department"] or "-",
+                "experience_years": float(r["experience_years"] or 0),
+                "location": r["candidate_location"] or r["candidate_city"] or "Tiruppur",
+                "city": r["candidate_city"] or "",
+                "district": r["candidate_district"] or "",
+                "qualification": r["candidate_qualification"] or "-",
+                "course": r["candidate_course"] or "",
+                "institution": r["candidate_institution"] or "",
+                "passing_year": r["candidate_passing_year"] or "",
+                "skills": r["candidate_skills"] or "",
+                "expected_salary": r["candidate_expected_salary"] or "-",
+                "resume_url": r["resume_url"] or r["profile_resume_url"] or None,
+                "cover_message": r["cover_message"] or r["cover_letter"] or "",
+                "status": (r["status"] or "submitted").lower(),
+                "applied_at": r["applied_at"]
+            })
+
+        return {
+            "success": True,
+            "applications": apps,
+            "total": len(apps)
+        }
+    except Exception as e:
+        logger.error(f"Error loading employer applications: {e}")
+        raise HTTPException(status_code=500, detail="Could not load applications.")
+
+@router.get("/applications/{app_id}")
+def get_employer_application_detail(
+    app_id: int,
+    current_user: Dict[str, Any] = Depends(require_employer_user)
+):
+    """
+    Read-only view of a specific candidate application.
+    Does NOT auto-mark as reviewed.
+    Enforces employer job ownership.
+    """
+    user_id = current_user["id"]
+    profile = current_user.get("profile", {})
+    profile_id = profile.get("id")
+
+    if not _db_enabled or not _query_db:
+        raise HTTPException(status_code=503, detail="Database service temporarily unavailable.")
+
+    try:
+        query = """
+            SELECT 
+                a.id, a.job_id, a.candidate_user_id, a.individual_profile_id,
+                a.status, a.applied_at, a.cover_message, a.cover_letter, a.resume_url,
+                a.applicant_name, a.applicant_phone, a.applicant_email,
+                j.title AS job_title, j.department AS job_department, j.job_role,
+                j.company_profile_id, j.employer_user_id,
+                p.full_name AS profile_name, p.mobile AS profile_mobile, p.email AS profile_email,
+                p.job_title AS candidate_role, p.department AS candidate_department,
+                p.experience_years, p.location AS candidate_location, p.city AS candidate_city,
+                p.district AS candidate_district, p.skills AS candidate_skills,
+                p.qualification AS candidate_qualification, p.course AS candidate_course,
+                p.institution AS candidate_institution, p.passing_year AS candidate_passing_year,
+                p.expected_salary AS candidate_expected_salary,
+                p.resume_url AS profile_resume_url
+            FROM job_applications a
+            JOIN jobs j ON a.job_id = j.id
+            LEFT JOIN individual_profiles p ON a.individual_profile_id = p.id
+            WHERE a.id = %s;
+        """
+        rows = _query_db(query, (app_id,))
+        if not rows:
+            raise HTTPException(status_code=404, detail="Application not found.")
+
+        r = rows[0]
+        # Verify employer ownership
+        if r.get("company_profile_id") != profile_id and r.get("employer_user_id") != user_id:
+            raise HTTPException(status_code=403, detail="Access denied. You do not own the job for this application.")
+
+        app_detail = {
+            "id": r["id"],
+            "job_id": r["job_id"],
+            "job_title": r["job_title"],
+            "job_department": r["job_department"] or "",
+            "job_role": r["job_role"] or "",
+            "candidate_name": r["applicant_name"] or r["profile_name"] or "Candidate",
+            "candidate_phone": r["applicant_phone"] or r["profile_mobile"] or "-",
+            "candidate_email": r["applicant_email"] or r["profile_email"] or "-",
+            "candidate_role": r["candidate_role"] or "-",
+            "candidate_department": r["candidate_department"] or "-",
+            "experience_years": float(r["experience_years"] or 0),
+            "location": r["candidate_location"] or r["candidate_city"] or "Tiruppur",
+            "city": r["candidate_city"] or "",
+            "district": r["candidate_district"] or "",
+            "qualification": r["candidate_qualification"] or "-",
+            "course": r["candidate_course"] or "",
+            "institution": r["candidate_institution"] or "",
+            "passing_year": r["candidate_passing_year"] or "",
+            "skills": r["candidate_skills"] or "",
+            "expected_salary": r["candidate_expected_salary"] or "-",
+            "resume_url": r["resume_url"] or r["profile_resume_url"] or None,
+            "cover_message": r["cover_message"] or r["cover_letter"] or "",
+            "status": (r["status"] or "submitted").lower(),
+            "applied_at": r["applied_at"]
+        }
+
+        return {"success": True, "application": app_detail}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching application detail {app_id}: {e}")
+        raise HTTPException(status_code=500, detail="Could not load application details.")
+
+VALID_APPLICATION_STATUS_TRANSITIONS = {
+    "submitted": {"reviewed", "shortlisted", "rejected"},
+    "reviewed": {"shortlisted", "rejected"},
+    "shortlisted": {"rejected"},
+    "rejected": set()
+}
+
+@router.put("/applications/{app_id}/status")
+def update_employer_application_status(
+    app_id: int,
+    req: ApplicationStatusUpdateRequest,
+    current_user: Dict[str, Any] = Depends(require_employer_user)
+):
+    """
+    Explicit employer status transition with server-side validation:
+      submitted   -> reviewed, shortlisted, rejected
+      reviewed    -> shortlisted, rejected
+      shortlisted -> rejected
+    """
+    user_id = current_user["id"]
+    profile = current_user.get("profile", {})
+    profile_id = profile.get("id")
+
+    if not _db_enabled or not _query_db:
+        raise HTTPException(status_code=503, detail="Database service temporarily unavailable.")
+
+    target_status = (req.status or "").strip().lower()
+    allowed_target_statuses = ("reviewed", "shortlisted", "rejected")
+    if target_status not in allowed_target_statuses:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid target status '{target_status}'. Must be one of {allowed_target_statuses}"
+        )
+
+    try:
+        # Check ownership and current status
+        query = """
+            SELECT a.id, a.status, j.company_profile_id, j.employer_user_id
+            FROM job_applications a
+            JOIN jobs j ON a.job_id = j.id
+            WHERE a.id = %s;
+        """
+        rows = _query_db(query, (app_id,))
+        if not rows:
+            raise HTTPException(status_code=404, detail="Application not found.")
+
+        app_row = rows[0]
+        if app_row.get("company_profile_id") != profile_id and app_row.get("employer_user_id") != user_id:
+            raise HTTPException(status_code=403, detail="Access denied. You do not own the job for this application.")
+
+        current_status = (app_row.get("status") or "submitted").lower()
+        if current_status == "applied":
+            current_status = "submitted" # Normalize legacy status for transition check
+
+        allowed_next = VALID_APPLICATION_STATUS_TRANSITIONS.get(current_status, set())
+        if target_status not in allowed_next and target_status != current_status:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot transition application status from '{current_status}' to '{target_status}'."
+            )
+
+        _execute_db("""
+            UPDATE job_applications
+            SET status = %s, updated_at = CURRENT_TIMESTAMP
+            WHERE id = %s;
+        """, (target_status, app_id))
+
+        status_messages = {
+            "reviewed": "Application marked as reviewed.",
+            "shortlisted": "Candidate shortlisted successfully.",
+            "rejected": "Application rejected."
+        }
+
+        return {
+            "success": True,
+            "status": target_status,
+            "message": status_messages.get(target_status, f"Status updated to {target_status}.")
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating application status {app_id}: {e}")
+        raise HTTPException(status_code=500, detail="Could not update application status.")
+
+@router.get("/jobs/{job_id}/applications")
+def get_job_specific_applications(
+    job_id: int,
+    current_user: Dict[str, Any] = Depends(require_employer_user)
+):
+    """
+    Helper route to fetch applications for a specific job owned by the employer.
+    """
+    return get_employer_applications(job_id=job_id, status="All", current_user=current_user)
+

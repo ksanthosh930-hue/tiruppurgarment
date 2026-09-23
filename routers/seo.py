@@ -83,7 +83,7 @@ def get_sitemap_xml():
             query = """
                 SELECT slug, published_at, created_at
                 FROM jobs
-                WHERE (LOWER(status) = 'published' OR status = 'ACTIVE')
+                WHERE LOWER(status) = 'published'
                   AND COALESCE(is_archived, FALSE) = FALSE
                   AND slug IS NOT NULL AND slug != '';
             """
@@ -923,7 +923,7 @@ def get_job_or_category_page(slug: str):
                            c.name AS company_name
                     FROM jobs j
                     LEFT JOIN companies c ON j.company_id = c.id
-                    WHERE (LOWER(j.status) = 'published' OR j.status = 'ACTIVE')
+                    WHERE LOWER(j.status) = 'published'
                       AND COALESCE(j.is_archived, FALSE) = FALSE
                       AND (j.department ILIKE %s OR j.job_role ILIKE %s OR j.title ILIKE %s)
                     ORDER BY j.is_featured DESC, j.published_at DESC NULLS LAST, j.id DESC
@@ -1145,7 +1145,7 @@ def get_job_or_category_page(slug: str):
             LEFT JOIN companies c ON j.company_id = c.id
             LEFT JOIN company_profiles cp ON j.company_profile_id = cp.id
             WHERE (j.slug = %s OR CAST(j.id AS VARCHAR) = %s)
-              AND (LOWER(j.status) = 'published' OR j.status = 'ACTIVE')
+              AND LOWER(j.status) = 'published'
               AND COALESCE(j.is_archived, FALSE) = FALSE;
         """
         rows = db_helpers["query_db"](query, (str(slug), str(slug)))

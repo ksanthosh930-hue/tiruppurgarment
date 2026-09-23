@@ -1228,6 +1228,57 @@
         </div>
     </div>
 
+    <!-- Direct Apply Confirmation Modal for Logged-in Candidates -->
+    <div class="modal" id="directApplyModal">
+        <div class="modal-dialog" style="max-width: 580px;">
+            <div class="modal-header">
+                <div>
+                    <h2 id="directApplyTitle">Submit Job Application</h2>
+                    <p id="directApplySubtitle" style="margin: 4px 0 0 0; font-size: 13px; color: var(--dg-slate);">Review your profile snapshot before sending to employer.</p>
+                </div>
+                <button class="modal-close" onclick="closeDirectApplyModal()">&times;</button>
+            </div>
+            <form id="directApplyForm" onsubmit="handleDirectApplySubmit(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="directApplyJobId">
+
+                    <!-- Candidate Profile Snapshot -->
+                    <div style="background: #f8fafc; border: 1px solid var(--dg-border); border-radius: 8px; padding: 14px; margin-bottom: 16px; font-size: 13.5px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <strong>Applicant:</strong>
+                            <span id="applySnapName" style="color: var(--dg-navy); font-weight: 600;">-</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <strong>Mobile / Email:</strong>
+                            <span id="applySnapContact" style="color: var(--dg-slate);">-</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <strong>Target Role & Exp:</strong>
+                            <span id="applySnapRoleExp" style="color: var(--dg-slate);">-</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <strong>Resume:</strong>
+                            <span id="applySnapResume" style="color: #166534; font-weight: 600;">Attached</span>
+                        </div>
+                    </div>
+
+                    <!-- Optional Cover Message -->
+                    <div class="form-group">
+                        <label for="applyCoverMessage">Cover Note / Message to Employer (Optional)</label>
+                        <textarea id="applyCoverMessage" class="form-control" rows="3" placeholder="Briefly highlight your relevant garment experience, machine skills, or availability..."></textarea>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-top: 16px;">
+                        <button type="submit" id="directSubmitBtn" class="btn-action btn-apply-primary" style="flex: 1;">
+                            🚀 Send Application
+                        </button>
+                        <button type="button" class="btn-secondary" onclick="closeDirectApplyModal()">Cancel</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Toast Notification -->
     <div id="toast" class="toast-notify"></div>
 
@@ -1557,15 +1608,14 @@
             const actionsBar = document.getElementById("modalActionsBar");
             actionsBar.innerHTML = "";
 
-            // 1. Direct Apply / Candidate Registration Button
-            const applyBtn = document.createElement("button");
-            applyBtn.className = "btn-action btn-apply-primary";
-            applyBtn.innerHTML = "🚀 Apply Now / Submit Profile";
-            applyBtn.onclick = () => {
-                closeJobDetailModal();
-                openCandidateModal(job.id, job.title);
-            };
-            actionsBar.appendChild(applyBtn);
+            // 1. Direct Apply Action (Check Auth Status)
+            const applyActionWrap = document.createElement("div");
+            applyActionWrap.id = "modalApplyActionWrap";
+            applyActionWrap.innerHTML = `<button class="btn-action btn-apply-primary" onclick="handleApplyClick(${job.id}, '${escapeHtml(job.title)}')">🚀 Apply Now</button>`;
+            actionsBar.appendChild(applyActionWrap);
+
+            // Asynchronously check logged-in candidate application status
+            checkApplicationStatusForModal(job.id, job.title);
 
             // 2. WhatsApp Button (rendered ONLY if contact_whatsapp is present)
             if (job.contact_whatsapp && job.contact_whatsapp.trim()) {
@@ -1612,11 +1662,121 @@
             document.getElementById("jobDetailModal").style.display = "flex";
         }
 
+        let loggedInCandidate = null;
+
+        async function checkApplicationStatusForModal(jobId, jobTitle) {
+            const wrap = document.getElementById("modalApplyActionWrap");
+            if (!wrap) return;
+
+            try {
+                const authRes = await fetch("/api/auth/me");
+                if (!authRes.ok) return;
+                const authData = await authRes.json();
+
+                if (!authData.logged_in || !authData.user) {
+                    // Guest user
+                    loggedInCandidate = null;
+                    return;
+                }
+
+                if (authData.user.account_type === "company") {
+                    wrap.innerHTML = `<span style="font-size: 13px; color: var(--dg-slate); align-self: center; font-weight: 500;">🏢 Employer Mode (Apply Disabled)</span>`;
+                    return;
+                }
+
+                loggedInCandidate = authData.user;
+
+                // Check already applied status
+                const stRes = await fetch(`/api/public/jobs/${jobId}/application-status`);
+                if (stRes.ok) {
+                    const stData = await stRes.json();
+                    if (stData.already_applied) {
+                        const appSt = (stData.application.status || 'submitted').toUpperCase();
+                        wrap.innerHTML = `<span class="btn-action" style="background: #10B981; cursor: default; font-weight: 600;">✓ Applied (${appSt})</span>`;
+                        return;
+                    }
+                }
+            } catch (err) {
+                console.error("Error checking apply status:", err);
+            }
+        }
+
+        function handleApplyClick(jobId, jobTitle) {
+            if (!loggedInCandidate) {
+                // Not logged in or guest
+                if (confirm("To submit your direct application, please sign in with your Job Seeker account. Would you like to sign in now?")) {
+                    window.location.href = `/jobseeker/login?redirect=${encodeURIComponent('/jobs')}`;
+                }
+                return;
+            }
+
+            closeJobDetailModal();
+            openDirectApplyModal(jobId, jobTitle);
+        }
+
+        function openDirectApplyModal(jobId, jobTitle) {
+            document.getElementById("directApplyJobId").value = jobId;
+            document.getElementById("directApplyTitle").textContent = `Apply for: ${jobTitle}`;
+
+            const profile = loggedInCandidate.profile || {};
+            document.getElementById("applySnapName").textContent = profile.full_name || loggedInCandidate.email;
+            document.getElementById("applySnapContact").textContent = `${profile.mobile || 'No Mobile'} • ${loggedInCandidate.email}`;
+            document.getElementById("applySnapRoleExp").textContent = `${profile.job_title || profile.preferred_job_role || 'Garment Professional'} (${profile.experience_years || 0} Yrs Exp)`;
+
+            const resumeSpan = document.getElementById("applySnapResume");
+            if (profile.resume_url) {
+                resumeSpan.textContent = "✓ Resume Attached";
+                resumeSpan.style.color = "#166534";
+            } else {
+                resumeSpan.textContent = "No Resume (Optional)";
+                resumeSpan.style.color = "#64748B";
+            }
+
+            document.getElementById("applyCoverMessage").value = "";
+            document.getElementById("directApplyModal").style.display = "flex";
+        }
+
+        function closeDirectApplyModal() {
+            document.getElementById("directApplyModal").style.display = "none";
+        }
+
+        async function handleDirectApplySubmit(e) {
+            e.preventDefault();
+            const btn = document.getElementById("directSubmitBtn");
+            const origText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = "Submitting Application...";
+
+            const jobId = document.getElementById("directApplyJobId").value;
+            const coverMsg = document.getElementById("applyCoverMessage").value.trim();
+
+            try {
+                const res = await fetch(`/api/public/jobs/${jobId}/apply`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ cover_message: coverMsg || null })
+                });
+                const data = await res.json();
+
+                if (!res.ok || !data.success) {
+                    throw new Error(data.detail || "Application submission failed.");
+                }
+
+                showToast("Application submitted successfully to employer!", true);
+                closeDirectApplyModal();
+            } catch (err) {
+                showToast(err.message || "Failed to submit application.", false);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = origText;
+            }
+        }
+
         function closeJobDetailModal() {
             document.getElementById("jobDetailModal").style.display = "none";
         }
 
-        // Candidate Application / Registration Modal Logic
+        // Candidate Application / Registration Modal Logic (Fallback)
         function openCandidateModal(jobId = null, jobTitle = null) {
             document.getElementById("applyJobId").value = jobId || "";
             const titleEl = document.getElementById("candidateModalTitle");
