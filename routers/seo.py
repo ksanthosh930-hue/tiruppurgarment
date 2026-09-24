@@ -5,7 +5,7 @@ import logging
 import datetime
 from typing import Dict, Any, List, Optional
 from fastapi import APIRouter, HTTPException, Response, Request
-from fastapi.responses import HTMLResponse, PlainTextResponse, FileResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse, FileResponse, RedirectResponse
 
 logger = logging.getLogger(__name__)
 
@@ -58,10 +58,10 @@ def get_sitemap_xml():
     static_urls = [
         {"loc": f"{CANONICAL_DOMAIN}/", "priority": "1.0", "changefreq": "daily"},
         {"loc": f"{CANONICAL_DOMAIN}/jobs", "priority": "0.9", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/tiruppur-jobs", "priority": "0.9", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/tiruppur-garment-jobs", "priority": "0.9", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/garment-jobs-in-tiruppur", "priority": "0.9", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/apparel-jobs-in-tiruppur", "priority": "0.9", "changefreq": "daily"},
+        {"loc": f"{CANONICAL_DOMAIN}/tirupur-jobs", "priority": "0.9", "changefreq": "daily"},
+        {"loc": f"{CANONICAL_DOMAIN}/tirupur-garment-jobs", "priority": "0.9", "changefreq": "daily"},
+        {"loc": f"{CANONICAL_DOMAIN}/garment-jobs-in-tirupur", "priority": "0.9", "changefreq": "daily"},
+        {"loc": f"{CANONICAL_DOMAIN}/apparel-jobs-in-tirupur", "priority": "0.9", "changefreq": "daily"},
         {"loc": f"{CANONICAL_DOMAIN}/tools", "priority": "0.8", "changefreq": "weekly"},
         {"loc": f"{CANONICAL_DOMAIN}/tools/sam-calculator", "priority": "0.9", "changefreq": "weekly"},
         {"loc": f"{CANONICAL_DOMAIN}/services", "priority": "0.8", "changefreq": "monthly"},
@@ -820,10 +820,10 @@ def get_blog_detail_page(slug: str):
         </div>
         <nav aria-label="Popular Job Searches" style="display: flex; justify-content: center; flex-wrap: wrap; gap: 16px; font-size: 13px; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08);">
             <span style="color: #64748B; font-weight: 600;">Popular Job Searches:</span>
-            <a href="/tiruppur-jobs" style="color: #CBD5E1; text-decoration: none;">Tiruppur Jobs</a>
-            <a href="/tiruppur-garment-jobs" style="color: #CBD5E1; text-decoration: none;">Tiruppur Garment Jobs</a>
-            <a href="/garment-jobs-in-tiruppur" style="color: #CBD5E1; text-decoration: none;">Garment Jobs in Tiruppur</a>
-            <a href="/apparel-jobs-in-tiruppur" style="color: #CBD5E1; text-decoration: none;">Apparel Jobs in Tiruppur</a>
+            <a href="/tirupur-jobs" style="color: #CBD5E1; text-decoration: none;">Tirupur Jobs</a>
+            <a href="/tirupur-garment-jobs" style="color: #CBD5E1; text-decoration: none;">Tirupur Garment Jobs</a>
+            <a href="/garment-jobs-in-tirupur" style="color: #CBD5E1; text-decoration: none;">Garment Jobs in Tirupur</a>
+            <a href="/apparel-jobs-in-tirupur" style="color: #CBD5E1; text-decoration: none;">Apparel Jobs in Tirupur</a>
         </nav>
     </footer>
 </body>
@@ -833,17 +833,17 @@ def get_blog_detail_page(slug: str):
 
 # --- 5.5. PRIMARY SEO LANDING PAGES (Phase 4F) ---
 SEO_LANDING_PAGES = {
-    "tiruppur-jobs": {
-        "slug": "tiruppur-jobs",
-        "title": "Tiruppur Jobs | Latest Jobs in Tiruppur | DigiGarment",
-        "description": "Explore verified job vacancies in Tiruppur across garment manufacturing, textile processing, merchandising, quality control, and industrial operations.",
-        "h1": "Tiruppur Jobs",
-        "intro": "Browse active and verified job vacancies across Tiruppur's garment manufacturing hubs, industrial units, and export houses on DigiGarment.",
+    "tirupur-jobs": {
+        "slug": "tirupur-jobs",
+        "title": "Tirupur Jobs | Latest Jobs in Tirupur | DigiGarment",
+        "description": "Explore verified job vacancies in Tirupur across garment manufacturing, textile processing, merchandising, quality control, and industrial operations.",
+        "h1": "Tirupur Jobs",
+        "intro": "Browse active and verified job vacancies across Tirupur's garment manufacturing hubs, industrial units, and export houses on DigiGarment.",
         "location_filter": "Tiruppur",
-        "about_heading": "About Jobs in Tiruppur",
+        "about_heading": "About Jobs in Tirupur",
         "about_paragraphs": [
-            "Tiruppur is globally recognized as India's premier knitwear and textile manufacturing hub. Contributing a significant portion of India's cotton knitwear exports, the city hosts thousands of integrated spinning mills, knitting plants, fabric dyeing units, garment factories, and logistics facilities.",
-            "Career opportunities in Tiruppur span all levels of industrial manufacturing—from entry-level sewing operators and machine technicians to experienced garment merchandisers, industrial engineers, quality auditors (AQL), and factory general managers. DigiGarment provides direct access to active vacancies across major industrial zones including Angeripalayam, Veerapandi, Mangalam Road, and Palladam Road."
+            "Tirupur is globally recognized as India's premier knitwear and textile manufacturing hub. Contributing a significant portion of India's cotton knitwear exports, the city hosts thousands of integrated spinning mills, knitting plants, fabric dyeing units, garment factories, and logistics facilities.",
+            "Career opportunities in Tirupur span all levels of industrial manufacturing—from entry-level sewing operators and machine technicians to experienced garment merchandisers, industrial engineers, quality auditors (AQL), and factory general managers. DigiGarment provides direct access to active vacancies across major industrial zones including Angeripalayam, Veerapandi, Mangalam Road, and Palladam Road."
         ],
         "popular_roles": [
             {"title": "Garment Merchandiser", "url": "/jobs?role=Merchandiser"},
@@ -856,20 +856,20 @@ SEO_LANDING_PAGES = {
             {"title": "Stores & Trim Auditor", "url": "/jobs?department=Stores"}
         ],
         "related_searches": [
-            {"title": "Tiruppur Garment Jobs", "url": "/tiruppur-garment-jobs"},
-            {"title": "Garment Jobs in Tiruppur", "url": "/garment-jobs-in-tiruppur"},
-            {"title": "Apparel Jobs in Tiruppur", "url": "/apparel-jobs-in-tiruppur"},
+            {"title": "Tirupur Garment Jobs", "url": "/tirupur-garment-jobs"},
+            {"title": "Garment Jobs in Tirupur", "url": "/garment-jobs-in-tirupur"},
+            {"title": "Apparel Jobs in Tirupur", "url": "/apparel-jobs-in-tirupur"},
             {"title": "Merchandiser Jobs Tiruppur", "url": "/jobs/merchandiser-jobs-tiruppur"},
             {"title": "Production Jobs Tiruppur", "url": "/jobs/production-jobs-tiruppur"},
             {"title": "All Garment Jobs", "url": "/jobs"}
         ],
         "faqs": [
             {
-                "q": "What types of jobs are available in Tiruppur?",
-                "a": "Tiruppur offers vacancies in knitwear merchandising, garment production supervision, pattern design & CAD, quality auditing (AQL), fabric cutting, sewing machine mechanics, industrial engineering, accounting, and stores management."
+                "q": "What types of jobs are available in Tirupur?",
+                "a": "Tirupur offers vacancies in knitwear merchandising, garment production supervision, pattern design & CAD, quality auditing (AQL), fabric cutting, sewing machine mechanics, industrial engineering, accounting, and stores management."
             },
             {
-                "q": "How can I apply for jobs in Tiruppur on DigiGarment?",
+                "q": "How can I apply for jobs in Tirupur on DigiGarment?",
                 "a": "Browse the active verified job postings listed on this page, click on any vacancy to review job requirements, and submit your candidate profile or contact the employer directly via the verified contact options."
             },
             {
@@ -877,22 +877,22 @@ SEO_LANDING_PAGES = {
                 "a": "Yes. DigiGarment displays only active, published vacancies that have been verified by employers or administrators, automatically excluding expired and archived postings."
             },
             {
-                "q": "Can I save jobs in Tiruppur to apply later?",
+                "q": "Can I save jobs in Tirupur to apply later?",
                 "a": "Yes. Logged-in candidates can bookmark vacancies to their Saved Jobs tab to track and organize their applications."
             }
         ]
     },
-    "tiruppur-garment-jobs": {
-        "slug": "tiruppur-garment-jobs",
-        "title": "Tiruppur Garment Jobs | Garment Industry Jobs | DigiGarment",
-        "description": "Find active garment factory jobs in Tiruppur. Browse vacancies for merchandisers, line supervisors, cutting masters, QA inspectors, and apparel staff.",
-        "h1": "Tiruppur Garment Jobs",
-        "intro": "Find active garment manufacturing vacancies in Tiruppur export houses, knitting factories, and garment production units.",
+    "tirupur-garment-jobs": {
+        "slug": "tirupur-garment-jobs",
+        "title": "Tirupur Garment Jobs | Garment Industry Jobs | DigiGarment",
+        "description": "Find active garment factory jobs in Tirupur. Browse vacancies for merchandisers, line supervisors, cutting masters, QA inspectors, and apparel staff.",
+        "h1": "Tirupur Garment Jobs",
+        "intro": "Find active garment manufacturing vacancies in Tirupur export houses, knitting factories, and garment production units.",
         "location_filter": "Tiruppur",
-        "about_heading": "Garment Manufacturing Careers in Tiruppur",
+        "about_heading": "Garment Manufacturing Careers in Tirupur",
         "about_paragraphs": [
-            "The garment manufacturing sector in Tiruppur forms an integrated supply chain that handles every step of apparel creation—from yarn knitting and circular knitting to wet processing, fabric spreading, precision cutting, line sewing, checking, and export packing.",
-            "Whether you specialize in buyer sample follow-ups, line target balancing, Optitex/Gerber pattern grading, or inline defect inspections, Tiruppur export units continuously recruit talent to fulfill international knitwear export orders."
+            "The garment manufacturing sector in Tirupur forms an integrated supply chain that handles every step of apparel creation—from yarn knitting and circular knitting to wet processing, fabric spreading, precision cutting, line sewing, checking, and export packing.",
+            "Whether you specialize in buyer sample follow-ups, line target balancing, Optitex/Gerber pattern grading, or inline defect inspections, Tirupur export units continuously recruit talent to fulfill international knitwear export orders."
         ],
         "popular_roles": [
             {"title": "Sampling Merchandiser", "url": "/jobs?role=Merchandiser"},
@@ -905,20 +905,20 @@ SEO_LANDING_PAGES = {
             {"title": "Packing In-charge", "url": "/jobs?department=Packing"}
         ],
         "related_searches": [
-            {"title": "Tiruppur Jobs", "url": "/tiruppur-jobs"},
-            {"title": "Garment Jobs in Tiruppur", "url": "/garment-jobs-in-tiruppur"},
-            {"title": "Apparel Jobs in Tiruppur", "url": "/apparel-jobs-in-tiruppur"},
+            {"title": "Tirupur Jobs", "url": "/tirupur-jobs"},
+            {"title": "Garment Jobs in Tirupur", "url": "/garment-jobs-in-tirupur"},
+            {"title": "Apparel Jobs in Tirupur", "url": "/apparel-jobs-in-tirupur"},
             {"title": "Cutting Jobs Tiruppur", "url": "/jobs/cutting-jobs-tiruppur"},
             {"title": "Sewing Jobs Tiruppur", "url": "/jobs/sewing-jobs-tiruppur"},
             {"title": "All Garment Jobs", "url": "/jobs"}
         ],
         "faqs": [
             {
-                "q": "Where can I find garment factory jobs in Tiruppur?",
+                "q": "Where can I find garment factory jobs in Tirupur?",
                 "a": "You can find active garment factory jobs right here on DigiGarment. Listings are updated daily with verified openings from export houses and manufacturing units across Angeripalayam, Veerapandi, Mangalam Road, and surrounding industrial hubs."
             },
             {
-                "q": "Do garment jobs in Tiruppur require previous export house experience?",
+                "q": "Do garment jobs in Tirupur require previous export house experience?",
                 "a": "Requirements vary by role. Technical and supervisory positions like Merchandising, CAD Pattern Making, and QA Auditing often prefer knitwear export experience, while entry-level positions and training programs welcome fresh candidates."
             },
             {
@@ -927,17 +927,17 @@ SEO_LANDING_PAGES = {
             }
         ]
     },
-    "garment-jobs-in-tiruppur": {
-        "slug": "garment-jobs-in-tiruppur",
-        "title": "Garment Jobs in Tiruppur | Apparel & Textile Jobs | DigiGarment",
-        "description": "Explore verified garment jobs in Tiruppur. Vacancies in knitwear export units, sampling departments, production floors, and quality assurance teams.",
-        "h1": "Garment Jobs in Tiruppur",
-        "intro": "Explore verified employment opportunities in Tiruppur's garment manufacturing, apparel export, and knitwear production sectors.",
+    "garment-jobs-in-tirupur": {
+        "slug": "garment-jobs-in-tirupur",
+        "title": "Garment Jobs in Tirupur | Apparel & Textile Jobs | DigiGarment",
+        "description": "Explore verified garment jobs in Tirupur. Vacancies in knitwear export units, sampling departments, production floors, and quality assurance teams.",
+        "h1": "Garment Jobs in Tirupur",
+        "intro": "Explore verified employment opportunities in Tirupur's garment manufacturing, apparel export, and knitwear production sectors.",
         "location_filter": "Tiruppur",
-        "about_heading": "Finding the Right Garment Job in Tiruppur",
+        "about_heading": "Finding the Right Garment Job in Tirupur",
         "about_paragraphs": [
-            "Seeking a garment job in Tiruppur gives you access to one of Asia's most specialized knitwear manufacturing ecosystems. From basic t-shirts and polo shirts to engineered sportswear and luxury infant wear, factories in Tiruppur employ skilled garment professionals across sampling, costing, industrial engineering, and supply chain management.",
-            "DigiGarment aggregates direct job vacancies with transparent compensation details, factory locations, and contact information to make your garment job search in Tiruppur smooth and effective."
+            "Seeking a garment job in Tirupur gives you access to one of Asia's most specialized knitwear manufacturing ecosystems. From basic t-shirts and polo shirts to engineered sportswear and luxury infant wear, factories in Tirupur employ skilled garment professionals across sampling, costing, industrial engineering, and supply chain management.",
+            "DigiGarment aggregates direct job vacancies with transparent compensation details, factory locations, and contact information to make your garment job search in Tirupur smooth and effective."
         ],
         "popular_roles": [
             {"title": "Production Merchandiser", "url": "/jobs?role=Merchandiser"},
@@ -950,16 +950,16 @@ SEO_LANDING_PAGES = {
             {"title": "Sampling Coordinator", "url": "/jobs?role=Merchandiser"}
         ],
         "related_searches": [
-            {"title": "Tiruppur Garment Jobs", "url": "/tiruppur-garment-jobs"},
-            {"title": "Tiruppur Jobs", "url": "/tiruppur-jobs"},
-            {"title": "Apparel Jobs in Tiruppur", "url": "/apparel-jobs-in-tiruppur"},
+            {"title": "Tirupur Garment Jobs", "url": "/tirupur-garment-jobs"},
+            {"title": "Tirupur Jobs", "url": "/tirupur-jobs"},
+            {"title": "Apparel Jobs in Tirupur", "url": "/apparel-jobs-in-tirupur"},
             {"title": "Quality Jobs Tiruppur", "url": "/jobs/quality-jobs-tiruppur"},
             {"title": "Merchandiser Jobs Tiruppur", "url": "/jobs/merchandiser-jobs-tiruppur"},
             {"title": "Browse All Jobs", "url": "/jobs"}
         ],
         "faqs": [
             {
-                "q": "What skills are most in demand for garment jobs in Tiruppur?",
+                "q": "What skills are most in demand for garment jobs in Tirupur?",
                 "a": "High-demand skills include knitwear costing, buyer TNA management, SAM/SMV line balancing, Optitex/Gerber pattern CAD, 4-point fabric inspection, AQL quality standards, and export documentation."
             },
             {
@@ -967,22 +967,22 @@ SEO_LANDING_PAGES = {
                 "a": "All job postings on DigiGarment undergo administrative review or are posted directly by verified employers, ensuring accurate job details, contact numbers, and compensation ranges."
             },
             {
-                "q": "Is registration free for job seekers looking for garment jobs in Tiruppur?",
+                "q": "Is registration free for job seekers looking for garment jobs in Tirupur?",
                 "a": "Yes! Candidates can register, upload their resumes, save jobs, and apply to vacancies 100% free of charge on DigiGarment."
             }
         ]
     },
-    "apparel-jobs-in-tiruppur": {
-        "slug": "apparel-jobs-in-tiruppur",
-        "title": "Apparel Jobs in Tiruppur | Latest Apparel Jobs | DigiGarment",
-        "description": "Browse the latest apparel industry jobs in Tiruppur. Opportunities in fashion merchandising, garment design, apparel production, and textile engineering.",
-        "h1": "Apparel Jobs in Tiruppur",
-        "intro": "Browse career opportunities in apparel manufacturing, fashion merchandising, and textile engineering across Tiruppur.",
+    "apparel-jobs-in-tirupur": {
+        "slug": "apparel-jobs-in-tirupur",
+        "title": "Apparel Jobs in Tirupur | Latest Apparel Jobs | DigiGarment",
+        "description": "Browse the latest apparel industry jobs in Tirupur. Opportunities in fashion merchandising, garment design, apparel production, and textile engineering.",
+        "h1": "Apparel Jobs in Tirupur",
+        "intro": "Browse career opportunities in apparel manufacturing, fashion merchandising, and textile engineering across Tirupur.",
         "location_filter": "Tiruppur",
-        "about_heading": "Apparel Industry Opportunities in Tiruppur",
+        "about_heading": "Apparel Industry Opportunities in Tirupur",
         "about_paragraphs": [
-            "The modern apparel industry in Tiruppur is adopting lean manufacturing, digital standard allowed minute (SAM) calculators, automated fabric spreading, and real-time shopfloor production tracking. Apparel professionals with expertise in both traditional garment construction and modern digital tools are in high demand.",
-            "From high-fashion knitwear and activewear brands to private label manufacturers, Tiruppur's apparel sector offers rewarding careers in merchandising, industrial engineering, digital pattern making, and quality compliance."
+            "The modern apparel industry in Tirupur is adopting lean manufacturing, digital standard allowed minute (SAM) calculators, automated fabric spreading, and real-time shopfloor production tracking. Apparel professionals with expertise in both traditional garment construction and modern digital tools are in high demand.",
+            "From high-fashion knitwear and activewear brands to private label manufacturers, Tirupur's apparel sector offers rewarding careers in merchandising, industrial engineering, digital pattern making, and quality compliance."
         ],
         "popular_roles": [
             {"title": "Apparel Merchandiser", "url": "/jobs?role=Merchandiser"},
@@ -995,20 +995,20 @@ SEO_LANDING_PAGES = {
             {"title": "Compliance Officer", "url": "/jobs?department=HR"}
         ],
         "related_searches": [
-            {"title": "Tiruppur Jobs", "url": "/tiruppur-jobs"},
-            {"title": "Tiruppur Garment Jobs", "url": "/tiruppur-garment-jobs"},
-            {"title": "Garment Jobs in Tiruppur", "url": "/garment-jobs-in-tiruppur"},
+            {"title": "Tirupur Jobs", "url": "/tirupur-jobs"},
+            {"title": "Tirupur Garment Jobs", "url": "/tirupur-garment-jobs"},
+            {"title": "Garment Jobs in Tirupur", "url": "/garment-jobs-in-tirupur"},
             {"title": "Production Jobs Tiruppur", "url": "/jobs/production-jobs-tiruppur"},
             {"title": "Cutting Jobs Tiruppur", "url": "/jobs/cutting-jobs-tiruppur"},
             {"title": "Explore All Jobs", "url": "/jobs"}
         ],
         "faqs": [
             {
-                "q": "What is the difference between garment jobs and apparel jobs in Tiruppur?",
+                "q": "What is the difference between garment jobs and apparel jobs in Tirupur?",
                 "a": "While the terms are often used interchangeably in the industry, apparel jobs frequently encompass broader roles including fashion design, technical textiles, brand merchandising, and supply chain optimization alongside core garment manufacturing."
             },
             {
-                "q": "Can employers in Tiruppur post apparel vacancies on DigiGarment?",
+                "q": "Can employers in Tirupur post apparel vacancies on DigiGarment?",
                 "a": "Yes, verified employers and garment export companies can register an employer account to post apparel vacancies, manage candidate applications, and hire qualified professionals."
             },
             {
@@ -1677,8 +1677,8 @@ def render_seo_landing_page(page_slug: str) -> HTMLResponse:
             <div style="display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;">
                 <a href="/" style="color: #94A3B8; text-decoration: none;">Home</a>
                 <a href="/jobs" style="color: #94A3B8; text-decoration: none;">All Jobs</a>
-                <a href="/tiruppur-jobs" style="color: #94A3B8; text-decoration: none;">Tiruppur Jobs</a>
-                <a href="/tiruppur-garment-jobs" style="color: #94A3B8; text-decoration: none;">Garment Jobs</a>
+                <a href="/tirupur-jobs" style="color: #94A3B8; text-decoration: none;">Tirupur Jobs</a>
+                <a href="/tirupur-garment-jobs" style="color: #94A3B8; text-decoration: none;">Garment Jobs</a>
                 <a href="/tools/sam-calculator" style="color: #94A3B8; text-decoration: none;">SAM Calculator</a>
                 <a href="/services" style="color: #94A3B8; text-decoration: none;">Services</a>
                 <a href="/blog" style="color: #94A3B8; text-decoration: none;">Blog</a>
@@ -1690,21 +1690,41 @@ def render_seo_landing_page(page_slug: str) -> HTMLResponse:
 </html>
 """)
 
-@router.get("/tiruppur-jobs", response_class=HTMLResponse)
-def get_tiruppur_jobs_page():
-    return render_seo_landing_page("tiruppur-jobs")
 
-@router.get("/tiruppur-garment-jobs", response_class=HTMLResponse)
-def get_tiruppur_garment_jobs_page():
-    return render_seo_landing_page("tiruppur-garment-jobs")
+# --- 5.5. PRIMARY CANONICAL LANDING ROUTES ---
+@router.get("/tirupur-jobs", response_class=HTMLResponse)
+def get_tirupur_jobs_page():
+    return render_seo_landing_page("tirupur-jobs")
 
-@router.get("/garment-jobs-in-tiruppur", response_class=HTMLResponse)
-def get_garment_jobs_in_tiruppur_page():
-    return render_seo_landing_page("garment-jobs-in-tiruppur")
+@router.get("/tirupur-garment-jobs", response_class=HTMLResponse)
+def get_tirupur_garment_jobs_page():
+    return render_seo_landing_page("tirupur-garment-jobs")
 
-@router.get("/apparel-jobs-in-tiruppur", response_class=HTMLResponse)
-def get_apparel_jobs_in_tiruppur_page():
-    return render_seo_landing_page("apparel-jobs-in-tiruppur")
+@router.get("/garment-jobs-in-tirupur", response_class=HTMLResponse)
+def get_garment_jobs_in_tirupur_page():
+    return render_seo_landing_page("garment-jobs-in-tirupur")
+
+@router.get("/apparel-jobs-in-tirupur", response_class=HTMLResponse)
+def get_apparel_jobs_in_tirupur_page():
+    return render_seo_landing_page("apparel-jobs-in-tirupur")
+
+
+# --- 5.6. 301 PERMANENT REDIRECTS (Legacy Tiruppur Spelling Migration) ---
+@router.get("/tiruppur-jobs", response_class=RedirectResponse, status_code=301)
+def redirect_tiruppur_jobs():
+    return RedirectResponse(url="/tirupur-jobs", status_code=301)
+
+@router.get("/tiruppur-garment-jobs", response_class=RedirectResponse, status_code=301)
+def redirect_tiruppur_garment_jobs():
+    return RedirectResponse(url="/tirupur-garment-jobs", status_code=301)
+
+@router.get("/garment-jobs-in-tiruppur", response_class=RedirectResponse, status_code=301)
+def redirect_garment_jobs_in_tiruppur():
+    return RedirectResponse(url="/garment-jobs-in-tirupur", status_code=301)
+
+@router.get("/apparel-jobs-in-tiruppur", response_class=RedirectResponse, status_code=301)
+def redirect_apparel_jobs_in_tiruppur():
+    return RedirectResponse(url="/apparel-jobs-in-tirupur", status_code=301)
 
 
 # --- 6. JOB CATEGORY SEO HUBS ---
