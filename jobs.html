@@ -384,6 +384,95 @@
             cursor: pointer;
         }
 
+        /* Active Filter Chips */
+        .active-chips-wrap {
+            background: #ffffff;
+            border: 1px solid var(--dg-border);
+            border-radius: 10px;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .active-chips-inner {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .active-chips-label {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: var(--dg-slate);
+            margin-right: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .filter-chip {
+            background: #EFF6FF;
+            color: #1E40AF;
+            border: 1px solid #BFDBFE;
+            border-radius: 20px;
+            padding: 4px 10px 4px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .filter-chip:hover {
+            background: #DBEAFE;
+        }
+
+        .chip-remove-btn {
+            background: none;
+            border: none;
+            color: #1E40AF;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            transition: background 0.15s, color 0.15s;
+            line-height: 1;
+        }
+
+        .chip-remove-btn:hover {
+            background: rgba(30, 64, 175, 0.15);
+            color: #991B1B;
+        }
+
+        .btn-clear-chips {
+            background: none;
+            border: 1px solid #CBD5E1;
+            color: #64748B;
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-clear-chips:hover {
+            border-color: var(--dg-red);
+            color: var(--dg-red);
+            background: #FFF5F5;
+        }
+
         /* Job Cards Grid */
         .jobs-grid {
             display: flex;
@@ -536,6 +625,241 @@
         }
 
         .btn-view-job:hover {
+            background: var(--dg-red);
+        }
+
+        /* Save / Bookmark Button on Cards */
+        .btn-save-card {
+            background: #ffffff;
+            border: 1px solid var(--dg-border);
+            color: var(--dg-slate);
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-save-card:hover {
+            border-color: var(--dg-red);
+            color: var(--dg-red);
+            background: #fff5f5;
+        }
+
+        .btn-save-card.saved {
+            background: #fee2e2;
+            border-color: #fca5a5;
+            color: var(--dg-red);
+        }
+
+        .btn-save-card.saved .save-icon {
+            color: var(--dg-red);
+        }
+
+        /* Modal Save Button */
+        .btn-save-modal {
+            background: #ffffff;
+            border: 1px solid var(--dg-border);
+            color: var(--dg-slate);
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 13.5px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-save-modal:hover {
+            border-color: var(--dg-red);
+            color: var(--dg-red);
+            background: #fff5f5;
+        }
+
+        .btn-save-modal.saved {
+            background: #fee2e2;
+            border-color: #fca5a5;
+            color: var(--dg-red);
+        }
+
+        .btn-save-action {
+            background: #f8fafc;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+            padding: 12px 18px;
+        }
+
+        .btn-save-action:hover {
+            background: #f1f5f9;
+            color: var(--dg-red);
+            border-color: var(--dg-red);
+        }
+
+        .btn-save-action.saved {
+            background: #fee2e2;
+            color: #b91c1c;
+            border-color: #fca5a5;
+        }
+
+        /* Share Button on Cards */
+        .btn-share-card {
+            background: #ffffff;
+            border: 1px solid var(--dg-border);
+            color: var(--dg-slate);
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-share-card:hover {
+            border-color: var(--dg-navy);
+            color: var(--dg-navy);
+            background: #f8fafc;
+        }
+
+        /* Modal Share Button */
+        .btn-share-modal {
+            background: #ffffff;
+            border: 1px solid var(--dg-border);
+            color: var(--dg-slate);
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 13.5px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-share-modal:hover {
+            border-color: var(--dg-navy);
+            color: var(--dg-navy);
+            background: #f8fafc;
+        }
+
+        .btn-share-action {
+            background: #f8fafc;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+            padding: 12px 18px;
+        }
+
+        .btn-share-action:hover {
+            background: #f1f5f9;
+            color: var(--dg-navy);
+            border-color: var(--dg-navy);
+        }
+
+        /* Share Modal Specifics */
+        .share-modal-dialog {
+            max-width: 480px;
+        }
+
+        .share-options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 16px 0 22px 0;
+        }
+
+        .share-option-btn {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            border-radius: 10px;
+            border: 1px solid var(--dg-border);
+            background: #ffffff;
+            color: var(--dg-navy);
+            font-size: 14.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .share-option-btn:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+            transform: translateY(-1px);
+        }
+
+        .share-option-btn.btn-wa:hover {
+            background: #f0fdf4;
+            border-color: #86efac;
+            color: #166534;
+        }
+
+        .share-option-icon {
+            font-size: 20px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: #f1f5f9;
+            flex-shrink: 0;
+        }
+
+        .btn-wa .share-option-icon {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .share-url-box {
+            display: flex;
+            gap: 8px;
+            background: #f8fafc;
+            border: 1px solid var(--dg-border);
+            border-radius: 8px;
+            padding: 6px;
+            align-items: center;
+        }
+
+        .share-url-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 8px 10px;
+            font-size: 13px;
+            color: #475569;
+            font-family: inherit;
+            outline: none;
+        }
+
+        .btn-copy-url {
+            background: var(--dg-navy);
+            color: #ffffff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-copy-url:hover {
             background: var(--dg-red);
         }
 
@@ -1041,6 +1365,14 @@
                 </div>
             </div>
 
+            <!-- Active Filter Chips Bar -->
+            <div class="active-chips-wrap" id="activeChipsWrap" style="display: none;">
+                <div class="active-chips-inner" id="activeChipsContainer">
+                    <!-- Dynamically injected chips -->
+                </div>
+                <button type="button" class="btn-clear-chips" onclick="clearAllFilters()">Clear All</button>
+            </div>
+
             <!-- Jobs Feed List -->
             <div class="jobs-grid" id="jobsGrid">
                 <!-- Dynamically injected -->
@@ -1055,6 +1387,49 @@
         </section>
     </main>
 
+    <!-- Share Job Modal -->
+    <div class="modal" id="shareJobModal" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle" onclick="if(event.target === this) closeShareModal()">
+        <div class="modal-dialog share-modal-dialog">
+            <div class="modal-header">
+                <div>
+                    <h2 id="shareModalTitle" style="font-size: 19px; margin: 0 0 4px 0;">Share Job Listing</h2>
+                    <p id="shareModalJobTitle" style="margin: 0; font-size: 13px; color: var(--dg-slate); font-weight: 600;"></p>
+                </div>
+                <button type="button" class="modal-close" aria-label="Close share dialog" onclick="closeShareModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 24px;">
+                <div class="share-options-list">
+                    <!-- WhatsApp Share -->
+                    <button type="button" class="share-option-btn btn-wa" aria-label="Share job on WhatsApp" onclick="handleShareWhatsApp()">
+                        <span class="share-option-icon">💬</span>
+                        <div style="flex: 1;">
+                            <div>Share on WhatsApp</div>
+                            <small style="color: #64748B; font-weight: 400; font-size: 12px;">Send directly to contacts or garment job groups</small>
+                        </div>
+                    </button>
+
+                    <!-- Native Web Share API (shown dynamically if supported) -->
+                    <button type="button" class="share-option-btn" id="btnNativeShare" aria-label="Share via device apps" style="display: none;" onclick="handleNativeShare()">
+                        <span class="share-option-icon">📱</span>
+                        <div style="flex: 1;">
+                            <div>More Sharing Options</div>
+                            <small style="color: #64748B; font-weight: 400; font-size: 12px;">Share via apps, messages, or email on your device</small>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Copy Link Section -->
+                <label style="display: block; font-size: 12.5px; font-weight: 700; color: var(--dg-navy); margin-bottom: 8px;">Direct Job URL</label>
+                <div class="share-url-box">
+                    <input type="text" id="shareUrlInput" class="share-url-input" readonly aria-label="Job link URL" onclick="this.select()">
+                    <button type="button" class="btn-copy-url" id="btnCopyJobUrl" aria-label="Copy job link" onclick="handleCopyJobUrl()">
+                        <span id="copyBtnText">Copy Link</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Job Detail Modal -->
     <div class="modal" id="jobDetailModal">
         <div class="modal-dialog">
@@ -1066,7 +1441,17 @@
                     <div id="modalCompanyName" class="company-name"
                         style="font-size: 14px; font-weight: 600; color: var(--dg-slate);"></div>
                 </div>
-                <button class="modal-close" onclick="closeJobDetailModal()">&times;</button>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button type="button" class="btn-share-modal" id="modalShareBtn" aria-label="Share job" onclick="openShareModal(currentDetailJobId)">
+                        <span class="share-icon">↗</span>
+                        <span class="share-text">Share</span>
+                    </button>
+                    <button type="button" class="btn-save-modal" id="modalSaveBtn" aria-label="Save job" onclick="handleToggleSaveJob(currentDetailJobId)">
+                        <span class="save-icon" id="modalSaveIcon">♡</span>
+                        <span class="save-text" id="modalSaveText">Save Job</span>
+                    </button>
+                    <button class="modal-close" aria-label="Close dialog" onclick="closeJobDetailModal()">&times;</button>
+                </div>
             </div>
             <div class="modal-body">
                 <!-- Specs Grid -->
@@ -1321,6 +1706,14 @@
         const pageLimit = 10;
         let totalPages = 1;
         let activeJobsCache = [];
+        let currentDetailJobId = null;
+
+        // In-memory Saved Jobs Tracker for instant UI sync and avoiding N+1 requests
+        const savedJobsTracker = {
+            savedJobIds: new Set(),
+            loaded: false,
+            user: null
+        };
 
         function showToast(msg, isSuccess = true) {
             const toast = document.getElementById("toast");
@@ -1331,97 +1724,486 @@
             setTimeout(() => { toast.style.display = "none"; }, 4000);
         }
 
+        async function initSavedJobsState() {
+            try {
+                const res = await fetch("/api/auth/me");
+                if (!res.ok) return;
+                const data = await res.json();
+                if (data && data.logged_in && data.user) {
+                    savedJobsTracker.user = data.user;
+                    if (data.user.account_type === "individual") {
+                        // Pre-fetch saved jobs for authenticated candidates in a single lightweight query
+                        const savedRes = await fetch("/api/public/employee/saved-jobs?limit=100");
+                        if (savedRes.ok) {
+                            const savedData = await savedRes.json();
+                            if (savedData && Array.isArray(savedData.jobs)) {
+                                savedData.jobs.forEach(item => {
+                                    const jId = (item.job && item.job.id) ? item.job.id : item.id;
+                                    if (jId) {
+                                        savedJobsTracker.savedJobIds.add(Number(jId));
+                                    }
+                                });
+                            }
+                        }
+                        savedJobsTracker.loaded = true;
+                        refreshVisibleCardSaveButtons();
+                    }
+                }
+            } catch (err) {
+                console.error("Error initializing saved jobs:", err);
+            }
+        }
+
+        function isJobSaved(jobId) {
+            return savedJobsTracker.savedJobIds.has(Number(jobId));
+        }
+
+        function updateSaveButtonUI(jobId) {
+            jobId = Number(jobId);
+            const isSaved = isJobSaved(jobId);
+
+            // 1. Update Card Button
+            const cardBtn = document.getElementById(`saveBtnCard_${jobId}`);
+            if (cardBtn) {
+                if (isSaved) {
+                    cardBtn.classList.add("saved");
+                    cardBtn.setAttribute("aria-label", "Remove job from saved jobs");
+                    const icon = cardBtn.querySelector(".save-icon");
+                    const text = cardBtn.querySelector(".save-text");
+                    if (icon) icon.textContent = "♥";
+                    if (text) text.textContent = "Saved";
+                } else {
+                    cardBtn.classList.remove("saved");
+                    cardBtn.setAttribute("aria-label", "Save job");
+                    const icon = cardBtn.querySelector(".save-icon");
+                    const text = cardBtn.querySelector(".save-text");
+                    if (icon) icon.textContent = "♡";
+                    if (text) text.textContent = "Save";
+                }
+            }
+
+            // 2. Update Modal Header Button
+            const modalBtn = document.getElementById("modalSaveBtn");
+            const modalIcon = document.getElementById("modalSaveIcon");
+            const modalText = document.getElementById("modalSaveText");
+            if (modalBtn && currentDetailJobId === jobId) {
+                if (isSaved) {
+                    modalBtn.classList.add("saved");
+                    modalBtn.setAttribute("aria-label", "Remove job from saved jobs");
+                    if (modalIcon) modalIcon.textContent = "♥";
+                    if (modalText) modalText.textContent = "Saved";
+                } else {
+                    modalBtn.classList.remove("saved");
+                    modalBtn.setAttribute("aria-label", "Save job");
+                    if (modalIcon) modalIcon.textContent = "♡";
+                    if (modalText) modalText.textContent = "Save Job";
+                }
+            }
+
+            // 3. Update Modal Action Bar Button
+            const actionBtn = document.getElementById("modalActionSaveBtn");
+            const actionIcon = document.getElementById("modalActionSaveIcon");
+            const actionText = document.getElementById("modalActionSaveText");
+            if (actionBtn && currentDetailJobId === jobId) {
+                if (isSaved) {
+                    actionBtn.classList.add("saved");
+                    actionBtn.setAttribute("aria-label", "Remove job from saved jobs");
+                    if (actionIcon) actionIcon.textContent = "♥";
+                    if (actionText) actionText.textContent = "Saved";
+                } else {
+                    actionBtn.classList.remove("saved");
+                    actionBtn.setAttribute("aria-label", "Save job");
+                    if (actionIcon) actionIcon.textContent = "♡";
+                    if (actionText) actionText.textContent = "Save Job";
+                }
+            }
+        }
+
+        function refreshVisibleCardSaveButtons() {
+            activeJobsCache.forEach(j => {
+                updateSaveButtonUI(j.id);
+            });
+            if (currentDetailJobId) {
+                updateSaveButtonUI(currentDetailJobId);
+            }
+        }
+
+        async function handleToggleSaveJob(jobId) {
+            jobId = Number(jobId);
+            if (!jobId) return;
+
+            if (!savedJobsTracker.user) {
+                if (confirm("To save jobs to your bookmarks, please sign in with your Job Seeker account. Would you like to sign in now?")) {
+                    window.location.href = `/jobseeker/login?redirect=${encodeURIComponent('/jobs')}`;
+                }
+                return;
+            }
+
+            if (savedJobsTracker.user.account_type === "company") {
+                showToast("Employer accounts cannot bookmark jobs.", false);
+                return;
+            }
+
+            const currentlySaved = isJobSaved(jobId);
+
+            if (!currentlySaved) {
+                // Optimistically mark saved
+                savedJobsTracker.savedJobIds.add(jobId);
+                updateSaveButtonUI(jobId);
+
+                try {
+                    const res = await fetch(`/api/public/jobs/${jobId}/save`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" }
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.success) {
+                        showToast(data.message || "Job saved successfully.", true);
+                    } else {
+                        // Rollback on failure
+                        savedJobsTracker.savedJobIds.delete(jobId);
+                        updateSaveButtonUI(jobId);
+                        showToast(data.detail || data.message || "Failed to save job.", false);
+                    }
+                } catch (err) {
+                    savedJobsTracker.savedJobIds.delete(jobId);
+                    updateSaveButtonUI(jobId);
+                    showToast("Network error saving job.", false);
+                }
+            } else {
+                // Optimistically mark unsaved
+                savedJobsTracker.savedJobIds.delete(jobId);
+                updateSaveButtonUI(jobId);
+
+                try {
+                    const res = await fetch(`/api/public/jobs/${jobId}/save`, {
+                        method: "DELETE",
+                        headers: { "Content-Type": "application/json" }
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.success) {
+                        showToast(data.message || "Job removed from saved jobs.", true);
+                    } else {
+                        // Rollback on failure
+                        savedJobsTracker.savedJobIds.add(jobId);
+                        updateSaveButtonUI(jobId);
+                        showToast(data.detail || data.message || "Failed to remove saved job.", false);
+                    }
+                } catch (err) {
+                    savedJobsTracker.savedJobIds.add(jobId);
+                    updateSaveButtonUI(jobId);
+                    showToast("Network error removing saved job.", false);
+                }
+            }
+        }
+
+        // Phase 4C Central Search State & Controller
+        let metadataCache = null;
+        let currentSearchRequestId = 0;
+        let searchDebounceTimer = null;
+
+        const searchState = {
+            q: '',
+            department: 'All',
+            role: 'All',
+            location: 'All',
+            experience: 0,
+            salary_min: 0,
+            job_type: 'All',
+            sort: 'latest',
+            page: 1,
+            limit: 10
+        };
+
+        function getSearchStateFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                q: params.get('q') || '',
+                department: params.get('department') || 'All',
+                role: params.get('role') || 'All',
+                location: params.get('location') || 'All',
+                experience: parseInt(params.get('experience'), 10) || 0,
+                salary_min: parseFloat(params.get('salary_min')) || 0,
+                job_type: params.get('job_type') || 'All',
+                sort: params.get('sort') || 'latest',
+                page: parseInt(params.get('page'), 10) || 1,
+                limit: parseInt(params.get('limit'), 10) || 10
+            };
+        }
+
+        function updateURLFromSearchState(pushHistory = true) {
+            const params = new URLSearchParams();
+            if (searchState.q) params.set('q', searchState.q);
+            if (searchState.department && searchState.department !== 'All') params.set('department', searchState.department);
+            if (searchState.role && searchState.role !== 'All') params.set('role', searchState.role);
+            if (searchState.location && searchState.location !== 'All') params.set('location', searchState.location);
+            if (searchState.experience > 0) params.set('experience', searchState.experience);
+            if (searchState.salary_min > 0) params.set('salary_min', searchState.salary_min);
+            if (searchState.job_type && searchState.job_type !== 'All') params.set('job_type', searchState.job_type);
+            if (searchState.sort && searchState.sort !== 'latest') params.set('sort', searchState.sort);
+            if (searchState.page > 1) params.set('page', searchState.page);
+
+            const queryString = params.toString();
+            const newUrl = window.location.pathname + (queryString ? '?' + queryString : '');
+
+            if (pushHistory) {
+                if (window.location.search !== (queryString ? '?' + queryString : '')) {
+                    window.history.pushState({}, '', newUrl);
+                }
+            } else {
+                window.history.replaceState({}, '', newUrl);
+            }
+        }
+
+        function applySearchStateToUI() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) searchInput.value = searchState.q;
+
+            const deptSelect = document.getElementById('filterDept');
+            if (deptSelect) deptSelect.value = searchState.department || 'All';
+
+            const roleSelect = document.getElementById('filterRole');
+            if (roleSelect) roleSelect.value = searchState.role || 'All';
+
+            const locSelect = document.getElementById('filterLoc');
+            if (locSelect) locSelect.value = searchState.location || 'All';
+
+            const expSelect = document.getElementById('filterExp');
+            if (expSelect) expSelect.value = searchState.experience || 0;
+
+            const salarySelect = document.getElementById('filterSalary');
+            if (salarySelect) salarySelect.value = searchState.salary_min || 0;
+
+            const typeSelect = document.getElementById('filterType');
+            if (typeSelect) typeSelect.value = searchState.job_type || 'All';
+
+            const sortSelect = document.getElementById('sortSelect');
+            if (sortSelect) sortSelect.value = searchState.sort || 'latest';
+
+            renderActiveChips();
+        }
+
+        function renderActiveChips() {
+            const wrap = document.getElementById('activeChipsWrap');
+            const container = document.getElementById('activeChipsContainer');
+            if (!wrap || !container) return;
+
+            container.innerHTML = '';
+            const activeFilters = [];
+
+            if (searchState.q) {
+                activeFilters.push({ key: 'q', label: 'Keyword', value: `"${searchState.q}"` });
+            }
+            if (searchState.department && searchState.department !== 'All') {
+                activeFilters.push({ key: 'department', label: 'Dept', value: searchState.department });
+            }
+            if (searchState.role && searchState.role !== 'All') {
+                activeFilters.push({ key: 'role', label: 'Role', value: searchState.role });
+            }
+            if (searchState.location && searchState.location !== 'All') {
+                activeFilters.push({ key: 'location', label: 'Location', value: searchState.location });
+            }
+            if (searchState.experience > 0) {
+                activeFilters.push({ key: 'experience', label: 'Exp', value: `≤ ${searchState.experience} Yrs` });
+            }
+            if (searchState.salary_min > 0) {
+                activeFilters.push({ key: 'salary_min', label: 'Salary', value: `₹${Number(searchState.salary_min).toLocaleString()}+` });
+            }
+            if (searchState.job_type && searchState.job_type !== 'All') {
+                activeFilters.push({ key: 'job_type', label: 'Type', value: searchState.job_type });
+            }
+
+            if (activeFilters.length === 0) {
+                wrap.style.display = 'none';
+                return;
+            }
+
+            wrap.style.display = 'flex';
+            const titleSpan = document.createElement('span');
+            titleSpan.className = 'active-chips-label';
+            titleSpan.textContent = 'Active:';
+            container.appendChild(titleSpan);
+
+            activeFilters.forEach(f => {
+                const chip = document.createElement('span');
+                chip.className = 'filter-chip';
+                chip.innerHTML = `
+                    <span>${escapeHtml(f.label)}: <strong>${escapeHtml(f.value)}</strong></span>
+                    <button type="button" class="chip-remove-btn" aria-label="Remove ${escapeHtml(f.label)} filter" onclick="removeFilterChip('${f.key}')">&times;</button>
+                `;
+                container.appendChild(chip);
+            });
+        }
+
+        function removeFilterChip(key) {
+            if (key === 'q') searchState.q = '';
+            else if (key === 'department') searchState.department = 'All';
+            else if (key === 'role') searchState.role = 'All';
+            else if (key === 'location') searchState.location = 'All';
+            else if (key === 'experience') searchState.experience = 0;
+            else if (key === 'salary_min') searchState.salary_min = 0;
+            else if (key === 'job_type') searchState.job_type = 'All';
+
+            searchState.page = 1;
+            applySearchStateToUI();
+            updateURLFromSearchState(true);
+            fetchJobs();
+        }
+
+        function clearAllFilters() {
+            searchState.q = '';
+            searchState.department = 'All';
+            searchState.role = 'All';
+            searchState.location = 'All';
+            searchState.experience = 0;
+            searchState.salary_min = 0;
+            searchState.job_type = 'All';
+            searchState.page = 1;
+
+            applySearchStateToUI();
+            updateURLFromSearchState(true);
+            fetchJobs();
+        }
+
+        function triggerSearch(resetPage = true) {
+            if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+            if (resetPage) searchState.page = 1;
+
+            searchState.q = document.getElementById('searchInput').value.trim();
+            searchState.department = document.getElementById('filterDept').value;
+            searchState.role = document.getElementById('filterRole').value;
+            searchState.location = document.getElementById('filterLoc').value;
+            searchState.experience = parseInt(document.getElementById('filterExp').value, 10) || 0;
+            searchState.salary_min = parseFloat(document.getElementById('filterSalary').value) || 0;
+            searchState.job_type = document.getElementById('filterType').value;
+            searchState.sort = document.getElementById('sortSelect').value || 'latest';
+
+            renderActiveChips();
+            updateURLFromSearchState(true);
+            fetchJobs();
+        }
+
         async function loadFilterMetadata() {
+            if (metadataCache) {
+                populateFilterDropdowns(metadataCache);
+                return;
+            }
             try {
                 const res = await fetch("/api/public/jobs-filters-meta");
                 const data = await res.json();
-
-                const deptSelect = document.getElementById("filterDept");
-                if (data.departments) {
-                    data.departments.forEach(d => {
-                        const opt = document.createElement("option");
-                        opt.value = d;
-                        opt.textContent = d;
-                        deptSelect.appendChild(opt);
-                    });
-                }
-
-                const roleSelect = document.getElementById("filterRole");
-                if (data.roles) {
-                    data.roles.forEach(r => {
-                        const opt = document.createElement("option");
-                        opt.value = r;
-                        opt.textContent = r;
-                        roleSelect.appendChild(opt);
-                    });
-                }
-
-                const locSelect = document.getElementById("filterLoc");
-                if (data.locations) {
-                    data.locations.forEach(l => {
-                        const opt = document.createElement("option");
-                        opt.value = l;
-                        opt.textContent = l;
-                        locSelect.appendChild(opt);
-                    });
-                }
+                metadataCache = data;
+                populateFilterDropdowns(data);
             } catch (err) {
                 console.error("Filter metadata load error:", err);
             }
         }
 
+        function populateFilterDropdowns(data) {
+            const deptSelect = document.getElementById("filterDept");
+            if (deptSelect && data.departments) {
+                deptSelect.innerHTML = '<option value="All">All Departments</option>';
+                data.departments.forEach(d => {
+                    const opt = document.createElement("option");
+                    opt.value = d;
+                    opt.textContent = d;
+                    deptSelect.appendChild(opt);
+                });
+                deptSelect.value = searchState.department || "All";
+            }
+
+            const roleSelect = document.getElementById("filterRole");
+            if (roleSelect && data.roles) {
+                roleSelect.innerHTML = '<option value="All">All Roles</option>';
+                data.roles.forEach(r => {
+                    const opt = document.createElement("option");
+                    opt.value = r;
+                    opt.textContent = r;
+                    roleSelect.appendChild(opt);
+                });
+                roleSelect.value = searchState.role || "All";
+            }
+
+            const locSelect = document.getElementById("filterLoc");
+            if (locSelect && data.locations) {
+                locSelect.innerHTML = '<option value="All">All Locations</option>';
+                data.locations.forEach(l => {
+                    const opt = document.createElement("option");
+                    opt.value = l;
+                    opt.textContent = l;
+                    locSelect.appendChild(opt);
+                });
+                locSelect.value = searchState.location || "All";
+            }
+
+            const typeSelect = document.getElementById("filterType");
+            if (typeSelect && data.job_types) {
+                typeSelect.innerHTML = '<option value="All">All Types</option>';
+                data.job_types.forEach(t => {
+                    const opt = document.createElement("option");
+                    opt.value = t;
+                    opt.textContent = t;
+                    typeSelect.appendChild(opt);
+                });
+                typeSelect.value = searchState.job_type || "All";
+            }
+        }
+
         async function fetchJobs() {
+            const requestId = ++currentSearchRequestId;
             const grid = document.getElementById("jobsGrid");
+            const countEl = document.getElementById("resultsCount");
+            const pagWrap = document.getElementById("paginationWrap");
+
             grid.innerHTML = "<div style='text-align: center; padding: 40px; color: var(--dg-slate);'>Searching active vacancies...</div>";
+            countEl.innerHTML = "Searching active vacancies...";
 
-            const q = document.getElementById("searchInput").value.trim();
-            const dept = document.getElementById("filterDept").value;
-            const role = document.getElementById("filterRole").value;
-            const loc = document.getElementById("filterLoc").value;
-            const exp = parseInt(document.getElementById("filterExp").value, 10);
-            const salary = parseFloat(document.getElementById("filterSalary").value);
-            const jobType = document.getElementById("filterType").value;
-            const sort = document.getElementById("sortSelect").value;
-
-            let url = `/api/public/jobs?page=${currentPage}&limit=${pageLimit}&sort=${sort}&_t=${Date.now()}`;
-            if (q) url += `&q=${encodeURIComponent(q)}`;
-            if (dept && dept !== "All") url += `&department=${encodeURIComponent(dept)}`;
-            if (role && role !== "All") url += `&role=${encodeURIComponent(role)}`;
-            if (loc && loc !== "All") url += `&location=${encodeURIComponent(loc)}`;
-            if (exp > 0) url += `&experience=${exp}`;
-            if (salary > 0) url += `&salary_min=${salary}`;
-            if (jobType && jobType !== "All") url += `&job_type=${encodeURIComponent(jobType)}`;
+            let url = `/api/public/jobs?page=${searchState.page}&limit=${searchState.limit}&sort=${searchState.sort}&_t=${Date.now()}`;
+            if (searchState.q) url += `&q=${encodeURIComponent(searchState.q)}`;
+            if (searchState.department && searchState.department !== 'All') url += `&department=${encodeURIComponent(searchState.department)}`;
+            if (searchState.role && searchState.role !== 'All') url += `&role=${encodeURIComponent(searchState.role)}`;
+            if (searchState.location && searchState.location !== 'All') url += `&location=${encodeURIComponent(searchState.location)}`;
+            if (searchState.experience > 0) url += `&experience=${searchState.experience}`;
+            if (searchState.salary_min > 0) url += `&salary_min=${searchState.salary_min}`;
+            if (searchState.job_type && searchState.job_type !== 'All') url += `&job_type=${encodeURIComponent(searchState.job_type)}`;
 
             try {
                 const res = await fetch(url, { cache: "no-store" });
                 const data = await res.json();
 
+                if (requestId !== currentSearchRequestId) return;
+
                 if (!res.ok || !data.success) {
                     grid.innerHTML = `
                         <div class="empty-state">
-                            <h3>No Jobs Available</h3>
-                            <p>${data.error || 'Failed to connect to jobs database. Please check back shortly.'}</p>
+                            <h3>Unable to Load Jobs</h3>
+                            <p>${escapeHtml(data.error || 'Failed to connect to jobs database. Please check back shortly.')}</p>
+                            <button class="btn-search" style="margin-top: 16px;" onclick="fetchJobs()">↻ Try Again</button>
                         </div>
                     `;
-                    document.getElementById("resultsCount").textContent = "0 jobs found";
-                    document.getElementById("paginationWrap").style.display = "none";
+                    countEl.textContent = "0 jobs found";
+                    if (pagWrap) pagWrap.style.display = "none";
                     return;
                 }
 
                 activeJobsCache = data.jobs || [];
                 totalPages = data.total_pages || 1;
-                document.getElementById("resultsCount").innerHTML = `Showing <strong>${data.total}</strong> active garment vacancies in Tiruppur`;
+                countEl.innerHTML = `Showing <strong>${data.total}</strong> active garment ${data.total === 1 ? 'vacancy' : 'vacancies'} in Tiruppur`;
 
                 renderJobs(activeJobsCache);
                 renderPagination(data.page, totalPages);
+                refreshVisibleCardSaveButtons();
             } catch (err) {
+                if (requestId !== currentSearchRequestId) return;
                 console.error("Jobs fetch error:", err);
                 grid.innerHTML = `
                     <div class="empty-state">
                         <h3>Connection Offline</h3>
-                        <p>Unable to retrieve jobs at this moment. Please refresh the page.</p>
+                        <p>Unable to retrieve jobs at this moment. Please check your connection and try again.</p>
+                        <button class="btn-search" style="margin-top: 16px;" onclick="fetchJobs()">↻ Try Again</button>
                     </div>
                 `;
+                countEl.textContent = "Offline";
+                if (pagWrap) pagWrap.style.display = "none";
             }
         }
 
@@ -1434,8 +2216,8 @@
                     <div class="empty-state">
                         <span style="font-size: 36px;">🔍</span>
                         <h3>No Jobs Found Matching Your Criteria</h3>
-                        <p>Try clearing filters or searching for another keyword.</p>
-                        <button class="btn-search" style="margin-top: 16px;" onclick="resetFilters()">Reset All Filters</button>
+                        <p>Try clearing or modifying your filters or searching with another keyword.</p>
+                        <button class="btn-search" style="margin-top: 16px;" onclick="clearAllFilters()">Clear All Filters</button>
                     </div>
                 `;
                 return;
@@ -1452,9 +2234,10 @@
                 const featuredTag = j.is_featured ? '<span class="featured-tag">★ Featured</span>' : '';
                 const openingsCnt = parseInt(j.openings_count) || 1;
                 const openingsBadge = `<span class="tag-badge" style="background:#eff6ff; color:#1d4ed8; font-weight:700;">👥 ${openingsCnt} ${openingsCnt > 1 ? 'Openings' : 'Opening'}</span>`;
-                const salaryStr = j.salary_text || (j.salary_min ? `₹${j.salary_min.toLocaleString()} / mo` : "Salary Negotiable");
+                const salaryStr = j.salary_text || (j.salary_min ? `₹${Number(j.salary_min).toLocaleString()} / mo` : "Salary Negotiable");
                 const expStr = j.experience_min !== undefined ? `${j.experience_min}${j.experience_max ? '-' + j.experience_max : '+'} Yrs Exp` : 'Exp not specified';
                 const dateStr = j.published_at ? new Date(j.published_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Recently';
+                const saved = isJobSaved(j.id);
 
                 card.innerHTML = `
                     <div>
@@ -1486,8 +2269,16 @@
                             <span class="tag-badge">${escapeHtml(j.job_role || j.title)}</span>
                             <span class="tag-badge">${escapeHtml(j.job_type || 'Full Time')}</span>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                             <span>Posted ${dateStr}</span>
+                            <button type="button" class="btn-save-card ${saved ? 'saved' : ''}" id="saveBtnCard_${j.id}" aria-label="${saved ? 'Remove job from saved jobs' : 'Save job'}" onclick="event.stopPropagation(); handleToggleSaveJob(${j.id})">
+                                <span class="save-icon">${saved ? '♥' : '♡'}</span>
+                                <span class="save-text">${saved ? 'Saved' : 'Save'}</span>
+                            </button>
+                            <button type="button" class="btn-share-card" aria-label="Share job" onclick="event.stopPropagation(); openShareModal(${j.id})">
+                                <span class="share-icon">↗</span>
+                                <span class="share-text">Share</span>
+                            </button>
                             <button class="btn-view-job" onclick="event.stopPropagation(); openJobDetailModal(${j.id})">View Details</button>
                         </div>
                     </div>
@@ -1516,7 +2307,8 @@
                 btn.className = `page-btn ${i === page ? 'active' : ''}`;
                 btn.textContent = i;
                 btn.onclick = () => {
-                    currentPage = i;
+                    searchState.page = i;
+                    updateURLFromSearchState(true);
                     fetchJobs();
                     window.scrollTo({ top: 400, behavior: 'smooth' });
                 };
@@ -1525,39 +2317,37 @@
         }
 
         function changePage(delta) {
-            const next = currentPage + delta;
+            const next = searchState.page + delta;
             if (next >= 1 && next <= totalPages) {
-                currentPage = next;
+                searchState.page = next;
+                updateURLFromSearchState(true);
                 fetchJobs();
                 window.scrollTo({ top: 400, behavior: 'smooth' });
             }
         }
 
-        function triggerSearch() {
-            currentPage = 1;
-            fetchJobs();
-        }
-
         function filterByDept(dept) {
-            document.getElementById("filterDept").value = dept;
-            triggerSearch();
+            searchState.department = dept;
+            searchState.page = 1;
+            applySearchStateToUI();
+            updateURLFromSearchState(true);
+            fetchJobs();
+            const target = document.querySelector('.jobs-container');
+            if (target) target.scrollIntoView({ behavior: 'smooth' });
         }
 
         function filterByRole(role) {
-            document.getElementById("filterRole").value = role;
-            triggerSearch();
+            searchState.role = role;
+            searchState.page = 1;
+            applySearchStateToUI();
+            updateURLFromSearchState(true);
+            fetchJobs();
+            const target = document.querySelector('.jobs-container');
+            if (target) target.scrollIntoView({ behavior: 'smooth' });
         }
 
         function resetFilters() {
-            document.getElementById("searchInput").value = "";
-            document.getElementById("filterDept").value = "All";
-            document.getElementById("filterRole").value = "All";
-            document.getElementById("filterLoc").value = "All";
-            document.getElementById("filterExp").value = "0";
-            document.getElementById("filterSalary").value = "0";
-            document.getElementById("filterType").value = "All";
-            document.getElementById("sortSelect").value = "latest";
-            triggerSearch();
+            clearAllFilters();
         }
 
         function toggleMobileFilters() {
@@ -1569,6 +2359,8 @@
         function openJobDetailModal(jobId) {
             const job = activeJobsCache.find(j => j.id === jobId);
             if (!job) return;
+
+            currentDetailJobId = jobId;
 
             document.getElementById("modalJobTitle").textContent = job.title;
             document.getElementById("modalCompanyName").innerHTML = `🏢 ${escapeHtml(job.company_name || 'Direct Employer')} ${job.verification_status === 'verified' ? '<span class="verified-badge">✓ Verified</span>' : ''}`;
@@ -1604,9 +2396,39 @@
                 skillsWrap.style.display = "none";
             }
 
-            // Render Actions Bar based ONLY on existing genuine contact fields
+            // Update modal header save button state
+            updateSaveButtonUI(jobId);
+
+            // Render Actions Bar
             const actionsBar = document.getElementById("modalActionsBar");
             actionsBar.innerHTML = "";
+
+            // 0. Save Job Action inside Modal Action Bar
+            const saved = isJobSaved(job.id);
+            const saveActionBtn = document.createElement("button");
+            saveActionBtn.type = "button";
+            saveActionBtn.className = `btn-action btn-save-action ${saved ? 'saved' : ''}`;
+            saveActionBtn.id = "modalActionSaveBtn";
+            saveActionBtn.setAttribute("aria-label", saved ? "Remove job from saved jobs" : "Save job");
+            saveActionBtn.onclick = () => handleToggleSaveJob(job.id);
+            saveActionBtn.innerHTML = `
+                <span class="save-icon" id="modalActionSaveIcon">${saved ? '♥' : '♡'}</span>
+                <span class="save-text" id="modalActionSaveText">${saved ? 'Saved' : 'Save Job'}</span>
+            `;
+            actionsBar.appendChild(saveActionBtn);
+
+            // 0b. Share Job Action inside Modal Action Bar
+            const shareActionBtn = document.createElement("button");
+            shareActionBtn.type = "button";
+            shareActionBtn.className = "btn-action btn-share-action";
+            shareActionBtn.id = "modalActionShareBtn";
+            shareActionBtn.setAttribute("aria-label", "Share job");
+            shareActionBtn.onclick = () => openShareModal(job.id);
+            shareActionBtn.innerHTML = `
+                <span class="share-icon">↗</span>
+                <span>Share Job</span>
+            `;
+            actionsBar.appendChild(shareActionBtn);
 
             // 1. Direct Apply Action (Check Auth Status)
             const applyActionWrap = document.createElement("div");
@@ -1776,6 +2598,129 @@
             document.getElementById("jobDetailModal").style.display = "none";
         }
 
+        // Phase 4D Job Sharing Controller
+        let currentShareJob = null;
+
+        function getPublicJobUrl(job) {
+            if (!job) return window.location.origin + '/jobs';
+            const slugOrId = job.slug || job.id;
+            return `${window.location.origin}/jobs/${slugOrId}`;
+        }
+
+        function getJobShareText(job) {
+            const title = (job && job.title) ? job.title : 'Garment Job Opportunity';
+            const company = (job && job.company_name) ? job.company_name : '';
+            const location = (job && job.location) ? job.location : 'Tiruppur';
+            const url = getPublicJobUrl(job);
+
+            let text = `${title}`;
+            if (company) text += `\nCompany: ${company}`;
+            if (location) text += `\nLocation: ${location}`;
+            text += `\n\nView details & apply on DigiGarment:\n${url}`;
+            return text;
+        }
+
+        function openShareModal(jobId) {
+            jobId = Number(jobId);
+            const job = activeJobsCache.find(j => j.id === jobId) || (currentDetailJobId === jobId ? activeJobsCache.find(j => j.id === currentDetailJobId) : null);
+            if (!job) return;
+
+            currentShareJob = job;
+            const url = getPublicJobUrl(job);
+
+            const titleEl = document.getElementById("shareModalJobTitle");
+            if (titleEl) {
+                titleEl.textContent = `${job.title} ${job.company_name ? '• ' + job.company_name : ''}`;
+            }
+
+            const inputEl = document.getElementById("shareUrlInput");
+            if (inputEl) {
+                inputEl.value = url;
+            }
+
+            const copyBtnText = document.getElementById("copyBtnText");
+            if (copyBtnText) {
+                copyBtnText.textContent = "Copy Link";
+            }
+
+            // Check if Native Web Share API is available on device
+            const nativeBtn = document.getElementById("btnNativeShare");
+            if (nativeBtn) {
+                if (navigator.share) {
+                    nativeBtn.style.display = "flex";
+                } else {
+                    nativeBtn.style.display = "none";
+                }
+            }
+
+            const modal = document.getElementById("shareJobModal");
+            if (modal) {
+                modal.style.display = "flex";
+            }
+        }
+
+        function closeShareModal() {
+            const modal = document.getElementById("shareJobModal");
+            if (modal) {
+                modal.style.display = "none";
+            }
+            currentShareJob = null;
+        }
+
+        function handleShareWhatsApp() {
+            if (!currentShareJob) return;
+            const text = getJobShareText(currentShareJob);
+            const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+            window.open(waUrl, '_blank', 'noopener,noreferrer');
+        }
+
+        async function handleCopyJobUrl() {
+            if (!currentShareJob) return;
+            const url = getPublicJobUrl(currentShareJob);
+            const copyBtnText = document.getElementById("copyBtnText");
+
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(url);
+                } else {
+                    // Fallback for older browsers
+                    const inputEl = document.getElementById("shareUrlInput");
+                    if (inputEl) {
+                        inputEl.select();
+                        document.execCommand("copy");
+                    }
+                }
+                if (copyBtnText) copyBtnText.textContent = "✓ Copied!";
+                showToast("Job link copied to clipboard!", true);
+                setTimeout(() => {
+                    if (copyBtnText) copyBtnText.textContent = "Copy Link";
+                }, 2500);
+            } catch (err) {
+                console.error("Copy failed:", err);
+                showToast("Failed to copy link automatically. Please copy from text box.", false);
+            }
+        }
+
+        async function handleNativeShare() {
+            if (!currentShareJob || !navigator.share) return;
+            const shareData = {
+                title: currentShareJob.title || "Garment Job Opportunity",
+                text: getJobShareText(currentShareJob),
+                url: getPublicJobUrl(currentShareJob)
+            };
+
+            try {
+                await navigator.share(shareData);
+                closeShareModal();
+            } catch (err) {
+                // AbortError is normal when user cancels native share sheet
+                if (err.name !== 'AbortError') {
+                    console.error("Native share error:", err);
+                    showToast("Unable to share via device apps.", false);
+                }
+            }
+        }
+
         // Candidate Application / Registration Modal Logic (Fallback)
         function openCandidateModal(jobId = null, jobTitle = null) {
             document.getElementById("applyJobId").value = jobId || "";
@@ -1919,9 +2864,57 @@
         }
 
         // Bootstrap on DOM Ready
-        document.addEventListener("DOMContentLoaded", () => {
-            loadFilterMetadata();
+        document.addEventListener("DOMContentLoaded", async () => {
+            initSavedJobsState();
+
+            // 1. Sync URL -> searchState
+            const urlState = getSearchStateFromURL();
+            Object.assign(searchState, urlState);
+
+            // 2. Load filter metadata and populate dropdowns
+            await loadFilterMetadata();
+
+            // 3. Sync searchState -> UI controls & active chips
+            applySearchStateToUI();
+
+            // 4. Setup live search debounce & enter key handling
+            const searchInputEl = document.getElementById("searchInput");
+            if (searchInputEl) {
+                searchInputEl.addEventListener("input", () => {
+                    if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+                    searchDebounceTimer = setTimeout(() => {
+                        triggerSearch(true);
+                    }, 350);
+                });
+                searchInputEl.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") {
+                        e.preventDefault();
+                        if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+                        triggerSearch(true);
+                    }
+                });
+            }
+
+            // 5. Browser Back / Forward (popstate) navigation support
+            window.addEventListener("popstate", () => {
+                const navState = getSearchStateFromURL();
+                Object.assign(searchState, navState);
+                applySearchStateToUI();
+                fetchJobs();
+            });
+
+            // 6. Fetch initial jobs list
             fetchJobs();
+
+            // 7. Global Escape key handling for modals
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Escape") {
+                    closeShareModal();
+                    closeJobDetailModal();
+                    closeCandidateModal();
+                    closeDirectApplyModal();
+                }
+            });
         });
     </script>
     <script src="/js/auth-nav.js"></script>

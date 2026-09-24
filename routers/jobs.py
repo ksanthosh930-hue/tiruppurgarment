@@ -172,6 +172,7 @@ FALLBACK_JOBS = [
 # In-memory candidate storage for offline mode
 FALLBACK_CANDIDATES = []
 FALLBACK_APPLICATIONS = []
+FALLBACK_SAVED_JOBS = []
 
 # --- PUBLIC ENDPOINTS ---
 
@@ -875,3 +876,658 @@ async def check_job_application_status(job_id: int, request: Request):
         return {"has_applied": False, "status": None}
     except Exception:
         return {"has_applied": False, "status": None}
+
+
+# --- PHASE 4A: SAVED JOBS BACKEND ENDPOINTS ---
+
+@router.post("/jobs/{job_id}/save")
+async def save_job(job_id: int, request: Request):
+    """
+    Saves/bookmarks a published job for the authenticated candidate.
+    Enforces employee role, checks job eligibility, and prevents duplicate saves.
+    """
+    from routers.public_auth import get_current_public_user
+    session_cookie = request.cookies.get("public_session_id")
+    if not session_cookie:
+        raise HTTPException(status_code=401, detail="Authentication required. Please sign in as a Job Seeker to save jobs.")
+        
+    current_user = await get_current_public_user(public_session_id=session_cookie)
+    if not current_user or current_user.get("account_type") != "individual":
+        raise HTTPException(status_code=403, detail="Access denied. This action is strictly for Job Seekers / Employees.")
+
+    user_id = current_user["id"]
+
+    if not db_helpers["db_enabled"] or not db_helpers["query_db"]:
+        # Fallback in-memory
+        matches = [j for j in FALLBACK_JOBS if j.get("id") == job_id and (j.get("status") or "").lower() == "published" and not j.get("is_archived")]
+        if not matches:
+            raise HTTPException(status_code=400, detail="This job vacancy is not active or cannot be saved.")
+        
+        existing = next((s for s in FALLBACK_SAVED_JOBS if s.get("user_id") == user_id and s.get("job_id") == job_id), None)
+        if not existing:
+            FALLBACK_SAVED_JOBS.append({
+                "id": len(FALLBACK_SAVED_JOBS) + 1,
+                "user_id": user_id,
+                "job_id": job_id,
+                "created_at": "2026-09-24T12:00:00"
+            })
+        return {"success": True, "saved": True, "message": "Job saved successfully."}
+
+    try:
+        # Check Job Eligibility using existing public visibility rule
+        job_rows = db_helpers["query_db"]("""
+            SELECT id, status, is_archived, expires_at 
+            FROM jobs 
+            WHERE id = %s;
+        """, (job_id,))
+        
+        if not job_rows:
+            raise HTTPException(status_code=404, detail="Job vacancy not found.")
+            
+        job = job_rows[0]
+        st = (job.get("status") or "").lower()
+        if st != "published" or job.get("is_archived"):
+            raise HTTPException(status_code=400, detail="This job vacancy is not active or cannot be saved.")
+
+        # Idempotent insert
+        insert_query = """
+            INSERT INTO saved_jobs (user_id, job_id, created_at)
+            VALUES (%s, %s, CURRENT_TIMESTAMP)
+            ON CONFLICT (user_id, job_id) DO NOTHING;
+        """
+        db_helpers["execute_db"](insert_query, (user_id, job_id))
+
+        return {"success": True, "saved": True, "message": "Job saved successfully."}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error saving job {job_id}: {e}")
+        raise HTTPException(status_code=500, detail="Could not save job.")
+
+
+@router.delete("/jobs/{job_id}/save")
+async def unsave_job(job_id: int, request: Request):
+    """
+    Removes a saved job bookmark for the authenticated candidate.
+    """
+    from routers.public_auth import get_current_public_user
+    session_cookie = request.cookies.get("public_session_id")
+    if not session_cookie:
+        raise HTTPException(status_code=401, detail="Authentication required.")
+        
+    current_user = await get_current_public_user(public_session_id=session_cookie)
+    if not current_user or current_user.get("account_type") != "individual":
+        raise HTTPException(status_code=403, detail="Access denied.")
+
+    user_id = current_user["id"]
+
+    if not db_helpers["db_enabled"] or not db_helpers["execute_db"]:
+        global FALLBACK_SAVED_JOBS
+        FALLBACK_SAVED_JOBS = [s for s in FALLBACK_SAVED_JOBS if not (s.get("user_id") == user_id and s.get("job_id") == job_id)]
+        return {"success": True, "saved": False, "message": "Job removed from saved jobs."}
+
+    try:
+        delete_query = "DELETE FROM saved_jobs WHERE user_id = %s AND job_id = %s;"
+        db_helpers["execute_db"](delete_query, (user_id, job_id))
+        return {"success": True, "saved": False, "message": "Job removed from saved jobs."}
+    except Exception as e:
+        logger.error(f"Error removing saved job {job_id}: {e}")
+        raise HTTPException(status_code=500, detail="Could not remove saved job.")
+
+
+@router.get("/employee/saved-jobs")
+async def get_employee_saved_jobs(
+    request: Request,
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=50)
+):
+    """
+    Returns all jobs bookmarked by the authenticated job seeker with pagination metadata.
+    """
+    from routers.public_auth import get_current_public_user
+    session_cookie = request.cookies.get("public_session_id")
+    if not session_cookie:
+        raise HTTPException(status_code=401, detail="Authentication required.")
+        
+    current_user = await get_current_public_user(public_session_id=session_cookie)
+    if not current_user or current_user.get("account_type") != "individual":
+        raise HTTPException(status_code=403, detail="Access denied.")
+
+    user_id = current_user["id"]
+    page_num = page if isinstance(page, int) and page >= 1 else 1
+    limit_num = limit if isinstance(limit, int) and limit >= 1 else 10
+
+    if not db_helpers["db_enabled"] or not db_helpers["query_db"]:
+        saved_records = [s for s in FALLBACK_SAVED_JOBS if s.get("user_id") == user_id]
+        matched_jobs = []
+        for s in saved_records:
+            j = next((item for item in FALLBACK_JOBS if item.get("id") == s["job_id"]), None)
+            if j:
+                job_copy = dict(j)
+                job_copy["saved_at"] = s.get("created_at")
+                matched_jobs.append(job_copy)
+                
+        total = len(matched_jobs)
+        start = (page_num - 1) * limit_num
+        end = start + limit_num
+        paginated = matched_jobs[start:end]
+        total_pages = max(1, (total + limit_num - 1) // limit_num)
+        return {
+            "success": True,
+            "jobs": paginated,
+            "page": page_num,
+            "limit": limit_num,
+            "total": total,
+            "total_pages": total_pages
+        }
+
+    try:
+        count_query = """
+            SELECT COUNT(*) 
+            FROM saved_jobs s
+            JOIN jobs j ON s.job_id = j.id
+            WHERE s.user_id = %s;
+        """
+        count_rows = db_helpers["query_db"](count_query, (user_id,))
+        total = count_rows[0]["count"] if count_rows else 0
+
+        offset = (page_num - 1) * limit_num
+        data_query = """
+            SELECT 
+                j.id, j.company_id, j.company_profile_id, j.title, j.slug, j.department, j.job_role, j.job_type,
+                j.location, j.openings_count, j.experience_min, j.experience_max, j.salary_min, j.salary_max,
+                j.salary_text, j.description, j.requirements, j.skills, j.qualification,
+                j.gender, j.contact_phone, j.contact_whatsapp, j.contact_email, j.application_url,
+                j.source_type, j.source_name, j.poster_image_url, j.status, j.is_featured,
+                j.verification_status, j.published_at, j.expires_at, j.created_at,
+                s.created_at AS saved_at,
+                COALESCE(cp.company_name, c.name, '') AS company_name,
+                COALESCE(cp.company_logo, c.logo_url, '') AS company_logo,
+                c.slug AS company_slug,
+                COALESCE(cp.location, c.location, j.location) AS company_location,
+                CASE WHEN cp.verification_status = 'verified' THEN TRUE WHEN c.is_verified = TRUE THEN TRUE ELSE FALSE END AS company_is_verified,
+                COALESCE(cp.verification_status, 'pending') AS employer_verification_status
+            FROM saved_jobs s
+            JOIN jobs j ON s.job_id = j.id
+            LEFT JOIN companies c ON j.company_id = c.id
+            LEFT JOIN company_profiles cp ON j.company_profile_id = cp.id
+            WHERE s.user_id = %s
+            ORDER BY s.created_at DESC
+            LIMIT %s OFFSET %s;
+        """
+        rows = db_helpers["query_db"](data_query, (user_id, limit_num, offset))
+        total_pages = max(1, (total + limit_num - 1) // limit_num)
+
+        return {
+            "success": True,
+            "jobs": rows,
+            "page": page_num,
+            "limit": limit_num,
+            "total": total,
+            "total_pages": total_pages
+        }
+    except Exception as e:
+        logger.error(f"Error fetching saved jobs for user {user_id}: {e}")
+        raise HTTPException(status_code=500, detail="Could not load your saved jobs.")
+
+
+@router.get("/jobs/{job_id}/saved-status")
+async def check_job_saved_status(job_id: int, request: Request):
+    """
+    Checks if the currently authenticated job seeker has bookmarked this job.
+    Safe for guests and non-employees (returns is_saved: False).
+    """
+    session_cookie = request.cookies.get("public_session_id")
+    if not session_cookie:
+        return {"success": True, "is_saved": False}
+
+    try:
+        from routers.public_auth import get_current_public_user
+        current_user = await get_current_public_user(public_session_id=session_cookie)
+        if not current_user or current_user.get("account_type") != "individual":
+            return {"success": True, "is_saved": False}
+
+        user_id = current_user["id"]
+        if not db_helpers["db_enabled"] or not db_helpers["query_db"]:
+            match = next((s for s in FALLBACK_SAVED_JOBS if s.get("job_id") == job_id and s.get("user_id") == user_id), None)
+            return {"success": True, "is_saved": bool(match)}
+
+        rows = db_helpers["query_db"]("""
+            SELECT id FROM saved_jobs 
+            WHERE job_id = %s AND user_id = %s;
+        """, (job_id, user_id))
+
+        return {
+            "success": True,
+            "is_saved": bool(rows)
+        }
+    except Exception:
+        return {"success": True, "is_saved": False}
+
+
+@router.get("/employee/recommended-jobs")
+async def get_employee_recommended_jobs(
+    request: Request,
+    page: int = Query(1, ge=1),
+    limit: int = Query(6, ge=1, le=50)
+):
+    """
+    Returns deterministic, explainable recommended published jobs matching the authenticated
+    candidate's profile preferences. Excludes already saved and already applied jobs.
+    """
+    import re
+    from routers.public_auth import get_current_public_user
+    session_cookie = request.cookies.get("public_session_id")
+    if not session_cookie:
+        raise HTTPException(status_code=401, detail="Authentication required.")
+        
+    current_user = await get_current_public_user(public_session_id=session_cookie)
+    if not current_user or current_user.get("account_type") != "individual":
+        raise HTTPException(status_code=403, detail="Access denied.")
+
+    user_id = current_user["id"]
+    page_num = page if isinstance(page, int) and page >= 1 else 1
+    limit_num = limit if isinstance(limit, int) and limit >= 1 else 6
+
+    # 1. Fetch candidate profile
+    profile_rows = []
+    if db_helpers["db_enabled"] and db_helpers["query_db"]:
+        profile_rows = db_helpers["query_db"]("SELECT * FROM individual_profiles WHERE user_id = %s;", (user_id,))
+    
+    profile = profile_rows[0] if profile_rows else (current_user.get("profile") or {})
+    
+    # Check if profile has enough information for recommendations
+    has_prefs = bool(
+        (profile.get("preferred_department") or "").strip() or
+        (profile.get("department") or "").strip() or
+        (profile.get("preferred_job_role") or "").strip() or
+        (profile.get("job_title") or "").strip() or
+        (profile.get("preferred_location") or "").strip() or
+        (profile.get("location") or "").strip() or
+        (profile.get("skills") or "").strip()
+    )
+
+    if not has_prefs:
+        return {
+            "success": True,
+            "jobs": [],
+            "page": page_num,
+            "limit": limit_num,
+            "total": 0,
+            "total_pages": 1,
+            "incomplete_profile": True
+        }
+
+    # 2. Fetch candidate eligible active jobs from database
+    if not db_helpers["db_enabled"] or not db_helpers["query_db"]:
+        # Fallback in-memory
+        saved_job_ids = {s["job_id"] for s in FALLBACK_SAVED_JOBS if s.get("user_id") == user_id}
+        applied_job_ids = set()
+        candidate_jobs = [
+            j for j in FALLBACK_JOBS 
+            if (j.get("status") or "").lower() == "published" 
+            and not j.get("is_archived")
+            and j.get("id") not in saved_job_ids
+            and j.get("id") not in applied_job_ids
+        ]
+    else:
+        # Bounded query fetching active published public jobs, excluding saved and applied
+        query = """
+            SELECT 
+                j.id, j.company_id, j.company_profile_id, j.title, j.slug, j.department, j.job_role, j.job_type,
+                j.location, j.openings_count, j.experience_min, j.experience_max, j.salary_min, j.salary_max,
+                j.salary_text, j.description, j.requirements, j.skills, j.qualification,
+                j.gender, j.contact_phone, j.contact_whatsapp, j.contact_email, j.application_url,
+                j.source_type, j.source_name, j.poster_image_url, j.status, j.is_featured,
+                j.verification_status, j.published_at, j.expires_at, j.created_at,
+                COALESCE(cp.company_name, c.name, '') AS company_name,
+                COALESCE(cp.company_logo, c.logo_url, '') AS company_logo,
+                c.slug AS company_slug,
+                COALESCE(cp.location, c.location, j.location) AS company_location,
+                CASE WHEN cp.verification_status = 'verified' THEN TRUE WHEN c.is_verified = TRUE THEN TRUE ELSE FALSE END AS company_is_verified
+            FROM jobs j
+            LEFT JOIN companies c ON j.company_id = c.id
+            LEFT JOIN company_profiles cp ON j.company_profile_id = cp.id
+            WHERE LOWER(j.status) = 'published'
+              AND COALESCE(j.is_archived, FALSE) = FALSE
+              AND j.id NOT IN (SELECT job_id FROM saved_jobs WHERE user_id = %s)
+              AND j.id NOT IN (SELECT job_id FROM job_applications WHERE candidate_user_id = %s)
+            ORDER BY j.published_at DESC NULLS LAST, j.id DESC
+            LIMIT 100;
+        """
+        candidate_jobs = db_helpers["query_db"](query, (user_id, user_id)) or []
+
+    # 3. Deterministic scoring
+    cand_dept = (profile.get("preferred_department") or profile.get("department") or "").strip().lower()
+    cand_role = (profile.get("preferred_job_role") or profile.get("job_title") or "").strip().lower()
+    cand_loc = (profile.get("preferred_location") or profile.get("location") or profile.get("city") or "").strip().lower()
+    cand_skills = (profile.get("skills") or "").lower()
+    cand_exp = float(profile.get("experience_years") or 0)
+    
+    # Parse expected salary numeric digits if available
+    cand_salary = None
+    sal_matches = re.findall(r'\d+', (profile.get("expected_salary") or "").replace(",", ""))
+    if sal_matches:
+        try:
+            cand_salary = float("".join(sal_matches))
+        except ValueError:
+            cand_salary = None
+
+    skill_tokens = [s.strip() for s in cand_skills.replace(",", " ").split() if len(s.strip()) > 2]
+    loc_tokens = [t.strip() for t in cand_loc.replace(",", " ").replace("/", " ").split() if len(t.strip()) > 2]
+
+    scored_jobs = []
+    for job in candidate_jobs:
+        score = 0
+        reasons = []
+
+        job_dept = (job.get("department") or "").strip().lower()
+        job_role = (job.get("job_role") or "").strip().lower()
+        job_title = (job.get("title") or "").strip().lower()
+        job_loc = (job.get("location") or "").strip().lower()
+        job_skills = (job.get("skills") or "").lower()
+        job_desc = (job.get("description") or "").lower()
+
+        # A. Department match (+30)
+        if cand_dept and job_dept:
+            if cand_dept in job_dept or job_dept in cand_dept:
+                score += 30
+                reasons.append("Matches your preferred department")
+
+        # B. Job role match (+30)
+        if cand_role:
+            if (job_role and (cand_role in job_role or job_role in cand_role)) or (cand_role in job_title or job_title in cand_role):
+                score += 30
+                reasons.append("Matches your preferred role")
+            else:
+                # Common keyword match
+                role_words = [w for w in cand_role.split() if len(w) > 3]
+                if any(w in job_role or w in job_title for w in role_words):
+                    score += 20
+                    reasons.append("Matches your target role")
+
+        # C. Location match (+20)
+        if loc_tokens and job_loc:
+            if any(lt in job_loc for lt in loc_tokens):
+                score += 20
+                reasons.append("Matches your preferred location")
+
+        # D. Skills match (+5 per match, cap +15)
+        if skill_tokens:
+            job_text = f"{job_skills} {job_title} {job_desc}"
+            hits = sum(1 for st in skill_tokens if st in job_text)
+            if hits > 0:
+                skill_score = min(15, hits * 5)
+                score += skill_score
+                reasons.append("Skills match")
+
+        # E. Experience match (+10)
+        job_exp_min = job.get("experience_min")
+        job_exp_max = job.get("experience_max")
+        if job_exp_min is not None:
+            if job_exp_max is not None:
+                if job_exp_min <= cand_exp <= (job_exp_max + 1):
+                    score += 10
+                    reasons.append("Experience matches")
+            else:
+                if cand_exp >= job_exp_min:
+                    score += 10
+                    reasons.append("Experience matches")
+        else:
+            # Job specifies no explicit experience restriction
+            score += 10
+
+        # F. Salary compatibility (+5)
+        job_sal_min = job.get("salary_min")
+        job_sal_max = job.get("salary_max")
+        if cand_salary:
+            if job_sal_max and job_sal_max >= cand_salary:
+                score += 5
+                reasons.append("Salary matches expectations")
+            elif job_sal_min and job_sal_min >= (cand_salary * 0.8):
+                score += 5
+                reasons.append("Salary matches expectations")
+
+        if score > 0:
+            job_dict = dict(job)
+            job_dict["match_reasons"] = reasons
+            # Safe date string serialization
+            pub_date = job.get("published_at") or job.get("created_at")
+            if hasattr(pub_date, "isoformat"):
+                job_dict["published_at"] = pub_date.isoformat()
+            if hasattr(job.get("created_at"), "isoformat"):
+                job_dict["created_at"] = job["created_at"].isoformat()
+            if hasattr(job.get("expires_at"), "isoformat"):
+                job_dict["expires_at"] = job["expires_at"].isoformat()
+
+            scored_jobs.append((score, 1 if job.get("is_featured") else 0, str(pub_date or ""), job.get("id", 0), job_dict))
+
+    # Sort deterministically: score desc, is_featured desc, published_date desc, id desc
+    scored_jobs.sort(key=lambda item: (-item[0], -item[1], str(item[2]), -item[3]))
+
+    total = len(scored_jobs)
+    start = (page_num - 1) * limit_num
+    end = start + limit_num
+    paginated = [item[4] for item in scored_jobs[start:end]]
+    total_pages = max(1, (total + limit_num - 1) // limit_num)
+
+    return {
+        "success": True,
+        "jobs": paginated,
+        "page": page_num,
+        "limit": limit_num,
+        "total": total,
+        "total_pages": total_pages,
+        "incomplete_profile": False
+    }
+
+
+# --- PHASE 4G: JOB ALERT PREFERENCES ---
+
+class JobAlertPreferencePayload(BaseModel):
+    is_enabled: bool = False
+    departments: Optional[List[str]] = []
+    job_roles: Optional[List[str]] = []
+    locations: Optional[List[str]] = []
+    job_types: Optional[List[str]] = []
+    experience_min: Optional[float] = None
+    experience_max: Optional[float] = None
+    salary_min: Optional[float] = None
+    frequency: Optional[str] = "daily"
+
+@router.get("/employee/job-alert-preferences")
+async def get_job_alert_preferences(request: Request):
+    from routers.public_auth import get_current_public_user
+    public_session_id = request.cookies.get("public_session_id")
+    user = await get_current_public_user(public_session_id=public_session_id)
+    if user.get("account_type") != "individual":
+        raise HTTPException(
+            status_code=403, 
+            detail="Access denied. This section is strictly for Job Seekers / Employees."
+        )
+
+    user_id = user["id"]
+
+    if not db_helpers["db_enabled"] or not db_helpers["query_db"]:
+        return {
+            "success": True,
+            "preference": {
+                "is_enabled": False,
+                "departments": [],
+                "job_roles": [],
+                "locations": [],
+                "job_types": [],
+                "experience_min": None,
+                "experience_max": None,
+                "salary_min": None,
+                "frequency": "daily",
+                "created_at": None,
+                "updated_at": None
+            }
+        }
+
+    try:
+        rows = db_helpers["query_db"]("""
+            SELECT id, user_id, is_enabled, departments, job_roles, locations,
+                   job_types, experience_min, experience_max, salary_min, frequency,
+                   created_at, updated_at
+            FROM job_alert_preferences
+            WHERE user_id = %s;
+        """, (user_id,))
+
+        if not rows:
+            return {
+                "success": True,
+                "preference": {
+                    "is_enabled": False,
+                    "departments": [],
+                    "job_roles": [],
+                    "locations": [],
+                    "job_types": [],
+                    "experience_min": None,
+                    "experience_max": None,
+                    "salary_min": None,
+                    "frequency": "daily",
+                    "created_at": None,
+                    "updated_at": None
+                }
+            }
+
+        pref = dict(rows[0])
+        # Format datetimes & floats safely
+        if pref.get("experience_min") is not None:
+            pref["experience_min"] = float(pref["experience_min"])
+        if pref.get("experience_max") is not None:
+            pref["experience_max"] = float(pref["experience_max"])
+        if pref.get("salary_min") is not None:
+            pref["salary_min"] = float(pref["salary_min"])
+        if hasattr(pref.get("created_at"), "isoformat"):
+            pref["created_at"] = pref["created_at"].isoformat()
+        if hasattr(pref.get("updated_at"), "isoformat"):
+            pref["updated_at"] = pref["updated_at"].isoformat()
+
+        # Remove internal user_id to prevent any PII / internal leak
+        pref.pop("user_id", None)
+
+        return {
+            "success": True,
+            "preference": pref
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching job alert preferences: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve job alert preferences.")
+
+@router.put("/employee/job-alert-preferences")
+async def update_job_alert_preferences(payload: JobAlertPreferencePayload, request: Request):
+    from routers.public_auth import get_current_public_user
+    public_session_id = request.cookies.get("public_session_id")
+    user = await get_current_public_user(public_session_id=public_session_id)
+    if user.get("account_type") != "individual":
+        raise HTTPException(
+            status_code=403, 
+            detail="Access denied. This section is strictly for Job Seekers / Employees."
+        )
+
+    user_id = user["id"]
+
+    # Input validations
+    freq = (payload.frequency or "daily").strip().lower()
+    if freq not in ("daily", "weekly"):
+        raise HTTPException(status_code=400, detail="Invalid alert frequency. Allowed options: 'daily', 'weekly'.")
+
+    if payload.experience_min is not None and payload.experience_min < 0:
+        raise HTTPException(status_code=400, detail="Minimum experience cannot be negative.")
+    if payload.experience_max is not None and payload.experience_max < 0:
+        raise HTTPException(status_code=400, detail="Maximum experience cannot be negative.")
+    if payload.experience_min is not None and payload.experience_max is not None:
+        if payload.experience_min > payload.experience_max:
+            raise HTTPException(status_code=400, detail="Minimum experience cannot exceed maximum experience.")
+
+    if payload.salary_min is not None and payload.salary_min < 0:
+        raise HTTPException(status_code=400, detail="Minimum salary cannot be negative.")
+
+    # Sanitize string lists
+    depts = [d.strip() for d in (payload.departments or []) if d and d.strip()]
+    roles = [r.strip() for r in (payload.job_roles or []) if r and r.strip()]
+    locs = [l.strip() for l in (payload.locations or []) if l and l.strip()]
+    jtypes = [t.strip() for t in (payload.job_types or []) if t and t.strip()]
+
+    if not db_helpers["db_enabled"] or not db_helpers["execute_db_returning"]:
+        return {
+            "success": True,
+            "message": "Job alert preferences updated successfully (offline mode).",
+            "preference": {
+                "is_enabled": payload.is_enabled,
+                "departments": depts,
+                "job_roles": roles,
+                "locations": locs,
+                "job_types": jtypes,
+                "experience_min": payload.experience_min,
+                "experience_max": payload.experience_max,
+                "salary_min": payload.salary_min,
+                "frequency": freq
+            }
+        }
+
+    try:
+        query = """
+            INSERT INTO job_alert_preferences (
+                user_id, is_enabled, departments, job_roles, locations, job_types,
+                experience_min, experience_max, salary_min, frequency, updated_at
+            ) VALUES (
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP
+            )
+            ON CONFLICT (user_id) DO UPDATE SET
+                is_enabled = EXCLUDED.is_enabled,
+                departments = EXCLUDED.departments,
+                job_roles = EXCLUDED.job_roles,
+                locations = EXCLUDED.locations,
+                job_types = EXCLUDED.job_types,
+                experience_min = EXCLUDED.experience_min,
+                experience_max = EXCLUDED.experience_max,
+                salary_min = EXCLUDED.salary_min,
+                frequency = EXCLUDED.frequency,
+                updated_at = CURRENT_TIMESTAMP
+            RETURNING id, is_enabled, departments, job_roles, locations, job_types,
+                      experience_min, experience_max, salary_min, frequency, created_at, updated_at;
+        """
+        rows = db_helpers["execute_db_returning"](query, (
+            user_id,
+            payload.is_enabled,
+            depts,
+            roles,
+            locs,
+            jtypes,
+            payload.experience_min,
+            payload.experience_max,
+            payload.salary_min,
+            freq
+        ))
+
+        pref = dict(rows[0]) if rows else {}
+        if pref.get("experience_min") is not None:
+            pref["experience_min"] = float(pref["experience_min"])
+        if pref.get("experience_max") is not None:
+            pref["experience_max"] = float(pref["experience_max"])
+        if pref.get("salary_min") is not None:
+            pref["salary_min"] = float(pref["salary_min"])
+        if hasattr(pref.get("created_at"), "isoformat"):
+            pref["created_at"] = pref["created_at"].isoformat()
+        if hasattr(pref.get("updated_at"), "isoformat"):
+            pref["updated_at"] = pref["updated_at"].isoformat()
+
+        return {
+            "success": True,
+            "message": "Job alert preferences saved successfully.",
+            "preference": pref
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error saving job alert preferences: {e}")
+        raise HTTPException(status_code=500, detail="Failed to save job alert preferences.")
+
+
+

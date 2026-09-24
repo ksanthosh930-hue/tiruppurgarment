@@ -117,6 +117,27 @@
                                 </svg>
                                 <span>Browse Jobs</span>
                             </a>
+                            ${accountType === "individual" ? `
+                            <a href="/dashboard/individual#recommended" class="dg-user-menu-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polygon points="12 8 8 12 12 16 16 12 12 8"></polygon>
+                                </svg>
+                                <span>Recommended Jobs</span>
+                            </a>
+                            <a href="/dashboard/individual#saved" class="dg-user-menu-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                <span>Saved Jobs</span>
+                            </a>
+                            <a href="/dashboard/individual#job-alerts" class="dg-user-menu-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                                </svg>
+                                <span>Job Alerts</span>
+                            </a>` : ""}
                             ${accountType === "company" ? `
                             <a href="/dashboard/company#post-job" class="dg-user-menu-item">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

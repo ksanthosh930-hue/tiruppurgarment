@@ -353,6 +353,24 @@
             color: #fff;
         }
 
+        .pref-checkbox-label {
+            background: #F8FAFC;
+            border: 1px solid var(--dg-border);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s;
+        }
+
+        .pref-checkbox-label:hover {
+            background: #F1F5F9;
+            border-color: #CBD5E1;
+        }
+
         /* Resume Upload Box */
         .resume-upload-zone {
             border: 2px dashed #cbd5e1;
@@ -472,6 +490,26 @@
             border: 1px solid #fecaca;
         }
 
+        .match-reasons-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin: 8px 0 12px 0;
+        }
+
+        .match-reason-pill {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #dbeafe;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 11.5px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
         @media (max-width: 768px) {
             .welcome-card {
                 flex-direction: column;
@@ -532,8 +570,11 @@
         <!-- Navigation Tabs -->
         <div class="dash-tabs">
             <button type="button" class="dash-tab-btn active" onclick="showTab('profile')">Profile & Details</button>
-            <button type="button" class="dash-tab-btn" onclick="showTab('resume')">My Resume</button>
+            <button type="button" class="dash-tab-btn" onclick="showTab('recommended')">Recommended Jobs</button>
+            <button type="button" class="dash-tab-btn" onclick="showTab('saved')">Saved Jobs</button>
+            <button type="button" class="dash-tab-btn" onclick="showTab('job-alerts')">Job Alerts</button>
             <button type="button" class="dash-tab-btn" onclick="showTab('applications')">My Applications</button>
+            <button type="button" class="dash-tab-btn" onclick="showTab('resume')">My Resume</button>
         </div>
 
         <div id="alertBox" class="msg-alert"></div>
@@ -656,6 +697,32 @@
             </div>
         </div>
 
+        <!-- TAB 2: Recommended Jobs -->
+        <div id="tabRecommended" class="dash-tab-content" style="display: none;">
+            <div class="dash-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <h2 style="margin: 0 0 4px 0;">Recommended Jobs For You</h2>
+                        <p style="margin: 0; font-size: 13.5px; color: var(--dg-slate);">Vacancies tailored to your department, target role, experience, and key skills preferences.</p>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" class="btn-secondary" style="padding: 8px 14px; font-size: 13px;" onclick="showTab('profile')">⚙️ Edit Preferences</button>
+                        <a href="/jobs" class="btn-action" style="padding: 8px 16px; font-size: 13px;">🔍 Browse All Jobs</a>
+                    </div>
+                </div>
+
+                <div id="recommendedJobsContainer">
+                    <p style="color: var(--dg-slate); font-size: 14px;">Finding matching jobs for your profile...</p>
+                </div>
+
+                <div class="pagination-wrap" id="recommendedPaginationWrap" style="display: none; margin-top: 24px; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <button type="button" class="btn-secondary" id="recommendedPrevBtn" onclick="changeRecommendedPage(-1)">&lsaquo; Previous</button>
+                    <span id="recommendedPageInfo" style="font-size: 13.5px; font-weight: 600; color: var(--dg-navy);">Page 1 of 1</span>
+                    <button type="button" class="btn-secondary" id="recommendedNextBtn" onclick="changeRecommendedPage(1)">Next &rsaquo;</button>
+                </div>
+            </div>
+        </div>
+
         <!-- TAB 2: Resume Management -->
         <div id="tabResume" class="dash-tab-content" style="display: none;">
             <div class="dash-card">
@@ -691,28 +758,379 @@
                 </div>
             </div>
         </div>
+
+        <!-- TAB 4: Saved Jobs -->
+        <div id="tabSaved" class="dash-tab-content" style="display: none;">
+            <div class="dash-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <h2 style="margin: 0 0 4px 0;">Saved Jobs</h2>
+                        <p style="margin: 0; font-size: 13.5px; color: var(--dg-slate);">Garment vacancies and career opportunities bookmarked for later.</p>
+                    </div>
+                    <a href="/jobs" class="btn-action" style="padding: 8px 16px; font-size: 13px;">🔍 Browse All Jobs</a>
+                </div>
+
+                <div id="savedJobsContainer">
+                    <p style="color: var(--dg-slate); font-size: 14px;">Loading saved jobs...</p>
+                </div>
+
+                <div class="pagination-wrap" id="savedPaginationWrap" style="display: none; margin-top: 24px; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <button type="button" class="btn-secondary" id="savedPrevBtn" onclick="changeSavedPage(-1)">&lsaquo; Previous</button>
+                    <span id="savedPageInfo" style="font-size: 13.5px; font-weight: 600; color: var(--dg-navy);">Page 1 of 1</span>
+                    <button type="button" class="btn-secondary" id="savedNextBtn" onclick="changeSavedPage(1)">Next &rsaquo;</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 5: Job Alert Preferences (Phase 4G) -->
+        <div id="tabJobAlerts" class="dash-tab-content" style="display: none;">
+            <div class="dash-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <h2 style="margin: 0 0 4px 0;">🔔 Job Alert Preferences</h2>
+                        <p style="margin: 0; font-size: 13.5px; color: var(--dg-slate);">Configure your criteria to get alerted about relevant Tiruppur garment vacancies.</p>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <span id="alertStatusBadge" class="badge-status-submitted" style="font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 20px;">Alerts: OFF</span>
+                    </div>
+                </div>
+
+                <div id="alertPrefsMsgBox" style="display: none; padding: 12px 16px; border-radius: 8px; font-size: 13.5px; margin-bottom: 20px;"></div>
+
+                <form id="jobAlertsForm" onsubmit="handleSaveJobAlertPreferences(event)">
+                    <!-- 1. Alert Status Switch -->
+                    <div style="background: #F8FAFC; border: 1px solid var(--dg-border); border-radius: 10px; padding: 18px 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                        <div>
+                            <strong style="font-size: 15px; color: var(--dg-navy); display: block;">Enable Job Alerts</strong>
+                            <span style="font-size: 13px; color: var(--dg-slate);">Turn on to receive notifications when new matching garment jobs are published.</span>
+                        </div>
+                        <label style="display: inline-flex; align-items: center; cursor: pointer; gap: 10px; font-size: 14px; font-weight: 700;">
+                            <input type="checkbox" id="alertIsEnabled" style="width: 20px; height: 20px; accent-color: var(--dg-red); cursor: pointer;" onchange="updateAlertBadgeUI()">
+                            <span id="alertToggleLabel" style="color: var(--dg-navy);">Alerts Active</span>
+                        </label>
+                    </div>
+
+                    <!-- 2. Target Department Selection -->
+                    <div class="section-header-title">🏷️ 1. Preferred Departments</div>
+                    <p style="font-size: 13px; color: var(--dg-slate); margin: 0 0 12px 0;">Select the departments you are interested in (select all that apply):</p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; margin-bottom: 20px;" id="alertDeptsContainer">
+                        <label class="pref-checkbox-label"><input type="checkbox" name="alertDept" value="Merchandising"> Merchandising</label>
+                        <label class="pref-checkbox-label"><input type="checkbox" name="alertDept" value="Production"> Production</label>
+                        <label class="pref-checkbox-label"><input type="checkbox" name="alertDept" value="Quality"> Quality (QC/QA)</label>
+                        <label class="pref-checkbox-label"><input type="checkbox" name="alertDept" value="Cutting"> Cutting & CAD</label>
+                        <label class="pref-checkbox-label"><input type="checkbox" name="alertDept" value="Sewing"> Sewing</label>
+                        <label class="pref-checkbox-label"><input type="checkbox" name="alertDept" value="Finishing"> Finishing & Packing</label>
+                        <label class="pref-checkbox-label"><input type="checkbox" name="alertDept" value="Maintenance"> Maintenance</label>
+                        <label class="pref-checkbox-label"><input type="checkbox" name="alertDept" value="Stores"> Stores & Inventory</label>
+                        <label class="pref-checkbox-label"><input type="checkbox" name="alertDept" value="Industrial Engineering"> Industrial Engineering</label>
+                        <label class="pref-checkbox-label"><input type="checkbox" name="alertDept" value="HR & Admin"> HR & Admin</label>
+                    </div>
+
+                    <!-- 3. Target Job Roles -->
+                    <div class="section-header-title">💼 2. Target Job Roles / Keywords</div>
+                    <div class="form-group">
+                        <label>Preferred Roles (Comma-separated or specific titles)</label>
+                        <input type="text" id="alertJobRoles" class="form-control" placeholder="e.g. Senior Merchandiser, Sampling Coordinator, Production Supervisor, Quality Auditor">
+                        <span style="font-size: 12px; color: var(--dg-slate); margin-top: 4px; display: block;">Leave blank to match all roles within selected departments.</span>
+                    </div>
+
+                    <!-- 4. Locations & Job Types -->
+                    <div class="section-header-title">📍 3. Preferred Locations & Employment Types</div>
+                    <div class="grid-2col">
+                        <div class="form-group">
+                            <label>Target Locations in & around Tiruppur</label>
+                            <input type="text" id="alertLocations" class="form-control" placeholder="e.g. Tiruppur, Angeripalayam, Veerapandi, Mangalam Road, Palladam">
+                        </div>
+                        <div class="form-group">
+                            <label>Employment Types</label>
+                            <div style="display: flex; gap: 16px; margin-top: 8px; flex-wrap: wrap;">
+                                <label style="font-size: 13.5px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                    <input type="checkbox" name="alertJobType" value="Full Time" checked> Full Time
+                                </label>
+                                <label style="font-size: 13.5px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                    <input type="checkbox" name="alertJobType" value="Part Time"> Part Time
+                                </label>
+                                <label style="font-size: 13.5px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                    <input type="checkbox" name="alertJobType" value="Contract"> Contract
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. Experience & Salary -->
+                    <div class="section-header-title">📊 4. Experience & Compensation Filter</div>
+                    <div class="grid-3col">
+                        <div class="form-group">
+                            <label>Min Experience (Years)</label>
+                            <input type="number" id="alertExpMin" class="form-control" min="0" max="40" step="0.5" placeholder="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Max Experience (Years)</label>
+                            <input type="number" id="alertExpMax" class="form-control" min="0" max="40" step="0.5" placeholder="e.g. 10">
+                        </div>
+                        <div class="form-group">
+                            <label>Minimum Monthly Salary (₹)</label>
+                            <input type="number" id="alertSalaryMin" class="form-control" min="0" step="1000" placeholder="e.g. 25000">
+                        </div>
+                    </div>
+
+                    <!-- 6. Frequency -->
+                    <div class="section-header-title">⏱️ 5. Alert Frequency</div>
+                    <div class="grid-2col">
+                        <div class="form-group">
+                            <label>Frequency</label>
+                            <select id="alertFrequency" class="form-control">
+                                <option value="daily" selected>Daily Digest (Recommended)</option>
+                                <option value="weekly">Weekly Summary</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div style="display: flex; gap: 12px; margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--dg-border); flex-wrap: wrap; align-items: center;">
+                        <button type="submit" id="btnSaveAlertPrefs" class="btn-action">💾 Save Alert Preferences</button>
+                        <button type="button" class="btn-secondary" onclick="handlePrefillFromProfile()">📋 Prefill from My Profile</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <script>
         let currentUserProfile = {};
+        let savedJobsCurrentPage = 1;
+        let savedJobsTotalPages = 1;
+
+        const recommendedJobsState = {
+            items: [],
+            loading: false,
+            loaded: false,
+            page: 1,
+            totalPages: 1,
+            total: 0
+        };
+
+        const jobAlertState = {
+            loaded: false,
+            loading: false,
+            saving: false,
+            data: {}
+        };
 
         function showTab(tabName) {
-            const tabs = ['profile', 'resume', 'applications'];
-            const btns = document.querySelectorAll('.dash-tab-btn');
+            const tabMap = {
+                'profile': { contentId: 'tabProfile', idx: 0 },
+                'recommended': { contentId: 'tabRecommended', idx: 1 },
+                'saved': { contentId: 'tabSaved', idx: 2 },
+                'job-alerts': { contentId: 'tabJobAlerts', idx: 3 },
+                'applications': { contentId: 'tabApplications', idx: 4 },
+                'resume': { contentId: 'tabResume', idx: 5 }
+            };
             
-            tabs.forEach((t, i) => {
-                const content = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
-                if (t === tabName) {
-                    content.style.display = 'block';
-                    btns[i].classList.add('active');
-                } else {
-                    content.style.display = 'none';
-                    btns[i].classList.remove('active');
+            const btns = document.querySelectorAll('.dash-tabs .dash-tab-btn');
+            btns.forEach(b => b.classList.remove('active'));
+
+            Object.keys(tabMap).forEach(key => {
+                const item = tabMap[key];
+                const el = document.getElementById(item.contentId);
+                if (el) {
+                    if (key === tabName) {
+                        el.style.display = 'block';
+                        if (btns[item.idx]) btns[item.idx].classList.add('active');
+                    } else {
+                        el.style.display = 'none';
+                    }
                 }
             });
 
             if (tabName === 'applications') {
                 loadCandidateApplications();
+            } else if (tabName === 'saved') {
+                loadSavedJobs(savedJobsCurrentPage);
+            } else if (tabName === 'recommended') {
+                loadRecommendedJobs(recommendedJobsState.page);
+            } else if (tabName === 'job-alerts') {
+                loadJobAlertPreferences();
+            }
+        }
+
+        async function loadRecommendedJobs(page = 1) {
+            const container = document.getElementById("recommendedJobsContainer");
+            const pagWrap = document.getElementById("recommendedPaginationWrap");
+            container.innerHTML = '<p style="color: var(--dg-slate); font-size: 14px;">Finding matching garment vacancies for your profile...</p>';
+            if (pagWrap) pagWrap.style.display = "none";
+
+            recommendedJobsState.loading = true;
+            recommendedJobsState.page = page;
+
+            try {
+                const res = await fetch(`/api/public/employee/recommended-jobs?page=${page}&limit=6&_t=${Date.now()}`);
+                const data = await res.json();
+
+                recommendedJobsState.loading = false;
+                recommendedJobsState.loaded = true;
+
+                if (!res.ok || !data.success) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 32px 20px; background: #fff5f5; border: 1px solid #fecaca; border-radius: 10px;">
+                            <h3 style="margin: 0 0 6px 0; font-size: 15px; color: #b91c1c;">Unable to Load Recommendations</h3>
+                            <p style="margin: 0 0 14px 0; font-size: 13.5px; color: var(--dg-slate);">${escapeHtml(data.detail || data.error || 'Please check your connection and try again.')}</p>
+                            <button type="button" class="btn-secondary" onclick="loadRecommendedJobs(${page})">↻ Try Again</button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                if (data.incomplete_profile) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px 20px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px;">
+                            <span style="font-size: 36px; display: block; margin-bottom: 8px;">🎯</span>
+                            <h3 style="margin: 0 0 6px 0; font-size: 16px; color: var(--dg-navy);">Complete Your Profile For Recommendations</h3>
+                            <p style="margin: 0 0 16px 0; font-size: 13.5px; color: var(--dg-slate);">Add your target job role, preferred department, location, and key skills to receive tailored garment job recommendations.</p>
+                            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                                <button type="button" class="btn-action" onclick="showTab('profile')">Complete Profile →</button>
+                                <a href="/jobs" class="btn-secondary">Browse All Jobs</a>
+                            </div>
+                        </div>
+                    `;
+                    if (pagWrap) pagWrap.style.display = "none";
+                    return;
+                }
+
+                const jobs = data.jobs || [];
+                const total = data.total || 0;
+                recommendedJobsState.totalPages = data.total_pages || 1;
+                recommendedJobsState.items = jobs;
+                recommendedJobsState.total = total;
+
+                if (jobs.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px 20px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px;">
+                            <span style="font-size: 36px; display: block; margin-bottom: 8px;">🔍</span>
+                            <h3 style="margin: 0 0 6px 0; font-size: 16px; color: var(--dg-navy);">No Recommended Jobs Available Right Now</h3>
+                            <p style="margin: 0 0 16px 0; font-size: 13.5px; color: var(--dg-slate);">Try updating your job preferences, target department, or browse all active cluster listings.</p>
+                            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                                <button type="button" class="btn-secondary" onclick="showTab('profile')">Update Preferences</button>
+                                <a href="/jobs" class="btn-action">Browse Verified Jobs →</a>
+                            </div>
+                        </div>
+                    `;
+                    if (pagWrap) pagWrap.style.display = "none";
+                    return;
+                }
+
+                renderRecommendedJobsList(jobs, total, page, recommendedJobsState.totalPages);
+            } catch (err) {
+                console.error("Error loading recommended jobs:", err);
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 32px 20px; background: #fff5f5; border: 1px solid #fecaca; border-radius: 10px;">
+                        <h3 style="margin: 0 0 6px 0; font-size: 15px; color: #b91c1c;">Unable to Load Recommendations</h3>
+                        <p style="margin: 0 0 14px 0; font-size: 13.5px; color: var(--dg-slate);">A network error occurred while fetching recommendations.</p>
+                        <button type="button" class="btn-secondary" onclick="loadRecommendedJobs(${page})">↻ Try Again</button>
+                    </div>
+                `;
+                if (pagWrap) pagWrap.style.display = "none";
+            }
+        }
+
+        function renderRecommendedJobsList(jobs, total, page, totalPages) {
+            const container = document.getElementById("recommendedJobsContainer");
+            container.innerHTML = "";
+
+            jobs.forEach(j => {
+                const card = document.createElement("div");
+                card.className = "app-item-card";
+                card.id = `recCard_${j.id}`;
+
+                const companyName = j.company_name || "Direct Garment Manufacturer";
+                const verifiedTag = (j.verification_status === "verified" || j.company_is_verified)
+                    ? '<span class="badge-status-shortlisted" style="font-size: 11px; padding: 2px 6px;">✓ Verified</span>' : '';
+                const salaryStr = j.salary_text || (j.salary_min ? `₹${Number(j.salary_min).toLocaleString()} / mo` : "Salary Negotiable");
+                const expStr = j.experience_min !== undefined ? `${j.experience_min}${j.experience_max ? '-' + j.experience_max : '+'} Yrs Exp` : 'Experience not specified';
+                const directJobUrl = `/jobs/${j.slug || j.id}`;
+
+                let reasonsHtml = "";
+                if (Array.isArray(j.match_reasons) && j.match_reasons.length > 0) {
+                    reasonsHtml = `
+                        <div class="match-reasons-wrap">
+                            ${j.match_reasons.map(r => `<span class="match-reason-pill">✨ ${escapeHtml(r)}</span>`).join('')}
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="app-item-header">
+                        <div>
+                            <h3 class="app-item-title"><a href="${directJobUrl}" style="color: var(--dg-navy); text-decoration: none;">${escapeHtml(j.title || 'Garment Vacancy')}</a></h3>
+                            <div style="font-size: 13.5px; color: var(--dg-slate); font-weight: 500; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 3px;">
+                                <span>🏢 ${escapeHtml(companyName)}</span>
+                                ${verifiedTag}
+                                <span>• 📍 ${escapeHtml(j.location || 'Tiruppur')}</span>
+                            </div>
+                        </div>
+                        <span class="badge-status-shortlisted" style="font-size: 12px; background: #f0fdf4; color: #166534; border-color: #86efac;">🎯 Recommended</span>
+                    </div>
+
+                    ${reasonsHtml}
+
+                    <div style="display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--dg-slate); margin: 10px 0;">
+                        <div>💰 <strong style="color: var(--dg-red);">${escapeHtml(salaryStr)}</strong></div>
+                        <div>💼 <strong>${escapeHtml(expStr)}</strong></div>
+                        <div>🏷️ <strong>${escapeHtml(j.department || 'Garments')}</strong> (${escapeHtml(j.job_type || 'Full Time')})</div>
+                    </div>
+
+                    <div style="font-size: 12.5px; color: var(--dg-slate); padding-top: 10px; border-top: 1px solid var(--dg-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                        <span>Openings: <strong>${j.openings_count || 1}</strong></span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <a href="${directJobUrl}" class="btn-action" style="padding: 6px 14px; font-size: 13px;">View Details & Apply →</a>
+                            <button type="button" class="btn-secondary" style="padding: 6px 12px; font-size: 13px;" onclick="handleSaveFromRecommended(${j.id})">♡ Save</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            // Pagination Controls
+            const pagWrap = document.getElementById("recommendedPaginationWrap");
+            if (totalPages > 1) {
+                pagWrap.style.display = "flex";
+                document.getElementById("recommendedPrevBtn").disabled = page <= 1;
+                document.getElementById("recommendedNextBtn").disabled = page >= totalPages;
+                document.getElementById("recommendedPageInfo").textContent = `Page ${page} of ${totalPages} (${total} matching)`;
+            } else {
+                pagWrap.style.display = "none";
+            }
+        }
+
+        function changeRecommendedPage(delta) {
+            const targetPage = recommendedJobsState.page + delta;
+            if (targetPage >= 1 && targetPage <= recommendedJobsState.totalPages) {
+                loadRecommendedJobs(targetPage);
+            }
+        }
+
+        async function handleSaveFromRecommended(jobId) {
+            if (!jobId) return;
+            try {
+                const res = await fetch(`/api/public/jobs/${jobId}/save`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" }
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showAlert("Job saved successfully to bookmarks!", true);
+                    // Remove card from recommended list since saved jobs are excluded
+                    const card = document.getElementById(`recCard_${jobId}`);
+                    if (card) card.remove();
+                    const container = document.getElementById("recommendedJobsContainer");
+                    if (container && container.children.length === 0) {
+                        loadRecommendedJobs(recommendedJobsState.page);
+                    }
+                } else {
+                    showAlert(data.detail || data.message || "Failed to save job.", false);
+                }
+            } catch (err) {
+                showAlert("Network error saving job.", false);
             }
         }
 
@@ -1002,6 +1420,391 @@
             }
         }
 
+        async function loadSavedJobs(page = 1) {
+            const container = document.getElementById("savedJobsContainer");
+            const pagWrap = document.getElementById("savedPaginationWrap");
+            container.innerHTML = '<p style="color: var(--dg-slate); font-size: 14px;">Loading saved jobs...</p>';
+            if (pagWrap) pagWrap.style.display = "none";
+
+            savedJobsCurrentPage = page;
+
+            try {
+                const res = await fetch(`/api/public/employee/saved-jobs?page=${page}&limit=10&_t=${Date.now()}`);
+                const data = await res.json();
+
+                if (!res.ok || !data.success) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 32px 20px; background: #fff5f5; border: 1px solid #fecaca; border-radius: 10px;">
+                            <h3 style="margin: 0 0 6px 0; font-size: 15px; color: #b91c1c;">Unable to Load Saved Jobs</h3>
+                            <p style="margin: 0 0 14px 0; font-size: 13.5px; color: var(--dg-slate);">${escapeHtml(data.detail || data.error || 'Failed to retrieve your bookmarked jobs.')}</p>
+                            <button type="button" class="btn-secondary" onclick="loadSavedJobs(${page})">↻ Try Again</button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const jobs = data.jobs || [];
+                const total = data.total || 0;
+                savedJobsTotalPages = data.total_pages || 1;
+
+                if (jobs.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px 20px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px;">
+                            <span style="font-size: 36px; display: block; margin-bottom: 8px;">🔖</span>
+                            <h3 style="margin: 0 0 6px 0; font-size: 16px; color: var(--dg-navy);">No Saved Jobs Yet</h3>
+                            <p style="margin: 0 0 16px 0; font-size: 13.5px; color: var(--dg-slate);">Save jobs you are interested in while exploring listings, and they will appear here for easy access.</p>
+                            <a href="/jobs" class="btn-action">Find Jobs →</a>
+                        </div>
+                    `;
+                    if (pagWrap) pagWrap.style.display = "none";
+                    return;
+                }
+
+                renderSavedJobsList(jobs, total, page, savedJobsTotalPages);
+            } catch (err) {
+                console.error("Error loading saved jobs:", err);
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 32px 20px; background: #fff5f5; border: 1px solid #fecaca; border-radius: 10px;">
+                        <h3 style="margin: 0 0 6px 0; font-size: 15px; color: #b91c1c;">Unable to Load Saved Jobs</h3>
+                        <p style="margin: 0 0 14px 0; font-size: 13.5px; color: var(--dg-slate);">A network error occurred while contacting the server.</p>
+                        <button type="button" class="btn-secondary" onclick="loadSavedJobs(${page})">↻ Try Again</button>
+                    </div>
+                `;
+                if (pagWrap) pagWrap.style.display = "none";
+            }
+        }
+
+        function renderSavedJobsList(items, total, page, totalPages) {
+            const container = document.getElementById("savedJobsContainer");
+            container.innerHTML = "";
+
+            items.forEach(item => {
+                const j = item.job || item;
+                const card = document.createElement("div");
+                card.className = "app-item-card";
+                card.id = `savedCard_${j.id}`;
+
+                const companyName = j.company_name || "Direct Garment Manufacturer";
+                const verifiedTag = (j.verification_status === "verified" || j.company_is_verified)
+                    ? '<span class="badge-status-shortlisted" style="font-size: 11px; padding: 2px 6px;">✓ Verified</span>' : '';
+                const salaryStr = j.salary_text || (j.salary_min ? `₹${Number(j.salary_min).toLocaleString()} / mo` : "Salary Negotiable");
+                const expStr = j.experience_min !== undefined ? `${j.experience_min}${j.experience_max ? '-' + j.experience_max : '+'} Yrs Exp` : 'Experience not specified';
+                const rawSavedAt = item.saved_at || j.saved_at;
+                const savedDateStr = rawSavedAt ? new Date(rawSavedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'Recently';
+
+                card.innerHTML = `
+                    <div class="app-item-header">
+                        <div>
+                            <h3 class="app-item-title">${escapeHtml(j.title || 'Garment Vacancy')}</h3>
+                            <div style="font-size: 13.5px; color: var(--dg-slate); font-weight: 500; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 3px;">
+                                <span>🏢 ${escapeHtml(companyName)}</span>
+                                ${verifiedTag}
+                                <span>• 📍 ${escapeHtml(j.location || 'Tiruppur')}</span>
+                            </div>
+                        </div>
+                        <span class="badge-status-submitted" style="font-size: 12px;">🔖 Saved</span>
+                    </div>
+
+                    <div style="display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--dg-slate); margin: 12px 0;">
+                        <div>💰 <strong style="color: var(--dg-red);">${escapeHtml(salaryStr)}</strong></div>
+                        <div>💼 <strong>${escapeHtml(expStr)}</strong></div>
+                        <div>🏷️ <strong>${escapeHtml(j.department || 'Garments')}</strong> (${escapeHtml(j.job_type || 'Full Time')})</div>
+                    </div>
+
+                    <div style="font-size: 12.5px; color: var(--dg-slate); padding-top: 10px; border-top: 1px solid var(--dg-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                        <span>Bookmarked on: <strong>${savedDateStr}</strong></span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <a href="/jobs" class="btn-secondary" style="padding: 6px 14px; font-size: 13px;">View in Jobs Directory</a>
+                            <button type="button" class="btn-danger" style="padding: 6px 14px; font-size: 13px;" onclick="handleUnsaveFromDashboard(${j.id})">🗑️ Remove</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            // Pagination Controls
+            const pagWrap = document.getElementById("savedPaginationWrap");
+            if (totalPages > 1) {
+                pagWrap.style.display = "flex";
+                document.getElementById("savedPrevBtn").disabled = page <= 1;
+                document.getElementById("savedNextBtn").disabled = page >= totalPages;
+                document.getElementById("savedPageInfo").textContent = `Page ${page} of ${totalPages} (${total} saved)`;
+            } else {
+                pagWrap.style.display = "none";
+            }
+        }
+
+        function changeSavedPage(delta) {
+            const targetPage = savedJobsCurrentPage + delta;
+            if (targetPage >= 1 && targetPage <= savedJobsTotalPages) {
+                loadSavedJobs(targetPage);
+            }
+        }
+
+        async function handleUnsaveFromDashboard(jobId) {
+            if (!jobId) return;
+
+            try {
+                const res = await fetch(`/api/public/jobs/${jobId}/save`, {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" }
+                });
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    showAlert("Job removed from your bookmarks.", true);
+                    // Remove card from UI
+                    const card = document.getElementById(`savedCard_${jobId}`);
+                    if (card) {
+                        card.remove();
+                    }
+                    // If no cards left on current page, reload page (or previous page)
+                    const container = document.getElementById("savedJobsContainer");
+                    if (container && container.children.length === 0) {
+                        const prevPage = savedJobsCurrentPage > 1 ? savedJobsCurrentPage - 1 : 1;
+                        loadSavedJobs(prevPage);
+                    }
+                } else {
+                    showAlert(data.detail || data.message || "Failed to remove saved job.", false);
+                }
+            } catch (err) {
+                showAlert("Network error removing saved job.", false);
+            }
+        }
+
+        // --- JOB ALERT PREFERENCES LOGIC (Phase 4G) ---
+        async function loadJobAlertPreferences() {
+            jobAlertState.loading = true;
+            try {
+                const res = await fetch(`/api/public/employee/job-alert-preferences?_t=${Date.now()}`);
+                const data = await res.json();
+                jobAlertState.loading = false;
+                jobAlertState.loaded = true;
+
+                if (res.ok && data.success) {
+                    jobAlertState.data = data.preference || {};
+                    populateJobAlertForm(jobAlertState.data);
+                } else {
+                    showPrefMsg(data.detail || "Unable to load job alert preferences.", false);
+                }
+            } catch (err) {
+                jobAlertState.loading = false;
+                showPrefMsg("Network error loading alert preferences.", false);
+            }
+        }
+
+        function populateJobAlertForm(pref) {
+            document.getElementById("alertIsEnabled").checked = !!pref.is_enabled;
+            updateAlertBadgeUI();
+
+            // Check departments
+            const depts = (pref.departments || []).map(d => d.trim().toLowerCase());
+            document.querySelectorAll('input[name="alertDept"]').forEach(cb => {
+                cb.checked = depts.includes(cb.value.trim().toLowerCase());
+            });
+
+            // Roles
+            document.getElementById("alertJobRoles").value = (pref.job_roles || []).join(", ");
+
+            // Locations
+            document.getElementById("alertLocations").value = (pref.locations || []).join(", ");
+
+            // Job types
+            const jtypes = (pref.job_types || []).map(t => t.trim().toLowerCase());
+            document.querySelectorAll('input[name="alertJobType"]').forEach(cb => {
+                if (jtypes.length > 0) {
+                    cb.checked = jtypes.includes(cb.value.trim().toLowerCase());
+                }
+            });
+
+            // Experience & salary
+            document.getElementById("alertExpMin").value = pref.experience_min !== null && pref.experience_min !== undefined ? pref.experience_min : "";
+            document.getElementById("alertExpMax").value = pref.experience_max !== null && pref.experience_max !== undefined ? pref.experience_max : "";
+            document.getElementById("alertSalaryMin").value = pref.salary_min !== null && pref.salary_min !== undefined ? pref.salary_min : "";
+
+            // Frequency
+            document.getElementById("alertFrequency").value = pref.frequency || "daily";
+        }
+
+        function updateAlertBadgeUI() {
+            const isChecked = document.getElementById("alertIsEnabled").checked;
+            const badge = document.getElementById("alertStatusBadge");
+            const label = document.getElementById("alertToggleLabel");
+            if (isChecked) {
+                badge.textContent = "Alerts: ON (Active)";
+                badge.style.background = "#ECFDF5";
+                badge.style.color = "#059669";
+                badge.style.border = "1px solid #A7F3D0";
+                label.textContent = "Alerts Active (Receiving matching updates)";
+            } else {
+                badge.textContent = "Alerts: OFF (Paused)";
+                badge.style.background = "#F1F5F9";
+                badge.style.color = "#64748B";
+                badge.style.border = "1px solid #E2E8F0";
+                label.textContent = "Alerts Paused";
+            }
+        }
+
+        async function handleSaveJobAlertPreferences(e) {
+            if (e) e.preventDefault();
+            const btn = document.getElementById("btnSaveAlertPrefs");
+            btn.disabled = true;
+            btn.textContent = "Saving Preferences...";
+
+            const is_enabled = document.getElementById("alertIsEnabled").checked;
+            
+            // Departments
+            const departments = [];
+            document.querySelectorAll('input[name="alertDept"]:checked').forEach(cb => {
+                departments.push(cb.value);
+            });
+
+            // Roles
+            const rolesRaw = document.getElementById("alertJobRoles").value;
+            const job_roles = rolesRaw.split(",").map(r => r.trim()).filter(Boolean);
+
+            // Locations
+            const locsRaw = document.getElementById("alertLocations").value;
+            const locations = locsRaw.split(",").map(l => l.trim()).filter(Boolean);
+
+            // Job types
+            const job_types = [];
+            document.querySelectorAll('input[name="alertJobType"]:checked').forEach(cb => {
+                job_types.push(cb.value);
+            });
+
+            // Numbers
+            const expMinVal = document.getElementById("alertExpMin").value;
+            const expMaxVal = document.getElementById("alertExpMax").value;
+            const salMinVal = document.getElementById("alertSalaryMin").value;
+
+            const experience_min = expMinVal !== "" ? parseFloat(expMinVal) : null;
+            const experience_max = expMaxVal !== "" ? parseFloat(expMaxVal) : null;
+            const salary_min = salMinVal !== "" ? parseFloat(salMinVal) : null;
+            const frequency = document.getElementById("alertFrequency").value || "daily";
+
+            // Frontend validations
+            if (experience_min !== null && experience_min < 0) {
+                showPrefMsg("Minimum experience cannot be negative.", false);
+                btn.disabled = false;
+                btn.textContent = "💾 Save Alert Preferences";
+                return;
+            }
+            if (experience_max !== null && experience_max < 0) {
+                showPrefMsg("Maximum experience cannot be negative.", false);
+                btn.disabled = false;
+                btn.textContent = "💾 Save Alert Preferences";
+                return;
+            }
+            if (experience_min !== null && experience_max !== null && experience_min > experience_max) {
+                showPrefMsg("Minimum experience cannot exceed maximum experience.", false);
+                btn.disabled = false;
+                btn.textContent = "💾 Save Alert Preferences";
+                return;
+            }
+
+            try {
+                const res = await fetch("/api/public/employee/job-alert-preferences", {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        is_enabled,
+                        departments,
+                        job_roles,
+                        locations,
+                        job_types,
+                        experience_min,
+                        experience_max,
+                        salary_min,
+                        frequency
+                    })
+                });
+                const data = await res.json();
+                btn.disabled = false;
+                btn.textContent = "💾 Save Alert Preferences";
+
+                if (res.ok && data.success) {
+                    showPrefMsg("Preferences saved successfully.", true);
+                    jobAlertState.data = data.preference || {};
+                    updateAlertBadgeUI();
+                } else {
+                    showPrefMsg(data.detail || "Unable to save preferences. Please try again.", false);
+                }
+            } catch (err) {
+                btn.disabled = false;
+                btn.textContent = "💾 Save Alert Preferences";
+                showPrefMsg("Network error saving preferences. Please try again.", false);
+            }
+        }
+
+        function handlePrefillFromProfile() {
+            if (!currentUserProfile || Object.keys(currentUserProfile).length === 0) {
+                showPrefMsg("Profile data is not yet loaded.", false);
+                return;
+            }
+
+            // Prefill department
+            const profDept = (currentUserProfile.preferred_department || currentUserProfile.department || "").trim().toLowerCase();
+            if (profDept) {
+                document.querySelectorAll('input[name="alertDept"]').forEach(cb => {
+                    if (profDept.includes(cb.value.toLowerCase()) || cb.value.toLowerCase().includes(profDept)) {
+                        cb.checked = true;
+                    }
+                });
+            }
+
+            // Prefill role
+            const profRole = currentUserProfile.preferred_job_role || currentUserProfile.job_title || "";
+            if (profRole && !document.getElementById("alertJobRoles").value) {
+                document.getElementById("alertJobRoles").value = profRole;
+            }
+
+            // Prefill location
+            const profLoc = currentUserProfile.preferred_location || currentUserProfile.city || currentUserProfile.district || "Tiruppur";
+            if (profLoc && !document.getElementById("alertLocations").value) {
+                document.getElementById("alertLocations").value = profLoc;
+            }
+
+            // Prefill experience
+            if (currentUserProfile.experience_years !== undefined && currentUserProfile.experience_years !== null) {
+                if (!document.getElementById("alertExpMin").value) {
+                    document.getElementById("alertExpMin").value = currentUserProfile.experience_years;
+                }
+            }
+
+            showPrefMsg("Prefilled alert criteria from your profile. Click 'Save Alert Preferences' to save.", true);
+        }
+
+        function showPrefMsg(msg, isSuccess) {
+            const box = document.getElementById("alertPrefsMsgBox");
+            if (!box) return;
+            box.style.display = "block";
+            box.style.background = isSuccess ? "#ECFDF5" : "#FEF2F2";
+            box.style.color = isSuccess ? "#065F46" : "#991B1B";
+            box.style.border = `1px solid ${isSuccess ? "#A7F3D0" : "#FECACA"}`;
+            box.textContent = msg;
+            setTimeout(() => {
+                if (box) box.style.display = "none";
+            }, 6000);
+        }
+
+        function checkUrlHash() {
+            const hash = window.location.hash.toLowerCase();
+            if (hash === '#recommended' || hash === '#recommended-jobs') {
+                showTab('recommended');
+            } else if (hash === '#saved' || hash === '#saved-jobs') {
+                showTab('saved');
+            } else if (hash === '#job-alerts' || hash === '#alerts' || hash === '#jobalerts') {
+                showTab('job-alerts');
+            } else if (hash === '#applications' || hash === '#my-applications') {
+                showTab('applications');
+            } else if (hash === '#resume') {
+                showTab('resume');
+            } else if (hash === '#profile') {
+                showTab('profile');
+            }
+        }
+
         function escapeHtml(str) {
             if (!str) return "";
             return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
@@ -1015,7 +1818,11 @@
             }
         }
 
-        document.addEventListener("DOMContentLoaded", loadEmployeeDashboard);
+        document.addEventListener("DOMContentLoaded", () => {
+            loadEmployeeDashboard();
+            checkUrlHash();
+        });
+        window.addEventListener("hashchange", checkUrlHash);
     </script>
 </body>
 </html>

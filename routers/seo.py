@@ -58,6 +58,10 @@ def get_sitemap_xml():
     static_urls = [
         {"loc": f"{CANONICAL_DOMAIN}/", "priority": "1.0", "changefreq": "daily"},
         {"loc": f"{CANONICAL_DOMAIN}/jobs", "priority": "0.9", "changefreq": "daily"},
+        {"loc": f"{CANONICAL_DOMAIN}/tiruppur-jobs", "priority": "0.9", "changefreq": "daily"},
+        {"loc": f"{CANONICAL_DOMAIN}/tiruppur-garment-jobs", "priority": "0.9", "changefreq": "daily"},
+        {"loc": f"{CANONICAL_DOMAIN}/garment-jobs-in-tiruppur", "priority": "0.9", "changefreq": "daily"},
+        {"loc": f"{CANONICAL_DOMAIN}/apparel-jobs-in-tiruppur", "priority": "0.9", "changefreq": "daily"},
         {"loc": f"{CANONICAL_DOMAIN}/tools", "priority": "0.8", "changefreq": "weekly"},
         {"loc": f"{CANONICAL_DOMAIN}/tools/sam-calculator", "priority": "0.9", "changefreq": "weekly"},
         {"loc": f"{CANONICAL_DOMAIN}/services", "priority": "0.8", "changefreq": "monthly"},
@@ -818,6 +822,882 @@ def get_blog_detail_page(slug: str):
 </body>
 </html>
 """
+
+
+# --- 5.5. PRIMARY SEO LANDING PAGES (Phase 4F) ---
+SEO_LANDING_PAGES = {
+    "tiruppur-jobs": {
+        "slug": "tiruppur-jobs",
+        "title": "Tiruppur Jobs | Latest Jobs in Tiruppur | DigiGarment",
+        "description": "Explore verified job vacancies in Tiruppur across garment manufacturing, textile processing, merchandising, quality control, and industrial operations.",
+        "h1": "Tiruppur Jobs",
+        "intro": "Browse active and verified job vacancies across Tiruppur's garment manufacturing hubs, industrial units, and export houses on DigiGarment.",
+        "location_filter": "Tiruppur",
+        "about_heading": "About Jobs in Tiruppur",
+        "about_paragraphs": [
+            "Tiruppur is globally recognized as India's premier knitwear and textile manufacturing hub. Contributing a significant portion of India's cotton knitwear exports, the city hosts thousands of integrated spinning mills, knitting plants, fabric dyeing units, garment factories, and logistics facilities.",
+            "Career opportunities in Tiruppur span all levels of industrial manufacturing—from entry-level sewing operators and machine technicians to experienced garment merchandisers, industrial engineers, quality auditors (AQL), and factory general managers. DigiGarment provides direct access to active vacancies across major industrial zones including Angeripalayam, Veerapandi, Mangalam Road, and Palladam Road."
+        ],
+        "popular_roles": [
+            {"title": "Garment Merchandiser", "url": "/jobs?role=Merchandiser"},
+            {"title": "Production Supervisor", "url": "/jobs?role=Production%20Supervisor"},
+            {"title": "Quality Controller", "url": "/jobs?role=Quality%20Controller"},
+            {"title": "Pattern Master", "url": "/jobs?role=Pattern%20Master"},
+            {"title": "Sewing Technician", "url": "/jobs?role=Sewing%20Technician"},
+            {"title": "Industrial Engineer", "url": "/jobs?department=Industrial%20Engineering"},
+            {"title": "Cutting Master", "url": "/jobs?department=Cutting"},
+            {"title": "Stores & Trim Auditor", "url": "/jobs?department=Stores"}
+        ],
+        "related_searches": [
+            {"title": "Tiruppur Garment Jobs", "url": "/tiruppur-garment-jobs"},
+            {"title": "Garment Jobs in Tiruppur", "url": "/garment-jobs-in-tiruppur"},
+            {"title": "Apparel Jobs in Tiruppur", "url": "/apparel-jobs-in-tiruppur"},
+            {"title": "Merchandiser Jobs Tiruppur", "url": "/jobs/merchandiser-jobs-tiruppur"},
+            {"title": "Production Jobs Tiruppur", "url": "/jobs/production-jobs-tiruppur"},
+            {"title": "All Garment Jobs", "url": "/jobs"}
+        ],
+        "faqs": [
+            {
+                "q": "What types of jobs are available in Tiruppur?",
+                "a": "Tiruppur offers vacancies in knitwear merchandising, garment production supervision, pattern design & CAD, quality auditing (AQL), fabric cutting, sewing machine mechanics, industrial engineering, accounting, and stores management."
+            },
+            {
+                "q": "How can I apply for jobs in Tiruppur on DigiGarment?",
+                "a": "Browse the active verified job postings listed on this page, click on any vacancy to review job requirements, and submit your candidate profile or contact the employer directly via the verified contact options."
+            },
+            {
+                "q": "Are the job listings on this page verified and currently active?",
+                "a": "Yes. DigiGarment displays only active, published vacancies that have been verified by employers or administrators, automatically excluding expired and archived postings."
+            },
+            {
+                "q": "Can I save jobs in Tiruppur to apply later?",
+                "a": "Yes. Logged-in candidates can bookmark vacancies to their Saved Jobs tab to track and organize their applications."
+            }
+        ]
+    },
+    "tiruppur-garment-jobs": {
+        "slug": "tiruppur-garment-jobs",
+        "title": "Tiruppur Garment Jobs | Garment Industry Jobs | DigiGarment",
+        "description": "Find active garment factory jobs in Tiruppur. Browse vacancies for merchandisers, line supervisors, cutting masters, QA inspectors, and apparel staff.",
+        "h1": "Tiruppur Garment Jobs",
+        "intro": "Find active garment manufacturing vacancies in Tiruppur export houses, knitting factories, and garment production units.",
+        "location_filter": "Tiruppur",
+        "about_heading": "Garment Manufacturing Careers in Tiruppur",
+        "about_paragraphs": [
+            "The garment manufacturing sector in Tiruppur forms an integrated supply chain that handles every step of apparel creation—from yarn knitting and circular knitting to wet processing, fabric spreading, precision cutting, line sewing, checking, and export packing.",
+            "Whether you specialize in buyer sample follow-ups, line target balancing, Optitex/Gerber pattern grading, or inline defect inspections, Tiruppur export units continuously recruit talent to fulfill international knitwear export orders."
+        ],
+        "popular_roles": [
+            {"title": "Sampling Merchandiser", "url": "/jobs?role=Merchandiser"},
+            {"title": "Line Supervisor", "url": "/jobs?role=Production%20Supervisor"},
+            {"title": "AQL Quality Auditor", "url": "/jobs?department=Quality"},
+            {"title": "Cutting Section Master", "url": "/jobs?department=Cutting"},
+            {"title": "Maintenance Mechanic", "url": "/jobs?department=Maintenance"},
+            {"title": "Finishing In-charge", "url": "/jobs?department=Finishing"},
+            {"title": "Fabric Checker", "url": "/jobs?department=Quality"},
+            {"title": "Packing In-charge", "url": "/jobs?department=Packing"}
+        ],
+        "related_searches": [
+            {"title": "Tiruppur Jobs", "url": "/tiruppur-jobs"},
+            {"title": "Garment Jobs in Tiruppur", "url": "/garment-jobs-in-tiruppur"},
+            {"title": "Apparel Jobs in Tiruppur", "url": "/apparel-jobs-in-tiruppur"},
+            {"title": "Cutting Jobs Tiruppur", "url": "/jobs/cutting-jobs-tiruppur"},
+            {"title": "Sewing Jobs Tiruppur", "url": "/jobs/sewing-jobs-tiruppur"},
+            {"title": "All Garment Jobs", "url": "/jobs"}
+        ],
+        "faqs": [
+            {
+                "q": "Where can I find garment factory jobs in Tiruppur?",
+                "a": "You can find active garment factory jobs right here on DigiGarment. Listings are updated daily with verified openings from export houses and manufacturing units across Angeripalayam, Veerapandi, Mangalam Road, and surrounding industrial hubs."
+            },
+            {
+                "q": "Do garment jobs in Tiruppur require previous export house experience?",
+                "a": "Requirements vary by role. Technical and supervisory positions like Merchandising, CAD Pattern Making, and QA Auditing often prefer knitwear export experience, while entry-level positions and training programs welcome fresh candidates."
+            },
+            {
+                "q": "How do I filter garment jobs by department or salary on DigiGarment?",
+                "a": "You can use the interactive search filters on our main Jobs portal to filter by department (Merchandising, Production, Quality, Cutting, Sewing), experience level, job type, and salary range."
+            }
+        ]
+    },
+    "garment-jobs-in-tiruppur": {
+        "slug": "garment-jobs-in-tiruppur",
+        "title": "Garment Jobs in Tiruppur | Apparel & Textile Jobs | DigiGarment",
+        "description": "Explore verified garment jobs in Tiruppur. Vacancies in knitwear export units, sampling departments, production floors, and quality assurance teams.",
+        "h1": "Garment Jobs in Tiruppur",
+        "intro": "Explore verified employment opportunities in Tiruppur's garment manufacturing, apparel export, and knitwear production sectors.",
+        "location_filter": "Tiruppur",
+        "about_heading": "Finding the Right Garment Job in Tiruppur",
+        "about_paragraphs": [
+            "Seeking a garment job in Tiruppur gives you access to one of Asia's most specialized knitwear manufacturing ecosystems. From basic t-shirts and polo shirts to engineered sportswear and luxury infant wear, factories in Tiruppur employ skilled garment professionals across sampling, costing, industrial engineering, and supply chain management.",
+            "DigiGarment aggregates direct job vacancies with transparent compensation details, factory locations, and contact information to make your garment job search in Tiruppur smooth and effective."
+        ],
+        "popular_roles": [
+            {"title": "Production Merchandiser", "url": "/jobs?role=Merchandiser"},
+            {"title": "Floor In-charge", "url": "/jobs?department=Production"},
+            {"title": "Fabric QA Inspector", "url": "/jobs?department=Quality"},
+            {"title": "Optitex CAD Master", "url": "/jobs?department=Cutting"},
+            {"title": "Sewing Machine Mechanic", "url": "/jobs?department=Sewing"},
+            {"title": "Store Keeper & Trim Auditor", "url": "/jobs?department=Stores"},
+            {"title": "IE Executive", "url": "/jobs?department=Industrial%20Engineering"},
+            {"title": "Sampling Coordinator", "url": "/jobs?role=Merchandiser"}
+        ],
+        "related_searches": [
+            {"title": "Tiruppur Garment Jobs", "url": "/tiruppur-garment-jobs"},
+            {"title": "Tiruppur Jobs", "url": "/tiruppur-jobs"},
+            {"title": "Apparel Jobs in Tiruppur", "url": "/apparel-jobs-in-tiruppur"},
+            {"title": "Quality Jobs Tiruppur", "url": "/jobs/quality-jobs-tiruppur"},
+            {"title": "Merchandiser Jobs Tiruppur", "url": "/jobs/merchandiser-jobs-tiruppur"},
+            {"title": "Browse All Jobs", "url": "/jobs"}
+        ],
+        "faqs": [
+            {
+                "q": "What skills are most in demand for garment jobs in Tiruppur?",
+                "a": "High-demand skills include knitwear costing, buyer TNA management, SAM/SMV line balancing, Optitex/Gerber pattern CAD, 4-point fabric inspection, AQL quality standards, and export documentation."
+            },
+            {
+                "q": "How does DigiGarment ensure job vacancy accuracy?",
+                "a": "All job postings on DigiGarment undergo administrative review or are posted directly by verified employers, ensuring accurate job details, contact numbers, and compensation ranges."
+            },
+            {
+                "q": "Is registration free for job seekers looking for garment jobs in Tiruppur?",
+                "a": "Yes! Candidates can register, upload their resumes, save jobs, and apply to vacancies 100% free of charge on DigiGarment."
+            }
+        ]
+    },
+    "apparel-jobs-in-tiruppur": {
+        "slug": "apparel-jobs-in-tiruppur",
+        "title": "Apparel Jobs in Tiruppur | Latest Apparel Jobs | DigiGarment",
+        "description": "Browse the latest apparel industry jobs in Tiruppur. Opportunities in fashion merchandising, garment design, apparel production, and textile engineering.",
+        "h1": "Apparel Jobs in Tiruppur",
+        "intro": "Browse career opportunities in apparel manufacturing, fashion merchandising, and textile engineering across Tiruppur.",
+        "location_filter": "Tiruppur",
+        "about_heading": "Apparel Industry Opportunities in Tiruppur",
+        "about_paragraphs": [
+            "The modern apparel industry in Tiruppur is adopting lean manufacturing, digital standard allowed minute (SAM) calculators, automated fabric spreading, and real-time shopfloor production tracking. Apparel professionals with expertise in both traditional garment construction and modern digital tools are in high demand.",
+            "From high-fashion knitwear and activewear brands to private label manufacturers, Tiruppur's apparel sector offers rewarding careers in merchandising, industrial engineering, digital pattern making, and quality compliance."
+        ],
+        "popular_roles": [
+            {"title": "Apparel Merchandiser", "url": "/jobs?role=Merchandiser"},
+            {"title": "Apparel Quality Manager", "url": "/jobs?department=Quality"},
+            {"title": "Garment Industrial Engineer", "url": "/jobs?department=Industrial%20Engineering"},
+            {"title": "CAD Marker Planner", "url": "/jobs?department=Cutting"},
+            {"title": "Production Executive", "url": "/jobs?department=Production"},
+            {"title": "Textile Technologist", "url": "/jobs?department=Quality"},
+            {"title": "Fashion Sampling In-charge", "url": "/jobs?role=Merchandiser"},
+            {"title": "Compliance Officer", "url": "/jobs?department=HR"}
+        ],
+        "related_searches": [
+            {"title": "Tiruppur Jobs", "url": "/tiruppur-jobs"},
+            {"title": "Tiruppur Garment Jobs", "url": "/tiruppur-garment-jobs"},
+            {"title": "Garment Jobs in Tiruppur", "url": "/garment-jobs-in-tiruppur"},
+            {"title": "Production Jobs Tiruppur", "url": "/jobs/production-jobs-tiruppur"},
+            {"title": "Cutting Jobs Tiruppur", "url": "/jobs/cutting-jobs-tiruppur"},
+            {"title": "Explore All Jobs", "url": "/jobs"}
+        ],
+        "faqs": [
+            {
+                "q": "What is the difference between garment jobs and apparel jobs in Tiruppur?",
+                "a": "While the terms are often used interchangeably in the industry, apparel jobs frequently encompass broader roles including fashion design, technical textiles, brand merchandising, and supply chain optimization alongside core garment manufacturing."
+            },
+            {
+                "q": "Can employers in Tiruppur post apparel vacancies on DigiGarment?",
+                "a": "Yes, verified employers and garment export companies can register an employer account to post apparel vacancies, manage candidate applications, and hire qualified professionals."
+            },
+            {
+                "q": "How can I share an apparel job listing with a friend?",
+                "a": "Every job card includes instant WhatsApp and copy-link share buttons so you can easily send vacancies to colleagues or network groups."
+            }
+        ]
+    }
+}
+
+def render_seo_landing_page(page_slug: str) -> HTMLResponse:
+    page_info = SEO_LANDING_PAGES.get(page_slug)
+    if not page_info:
+        raise HTTPException(status_code=404, detail="Page not found")
+
+    canonical_url = f"{CANONICAL_DOMAIN}/{page_slug}"
+    escaped_title = html.escape(page_info["title"])
+    escaped_desc = html.escape(page_info["description"])
+    escaped_h1 = html.escape(page_info["h1"])
+
+    # Query REAL matching active published jobs from the database
+    matching_jobs = []
+    total_matching_count = 0
+    if db_helpers["db_enabled"] and db_helpers["query_db"]:
+        try:
+            count_res = db_helpers["query_db"]("""
+                SELECT COUNT(*) AS total
+                FROM jobs j
+                WHERE LOWER(j.status) = 'published'
+                  AND COALESCE(j.is_archived, FALSE) = FALSE;
+            """)
+            if count_res and count_res[0].get("total") is not None:
+                total_matching_count = int(count_res[0]["total"])
+
+            query = """
+                SELECT j.id, j.title, j.slug, j.department, j.job_role, j.location,
+                       j.salary_text, j.experience_min, j.experience_max, j.job_type,
+                       COALESCE(cp.company_name, c.name, '') AS company_name,
+                       COALESCE(cp.location, c.location, j.location) AS company_location
+                FROM jobs j
+                LEFT JOIN companies c ON j.company_id = c.id
+                LEFT JOIN company_profiles cp ON j.company_profile_id = cp.id
+                WHERE LOWER(j.status) = 'published'
+                  AND COALESCE(j.is_archived, FALSE) = FALSE
+                ORDER BY j.is_featured DESC, j.published_at DESC NULLS LAST, j.id DESC
+                LIMIT 20;
+            """
+            matching_jobs = db_helpers["query_db"](query)
+        except Exception as e:
+            logger.warning(f"Error querying jobs for landing page {page_slug}: {e}")
+
+    # Build job list HTML & Schema.org ItemList elements
+    item_list_elements = []
+    if matching_jobs:
+        jobs_list_html = ""
+        for idx, job in enumerate(matching_jobs, 1):
+            j_title = html.escape(job.get("title") or "Garment Vacancy")
+            j_slug = job.get("slug") or str(job.get("id"))
+            j_url = f"/jobs/{j_slug}"
+            j_canonical_item_url = f"{CANONICAL_DOMAIN}/jobs/{j_slug}"
+            j_loc = html.escape(job.get("location") or "Tiruppur, Tamil Nadu")
+            j_company = html.escape(job.get("company_name") or "Garment Manufacturing Unit")
+            j_dept = html.escape(job.get("department") or "Garment")
+            
+            item_list_elements.append({
+                "@type": "ListItem",
+                "position": idx,
+                "name": job.get("title") or "Garment Vacancy",
+                "url": j_canonical_item_url
+            })
+
+            exp_min = job.get("experience_min")
+            exp_max = job.get("experience_max")
+            if exp_min is not None and exp_max is not None:
+                exp_text = f"{exp_min}–{exp_max} Yrs Exp"
+            elif exp_min is not None:
+                exp_text = f"{exp_min}+ Yrs Exp"
+            else:
+                exp_text = "Experienced / Fresher"
+
+            sal_badge = f"<span class='job-pill pill-sal'>💰 {html.escape(job['salary_text'])}</span>" if job.get("salary_text") else ""
+            dept_badge = f"<span class='job-pill pill-dept'>🏷️ {j_dept}</span>" if j_dept else ""
+
+            jobs_list_html += f"""
+            <div class="landing-job-card">
+                <div class="job-card-main">
+                    <div class="job-card-header">
+                        <h3 class="job-title"><a href="{j_url}">{j_title}</a></h3>
+                        <span class="job-badge-active">Active Vacancy</span>
+                    </div>
+                    <div class="job-company-meta">
+                        <span>🏢 {j_company}</span>
+                        <span>📍 {j_loc}</span>
+                        <span>💼 {exp_text}</span>
+                    </div>
+                    <div class="job-pills-wrap">
+                        {dept_badge}
+                        {sal_badge}
+                    </div>
+                </div>
+                <div class="job-card-actions">
+                    <a href="{j_url}" class="btn-view-job">View & Apply →</a>
+                </div>
+            </div>
+            """
+    else:
+        jobs_list_html = """
+        <div class="empty-jobs-card">
+            <div style="font-size: 36px; margin-bottom: 12px;">📋</div>
+            <h3 style="margin: 0 0 8px 0; color: #081226; font-size: 18px;">No matching jobs are currently available.</h3>
+            <p style="margin: 0 0 20px 0; color: #64748B; font-size: 14px; max-width: 500px; margin-left: auto; margin-right: auto;">Check back for new opportunities or browse all active garment vacancies across Tiruppur.</p>
+            <a href="/jobs" class="btn-cta" style="display: inline-block; padding: 10px 22px; font-size: 14px; margin-top: 0;">Browse All Jobs</a>
+        </div>
+        """
+
+    # Build FAQ HTML & Schema.org FAQPage
+    faq_html = ""
+    faq_schema_items = []
+    for item in page_info["faqs"]:
+        q_esc = html.escape(item["q"])
+        a_esc = html.escape(item["a"])
+        faq_html += f"""
+        <details class="faq-details">
+            <summary class="faq-summary">{q_esc}</summary>
+            <p class="faq-answer">{a_esc}</p>
+        </details>
+        """
+        faq_schema_items.append({
+            "@type": "Question",
+            "name": item["q"],
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": item["a"]
+            }
+        })
+
+    # Build Popular Roles HTML
+    popular_roles_html = "".join(
+        f'<a href="{html.escape(r["url"])}" class="role-pill">{html.escape(r["title"])}</a>'
+        for r in page_info["popular_roles"]
+    )
+
+    # Build Related Searches HTML
+    related_searches_html = "".join(
+        f'<a href="{html.escape(s["url"])}" class="related-search-card"><span>🔍</span> <strong>{html.escape(s["title"])}</strong></a>'
+        for s in page_info["related_searches"]
+    )
+
+    # Build About Paragraphs HTML
+    about_html = "".join(f"<p>{html.escape(p)}</p>" for p in page_info["about_paragraphs"])
+
+    # JSON-LD Graph (CollectionPage, BreadcrumbList, ItemList, FAQPage) - Explicitly NO fake JobPosting
+    import json
+    schema_graph = [
+        {
+            "@type": "CollectionPage",
+            "name": page_info["h1"],
+            "description": page_info["description"],
+            "url": canonical_url
+        },
+        {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {"@type": "ListItem", "position": 1, "name": "Home", "item": f"{CANONICAL_DOMAIN}/"},
+                {"@type": "ListItem", "position": 2, "name": "Jobs", "item": f"{CANONICAL_DOMAIN}/jobs"},
+                {"@type": "ListItem", "position": 3, "name": page_info["h1"], "item": canonical_url}
+            ]
+        },
+        {
+            "@type": "FAQPage",
+            "mainEntity": faq_schema_items
+        }
+    ]
+    if item_list_elements:
+        schema_graph.append({
+            "@type": "ItemList",
+            "itemListElement": item_list_elements
+        })
+
+    landing_schema_json = json.dumps({
+        "@context": "https://schema.org",
+        "@graph": schema_graph
+    })
+
+    job_count_badge_text = f"{total_matching_count} Active Verified Vacancies in Tiruppur" if total_matching_count > 0 else "Active Verified Job Opportunities in Tiruppur"
+
+    return HTMLResponse(content=f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{escaped_title}</title>
+    <meta name="description" content="{escaped_desc}">
+    <link rel="canonical" href="{canonical_url}">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:title" content="{escaped_title}">
+    <meta property="og:description" content="{escaped_desc}">
+    <meta property="og:url" content="{canonical_url}">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="{CANONICAL_DOMAIN}/assets/images/hero-automation.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+
+    <script type="application/ld+json">
+    {landing_schema_json}
+    </script>
+    <style>
+        :root {{
+            --dg-navy: #081226;
+            --dg-red: #9E1B32;
+            --dg-red-hover: #b92a43;
+            --dg-slate: #64748B;
+            --dg-bg: #F8FAFC;
+        }}
+        body {{
+            background-color: var(--dg-bg);
+            font-family: 'Inter', sans-serif;
+            color: #0F172A;
+            margin: 0;
+            padding: 0;
+        }}
+        .breadcrumbs-bar {{
+            background: #ffffff;
+            border-bottom: 1px solid #E2E8F0;
+            padding: 12px 0;
+            font-size: 13px;
+        }}
+        .breadcrumbs-bar a {{ color: var(--dg-slate); text-decoration: none; }}
+        .breadcrumbs-bar a:hover {{ color: var(--dg-red); }}
+        .breadcrumbs-bar span {{ color: #CBD5E1; margin: 0 8px; }}
+        .breadcrumbs-bar strong {{ color: var(--dg-navy); }}
+        
+        .landing-hero {{
+            background: linear-gradient(135deg, #081226 0%, #111E38 100%);
+            color: #ffffff;
+            padding: 56px 0 44px 0;
+            text-align: center;
+        }}
+        .badge-live {{
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #34D399;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }}
+        .landing-hero h1 {{
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 34px;
+            font-weight: 800;
+            margin: 0 0 14px 0;
+            line-height: 1.25;
+        }}
+        .landing-hero p {{
+            color: #94A3B8;
+            font-size: 16px;
+            max-width: 680px;
+            margin: 0 auto 24px auto;
+            line-height: 1.6;
+        }}
+        
+        /* Search Bar */
+        .quick-search-box {{
+            max-width: 720px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }}
+        .search-form {{
+            display: flex;
+            gap: 8px;
+        }}
+        .search-input {{
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid #CBD5E1;
+            font-size: 14px;
+            outline: none;
+        }}
+        .search-input:focus {{
+            border-color: var(--dg-red);
+        }}
+        .btn-search {{
+            background: var(--dg-red);
+            color: #ffffff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }}
+        .btn-search:hover {{
+            background: var(--dg-red-hover);
+        }}
+        .quick-filter-chips {{
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+            font-size: 12px;
+        }}
+        .quick-chip-label {{
+            color: #94A3B8;
+            font-weight: 600;
+        }}
+        .quick-chip {{
+            background: rgba(255, 255, 255, 0.12);
+            color: #E2E8F0;
+            padding: 4px 10px;
+            border-radius: 16px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }}
+        .quick-chip:hover {{
+            background: var(--dg-red);
+            color: #ffffff;
+        }}
+
+        /* Content Layout */
+        .landing-main {{
+            max-width: 960px;
+            margin: 40px auto;
+            padding: 0 16px;
+        }}
+        .section-header-wrap {{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }}
+        .section-title {{
+            font-size: 22px;
+            color: #081226;
+            font-weight: 700;
+            margin: 0;
+        }}
+        .link-browse-all {{
+            color: var(--dg-red);
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+        }}
+        .link-browse-all:hover {{
+            text-decoration: underline;
+        }}
+
+        /* Job Cards */
+        .landing-job-card {{
+            background: #ffffff;
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 22px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+        }}
+        .landing-job-card:hover {{
+            border-color: #CBD5E1;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+        }}
+        .job-card-main {{
+            flex: 1;
+            min-width: 260px;
+        }}
+        .job-card-header {{
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }}
+        .job-title {{
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+        }}
+        .job-title a {{
+            color: #081226;
+            text-decoration: none;
+        }}
+        .job-title a:hover {{
+            color: var(--dg-red);
+        }}
+        .job-badge-active {{
+            background: #ECFDF5;
+            color: #059669;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 12px;
+            border: 1px solid #A7F3D0;
+        }}
+        .job-company-meta {{
+            font-size: 13px;
+            color: #64748B;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-bottom: 12px;
+        }}
+        .job-pills-wrap {{
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }}
+        .job-pill {{
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 500;
+        }}
+        .pill-dept {{
+            background: #F1F5F9;
+            color: #334155;
+        }}
+        .pill-sal {{
+            background: #ECFDF5;
+            color: #047857;
+            font-weight: 600;
+        }}
+        .btn-view-job {{
+            background: var(--dg-navy);
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+            transition: background 0.2s;
+        }}
+        .btn-view-job:hover {{
+            background: var(--dg-red);
+        }}
+        
+        /* Empty State */
+        .empty-jobs-card {{
+            background: #ffffff;
+            border: 1px dashed #CBD5E1;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+        }}
+
+        /* Info Sections */
+        .content-box {{
+            background: #ffffff;
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 32px;
+            margin-top: 36px;
+        }}
+        .content-box h2 {{
+            font-size: 20px;
+            color: #081226;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 14px;
+        }}
+        .content-box p {{
+            color: #475569;
+            font-size: 15px;
+            line-height: 1.7;
+            margin-bottom: 14px;
+        }}
+        
+        /* Role Pills */
+        .role-pills-grid {{
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+        }}
+        .role-pill {{
+            background: #F8FAFC;
+            color: #081226;
+            border: 1px solid #E2E8F0;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+        }}
+        .role-pill:hover {{
+            background: var(--dg-navy);
+            color: #ffffff;
+            border-color: var(--dg-navy);
+        }}
+
+        /* Related Searches Grid */
+        .related-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }}
+        .related-search-card {{
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            padding: 14px;
+            text-decoration: none;
+            color: #081226;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+        }}
+        .related-search-card:hover {{
+            background: #ffffff;
+            border-color: var(--dg-red);
+            color: var(--dg-red);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        }}
+
+        /* FAQs */
+        .faq-details {{
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+        }}
+        .faq-summary {{
+            font-weight: 700;
+            color: #081226;
+            font-size: 15px;
+        }}
+        .faq-answer {{
+            margin: 10px 0 0 0;
+            color: #64748B;
+            font-size: 14px;
+            line-height: 1.6;
+        }}
+
+        @media (max-width: 640px) {{
+            .landing-hero h1 {{ font-size: 26px; }}
+            .search-form {{ flex-direction: column; }}
+            .btn-search {{ width: 100%; }}
+            .landing-job-card {{ flex-direction: column; align-items: flex-start; }}
+            .btn-view-job {{ width: 100%; text-align: center; box-sizing: border-box; }}
+            .job-card-actions {{ width: 100%; }}
+        }}
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="container nav-wrap">
+            <a class="brand" href="/">
+                <img src="/assets/images/logo-light.png" alt="DigiGarment Logo" style="height: 38px;">
+            </a>
+            <nav class="nav">
+                <a href="/">Home</a>
+                <a class="active" href="/jobs">Tiruppur Jobs</a>
+                <a href="/tools">Tools</a>
+                <a href="/services">Services</a>
+                <a href="/blog">Blog</a>
+                <a href="/#contact">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="breadcrumbs-bar">
+        <div class="container">
+            <a href="/">Home</a>
+            <span>›</span>
+            <a href="/jobs">Jobs</a>
+            <span>›</span>
+            <strong>{escaped_h1}</strong>
+        </div>
+    </div>
+
+    <section class="landing-hero">
+        <div class="container">
+            <div class="badge-live">⚡ {job_count_badge_text}</div>
+            <h1>{escaped_h1}</h1>
+            <p>{escaped_desc}</p>
+            
+            <div class="quick-search-box">
+                <form action="/jobs" method="GET" class="search-form">
+                    <input type="text" name="q" placeholder="Search role, skill, or department..." class="search-input" aria-label="Search jobs">
+                    <button type="submit" class="btn-search">Search Jobs</button>
+                </form>
+                <div class="quick-filter-chips">
+                    <span class="quick-chip-label">Quick Filters:</span>
+                    <a href="/jobs?department=Merchandising" class="quick-chip">Merchandising</a>
+                    <a href="/jobs?department=Production" class="quick-chip">Production</a>
+                    <a href="/jobs?department=Quality" class="quick-chip">Quality</a>
+                    <a href="/jobs?department=Cutting" class="quick-chip">Cutting & CAD</a>
+                    <a href="/jobs?department=Sewing" class="quick-chip">Sewing</a>
+                    <a href="/jobs" class="quick-chip">All Jobs</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <main class="landing-main">
+        <div class="section-header-wrap">
+            <h2 class="section-title">Current Published Vacancies</h2>
+            <a href="/jobs" class="link-browse-all">Browse all jobs with advanced filters →</a>
+        </div>
+
+        {jobs_list_html}
+
+        <!-- About Section -->
+        <div class="content-box">
+            <h2>{html.escape(page_info["about_heading"])}</h2>
+            {about_html}
+        </div>
+
+        <!-- Popular Roles -->
+        <div class="content-box">
+            <h2>Popular Garment Roles in Tiruppur</h2>
+            <p style="margin-bottom: 8px;">Explore verified vacancies for high-demand apparel job roles in Tiruppur export facilities:</p>
+            <div class="role-pills-grid">
+                {popular_roles_html}
+            </div>
+        </div>
+
+        <!-- Related Job Searches -->
+        <div class="content-box">
+            <h2>Related Job Searches & Hubs</h2>
+            <div class="related-grid">
+                {related_searches_html}
+            </div>
+        </div>
+
+        <!-- FAQs -->
+        <div class="content-box">
+            <h2>Frequently Asked Questions</h2>
+            {faq_html}
+        </div>
+    </main>
+
+    <footer style="background: #081226; color: #94A3B8; padding: 48px 0 24px 0; text-align: center; font-size: 14px; margin-top: 56px;">
+        <div class="container">
+            <p style="margin-bottom: 12px; color: #CBD5E1; font-weight: 600;">DigiGarment — Verified Garment & Apparel Jobs Platform in Tiruppur</p>
+            <p style="margin-bottom: 20px; font-size: 13px; color: #64748B;">Connecting garment export houses, knitting units, and skilled textile professionals.</p>
+            <div style="display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;">
+                <a href="/" style="color: #94A3B8; text-decoration: none;">Home</a>
+                <a href="/jobs" style="color: #94A3B8; text-decoration: none;">All Jobs</a>
+                <a href="/tiruppur-jobs" style="color: #94A3B8; text-decoration: none;">Tiruppur Jobs</a>
+                <a href="/tiruppur-garment-jobs" style="color: #94A3B8; text-decoration: none;">Garment Jobs</a>
+                <a href="/tools/sam-calculator" style="color: #94A3B8; text-decoration: none;">SAM Calculator</a>
+                <a href="/services" style="color: #94A3B8; text-decoration: none;">Services</a>
+                <a href="/blog" style="color: #94A3B8; text-decoration: none;">Blog</a>
+            </div>
+            <p style="margin-top: 24px; font-size: 12px; color: #475569;">© 2026 DigiGarment. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
+""")
+
+@router.get("/tiruppur-jobs", response_class=HTMLResponse)
+def get_tiruppur_jobs_page():
+    return render_seo_landing_page("tiruppur-jobs")
+
+@router.get("/tiruppur-garment-jobs", response_class=HTMLResponse)
+def get_tiruppur_garment_jobs_page():
+    return render_seo_landing_page("tiruppur-garment-jobs")
+
+@router.get("/garment-jobs-in-tiruppur", response_class=HTMLResponse)
+def get_garment_jobs_in_tiruppur_page():
+    return render_seo_landing_page("garment-jobs-in-tiruppur")
+
+@router.get("/apparel-jobs-in-tiruppur", response_class=HTMLResponse)
+def get_apparel_jobs_in_tiruppur_page():
+    return render_seo_landing_page("apparel-jobs-in-tiruppur")
 
 
 # --- 6. JOB CATEGORY SEO HUBS ---
