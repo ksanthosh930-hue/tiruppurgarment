@@ -24,13 +24,13 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!res.ok) throw new Error("Failed to fetch settings");
             const settings = await res.json();
 
-            // SEO update (prevent legacy software-only titles from overriding brand hub positioning)
-            if (settings.seo_meta_title && !settings.seo_meta_title.includes("Garment Automation & Software Solutions") && !settings.seo_meta_title.includes("DigiGarment | Garment Automation")) {
+            // SEO update
+            if (settings.seo_meta_title) {
                 document.title = settings.seo_meta_title;
                 const metaTitle = document.getElementById("metaTitle");
                 if (metaTitle) metaTitle.textContent = settings.seo_meta_title;
             }
-            if (settings.seo_meta_description && !settings.seo_meta_description.includes("DigiGarment provides garment automation") && !settings.seo_meta_description.includes("smarter garment businesses")) {
+            if (settings.seo_meta_description) {
                 const metaDesc = document.querySelector('meta[name="description"]');
                 if (metaDesc) metaDesc.setAttribute("content", settings.seo_meta_description);
             }

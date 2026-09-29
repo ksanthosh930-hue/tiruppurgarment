@@ -11,7 +11,8 @@
 
     <!-- Open Graph & Social Cards -->
     <meta property="og:title" content="Tiruppur Garment Jobs | Merchandiser, Quality & Production Vacancies">
-    <meta property="og:description" content="Browse active garment manufacturing, export merchandising, pattern making, cutting, and quality controller jobs in Tiruppur, Tamil Nadu.">
+    <meta property="og:description"
+        content="Browse active garment manufacturing, export merchandising, pattern making, cutting, and quality controller jobs in Tiruppur, Tamil Nadu.">
     <meta property="og:url" content="https://tirupurgarment.in/jobs">
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://tirupurgarment.in/assets/images/hero-automation.jpg">
@@ -1223,10 +1224,10 @@
             <button class="menu-toggle" aria-label="Open menu" aria-expanded="false">☰</button>
             <nav class="nav" id="mainNav">
                 <a href="/">Home</a>
-                <a href="/services">Garment Business</a>
                 <a class="active" href="/jobs">Tiruppur Jobs</a>
                 <a href="/tools">Tools</a>
-                <a href="/blog">Knowledge</a>
+                <a href="/services">Services</a>
+                <a href="/blog">Blog</a>
                 <a href="/login">Login</a>
                 <a class="nav-cta" href="/signup">Sign Up</a>
             </nav>
@@ -1388,41 +1389,52 @@
     </main>
 
     <!-- Share Job Modal -->
-    <div class="modal" id="shareJobModal" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle" onclick="if(event.target === this) closeShareModal()">
+    <div class="modal" id="shareJobModal" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle"
+        onclick="if(event.target === this) closeShareModal()">
         <div class="modal-dialog share-modal-dialog">
             <div class="modal-header">
                 <div>
                     <h2 id="shareModalTitle" style="font-size: 19px; margin: 0 0 4px 0;">Share Job Listing</h2>
-                    <p id="shareModalJobTitle" style="margin: 0; font-size: 13px; color: var(--dg-slate); font-weight: 600;"></p>
+                    <p id="shareModalJobTitle"
+                        style="margin: 0; font-size: 13px; color: var(--dg-slate); font-weight: 600;"></p>
                 </div>
-                <button type="button" class="modal-close" aria-label="Close share dialog" onclick="closeShareModal()">&times;</button>
+                <button type="button" class="modal-close" aria-label="Close share dialog"
+                    onclick="closeShareModal()">&times;</button>
             </div>
             <div class="modal-body" style="padding: 24px;">
                 <div class="share-options-list">
                     <!-- WhatsApp Share -->
-                    <button type="button" class="share-option-btn btn-wa" aria-label="Share job on WhatsApp" onclick="handleShareWhatsApp()">
+                    <button type="button" class="share-option-btn btn-wa" aria-label="Share job on WhatsApp"
+                        onclick="handleShareWhatsApp()">
                         <span class="share-option-icon">💬</span>
                         <div style="flex: 1;">
                             <div>Share on WhatsApp</div>
-                            <small style="color: #64748B; font-weight: 400; font-size: 12px;">Send directly to contacts or garment job groups</small>
+                            <small style="color: #64748B; font-weight: 400; font-size: 12px;">Send directly to contacts
+                                or garment job groups</small>
                         </div>
                     </button>
 
                     <!-- Native Web Share API (shown dynamically if supported) -->
-                    <button type="button" class="share-option-btn" id="btnNativeShare" aria-label="Share via device apps" style="display: none;" onclick="handleNativeShare()">
+                    <button type="button" class="share-option-btn" id="btnNativeShare"
+                        aria-label="Share via device apps" style="display: none;" onclick="handleNativeShare()">
                         <span class="share-option-icon">📱</span>
                         <div style="flex: 1;">
                             <div>More Sharing Options</div>
-                            <small style="color: #64748B; font-weight: 400; font-size: 12px;">Share via apps, messages, or email on your device</small>
+                            <small style="color: #64748B; font-weight: 400; font-size: 12px;">Share via apps, messages,
+                                or email on your device</small>
                         </div>
                     </button>
                 </div>
 
                 <!-- Copy Link Section -->
-                <label style="display: block; font-size: 12.5px; font-weight: 700; color: var(--dg-navy); margin-bottom: 8px;">Direct Job URL</label>
+                <label
+                    style="display: block; font-size: 12.5px; font-weight: 700; color: var(--dg-navy); margin-bottom: 8px;">Direct
+                    Job URL</label>
                 <div class="share-url-box">
-                    <input type="text" id="shareUrlInput" class="share-url-input" readonly aria-label="Job link URL" onclick="this.select()">
-                    <button type="button" class="btn-copy-url" id="btnCopyJobUrl" aria-label="Copy job link" onclick="handleCopyJobUrl()">
+                    <input type="text" id="shareUrlInput" class="share-url-input" readonly aria-label="Job link URL"
+                        onclick="this.select()">
+                    <button type="button" class="btn-copy-url" id="btnCopyJobUrl" aria-label="Copy job link"
+                        onclick="handleCopyJobUrl()">
                         <span id="copyBtnText">Copy Link</span>
                     </button>
                 </div>
@@ -1442,15 +1454,18 @@
                         style="font-size: 14px; font-weight: 600; color: var(--dg-slate);"></div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <button type="button" class="btn-share-modal" id="modalShareBtn" aria-label="Share job" onclick="openShareModal(currentDetailJobId)">
+                    <button type="button" class="btn-share-modal" id="modalShareBtn" aria-label="Share job"
+                        onclick="openShareModal(currentDetailJobId)">
                         <span class="share-icon">↗</span>
                         <span class="share-text">Share</span>
                     </button>
-                    <button type="button" class="btn-save-modal" id="modalSaveBtn" aria-label="Save job" onclick="handleToggleSaveJob(currentDetailJobId)">
+                    <button type="button" class="btn-save-modal" id="modalSaveBtn" aria-label="Save job"
+                        onclick="handleToggleSaveJob(currentDetailJobId)">
                         <span class="save-icon" id="modalSaveIcon">♡</span>
                         <span class="save-text" id="modalSaveText">Save Job</span>
                     </button>
-                    <button class="modal-close" aria-label="Close dialog" onclick="closeJobDetailModal()">&times;</button>
+                    <button class="modal-close" aria-label="Close dialog"
+                        onclick="closeJobDetailModal()">&times;</button>
                 </div>
             </div>
             <div class="modal-body">
@@ -1619,7 +1634,8 @@
             <div class="modal-header">
                 <div>
                     <h2 id="directApplyTitle">Submit Job Application</h2>
-                    <p id="directApplySubtitle" style="margin: 4px 0 0 0; font-size: 13px; color: var(--dg-slate);">Review your profile snapshot before sending to employer.</p>
+                    <p id="directApplySubtitle" style="margin: 4px 0 0 0; font-size: 13px; color: var(--dg-slate);">
+                        Review your profile snapshot before sending to employer.</p>
                 </div>
                 <button class="modal-close" onclick="closeDirectApplyModal()">&times;</button>
             </div>
@@ -1628,7 +1644,8 @@
                     <input type="hidden" id="directApplyJobId">
 
                     <!-- Candidate Profile Snapshot -->
-                    <div style="background: #f8fafc; border: 1px solid var(--dg-border); border-radius: 8px; padding: 14px; margin-bottom: 16px; font-size: 13.5px;">
+                    <div
+                        style="background: #f8fafc; border: 1px solid var(--dg-border); border-radius: 8px; padding: 14px; margin-bottom: 16px; font-size: 13.5px;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                             <strong>Applicant:</strong>
                             <span id="applySnapName" style="color: var(--dg-navy); font-weight: 600;">-</span>
@@ -1650,11 +1667,13 @@
                     <!-- Optional Cover Message -->
                     <div class="form-group">
                         <label for="applyCoverMessage">Cover Note / Message to Employer (Optional)</label>
-                        <textarea id="applyCoverMessage" class="form-control" rows="3" placeholder="Briefly highlight your relevant garment experience, machine skills, or availability..."></textarea>
+                        <textarea id="applyCoverMessage" class="form-control" rows="3"
+                            placeholder="Briefly highlight your relevant garment experience, machine skills, or availability..."></textarea>
                     </div>
 
                     <div style="display: flex; gap: 10px; margin-top: 16px;">
-                        <button type="submit" id="directSubmitBtn" class="btn-action btn-apply-primary" style="flex: 1;">
+                        <button type="submit" id="directSubmitBtn" class="btn-action btn-apply-primary"
+                            style="flex: 1;">
                             🚀 Send Application
                         </button>
                         <button type="button" class="btn-secondary" onclick="closeDirectApplyModal()">Cancel</button>
