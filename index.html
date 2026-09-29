@@ -549,7 +549,7 @@
             <button class="menu-toggle" aria-label="Open menu" aria-expanded="false">☰</button>
             <nav class="nav" id="mainNav">
                 <a class="active" href="/">Home</a>
-                <a href="/jobs">Tiruppur Jobs</a>
+                <a href="/jobs">Tirupur Jobs</a>
                 <a href="/tools">Tools</a>
                 <a href="/services">Services</a>
                 <a href="/blog">Blog</a>
@@ -562,51 +562,407 @@
     </header>
 
     <main>
-        <!-- Hero Section -->
-        <section class="hero" id="home">
+        <!-- Hero Section: Tirupur Garment Jobs & Recruitment -->
+        <section class="hero hero-jobs-portal" id="home">
             <div class="hero-bg"></div>
             <div class="container hero-grid">
                 <div class="hero-copy">
-                    <p class="eyebrow" id="heroEyebrow">GARMENT TECHNOLOGY • AUTOMATION</p>
-                    <h1 id="heroTitle">Garment Automation, Software & <span>Digital Solutions</span> for Tiruppur</h1>
-                    <p class="hero-text" id="heroDescription">Practical automation and digital solutions for garment
-                        businesses — from SAM/SMV calculation and Excel automation to reporting and repetitive process
-                        automation.</p>
-                    <div class="hero-actions">
-                        <a class="btn btn-primary" id="heroPrimaryBtn" href="/jobs">Explore Tiruppur Jobs</a>
-                        <a class="btn btn-outline" id="heroSecondaryBtn" href="#contact">Talk to Us</a>
+                    <div class="hero-eyebrow-badge">
+                        <span class="badge-dot" aria-hidden="true"></span>
+                        <span>TIRUPUR GARMENT JOBS &amp; RECRUITMENT PLATFORM</span>
                     </div>
-                    <!-- Highlights replaces fake statistics -->
-                    <div class="highlights-grid" id="heroHighlights">
-                        <div class="highlight-item"><span class="bullet">✓</span> <span>Garment Industry Focus</span>
+
+                    <h1 class="hero-main-title" id="heroTitle">Tirupur Garment Jobs &amp; <span>Recruitment</span></h1>
+
+                    <p class="hero-text" id="heroDescription">
+                        Find garment &amp; apparel jobs in Tirupur or hire the right garment professionals for your factory.
+                    </p>
+
+                    <!-- Compact Job Search Form -->
+                    <div class="hero-search-wrapper" style="margin-bottom: 22px;">
+                        <form action="/jobs" method="GET" class="hero-search-form" role="search" aria-label="Search Garment Jobs">
+                            <div class="search-field-group field-query">
+                                <span class="field-icon" aria-hidden="true">🔍</span>
+                                <label for="heroSearchQ" class="sr-only">Search job title, role or skill</label>
+                                <input type="text" id="heroSearchQ" name="q" placeholder="Search job title, role or skill (e.g. Merchandiser, QA, Pattern Master)..." autocomplete="off">
+                            </div>
+                            <div class="search-field-group field-location">
+                                <span class="field-icon" aria-hidden="true">📍</span>
+                                <label for="heroSearchLoc" class="sr-only">Location</label>
+                                <input type="text" id="heroSearchLoc" name="location" value="Tirupur" placeholder="Tirupur">
+                            </div>
+                            <button type="submit" class="btn-search-hero">
+                                <span>Search Jobs</span>
+                            </button>
+                        </form>
+
+                        <!-- Popular Garment Role Tags -->
+                        <div class="hero-popular-tags">
+                            <span class="tags-label">Popular Searches:</span>
+                            <div class="tags-list">
+                                <a href="/jobs?department=Merchandising" class="tag-pill">Merchandising</a>
+                                <a href="/jobs?department=Production+Planning" class="tag-pill">Production Planning</a>
+                                <a href="/jobs?department=Quality" class="tag-pill">Quality (QA/QC)</a>
+                                <a href="/jobs?department=Cutting" class="tag-pill">Cutting</a>
+                                <a href="/jobs?department=Sewing" class="tag-pill">Sewing</a>
+                                <a href="/jobs?department=Finishing" class="tag-pill">Finishing</a>
+                                <a href="/jobs?q=Pattern+Master" class="tag-pill">Pattern Master</a>
+                            </div>
                         </div>
-                        <div class="highlight-item"><span class="bullet">✓</span> <span>SAM / SMV Technology</span>
+                    </div>
+
+                    <!-- Dual Track Action Area: Job Seeker & Employer Cards -->
+                    <div class="hero-dual-tracks">
+                        <!-- Card 1: Job Seeker -->
+                        <div class="hero-track-card track-jobseeker">
+                            <div class="track-header">
+                                <span class="track-icon" aria-hidden="true">🔍</span>
+                                <div class="track-info">
+                                    <span style="font-size: 11px; font-weight: 800; color: #9E1B32; text-transform: uppercase; letter-spacing: 0.06em;">LOOKING FOR A JOB?</span>
+                                    <strong>Find Jobs</strong>
+                                    <span>Browse the latest garment vacancies and build your career in Tirupur.</span>
+                                </div>
+                            </div>
+                            <div class="track-actions">
+                                <a class="btn btn-primary btn-track-primary" id="heroFindJobsBtn" href="/jobs">
+                                    <span>Find Jobs &rarr;</span>
+                                </a>
+                                <a class="hero-micro-link" href="/jobseeker/register">Register as Job Seeker &rarr;</a>
+                            </div>
                         </div>
-                        <div class="highlight-item"><span class="bullet">✓</span> <span>Excel & Reporting
-                                Automation</span></div>
-                        <div class="highlight-item"><span class="bullet">✓</span> <span>Tiruppur Garment
-                                Vacancies</span></div>
+
+                        <!-- Card 2: Employer -->
+                        <div class="hero-track-card track-employer">
+                            <div class="track-header">
+                                <span class="track-icon" aria-hidden="true">📢</span>
+                                <div class="track-info">
+                                    <span style="font-size: 11px; font-weight: 800; color: #081226; text-transform: uppercase; letter-spacing: 0.06em;">HIRING PEOPLE?</span>
+                                    <strong>Post a Job</strong>
+                                    <span>Reach skilled garment professionals and grow your team.</span>
+                                </div>
+                            </div>
+                            <div class="track-actions">
+                                <a class="btn btn-navy btn-track-primary" id="heroPostJobBtn" href="/post-a-job">
+                                    <span>Post a Job &rarr;</span>
+                                </a>
+                                <a class="hero-micro-link" href="/employer/register">Register Company &rarr;</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="hero-visual" aria-label="Garment automation visual">
-                    <img id="heroImage" src="assets/images/hero-automation.jpg" alt="Garment Automation Visual"
-                        style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;">
+
+                <!-- Right Side Visual / Large Garment Factory Hero Image -->
+                <div class="hero-visual-photo-wrap">
+                    <div class="hero-image-card">
+                        <img src="assets/images/hero-garment-worker.png" alt="Tirupur Garment Industry Workforce" class="hero-main-photo">
+                        <div class="hero-photo-overlay"></div>
+                        <div class="hero-floating-badge">
+                            <div class="badge-text">
+                                <strong>Tirupur Garment Hub</strong>
+                                <span>Direct Factory Hiring &bull; Verified Roles</span>
+                            </div>
+                            <span class="badge-chip">Active Vacancies</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- Quick Access Section -->
+        <!-- Explore Garment Jobs by Department -->
+        <section class="departments-section" id="departments">
+            <div class="container">
+                <div class="section-header-wrap">
+                    <span class="section-eyebrow">CAREER PATHWAYS</span>
+                    <h2 class="section-title">Explore Garment Jobs by Department</h2>
+                    <p class="section-subtitle">Find opportunities across departments in the Tirupur garment industry.</p>
+                </div>
+
+                <div class="dept-grid">
+                    <!-- Dept 1: Merchandising -->
+                    <a href="/jobs?department=Merchandising" class="dept-card">
+                        <div class="dept-card-img">
+                            <img src="assets/images/merchandising-planning.png" alt="Merchandising Department" loading="lazy">
+                        </div>
+                        <div class="dept-card-body">
+                            <div>
+                                <h3>Merchandising &amp; Sampling</h3>
+                                <p>Senior merchandisers, junior merchandisers, sampling coordinators, and buyer communication specialists.</p>
+                            </div>
+                            <span class="dept-card-link">View Jobs &rarr;</span>
+                        </div>
+                    </a>
+
+                    <!-- Dept 2: Production -->
+                    <a href="/jobs?department=Production+Planning" class="dept-card">
+                        <div class="dept-card-img">
+                            <img src="assets/images/factory-floor-production.png" alt="Production Department" loading="lazy">
+                        </div>
+                        <div class="dept-card-body">
+                            <div>
+                                <h3>Production &amp; Planning</h3>
+                                <p>Production managers, line supervisors, industrial engineers, floor incharges, and dispatch coordinators.</p>
+                            </div>
+                            <span class="dept-card-link">View Jobs &rarr;</span>
+                        </div>
+                    </a>
+
+                    <!-- Dept 3: Quality -->
+                    <a href="/jobs?department=Quality" class="dept-card">
+                        <div class="dept-card-img">
+                            <img src="assets/images/apparel-quality-design.png" alt="Quality Assurance Department" loading="lazy">
+                        </div>
+                        <div class="dept-card-body">
+                            <div>
+                                <h3>Quality Assurance (QA/QC)</h3>
+                                <p>Quality managers, inline checkers, final auditors, fabric inspection experts, and AQL specialists.</p>
+                            </div>
+                            <span class="dept-card-link">View Jobs &rarr;</span>
+                        </div>
+                    </a>
+
+                    <!-- Dept 4: Cutting -->
+                    <a href="/jobs?department=Cutting" class="dept-card">
+                        <div class="dept-card-img">
+                            <img src="assets/images/hero-automation.jpg" alt="Cutting Department" loading="lazy">
+                        </div>
+                        <div class="dept-card-body">
+                            <div>
+                                <h3>Cutting &amp; CAD Masters</h3>
+                                <p>Cutting masters, CAD operators, automatic spreader operators, marker planners, and fabric cutters.</p>
+                            </div>
+                            <span class="dept-card-link">View Jobs &rarr;</span>
+                        </div>
+                    </a>
+
+                    <!-- Dept 5: Sewing & Technical -->
+                    <a href="/jobs?department=Sewing" class="dept-card">
+                        <div class="dept-card-img">
+                            <img src="assets/images/hero-garment-worker.png" alt="Sewing and Technical Department" loading="lazy">
+                        </div>
+                        <div class="dept-card-body">
+                            <div>
+                                <h3>Sewing &amp; Technical Operations</h3>
+                                <p>Pattern masters, tailor masters, sewing supervisors, maintenance mechanics, and line leaders.</p>
+                            </div>
+                            <span class="dept-card-link">View Jobs &rarr;</span>
+                        </div>
+                    </a>
+
+                    <!-- Dept 6: Finishing & Packing -->
+                    <a href="/jobs?department=Finishing" class="dept-card">
+                        <div class="dept-card-img">
+                            <img src="assets/images/news-apparel.jpg" alt="Finishing Department" loading="lazy">
+                        </div>
+                        <div class="dept-card-body">
+                            <div>
+                                <h3>Finishing, Packing &amp; Dispatch</h3>
+                                <p>Finishing supervisors, ironers, packing incharges, carton auditing, and export shipping coordinators.</p>
+                            </div>
+                            <span class="dept-card-link">View Jobs &rarr;</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Latest Garment Jobs in Tirupur -->
+        <section class="latest-jobs-section" id="latest-jobs">
+            <div class="container">
+                <div class="section-header-wrap">
+                    <span class="section-eyebrow">NEW VACANCIES</span>
+                    <h2 class="section-title">Latest Garment Jobs in Tirupur</h2>
+                    <p class="section-subtitle">Recent job opportunities from garment companies.</p>
+                </div>
+
+                <div class="latest-jobs-grid" id="latestJobsGrid">
+                    <!-- Initial crawlable jobs with dynamic API hydration -->
+                    <a href="/jobs" class="home-job-card">
+                        <div>
+                            <div class="job-card-top">
+                                <div>
+                                    <h3 class="job-card-title">Senior Merchandiser</h3>
+                                    <div class="job-card-company">Export Garment Manufacturer</div>
+                                </div>
+                                <span class="job-card-dept-tag">Merchandising</span>
+                            </div>
+                            <div class="job-card-meta">
+                                <span class="job-meta-item">📍 Tirupur, Tamil Nadu</span>
+                                <span class="job-meta-item">💼 Full Time</span>
+                            </div>
+                        </div>
+                        <div class="job-card-bottom">
+                            <span class="job-card-date">Recent Vacancy</span>
+                            <span class="job-card-cta">View Details &rsaquo;</span>
+                        </div>
+                    </a>
+
+                    <a href="/jobs" class="home-job-card">
+                        <div>
+                            <div class="job-card-top">
+                                <div>
+                                    <h3 class="job-card-title">Production Line Supervisor</h3>
+                                    <div class="job-card-company">Apparel Manufacturing Unit</div>
+                                </div>
+                                <span class="job-card-dept-tag">Production</span>
+                            </div>
+                            <div class="job-card-meta">
+                                <span class="job-meta-item">📍 Kangayam Road, Tirupur</span>
+                                <span class="job-meta-item">💼 Full Time</span>
+                            </div>
+                        </div>
+                        <div class="job-card-bottom">
+                            <span class="job-card-date">Recent Vacancy</span>
+                            <span class="job-card-cta">View Details &rsaquo;</span>
+                        </div>
+                    </a>
+
+                    <a href="/jobs" class="home-job-card">
+                        <div>
+                            <div class="job-card-top">
+                                <div>
+                                    <h3 class="job-card-title">Quality Assurance Auditor (QA/QC)</h3>
+                                    <div class="job-card-company">Export Knits Facility</div>
+                                </div>
+                                <span class="job-card-dept-tag">Quality</span>
+                            </div>
+                            <div class="job-card-meta">
+                                <span class="job-meta-item">📍 Avinashi Road, Tirupur</span>
+                                <span class="job-meta-item">💼 Full Time</span>
+                            </div>
+                        </div>
+                        <div class="job-card-bottom">
+                            <span class="job-card-date">Recent Vacancy</span>
+                            <span class="job-card-cta">View Details &rsaquo;</span>
+                        </div>
+                    </a>
+
+                    <a href="/jobs" class="home-job-card">
+                        <div>
+                            <div class="job-card-top">
+                                <div>
+                                    <h3 class="job-card-title">Automatic Cutting Incharge</h3>
+                                    <div class="job-card-company">Garments Export House</div>
+                                </div>
+                                <span class="job-card-dept-tag">Cutting</span>
+                            </div>
+                            <div class="job-card-meta">
+                                <span class="job-meta-item">📍 P.N. Road, Tirupur</span>
+                                <span class="job-meta-item">💼 Full Time</span>
+                            </div>
+                        </div>
+                        <div class="job-card-bottom">
+                            <span class="job-card-date">Recent Vacancy</span>
+                            <span class="job-card-cta">View Details &rsaquo;</span>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="section-center-cta">
+                    <a href="/jobs" class="btn btn-primary" style="padding: 14px 32px; font-size: 15px;">
+                        <span>View All Garment Jobs &rarr;</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Job Seeker & Employer Sections -->
+        <section class="portal-roles-section" id="portal-roles">
+            <div class="container">
+                <div class="portal-roles-grid">
+                    <!-- For Job Seekers -->
+                    <div class="role-split-card">
+                        <div class="role-card-photo">
+                            <img src="assets/images/garment-professionals-team.png" alt="Tirupur Garment Professionals" loading="lazy">
+                        </div>
+                        <div class="role-card-content">
+                            <div>
+                                <span class="section-eyebrow">CANDIDATE PORTAL</span>
+                                <h3>For Job Seekers</h3>
+                                <p>Find the right garment job and grow your career in Tirupur.</p>
+                                
+                                <div class="role-points-list">
+                                    <div class="role-point-item"><span>&check;</span> Create your profile</div>
+                                    <div class="role-point-item"><span>&check;</span> Apply directly to jobs</div>
+                                    <div class="role-point-item"><span>&check;</span> Save jobs for later</div>
+                                    <div class="role-point-item"><span>&check;</span> Get instant job alerts</div>
+                                </div>
+                            </div>
+                            <a href="/jobseeker/register" class="btn btn-primary role-cta-btn">Register Free &rarr;</a>
+                        </div>
+                    </div>
+
+                    <!-- For Employers -->
+                    <div class="role-split-card">
+                        <div class="role-card-photo">
+                            <img src="assets/images/merchandising-planning.png" alt="Garment Factory Employers" loading="lazy">
+                        </div>
+                        <div class="role-card-content">
+                            <div>
+                                <span class="section-eyebrow">EMPLOYER PORTAL</span>
+                                <h3>For Employers</h3>
+                                <p>Find garment professionals for your factory.</p>
+                                
+                                <div class="role-points-list">
+                                    <div class="role-point-item"><span>&check;</span> Post your vacancy</div>
+                                    <div class="role-point-item"><span>&check;</span> Receive applications</div>
+                                    <div class="role-point-item"><span>&check;</span> Manage candidates</div>
+                                    <div class="role-point-item"><span>&check;</span> Hire professionals</div>
+                                </div>
+                            </div>
+                            <a href="/employer/register" class="btn btn-navy role-cta-btn">Register Company &rarr;</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Garment Business Automation & Planning Overview Section -->
+        <section class="services-overview-section" id="automation-planning">
+            <div class="container">
+                <div class="services-showcase-grid">
+                    <div class="services-photo-wrap">
+                        <img src="assets/images/production-planning-sam.png" alt="Garment Business Automation and Planning" loading="lazy">
+                    </div>
+                    <div class="services-content-wrap">
+                        <span class="section-eyebrow">DIGITAL OPERATIONS</span>
+                        <h2>Garment Business Automation &amp; Planning</h2>
+                        <p>Digital solutions to automate garment business processes and improve planning efficiency.</p>
+
+                        <div class="services-feature-list">
+                            <div class="service-feature-item">
+                                <strong>Production Planning</strong>
+                                <span>Digital line balancing and operation scheduling workflows.</span>
+                            </div>
+                            <div class="service-feature-item">
+                                <strong>Capacity Planning</strong>
+                                <span>Factory capacity utilization and floor bottleneck insights.</span>
+                            </div>
+                            <div class="service-feature-item">
+                                <strong>Business Automation</strong>
+                                <span>Convert manual paper routines into automated digital systems.</span>
+                            </div>
+                            <div class="service-feature-item">
+                                <strong>Reporting Automation</strong>
+                                <span>Automated daily operational spreadsheets and notifications.</span>
+                            </div>
+                        </div>
+
+                        <a href="/services" class="btn btn-outline" style="padding: 12px 26px; font-weight: 700;">
+                            Explore All Services &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Access Bar for Tools -->
         <section class="quick">
             <div class="container quick-grid">
                 <div class="quick-title">Quick<br><b>Access</b></div>
-                <a class="quick-card" href="/jobs"><span class="icon">💼</span><span><b>Tiruppur Jobs</b><small>Verified
-                            garment export vacancies</small></span><em>›</em></a>
-                <a class="quick-card" href="/tools/sam-calculator"><span class="icon">⚒</span><span><b>SAM / SMV
-                            Calculator</b><small>Standard Allowed Minutes computation</small></span><em>›</em></a>
-                <a class="quick-card" href="#services"><span class="icon">⌁</span><span><b>Report
-                            Automation</b><small>Automated operational spreadsheets</small></span><em>›</em></a>
-                <a class="quick-card" href="#services"><span class="icon">▤</span><span><b>Excel
-                            Automation</b><small>Convert manuals to macros & formulas</small></span><em>›</em></a>
+                <a class="quick-card" href="/jobs"><span class="icon">💼</span><span><b>Tirupur Jobs</b><small>Garment export vacancies</small></span><em>&rsaquo;</em></a>
+                <a class="quick-card" href="/tools/sam-calculator"><span class="icon">⚒</span><span><b>SAM / SMV Calculator</b><small>Standard Allowed Minutes computation</small></span><em>&rsaquo;</em></a>
+                <a class="quick-card" href="/services"><span class="icon">⌁</span><span><b>Report Automation</b><small>Automated operational spreadsheets</small></span><em>&rsaquo;</em></a>
+                <a class="quick-card" href="/services"><span class="icon">▤</span><span><b>Excel Automation</b><small>Convert manuals to macros &amp; formulas</small></span><em>&rsaquo;</em></a>
             </div>
         </section>
 
@@ -615,8 +971,7 @@
             <div class="container">
                 <div class="section-header">
                     <h2>Our Software Products</h2>
-                    <p>Accurate, industry-tested tools built specifically to streamline garment floor and planning
-                        calculations.</p>
+                    <p>Accurate, industry-tested tools built specifically to streamline garment floor and planning calculations.</p>
                 </div>
                 <div class="tools-grid" id="toolsList">
                     <!-- Loaded dynamically via js -->
@@ -625,13 +980,11 @@
         </section>
 
         <!-- Services Section -->
-        <section class="py-80" id="services"
-            style="background-color: #F8FAFC; border-top: 1px solid rgba(14,28,56,0.04);">
+        <section class="py-80" id="services" style="background-color: #F8FAFC; border-top: 1px solid rgba(14,28,56,0.04);">
             <div class="container">
                 <div class="section-header">
                     <h2>Automation Services</h2>
-                    <p>Practical customized digital transformation workflows tailored to remove manual friction from
-                        your daily garment processes.</p>
+                    <p>Practical customized digital transformation workflows tailored to remove manual friction from your daily garment processes.</p>
                 </div>
                 <div class="services-grid" id="servicesList">
                     <!-- Loaded dynamically via js -->
@@ -645,15 +998,13 @@
                 <div class="about-copy">
                     <p class="eyebrow">DIGIGARMENT SOLUTIONS</p>
                     <h2 id="aboutTitle">About DigiGarment</h2>
-                    <p id="aboutDescription">DigiGarment focuses on practical digital automation solutions for garment
-                        businesses. Our goal is to reduce repetitive manual work, improve data accuracy and help garment
-                        teams make faster operational decisions.</p>
+                    <p id="aboutDescription">DigiGarment focuses on practical digital automation solutions for garment businesses. Our goal is to reduce repetitive manual work, improve data accuracy and help garment teams make faster operational decisions.</p>
                     <div class="about-points" id="aboutPoints">
-                        <div><span>✓</span> Garment industry knowledge</div>
-                        <div><span>✓</span> Automation</div>
-                        <div><span>✓</span> Excel/process optimization</div>
-                        <div><span>✓</span> Practical software solutions</div>
-                        <div><span>✓</span> Custom business automation</div>
+                        <div><span>&check;</span> Garment industry knowledge</div>
+                        <div><span>&check;</span> Automation</div>
+                        <div><span>&check;</span> Excel/process optimization</div>
+                        <div><span>&check;</span> Practical software solutions</div>
+                        <div><span>&check;</span> Custom business automation</div>
                     </div>
                 </div>
                 <div class="about-visual">

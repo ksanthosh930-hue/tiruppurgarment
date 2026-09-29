@@ -84,23 +84,34 @@ document.addEventListener("DOMContentLoaded", () => {
     async function loadHero() {
         try {
             const res = await fetch(`${API_BASE}/api/public/sections/hero`);
-            if (!res.ok) throw new Error("Failed to fetch hero");
+            if (!res.ok) return;
             const data = await res.json();
             
-            if (data.eyebrow) document.getElementById("heroEyebrow").textContent = data.eyebrow;
-            if (data.heading) document.getElementById("heroTitle").innerHTML = data.heading;
-            if (data.description) document.getElementById("heroDescription").textContent = data.description;
-            if (data.image_url) document.getElementById("heroImage").src = data.image_url;
+            const eyebrowEl = document.getElementById("heroEyebrow");
+            if (eyebrowEl && data.eyebrow) eyebrowEl.textContent = data.eyebrow;
+            
+            const titleEl = document.getElementById("heroTitle");
+            if (titleEl && data.heading && data.override_jobs_hero) titleEl.innerHTML = data.heading;
+            
+            const descEl = document.getElementById("heroDescription");
+            if (descEl && data.description && data.override_jobs_hero) descEl.textContent = data.description;
+            
+            const imgEl = document.getElementById("heroImage");
+            if (imgEl && data.image_url) imgEl.src = data.image_url;
             
             if (data.primary_btn_text) {
                 const btn = document.getElementById("heroPrimaryBtn");
-                btn.textContent = data.primary_btn_text;
-                btn.href = data.primary_btn_url || "#tools";
+                if (btn) {
+                    btn.textContent = data.primary_btn_text;
+                    btn.href = data.primary_btn_url || "/jobs";
+                }
             }
             if (data.secondary_btn_text) {
                 const btn = document.getElementById("heroSecondaryBtn");
-                btn.textContent = data.secondary_btn_text;
-                btn.href = data.secondary_btn_url || "#contact";
+                if (btn) {
+                    btn.textContent = data.secondary_btn_text;
+                    btn.href = data.secondary_btn_url || "/post-a-job";
+                }
             }
             
             // Render highlights
@@ -116,7 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
             }
         } catch (err) {
-            console.error("Hero fallback applied:", err);
+            // Silently retain static jobs hero
         }
     }
 
@@ -207,6 +218,72 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    async function loadLatestJobs() {
+        const wrap = document.getElementById("latestJobsGrid");
+        if (!wrap) return;
+
+        try {
+            const res = await fetch(`${API_BASE}/api/public/jobs?limit=4`);
+            if (!res.ok) return;
+            const data = await res.json();
+            if (!data || !data.jobs || !data.jobs.length) return;
+
+            wrap.innerHTML = "";
+            data.jobs.forEach(job => {
+                const title = escapeHtml(job.title || "Garment Position");
+                const company = escapeHtml(job.company_name || "Garment Manufacturing Unit");
+                const location = escapeHtml(job.location || "Tirupur, Tamil Nadu");
+                const dept = escapeHtml(job.department || "Garment Operations");
+                const jobType = escapeHtml(job.job_type || "Full Time");
+                const slug = job.slug || "";
+                const detailUrl = slug ? `/jobs/${slug}` : `/jobs`;
+                
+                // Format relative date or published date
+                let dateStr = "Recent";
+                if (job.published_at) {
+                    try {
+                        const d = new Date(job.published_at);
+                        dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    } catch (e) {}
+                }
+
+                wrap.insertAdjacentHTML("beforeend", `
+                    <a href="${detailUrl}" class="home-job-card">
+                        <div>
+                            <div class="job-card-top">
+                                <div>
+                                    <h3 class="job-card-title">${title}</h3>
+                                    <div class="job-card-company">${company}</div>
+                                </div>
+                                <span class="job-card-dept-tag">${dept}</span>
+                            </div>
+                            <div class="job-card-meta">
+                                <span class="job-meta-item">📍 ${location}</span>
+                                <span class="job-meta-item">💼 ${jobType}</span>
+                            </div>
+                        </div>
+                        <div class="job-card-bottom">
+                            <span class="job-card-date">Posted ${dateStr}</span>
+                            <span class="job-card-cta">View Details &rsaquo;</span>
+                        </div>
+                    </a>
+                `);
+            });
+        } catch (err) {
+            // Retain static initial cards
+        }
+    }
+
+    function escapeHtml(str) {
+        if (!str) return "";
+        return String(str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
     // --- Contact Form Submission ---
 
     const form = document.getElementById("enquiryForm");
@@ -262,6 +339,7 @@ document.addEventListener("DOMContentLoaded", () => {
     Promise.all([
         loadSettings(),
         loadHero(),
+        loadLatestJobs(),
         loadAbout(),
         loadTools(),
         loadServices()
