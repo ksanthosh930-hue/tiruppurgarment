@@ -1,16 +1,16 @@
 document.addEventListener("DOMContentLoaded", () => {
     // --- Configurable Constants & Fallbacks ---
     const API_BASE = ""; // Relative to server
-    
+
     // Toast helper
     function showToast(message, isSuccess = true) {
         const toast = document.getElementById("toast");
         if (!toast) return;
-        
+
         toast.className = `toast-notify ${isSuccess ? 'toast-success' : 'toast-error'}`;
         toast.textContent = message;
         toast.style.display = "flex";
-        
+
         setTimeout(() => {
             toast.style.display = "none";
         }, 5000);
@@ -23,18 +23,18 @@ document.addEventListener("DOMContentLoaded", () => {
             const res = await fetch(`${API_BASE}/api/public/settings`);
             if (!res.ok) throw new Error("Failed to fetch settings");
             const settings = await res.json();
-            
-            // SEO update
-            if (settings.seo_meta_title) {
+
+            // SEO update (prevent legacy software-only titles from overriding brand hub positioning)
+            if (settings.seo_meta_title && !settings.seo_meta_title.includes("Garment Automation & Software Solutions") && !settings.seo_meta_title.includes("DigiGarment | Garment Automation")) {
                 document.title = settings.seo_meta_title;
                 const metaTitle = document.getElementById("metaTitle");
                 if (metaTitle) metaTitle.textContent = settings.seo_meta_title;
             }
-            if (settings.seo_meta_description) {
+            if (settings.seo_meta_description && !settings.seo_meta_description.includes("DigiGarment provides garment automation") && !settings.seo_meta_description.includes("smarter garment businesses")) {
                 const metaDesc = document.querySelector('meta[name="description"]');
                 if (metaDesc) metaDesc.setAttribute("content", settings.seo_meta_description);
             }
-            
+
             // Site content updates
             if (settings.contact_email) {
                 document.getElementById("contactEmail").textContent = settings.contact_email;
@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.getElementById("navLogo").src = settings.logo_url;
                 document.getElementById("footerLogo").src = settings.logo_url;
             }
-            
+
             // Social icons
             const socialWrap = document.getElementById("footerSocials");
             if (socialWrap) {
@@ -86,19 +86,19 @@ document.addEventListener("DOMContentLoaded", () => {
             const res = await fetch(`${API_BASE}/api/public/sections/hero`);
             if (!res.ok) return;
             const data = await res.json();
-            
+
             const eyebrowEl = document.getElementById("heroEyebrow");
             if (eyebrowEl && data.eyebrow) eyebrowEl.textContent = data.eyebrow;
-            
+
             const titleEl = document.getElementById("heroTitle");
             if (titleEl && data.heading && data.override_jobs_hero) titleEl.innerHTML = data.heading;
-            
+
             const descEl = document.getElementById("heroDescription");
             if (descEl && data.description && data.override_jobs_hero) descEl.textContent = data.description;
-            
+
             const imgEl = document.getElementById("heroImage");
             if (imgEl && data.image_url) imgEl.src = data.image_url;
-            
+
             if (data.primary_btn_text) {
                 const btn = document.getElementById("heroPrimaryBtn");
                 if (btn) {
@@ -113,7 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     btn.href = data.secondary_btn_url || "/post-a-job";
                 }
             }
-            
+
             // Render highlights
             const highlightsWrap = document.getElementById("heroHighlights");
             if (highlightsWrap && data.highlights) {
@@ -136,11 +136,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const res = await fetch(`${API_BASE}/api/public/sections/about`);
             if (!res.ok) throw new Error("Failed to fetch about");
             const data = await res.json();
-            
+
             if (data.heading) document.getElementById("aboutTitle").textContent = data.heading;
             if (data.description) document.getElementById("aboutDescription").textContent = data.description;
             if (data.image_url) document.getElementById("aboutImage").src = data.image_url;
-            
+
             // Render points
             const pointsWrap = document.getElementById("aboutPoints");
             if (pointsWrap && data.key_points) {
@@ -159,12 +159,12 @@ document.addEventListener("DOMContentLoaded", () => {
     async function loadTools() {
         const wrap = document.getElementById("toolsList");
         if (!wrap) return;
-        
+
         try {
             const res = await fetch(`${API_BASE}/api/public/tools`);
             if (!res.ok) throw new Error("Failed to fetch tools");
             const tools = await res.json();
-            
+
             wrap.innerHTML = "";
             tools.forEach(t => {
                 const isComing = t.status === "COMING_SOON";
@@ -172,7 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const badgeClass = isComing ? "badge-coming" : "badge-active";
                 const btnClass = isComing ? "tool-btn-disabled" : "tool-btn-primary";
                 const btnText = isComing ? "Coming Soon" : "Open SAM Calculator";
-                
+
                 wrap.insertAdjacentHTML("beforeend", `
                     <div class="tool-card ${isComing ? 'coming-soon' : ''}">
                         <div>
@@ -181,10 +181,10 @@ document.addEventListener("DOMContentLoaded", () => {
                             <p>${t.description}</p>
                         </div>
                         <div>
-                            ${isComing 
-                                ? `<span class="tool-btn ${btnClass}">${btnText}</span>`
-                                : `<a href="${t.url}" target="_blank" class="tool-btn ${btnClass}">${btnText}</a>`
-                            }
+                            ${isComing
+                        ? `<span class="tool-btn ${btnClass}">${btnText}</span>`
+                        : `<a href="${t.url}" target="_blank" class="tool-btn ${btnClass}">${btnText}</a>`
+                    }
                         </div>
                     </div>
                 `);
@@ -197,12 +197,12 @@ document.addEventListener("DOMContentLoaded", () => {
     async function loadServices() {
         const wrap = document.getElementById("servicesList");
         if (!wrap) return;
-        
+
         try {
             const res = await fetch(`${API_BASE}/api/public/services`);
             if (!res.ok) throw new Error("Failed to fetch services");
             const services = await res.json();
-            
+
             wrap.innerHTML = "";
             services.forEach(s => {
                 wrap.insertAdjacentHTML("beforeend", `
@@ -237,14 +237,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 const jobType = escapeHtml(job.job_type || "Full Time");
                 const slug = job.slug || "";
                 const detailUrl = slug ? `/jobs/${slug}` : `/jobs`;
-                
+
                 // Format relative date or published date
                 let dateStr = "Recent";
                 if (job.published_at) {
                     try {
                         const d = new Date(job.published_at);
                         dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                    } catch (e) {}
+                    } catch (e) { }
                 }
 
                 wrap.insertAdjacentHTML("beforeend", `
@@ -290,20 +290,20 @@ document.addEventListener("DOMContentLoaded", () => {
     if (form) {
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
-            
+
             const submitBtn = document.getElementById("submitBtn");
             const originalText = submitBtn.textContent;
             submitBtn.textContent = "Sending...";
             submitBtn.disabled = true;
-            
+
             const formData = new FormData(form);
-            
+
             try {
                 const res = await fetch(`${API_BASE}/api/public/enquiries`, {
                     method: "POST",
                     body: formData
                 });
-                
+
                 const data = await res.json();
                 if (res.ok && data.success) {
                     showToast(data.message, true);

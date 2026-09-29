@@ -118,11 +118,11 @@ def health_check():
 
 # --- Fallback Datasets ---
 FALLBACK_SETTINGS = {
-    "site_name": "DigiGarment",
-    "tagline": "Automate Your Garment Business",
+    "site_name": "Tiruppur Garment",
+    "tagline": "Tiruppur Garment Industry Platform",
     "logo_url": "/assets/images/logo-light.png",
     "favicon_url": "/assets/images/logo-light.png",
-    "contact_email": "info@digigarment.com",
+    "contact_email": "info@tirupurgarment.in",
     "contact_phone": "+91 XXXXXXXXXX",
     "address": "Tirupur, Tamil Nadu, India",
     "whatsapp_number": "",
@@ -130,32 +130,32 @@ FALLBACK_SETTINGS = {
     "social_linkedin": "#",
     "social_youtube": "#",
     "social_instagram": "#",
-    "footer_text": "© 2026 DigiGarment. All Rights Reserved.",
-    "seo_meta_title": "DigiGarment | Garment Automation & Digital Solutions",
-    "seo_meta_description": "DigiGarment - Garment automation and digital solutions for smarter garment businesses.",
-    "seo_default_keywords": "garment, automation, SAM, SMV, calculator",
-    "seo_og_title": "DigiGarment | Garment Automation & Digital Solutions",
-    "seo_og_description": "DigiGarment - Garment automation and digital solutions for smarter garment businesses.",
-    "seo_og_image": "",
+    "footer_text": "© 2026 Tiruppur Garment. All Rights Reserved.",
+    "seo_meta_title": "Tiruppur Garment Industry | Jobs, Tools, Knowledge & Digital Solutions",
+    "seo_meta_description": "Explore Tiruppur garment industry jobs, practical tools, manufacturing knowledge and digital solutions for garment businesses and professionals.",
+    "seo_default_keywords": "Tiruppur garment industry, garment jobs, garment tools, SAM calculator, garment knowledge, business solutions",
+    "seo_og_title": "Tiruppur Garment Industry | Jobs, Tools, Knowledge & Digital Solutions",
+    "seo_og_description": "Explore Tiruppur garment industry jobs, practical tools, manufacturing knowledge and digital solutions for garment businesses and professionals.",
+    "seo_og_image": "/assets/images/hero-automation.jpg",
     "seo_google_analytics_id": "",
     "seo_search_indexing": "true",
-    "sam_calculator_url": "http://127.0.0.1:5000/calculator"
+    "sam_calculator_url": "/tools/sam-calculator"
 }
 
 FALLBACK_HERO = {
-    "eyebrow": "GARMENT TECHNOLOGY • AUTOMATION",
-    "heading": "Empowering Garment Industries with Digital Solutions",
-    "description": "Practical automation and digital solutions for garment businesses — from SAM/SMV calculation and Excel automation to reporting and repetitive process automation.",
-    "primary_btn_text": "Explore SAM Calculator",
-    "primary_btn_url": "#tools",
-    "secondary_btn_text": "Talk to Us",
-    "secondary_btn_url": "#contact",
-    "image_url": "/assets/images/hero-automation.jpg",
+    "eyebrow": "TIRUPPUR GARMENT INDUSTRY PLATFORM",
+    "heading": "Tiruppur Garment Industry Platform",
+    "description": "Discover garment industry jobs, practical tools, manufacturing knowledge and digital solutions for the Tiruppur textile and apparel industry.",
+    "primary_btn_text": "Explore Garment Jobs",
+    "primary_btn_url": "/jobs",
+    "secondary_btn_text": "Explore Garment Tools",
+    "secondary_btn_url": "/tools",
+    "image_url": "/assets/images/hero-garment-worker.png",
     "highlights": [
-        "Garment Industry Focus",
-        "SAM / SMV Technology",
-        "Excel & Reporting Automation",
-        "Business Process Automation"
+        "Garment Business Solutions",
+        "Tiruppur Garment Jobs",
+        "Practical Garment Tools",
+        "Manufacturing Knowledge"
     ]
 }
 
