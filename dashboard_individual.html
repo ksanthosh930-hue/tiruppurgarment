@@ -1042,7 +1042,7 @@
                 card.className = "app-item-card";
                 card.id = `recCard_${j.id}`;
 
-                const companyName = j.company_name || "Direct Garment Manufacturer";
+                const companyName = (j.company_name && j.company_name.trim()) ? j.company_name.trim() : "";
                 const verifiedTag = (j.verification_status === "verified" || j.company_is_verified)
                     ? '<span class="badge-status-shortlisted" style="font-size: 11px; padding: 2px 6px;">✓ Verified</span>' : '';
                 const salaryStr = j.salary_text || (j.salary_min ? `₹${Number(j.salary_min).toLocaleString()} / mo` : "Salary Negotiable");
@@ -1402,7 +1402,7 @@
                             <div>
                                 <h3 class="app-item-title">${escapeHtml(app.job_title || 'Garment Vacancy')}</h3>
                                 <div style="font-size: 13.5px; color: var(--dg-slate); font-weight: 500;">
-                                    🏢 ${escapeHtml(app.company_name || 'Direct Employer')} • 📍 ${escapeHtml(app.job_location || 'Tiruppur')}
+                                    ${app.company_name ? `🏢 ${escapeHtml(app.company_name)} • ` : ''}📍 ${escapeHtml(app.job_location || 'Tiruppur')}
                                 </div>
                             </div>
                             <span class="${statusClass}">● ${escapeHtml((app.status || 'submitted').toUpperCase())}</span>
@@ -1484,7 +1484,7 @@
                 card.className = "app-item-card";
                 card.id = `savedCard_${j.id}`;
 
-                const companyName = j.company_name || "Direct Garment Manufacturer";
+                const companyName = (j.company_name && j.company_name.trim()) ? j.company_name.trim() : "";
                 const verifiedTag = (j.verification_status === "verified" || j.company_is_verified)
                     ? '<span class="badge-status-shortlisted" style="font-size: 11px; padding: 2px 6px;">✓ Verified</span>' : '';
                 const salaryStr = j.salary_text || (j.salary_min ? `₹${Number(j.salary_min).toLocaleString()} / mo` : "Salary Negotiable");

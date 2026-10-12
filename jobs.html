@@ -2254,14 +2254,33 @@
                 card.className = `job-card ${j.is_featured ? 'featured' : ''}`;
                 card.onclick = () => openJobDetailModal(j.id);
 
-                const companyName = j.company_name || "Direct Garment Manufacturer";
+                const compRaw = (j.company_name && j.company_name.trim()) ? j.company_name.trim() : null;
                 const verifiedTag = j.verification_status === "verified" || j.company_is_verified
                     ? '<span class="verified-badge">✓ Verified</span>' : '';
+                const companyHtml = compRaw
+                    ? `<div class="company-name"><span>🏢 ${escapeHtml(compRaw)}</span>${verifiedTag}</div>`
+                    : '';
                 const featuredTag = j.is_featured ? '<span class="featured-tag">★ Featured</span>' : '';
                 const openingsCnt = parseInt(j.openings_count) || 1;
                 const openingsBadge = `<span class="tag-badge" style="background:#eff6ff; color:#1d4ed8; font-weight:700;">👥 ${openingsCnt} ${openingsCnt > 1 ? 'Openings' : 'Opening'}</span>`;
                 const salaryStr = j.salary_text || (j.salary_min ? `₹${Number(j.salary_min).toLocaleString()} / mo` : "Salary Negotiable");
-                const expStr = j.experience_min !== undefined ? `${j.experience_min}${j.experience_max ? '-' + j.experience_max : '+'} Yrs Exp` : 'Exp not specified';
+                
+                let expStr = "Experience not specified";
+                if (j.experience_min !== null && j.experience_min !== undefined) {
+                    if (j.experience_min === 0) {
+                        if (j.experience_max === 0 || j.experience_max === 1) {
+                            expStr = "Fresher / 0-1 Yr";
+                        } else if (j.experience_max) {
+                            expStr = `0-${j.experience_max} Yrs Exp (Fresher ok)`;
+                        } else {
+                            expStr = "Fresher Eligible";
+                        }
+                    } else {
+                        expStr = `${j.experience_min}${j.experience_max ? '-' + j.experience_max : '+'} Yrs Exp`;
+                    }
+                } else if (j.requirements && j.requirements.toLowerCase().includes("fresher")) {
+                    expStr = "Fresher Eligible";
+                }
                 const dateStr = j.published_at ? new Date(j.published_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Recently';
                 const saved = isJobSaved(j.id);
 
@@ -2270,10 +2289,7 @@
                         <div class="job-card-header">
                             <div class="job-card-title-group">
                                 <h3>${escapeHtml(j.title)}</h3>
-                                <div class="company-name">
-                                    <span>🏢 ${escapeHtml(companyName)}</span>
-                                    ${verifiedTag}
-                                </div>
+                                ${companyHtml}
                             </div>
                             ${featuredTag}
                         </div>
@@ -2381,6 +2397,44 @@
             sidebar.classList.toggle("open");
         }
 
+        // Phase 6.1: Direct Slug Modal Opener
+        async function openJobModalBySlug(slug) {
+            if (!slug || typeof slug !== "string") return;
+            const targetSlug = slug.trim();
+            if (!targetSlug) return;
+
+            // 1. Check if job already exists in activeJobsCache (avoid duplicate API call)
+            const cachedJob = activeJobsCache.find(j => j.slug === targetSlug || String(j.id) === targetSlug);
+            if (cachedJob) {
+                openJobDetailModal(cachedJob.id);
+                return;
+            }
+
+            // 2. Fetch from existing public job detail API
+            try {
+                const res = await fetch(`/api/public/jobs/${encodeURIComponent(targetSlug)}`);
+                if (!res.ok) {
+                    console.warn(`Job with slug "${targetSlug}" not found or inactive (HTTP ${res.status}).`);
+                    return;
+                }
+                const data = await res.json();
+                if (data && data.success && data.job) {
+                    const job = data.job;
+                    // Add to activeJobsCache so openJobDetailModal and child handlers can access it
+                    const existingIdx = activeJobsCache.findIndex(j => j.id === job.id);
+                    if (existingIdx === -1) {
+                        activeJobsCache.push(job);
+                    } else {
+                        activeJobsCache[existingIdx] = job;
+                    }
+                    openJobDetailModal(job.id);
+                }
+            } catch (err) {
+                console.error("Error opening job modal by slug:", err);
+            }
+        }
+        window.openJobModalBySlug = openJobModalBySlug;
+
         // Job Detail Modal Logic
         function openJobDetailModal(jobId) {
             const job = activeJobsCache.find(j => j.id === jobId);
@@ -2389,10 +2443,29 @@
             currentDetailJobId = jobId;
 
             document.getElementById("modalJobTitle").textContent = job.title;
-            document.getElementById("modalCompanyName").innerHTML = `🏢 ${escapeHtml(job.company_name || 'Direct Employer')} ${job.verification_status === 'verified' ? '<span class="verified-badge">✓ Verified</span>' : ''}`;
+            const modalComp = (job.company_name && job.company_name.trim()) ? job.company_name.trim() : null;
+            const compEl = document.getElementById("modalCompanyName");
+            if (modalComp) {
+                compEl.innerHTML = `🏢 ${escapeHtml(modalComp)} ${job.verification_status === 'verified' ? '<span class="verified-badge">✓ Verified</span>' : ''}`;
+                compEl.style.display = "block";
+            } else {
+                compEl.innerHTML = "";
+                compEl.style.display = "none";
+            }
             document.getElementById("modalDeptBadge").textContent = job.department || "Garments";
             document.getElementById("modalLocation").textContent = job.location || "-";
-            document.getElementById("modalExp").textContent = job.experience_min !== undefined ? `${job.experience_min}${job.experience_max ? '-' + job.experience_max : '+'} Years` : "Any";
+            
+            let modalExpStr = "Experience not specified";
+            if (job.experience_min !== null && job.experience_min !== undefined) {
+                if (job.experience_min === 0) {
+                    modalExpStr = (job.experience_max === 0 || job.experience_max === 1) ? "Fresher / 0-1 Year" : "Fresher Eligible";
+                } else {
+                    modalExpStr = `${job.experience_min}${job.experience_max ? '-' + job.experience_max : '+'} Years`;
+                }
+            } else if (job.requirements && job.requirements.toLowerCase().includes("fresher")) {
+                modalExpStr = "Fresher Eligible";
+            }
+            document.getElementById("modalExp").textContent = modalExpStr;
             document.getElementById("modalSalary").textContent = job.salary_text || (job.salary_min ? `₹${job.salary_min.toLocaleString()} / mo` : "Negotiable");
             document.getElementById("modalRole").textContent = job.job_role || "-";
             document.getElementById("modalJobType").textContent = job.job_type || "Full Time";

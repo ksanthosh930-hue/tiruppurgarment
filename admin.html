@@ -3123,7 +3123,7 @@
                     <div style="padding: 4px 0; border-bottom: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <strong>#${j.id} - ${escapeHtml(j.title)}</strong>
-                            <small style="color: #64748B; display: block;">${escapeHtml(j.company_name || 'Direct Employer')} &bull; ${escapeHtml(j.department || 'Garments')}</small>
+                            <small style="color: #64748B; display: block;">${j.company_name ? escapeHtml(j.company_name) + ' &bull; ' : ''}${escapeHtml(j.department || 'Garments')}</small>
                         </div>
                         <div>${statusTag}</div>
                     </div>
@@ -3629,7 +3629,7 @@
             const parentId = data.parent_ingestion_id || data.ingestion_id;
 
             const totalOpenings = vacancies.reduce((sum, v) => sum + (parseInt(v.openings_count) || 1), 0) || totalVacs;
-            const comp = data.company_name || (vacancies[0] && vacancies[0].company_name) || "Direct Garment Manufacturer";
+            const comp = data.company_name || (vacancies[0] && vacancies[0].company_name) || "";
             const loc = data.location || (vacancies[0] && vacancies[0].location) || "Tiruppur";
             const src = data.source_type || "WhatsApp Channel";
             const engineLabel = data.ai_used ? "Free AI (Gemini Vision)" : "Local OCR & Vision Parser (Zero Cost)";

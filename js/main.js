@@ -231,7 +231,7 @@ document.addEventListener("DOMContentLoaded", () => {
             wrap.innerHTML = "";
             data.jobs.forEach(job => {
                 const title = escapeHtml(job.title || "Garment Position");
-                const company = escapeHtml(job.company_name || "Garment Manufacturing Unit");
+                const company = job.company_name ? escapeHtml(job.company_name) : "";
                 const location = escapeHtml(job.location || "Tirupur, Tamil Nadu");
                 const dept = escapeHtml(job.department || "Garment Operations");
                 const jobType = escapeHtml(job.job_type || "Full Time");
@@ -253,7 +253,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             <div class="job-card-top">
                                 <div>
                                     <h3 class="job-card-title">${title}</h3>
-                                    <div class="job-card-company">${company}</div>
+                                    ${company ? `<div class="job-card-company">${company}</div>` : ""}
                                 </div>
                                 <span class="job-card-dept-tag">${dept}</span>
                             </div>

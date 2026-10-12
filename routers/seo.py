@@ -1156,7 +1156,7 @@ def render_seo_landing_page(page_slug: str) -> HTMLResponse:
             j_url = f"/jobs/{j_slug}"
             j_canonical_item_url = f"{CANONICAL_DOMAIN}/jobs/{j_slug}"
             j_loc = html.escape(job.get("location") or "Tiruppur, Tamil Nadu")
-            j_company = html.escape(job.get("company_name") or "Garment Manufacturing Unit")
+            j_company = html.escape(job.get("company_name")) if job.get("company_name") else ""
             j_dept = html.escape(job.get("department") or "Garment")
             
             item_list_elements.append({
@@ -1173,7 +1173,7 @@ def render_seo_landing_page(page_slug: str) -> HTMLResponse:
             elif exp_min is not None:
                 exp_text = f"{exp_min}+ Yrs Exp"
             else:
-                exp_text = "Experienced / Fresher"
+                exp_text = "Experience not specified"
 
             sal_badge = f"<span class='job-pill pill-sal'>💰 {html.escape(job['salary_text'])}</span>" if job.get("salary_text") else ""
             dept_badge = f"<span class='job-pill pill-dept'>🏷️ {j_dept}</span>" if j_dept else ""
@@ -1186,7 +1186,7 @@ def render_seo_landing_page(page_slug: str) -> HTMLResponse:
                         <span class="job-badge-active">Active Vacancy</span>
                     </div>
                     <div class="job-company-meta">
-                        <span>🏢 {j_company}</span>
+                        {f"<span>🏢 {j_company}</span>" if j_company else ""}
                         <span>📍 {j_loc}</span>
                         <span>💼 {exp_text}</span>
                     </div>
@@ -1935,7 +1935,7 @@ def get_job_or_category_page(slug: str):
                 j_title = html.escape(job.get("title") or "Garment Vacancy")
                 j_slug = job.get("slug") or str(job.get("id"))
                 j_loc = html.escape(job.get("location") or "Tiruppur, Tamil Nadu")
-                j_company = html.escape(job.get("company_name") or "Garment Manufacturing Unit")
+                j_company = html.escape(job.get("company_name")) if job.get("company_name") else ""
                 j_sal = f"<span style='color: #10B981; font-weight: 600;'>{html.escape(job['salary_text'])}</span>" if job.get("salary_text") else ""
                 
                 jobs_list_html += f"""
@@ -2154,7 +2154,7 @@ def get_job_or_category_page(slug: str):
         job_slug = job.get("slug") or str(job.get("id"))
         canonical_url = f"{CANONICAL_DOMAIN}/jobs/{job_slug}"
         job_loc = job.get("location") or "Tiruppur, Tamil Nadu, India"
-        job_comp = job.get("company_name") or "Garment Manufacturing Unit"
+        job_comp = (job.get("company_name") or "").strip()
         job_desc = job.get("description") or "Garment manufacturing vacancy in Tiruppur."
         job_type = job.get("job_type") or "FULL_TIME"
         if job_type.lower() in ("full time", "full-time", "full_time"):
@@ -2177,10 +2177,6 @@ def get_job_or_category_page(slug: str):
             "description": html.escape(job_desc),
             "datePosted": date_posted_iso,
             "employmentType": schema_job_type,
-            "hiringOrganization": {
-                "@type": "Organization",
-                "name": job_comp
-            },
             "jobLocation": {
                 "@type": "Place",
                 "address": {
@@ -2191,6 +2187,13 @@ def get_job_or_category_page(slug: str):
                 }
             }
         }
+
+        # Only add hiringOrganization if genuine company name exists (never substitute generic labels)
+        if job_comp:
+            job_posting_dict["hiringOrganization"] = {
+                "@type": "Organization",
+                "name": job_comp
+            }
 
         # Only add salary if genuinely provided in database
         if job.get("salary_min") and job.get("salary_max"):
@@ -2215,7 +2218,7 @@ def get_job_or_category_page(slug: str):
                 }
             }
 
-        if job.get("experience_min") is not None:
+        if job.get("experience_min") is not None and int(job["experience_min"]) > 0:
             job_posting_dict["experienceRequirements"] = {
                 "@type": "OccupationalExperienceRequirements",
                 "monthsOfExperience": int(job["experience_min"]) * 12
@@ -2262,7 +2265,7 @@ def get_job_or_category_page(slug: str):
 
         # Replace standard title and metadata with real dynamic job metadata
         pattern = r'<title>.*?</title>'
-        custom_html = re.sub(pattern, injected_head, html_template, count=1)
+        custom_html = re.sub(pattern, lambda m: injected_head, html_template, count=1)
 
         # Inject auto-open script for client-side modal on load
         script_injection = f"""
