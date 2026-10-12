@@ -2446,7 +2446,7 @@
             const modalComp = (job.company_name && job.company_name.trim()) ? job.company_name.trim() : null;
             const compEl = document.getElementById("modalCompanyName");
             if (modalComp) {
-                compEl.innerHTML = `🏢 ${escapeHtml(modalComp)} ${job.verification_status === 'verified' ? '<span class="verified-badge">✓ Verified</span>' : ''}`;
+                compEl.innerHTML = `🏢 <span style="font-weight: 600; color: #64748b; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Company:</span> <strong style="color: var(--dg-navy, #0f172a); font-size: 15px;">${escapeHtml(modalComp)}</strong> ${job.verification_status === 'verified' ? '<span class="verified-badge">✓ Verified</span>' : ''}`;
                 compEl.style.display = "block";
             } else {
                 compEl.innerHTML = "";

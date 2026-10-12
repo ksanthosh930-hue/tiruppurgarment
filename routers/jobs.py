@@ -225,7 +225,11 @@ def get_public_jobs(
             filtered = [j for j in filtered if j.get("department", "").lower() == dept_str.lower()]
             
         if role_str and role_str != "All":
-            filtered = [j for j in filtered if j.get("job_role", "").lower() == role_str.lower()]
+            filtered = [
+                j for j in filtered
+                if j.get("job_role", "").lower() == role_str.lower()
+                or role_str.lower() in j.get("job_role", "").lower()
+            ]
             
         if loc_str and loc_str != "All":
             filtered = [j for j in filtered if loc_str.lower() in j.get("location", "").lower()]
@@ -279,8 +283,9 @@ def get_public_jobs(
             params.append(dept_str)
 
         if role_str and role_str != "All":
-            conditions.append("j.job_role = %s")
+            conditions.append("(LOWER(j.job_role) = LOWER(%s) OR LOWER(j.job_role) LIKE LOWER(%s))")
             params.append(role_str)
+            params.append(f"%{role_str}%")
 
         if loc_str and loc_str != "All":
             conditions.append("j.location ILIKE %s")
