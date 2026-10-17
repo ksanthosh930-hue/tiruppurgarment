@@ -1,6 +1,8 @@
 import os
 import re
 import html
+import json
+import urllib.parse
 import logging
 import datetime
 from typing import Dict, Any, List, Optional
@@ -89,6 +91,7 @@ def get_sitemap_xml():
                 FROM jobs
                 WHERE LOWER(status) = 'published'
                   AND COALESCE(is_archived, FALSE) = FALSE
+                  AND (expires_at IS NULL OR expires_at >= CURRENT_TIMESTAMP)
                   AND slug IS NOT NULL AND slug != '';
             """
             rows = db_helpers["query_db"](query)
@@ -1785,35 +1788,67 @@ def render_seo_landing_page(page_slug: str) -> HTMLResponse:
 def get_tirupur_jobs_page():
     return render_seo_landing_page("tirupur-jobs")
 
+@router.get("/tirupur-jobs/", include_in_schema=False)
+def redirect_tirupur_jobs_slash(request: Request):
+    qs = request.url.query
+    target = f"/tirupur-jobs?{qs}" if qs else "/tirupur-jobs"
+    return RedirectResponse(url=target, status_code=301)
+
 @router.get("/tirupur-garment-jobs", response_class=HTMLResponse)
 def get_tirupur_garment_jobs_page():
     return render_seo_landing_page("tirupur-garment-jobs")
+
+@router.get("/tirupur-garment-jobs/", include_in_schema=False)
+def redirect_tirupur_garment_jobs_slash(request: Request):
+    qs = request.url.query
+    target = f"/tirupur-garment-jobs?{qs}" if qs else "/tirupur-garment-jobs"
+    return RedirectResponse(url=target, status_code=301)
 
 @router.get("/garment-jobs-in-tirupur", response_class=HTMLResponse)
 def get_garment_jobs_in_tirupur_page():
     return render_seo_landing_page("garment-jobs-in-tirupur")
 
+@router.get("/garment-jobs-in-tirupur/", include_in_schema=False)
+def redirect_garment_jobs_in_tirupur_slash(request: Request):
+    qs = request.url.query
+    target = f"/garment-jobs-in-tirupur?{qs}" if qs else "/garment-jobs-in-tirupur"
+    return RedirectResponse(url=target, status_code=301)
+
 @router.get("/apparel-jobs-in-tirupur", response_class=HTMLResponse)
 def get_apparel_jobs_in_tirupur_page():
     return render_seo_landing_page("apparel-jobs-in-tirupur")
 
+@router.get("/apparel-jobs-in-tirupur/", include_in_schema=False)
+def redirect_apparel_jobs_in_tirupur_slash(request: Request):
+    qs = request.url.query
+    target = f"/apparel-jobs-in-tirupur?{qs}" if qs else "/apparel-jobs-in-tirupur"
+    return RedirectResponse(url=target, status_code=301)
+
 
 # --- 5.6. 301 PERMANENT REDIRECTS (Legacy Tiruppur Spelling Migration) ---
 @router.get("/tiruppur-jobs", response_class=RedirectResponse, status_code=301)
-def redirect_tiruppur_jobs():
-    return RedirectResponse(url="/tirupur-jobs", status_code=301)
+def redirect_tiruppur_jobs(request: Request):
+    qs = request.url.query
+    target = f"/tirupur-jobs?{qs}" if qs else "/tirupur-jobs"
+    return RedirectResponse(url=target, status_code=301)
 
 @router.get("/tiruppur-garment-jobs", response_class=RedirectResponse, status_code=301)
-def redirect_tiruppur_garment_jobs():
-    return RedirectResponse(url="/tirupur-garment-jobs", status_code=301)
+def redirect_tiruppur_garment_jobs(request: Request):
+    qs = request.url.query
+    target = f"/tirupur-garment-jobs?{qs}" if qs else "/tirupur-garment-jobs"
+    return RedirectResponse(url=target, status_code=301)
 
 @router.get("/garment-jobs-in-tiruppur", response_class=RedirectResponse, status_code=301)
-def redirect_garment_jobs_in_tiruppur():
-    return RedirectResponse(url="/garment-jobs-in-tirupur", status_code=301)
+def redirect_garment_jobs_in_tiruppur(request: Request):
+    qs = request.url.query
+    target = f"/garment-jobs-in-tirupur?{qs}" if qs else "/garment-jobs-in-tirupur"
+    return RedirectResponse(url=target, status_code=301)
 
 @router.get("/apparel-jobs-in-tiruppur", response_class=RedirectResponse, status_code=301)
-def redirect_apparel_jobs_in_tiruppur():
-    return RedirectResponse(url="/apparel-jobs-in-tirupur", status_code=301)
+def redirect_apparel_jobs_in_tiruppur(request: Request):
+    qs = request.url.query
+    target = f"/apparel-jobs-in-tirupur?{qs}" if qs else "/apparel-jobs-in-tirupur"
+    return RedirectResponse(url=target, status_code=301)
 
 
 # --- 6. JOB CATEGORY SEO HUBS ---
@@ -1894,16 +1929,52 @@ CATEGORY_MAPPINGS = {
     }
 }
 
+@router.get("/jobs/{slug}/", include_in_schema=False)
+def redirect_job_trailing_slash(slug: str, request: Request):
+    clean = (slug or "").strip().strip("/")
+    target = f"/jobs/{clean}"
+    if request.url.query:
+        target += f"?{request.url.query}"
+    return RedirectResponse(url=target, status_code=301)
+
 @router.get("/jobs/{slug}", response_class=HTMLResponse)
-def get_job_or_category_page(slug: str):
+def get_job_or_category_page(slug: str, request: Request):
     """
     Handles both Category Hub pages (e.g. merchandiser-jobs-tiruppur)
     and specific real Job Detail pages (e.g. jr-merchandiser-7f3b4e) with server-rendered metadata & JobPosting schema.
     """
+    clean_slug = (slug or "").strip().strip("/")
+    if not clean_slug:
+        qs = request.url.query
+        target = f"/jobs?{qs}" if qs else "/jobs"
+        return RedirectResponse(url=target, status_code=301)
+
+    # 0a. Permanent 301 redirects for known legacy/typo slugs
+    KNOWN_REDIRECTS = {
+        "cutting-incharge-4ff5f0e": "cutting-incharge-4f5f0e",
+    }
+    if clean_slug in KNOWN_REDIRECTS:
+        target = f"{CANONICAL_DOMAIN}/jobs/{KNOWN_REDIRECTS[clean_slug]}"
+        if request.url.query:
+            target += f"?{request.url.query}"
+        return RedirectResponse(url=target, status_code=301)
+
+    # 0b. Enforce canonical slug for numeric ID URLs (e.g. /jobs/413 -> /jobs/cutting-incharge-4f5f0e)
+    if clean_slug.isdigit() and db_helpers["db_enabled"] and db_helpers["query_db"]:
+        try:
+            id_rows = db_helpers["query_db"]("SELECT slug FROM jobs WHERE id = %s AND LOWER(status) = 'published' AND COALESCE(is_archived, FALSE) = FALSE;", (int(clean_slug),))
+            if id_rows and id_rows[0].get("slug"):
+                target = f"{CANONICAL_DOMAIN}/jobs/{id_rows[0]['slug']}"
+                if request.url.query:
+                    target += f"?{request.url.query}"
+                return RedirectResponse(url=target, status_code=301)
+        except Exception:
+            pass
+
     # 1. Check if it's a known category hub
-    if slug in CATEGORY_MAPPINGS:
-        cat_info = CATEGORY_MAPPINGS[slug]
-        canonical_url = f"{CANONICAL_DOMAIN}/jobs/{slug}"
+    if clean_slug in CATEGORY_MAPPINGS:
+        cat_info = CATEGORY_MAPPINGS[clean_slug]
+        canonical_url = f"{CANONICAL_DOMAIN}/jobs/{clean_slug}"
         escaped_title = html.escape(cat_info["title"])
         escaped_desc = html.escape(cat_info["description"])
         escaped_h1 = html.escape(cat_info["h1"])
@@ -1969,7 +2040,6 @@ def get_job_or_category_page(slug: str):
                 "acceptedAnswer": {"@type": "Answer", "text": f["a"]}
             })
 
-        import json
         cat_schema_json = json.dumps({
             "@context": "https://schema.org",
             "@graph": [
@@ -2133,30 +2203,40 @@ def get_job_or_category_page(slug: str):
                    j.salary_min, j.salary_max, j.salary_text, j.description,
                    j.requirements, j.skills, j.qualification, j.gender,
                    j.contact_phone, j.contact_whatsapp, j.contact_email, j.application_url,
-                   j.published_at, j.created_at,
+                   j.published_at, j.expires_at, j.created_at, j.status, j.is_archived,
                    COALESCE(cp.company_name, c.name, '') AS company_name,
                    COALESCE(cp.company_logo, c.logo_url, '') AS company_logo,
                    COALESCE(cp.location, c.location, j.location) AS company_location
             FROM jobs j
             LEFT JOIN companies c ON j.company_id = c.id
             LEFT JOIN company_profiles cp ON j.company_profile_id = cp.id
-            WHERE (j.slug = %s OR CAST(j.id AS VARCHAR) = %s)
-              AND LOWER(j.status) = 'published'
-              AND COALESCE(j.is_archived, FALSE) = FALSE;
+            WHERE j.slug = %s OR CAST(j.id AS VARCHAR) = %s;
         """
-        rows = db_helpers["query_db"](query, (str(slug), str(slug)))
+        rows = db_helpers["query_db"](query, (str(clean_slug), str(clean_slug)))
         if not rows:
-            # Job not found or archived
-            raise HTTPException(status_code=404, detail="Job posting not found or no longer active.")
+            # Job not found in database
+            raise HTTPException(status_code=404, detail="Job posting not found.")
 
         job = rows[0]
-        job_title = job.get("title") or "Garment Job Vacancy"
+        is_published = (job.get("status") or "").lower() == "published"
+        is_archived = bool(job.get("is_archived"))
+        exp_date = job.get("expires_at")
+        is_expired = bool(exp_date and isinstance(exp_date, (datetime.datetime, datetime.date)) and exp_date < datetime.datetime.now())
+
+        if not is_published or is_archived or is_expired:
+            raise HTTPException(status_code=410, detail="This job vacancy has expired or is no longer active.")
+
+        job_title = (job.get("title") or "Garment Job Vacancy").strip()
         job_slug = job.get("slug") or str(job.get("id"))
         canonical_url = f"{CANONICAL_DOMAIN}/jobs/{job_slug}"
-        job_loc = job.get("location") or "Tiruppur, Tamil Nadu, India"
+        job_loc = (job.get("location") or "Tiruppur, Tamil Nadu, India").strip()
         job_comp = (job.get("company_name") or "").strip()
-        job_desc = job.get("description") or "Garment manufacturing vacancy in Tiruppur."
-        job_type = job.get("job_type") or "FULL_TIME"
+        job_desc = (job.get("description") or f"Garment manufacturing vacancy for {job_title} in Tiruppur.").strip()
+        job_role = (job.get("job_role") or job_title).strip()
+        job_dept = (job.get("department") or "Garments").strip()
+        job_type = (job.get("job_type") or "Full Time").strip()
+        openings_cnt = job.get("openings_count") or 1
+
         if job_type.lower() in ("full time", "full-time", "full_time"):
             schema_job_type = "FULL_TIME"
         elif job_type.lower() in ("part time", "part-time", "part_time"):
@@ -2177,10 +2257,12 @@ def get_job_or_category_page(slug: str):
             "description": html.escape(job_desc),
             "datePosted": date_posted_iso,
             "employmentType": schema_job_type,
+            "directApply": True,
             "jobLocation": {
                 "@type": "Place",
                 "address": {
                     "@type": "PostalAddress",
+                    "streetAddress": job_loc,
                     "addressLocality": "Tiruppur",
                     "addressRegion": "Tamil Nadu",
                     "addressCountry": "IN"
@@ -2188,14 +2270,21 @@ def get_job_or_category_page(slug: str):
             }
         }
 
-        # Only add hiringOrganization if genuine company name exists (never substitute generic labels)
         if job_comp:
             job_posting_dict["hiringOrganization"] = {
                 "@type": "Organization",
                 "name": job_comp
             }
+            if job.get("company_logo"):
+                logo_u = str(job["company_logo"])
+                if logo_u.startswith("/"):
+                    logo_u = f"{CANONICAL_DOMAIN}{logo_u}"
+                job_posting_dict["hiringOrganization"]["logo"] = logo_u
 
-        # Only add salary if genuinely provided in database
+        if exp_date:
+            valid_through_iso = exp_date.strftime("%Y-%m-%d") if isinstance(exp_date, (datetime.datetime, datetime.date)) else str(exp_date)[:10]
+            job_posting_dict["validThrough"] = valid_through_iso
+
         if job.get("salary_min") and job.get("salary_max"):
             job_posting_dict["baseSalary"] = {
                 "@type": "MonetaryAmount",
@@ -2224,7 +2313,12 @@ def get_job_or_category_page(slug: str):
                 "monthsOfExperience": int(job["experience_min"]) * 12
             }
 
-        import json
+        if job.get("qualification"):
+            job_posting_dict["qualifications"] = job["qualification"].strip()
+
+        if job.get("skills"):
+            job_posting_dict["skills"] = job["skills"].strip()
+
         structured_data_json = json.dumps({
             "@context": "https://schema.org",
             "@graph": [
@@ -2240,16 +2334,15 @@ def get_job_or_category_page(slug: str):
             ]
         })
 
-        meta_page_title = f"{job_title} | Tiruppur Garment Jobs"
-        meta_page_desc = f"Apply for {job_title} at {job_comp} in {job_loc}. Verified garment vacancy on DigiGarment."
+        comp_part = f" at {job_comp}" if job_comp else ""
+        meta_page_title = f"{job_title}{comp_part} in Tiruppur | Garment Jobs"
+        meta_page_desc = f"Apply for {job_title}{comp_part} in {job_loc}. Openings: {openings_cnt}. Verified apparel industry vacancy on TirupurGarment.in."
 
         # Read jobs.html to serve complete progressive frontend application
         with open(os.path.join(BASE_DIR, "jobs.html"), "r", encoding="utf-8") as f:
             html_template = f.read()
 
-        # Inject dynamic SEO tags & schema into jobs.html
-        injected_head = f"""
-    <title>{html.escape(meta_page_title)}</title>
+        injected_head = f"""<title>{html.escape(meta_page_title)}</title>
     <meta name="description" content="{html.escape(meta_page_desc)}">
     <link rel="canonical" href="{canonical_url}">
     <meta property="og:title" content="{html.escape(meta_page_title)}">
@@ -2260,30 +2353,176 @@ def get_job_or_category_page(slug: str):
     <meta name="twitter:card" content="summary_large_image">
     <script type="application/ld+json">
     {structured_data_json}
-    </script>
+    </script>"""
+
+        # Cleanly replace generic head metadata using template boundary markers (with safe regex fallback)
+        if "<!-- BEGIN_PAGE_METADATA -->" in html_template and "<!-- END_PAGE_METADATA -->" in html_template:
+            start_m = "<!-- BEGIN_PAGE_METADATA -->"
+            end_m = "<!-- END_PAGE_METADATA -->"
+            prefix = html_template.split(start_m)[0] + start_m + "\n    "
+            suffix = "\n    " + end_m + html_template.split(end_m)[1]
+            custom_html = prefix + injected_head + suffix
+        else:
+            head_pattern = r'<title>.*?</script>\s*(?=<link\s+rel=[\'"]preconnect[\'"])'
+            custom_html = re.sub(head_pattern, lambda m: injected_head + "\n    ", html_template, count=1, flags=re.DOTALL)
+
+        # Update breadcrumbs bar on job detail page
+        old_breadcrumb = '<strong style="color: #081226;">Tiruppur Jobs</strong>'
+        new_breadcrumb = f'<a href="/jobs" style="color: #64748B; text-decoration: none;">Tiruppur Jobs</a> <span style="color: #CBD5E1; margin: 0 8px;">›</span> <strong style="color: #081226;">{html.escape(job_title)}</strong>'
+        custom_html = custom_html.replace(old_breadcrumb, new_breadcrumb, 1)
+
+        # Experience string
+        exp_min = job.get("experience_min")
+        exp_max = job.get("experience_max")
+        if exp_min is not None:
+            if exp_min == 0:
+                modal_exp_str = "Fresher / 0-1 Year" if (exp_max == 0 or exp_max == 1) else "Fresher Eligible"
+            else:
+                modal_exp_str = f"{exp_min}{'-' + str(exp_max) if exp_max else '+'} Years"
+        elif job.get("requirements") and "fresher" in job["requirements"].lower():
+            modal_exp_str = "Fresher Eligible"
+        else:
+            modal_exp_str = "Experience not specified"
+
+        # Salary string
+        modal_salary_str = job.get("salary_text") or (f"₹{int(job['salary_min']):,} / mo" if job.get("salary_min") else "Negotiable")
+
+        # Accessible crawlable content block for bots and non-JS clients
+        noscript_block = f"""
+        <noscript>
+            <div style="background: #ffffff; border: 1px solid #E2E8F0; border-radius: 12px; padding: 32px; margin: 24px auto; max-width: 900px;">
+                <h1 style="font-size: 26px; color: #081226; margin: 0 0 10px 0;">{html.escape(job_title)}</h1>
+                <div style="font-size: 14px; color: #64748B; margin-bottom: 20px;">
+                    {f"<span>🏢 {html.escape(job_comp)}</span> • " if job_comp else ""}
+                    <span>📍 {html.escape(job_loc)}</span> • 
+                    <span>💼 {html.escape(job_type)}</span>
+                    {f" • <span style='color: #10B981; font-weight: 600;'>💰 {html.escape(modal_salary_str)}</span>" if modal_salary_str else ""}
+                </div>
+                <div style="line-height: 1.7; color: #334155; margin-bottom: 20px;">
+                    <h3 style="color: #081226; margin-bottom: 8px;">Job Description</h3>
+                    <p style="margin: 0;">{html.escape(job_desc)}</p>
+                </div>
+                {f"<div style='margin-bottom: 20px;'><h3 style='color: #081226; margin-bottom: 8px;'>Requirements</h3><p style='margin: 0;'>{html.escape(job['requirements'])}</p></div>" if job.get('requirements') else ""}
+                {f"<div style='margin-bottom: 20px;'><h3 style='color: #081226; margin-bottom: 8px;'>Key Skills</h3><p style='margin: 0;'>{html.escape(job['skills'])}</p></div>" if job.get('skills') else ""}
+            </div>
+        </noscript>
         """
+        custom_html = custom_html.replace('<main class="jobs-container">', f'<main class="jobs-container">\n{noscript_block}', 1)
 
-        # Replace standard title and metadata with real dynamic job metadata
-        pattern = r'<title>.*?</title>'
-        custom_html = re.sub(pattern, lambda m: injected_head, html_template, count=1)
+        # Pre-render job detail into modal DOM elements for 100% crawlability & instant display
+        custom_html = custom_html.replace(
+            '<div class="modal" id="jobDetailModal">',
+            '<div class="modal" id="jobDetailModal" style="display: flex;">',
+            1
+        )
+        custom_html = custom_html.replace(
+            '<h2 id="modalJobTitle">Job Title</h2>',
+            f'<h1 id="modalJobTitle" style="font-size: 24px; font-weight: 700; margin: 0 0 6px 0; color: var(--dg-navy); line-height: 1.3;">{html.escape(job_title)}</h1>',
+            1
+        )
+        custom_html = custom_html.replace(
+            '<span id="modalDeptBadge" class="tag-badge tag-dept"\n                        style="display: inline-block; margin-bottom: 6px;"></span>',
+            f'<span id="modalDeptBadge" class="tag-badge tag-dept" style="display: inline-block; margin-bottom: 6px;">{html.escape(job_dept)}</span>',
+            1
+        )
 
-        # Inject auto-open script for client-side modal on load
+        if job_comp:
+            comp_html = f'🏢 <span style="font-weight: 600; color: #64748b; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Company:</span> <strong style="color: var(--dg-navy, #0f172a); font-size: 15px;">{html.escape(job_comp)}</strong>'
+            custom_html = custom_html.replace(
+                '<div id="modalCompanyName" class="company-name"\n                        style="font-size: 14px; font-weight: 600; color: var(--dg-slate);"></div>',
+                f'<div id="modalCompanyName" class="company-name" style="font-size: 14px; font-weight: 600; color: var(--dg-slate); display: block;">{comp_html}</div>',
+                1
+            )
+
+        custom_html = custom_html.replace('<strong id="modalLocation">-</strong>', f'<strong id="modalLocation">{html.escape(job_loc)}</strong>', 1)
+        custom_html = custom_html.replace('<strong id="modalExp">-</strong>', f'<strong id="modalExp">{html.escape(modal_exp_str)}</strong>', 1)
+        custom_html = custom_html.replace('<strong id="modalSalary" style="color: var(--dg-red);">-</strong>', f'<strong id="modalSalary" style="color: var(--dg-red);">{html.escape(modal_salary_str)}</strong>', 1)
+        custom_html = custom_html.replace('<strong id="modalRole">-</strong>', f'<strong id="modalRole">{html.escape(job_role)}</strong>', 1)
+        custom_html = custom_html.replace('<strong id="modalJobType">-</strong>', f'<strong id="modalJobType">{html.escape(job_type)}</strong>', 1)
+        custom_html = custom_html.replace('<strong id="modalQual">-</strong>', f'<strong id="modalQual">{html.escape(job.get("qualification") or "Any Qualification")}</strong>', 1)
+        custom_html = custom_html.replace('<div class="rich-text" id="modalDesc"></div>', f'<div class="rich-text" id="modalDesc">{html.escape(job_desc)}</div>', 1)
+
+        if job.get("requirements"):
+            custom_html = custom_html.replace('<div class="rich-text" id="modalReqs"></div>', f'<div class="rich-text" id="modalReqs">{html.escape(job["requirements"])}</div>', 1)
+        else:
+            custom_html = custom_html.replace('<div id="modalReqsWrap">', '<div id="modalReqsWrap" style="display: none;">', 1)
+
+        if job.get("skills"):
+            skills_pills = "".join(f'<span class="skill-pill">{html.escape(s.strip())}</span>' for s in job["skills"].split(",") if s.strip())
+            custom_html = custom_html.replace('<div class="skills-wrap" id="modalSkills"></div>', f'<div class="skills-wrap" id="modalSkills">{skills_pills}</div>', 1)
+        else:
+            custom_html = custom_html.replace('<div id="modalSkillsWrap">', '<div id="modalSkillsWrap" style="display: none;">', 1)
+
+        # Pre-render actions bar
+        actions_html = f"""
+            <button type="button" class="btn-action btn-save-action" id="modalActionSaveBtn" aria-label="Save job" onclick="handleToggleSaveJob({job['id']})">
+                <span class="save-icon" id="modalActionSaveIcon">♡</span>
+                <span class="save-text" id="modalActionSaveText">Save Job</span>
+            </button>
+            <button type="button" class="btn-action btn-share-action" id="modalActionShareBtn" aria-label="Share job" onclick="openShareModal({job['id']})">
+                <span class="share-icon">↗</span>
+                <span>Share Job</span>
+            </button>
+            <div id="modalApplyActionWrap">
+                <button class="btn-action btn-apply-primary" onclick="handleApplyClick({job['id']}, '{html.escape(job_title)}')">🚀 Apply Now</button>
+            </div>
+        """
+        if job.get("contact_whatsapp") and job["contact_whatsapp"].strip():
+            clean_wa = re.sub(r'[^0-9]', '', job["contact_whatsapp"])
+            wa_text = urllib.parse.quote(f'Hello, I saw your job vacancy "{job_title}" on DigiGarment Tiruppur Jobs. I would like to apply.')
+            actions_html += f'<a class="btn-action btn-whatsapp" href="https://wa.me/{clean_wa}?text={wa_text}" target="_blank">💬 WhatsApp HR</a>'
+        if job.get("contact_phone") and job["contact_phone"].strip():
+            clean_phone = re.sub(r'[^0-9+]', '', job["contact_phone"])
+            actions_html += f'<a class="btn-action btn-call" href="tel:{clean_phone}">📞 Call ({html.escape(job["contact_phone"])})</a>'
+        if job.get("contact_email") and job["contact_email"].strip():
+            subj = urllib.parse.quote(f'Application for {job_title} - DigiGarment')
+            actions_html += f'<a class="btn-action btn-email" href="mailto:{html.escape(job["contact_email"])}?subject={subj}">✉️ Email Resume</a>'
+        if job.get("application_url") and job["application_url"].strip():
+            actions_html += f'<a class="btn-action btn-email" href="{html.escape(job["application_url"])}" target="_blank">🌐 Company Portal &rarr;</a>'
+
+        custom_html = custom_html.replace(
+            '<div class="actions-bar" id="modalActionsBar">\n                    <!-- Dynamic Contact Actions injected only when verified data exists -->\n                </div>',
+            f'<div class="actions-bar" id="modalActionsBar">{actions_html}</div>',
+            1
+        )
+
+        # JSON representation of the job for client JS cache
+        client_job = dict(job)
+        for k, v in list(client_job.items()):
+            if isinstance(v, (datetime.datetime, datetime.date)):
+                client_job[k] = v.isoformat()
+            elif isinstance(v, float) or hasattr(v, '__float__'):
+                client_job[k] = float(v)
+
         script_injection = f"""
         <script>
+            window.SERVER_RENDERED_JOB = {json.dumps(client_job)};
             window.addEventListener('DOMContentLoaded', () => {{
-                if (typeof openJobModalBySlug === 'function') {{
-                    openJobModalBySlug("{job_slug}");
+                if (window.SERVER_RENDERED_JOB && typeof activeJobsCache !== 'undefined') {{
+                    const existingIdx = activeJobsCache.findIndex(j => j.id === window.SERVER_RENDERED_JOB.id);
+                    if (existingIdx === -1) {{
+                        activeJobsCache.push(window.SERVER_RENDERED_JOB);
+                    }} else {{
+                        activeJobsCache[existingIdx] = window.SERVER_RENDERED_JOB;
+                    }}
+                    currentDetailJobId = window.SERVER_RENDERED_JOB.id;
+                    if (typeof updateSaveButtonUI === 'function') {{
+                        updateSaveButtonUI(window.SERVER_RENDERED_JOB.id);
+                    }}
+                    if (typeof checkApplicationStatusForModal === 'function') {{
+                        checkApplicationStatusForModal(window.SERVER_RENDERED_JOB.id, window.SERVER_RENDERED_JOB.title);
+                    }}
                 }}
             }});
         </script>
         </body>
         """
-        custom_html = custom_html.replace("</body>", script_injection)
+        custom_html = custom_html.replace("</body>", script_injection, 1)
 
         return HTMLResponse(content=custom_html)
 
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error rendering job detail page {slug}: {e}")
+        logger.error(f"Error rendering job detail page {clean_slug}: {e}")
         return FileResponse(os.path.join(BASE_DIR, "jobs.html"))

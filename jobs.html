@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- BEGIN_PAGE_METADATA -->
     <title>Tiruppur Garment Jobs | Merchandiser, Quality & Production Vacancies</title>
     <meta name="description"
         content="Browse active garment manufacturing, export merchandising, pattern making, cutting, and quality controller jobs in Tiruppur, Tamil Nadu.">
@@ -49,6 +50,7 @@
       ]
     }
     </script>
+    <!-- END_PAGE_METADATA -->
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2283,12 +2285,14 @@
                 }
                 const dateStr = j.published_at ? new Date(j.published_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Recently';
                 const saved = isJobSaved(j.id);
+                const jobSlug = j.slug || j.id;
+                const jobUrl = `/jobs/${encodeURIComponent(jobSlug)}`;
 
                 card.innerHTML = `
                     <div>
                         <div class="job-card-header">
                             <div class="job-card-title-group">
-                                <h3>${escapeHtml(j.title)}</h3>
+                                <h3><a href="${jobUrl}" onclick="event.preventDefault(); openJobDetailModal(${j.id})" style="color: inherit; text-decoration: none;">${escapeHtml(j.title)}</a></h3>
                                 ${companyHtml}
                             </div>
                             ${featuredTag}
@@ -2321,7 +2325,7 @@
                                 <span class="share-icon">↗</span>
                                 <span class="share-text">Share</span>
                             </button>
-                            <button class="btn-view-job" onclick="event.stopPropagation(); openJobDetailModal(${j.id})">View Details</button>
+                            <a href="${jobUrl}" class="btn-view-job" onclick="event.preventDefault(); event.stopPropagation(); openJobDetailModal(${j.id})" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">View Details</a>
                         </div>
                     </div>
                 `;
@@ -2436,11 +2440,23 @@
         window.openJobModalBySlug = openJobModalBySlug;
 
         // Job Detail Modal Logic
+        let modalOpenedByPushState = false;
+
         function openJobDetailModal(jobId) {
             const job = activeJobsCache.find(j => j.id === jobId);
             if (!job) return;
 
             currentDetailJobId = jobId;
+
+            // Sync browser URL to permalink without reloading
+            if (window.history && window.history.pushState) {
+                const jobSlug = job.slug || job.id;
+                const targetUrl = `/jobs/${encodeURIComponent(jobSlug)}`;
+                if (window.location.pathname !== targetUrl) {
+                    window.history.pushState({ modalJobId: jobId }, "", targetUrl);
+                    modalOpenedByPushState = true;
+                }
+            }
 
             document.getElementById("modalJobTitle").textContent = job.title;
             const modalComp = (job.company_name && job.company_name.trim()) ? job.company_name.trim() : null;
@@ -2694,8 +2710,30 @@
         }
 
         function closeJobDetailModal() {
-            document.getElementById("jobDetailModal").style.display = "none";
+            const modal = document.getElementById("jobDetailModal");
+            if (modal) modal.style.display = "none";
+            currentDetailJobId = null;
+
+            if (modalOpenedByPushState) {
+                modalOpenedByPushState = false;
+                window.history.back();
+            } else if (window.history && window.history.replaceState && window.location.pathname.startsWith('/jobs/')) {
+                window.history.replaceState(null, "", "/jobs" + (window.location.search || ""));
+            }
         }
+
+        window.addEventListener('popstate', (e) => {
+            if (e.state && e.state.modalJobId) {
+                openJobDetailModal(e.state.modalJobId);
+            } else {
+                const modal = document.getElementById("jobDetailModal");
+                if (modal && modal.style.display !== "none") {
+                    modal.style.display = "none";
+                    currentDetailJobId = null;
+                    modalOpenedByPushState = false;
+                }
+            }
+        });
 
         // Phase 4D Job Sharing Controller
         let currentShareJob = null;

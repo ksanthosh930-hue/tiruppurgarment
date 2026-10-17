@@ -876,6 +876,12 @@ def get_index():
 def get_jobs_page():
     return FileResponse(os.path.join(BASE_DIR, "jobs.html"))
 
+@app.get("/jobs/", include_in_schema=False)
+def get_jobs_slash_redirect(request: Request):
+    qs = request.url.query
+    target = f"/jobs?{qs}" if qs else "/jobs"
+    return RedirectResponse(url=target, status_code=301)
+
 @app.get("/signup")
 @app.get("/register")
 @app.get("/jobseeker/register")

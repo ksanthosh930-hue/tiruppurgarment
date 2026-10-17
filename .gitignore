@@ -37,3 +37,7 @@ assets/uploads/resumes/*.docx
 assets/uploads/source_vault/*
 !assets/uploads/resumes/.gitkeep
 !assets/uploads/source_vault/.gitkeep
+
+# Agent Framework
+.agents/
+skills-lock.json
