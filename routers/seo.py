@@ -1108,29 +1108,93 @@ SEO_LANDING_PAGES = {
     }
 }
 
-def render_seo_landing_page(page_slug: str) -> HTMLResponse:
+def build_pagination_component(base_url_path: str, current_page: int, total_pages: int, total_count: int, page_size: int = 20) -> str:
+    """
+    Renders crawlable, accessible HTML pagination controls.
+    Page 1 URL is clean canonical (e.g. /tirupur-jobs).
+    Page 2+ URLs include ?page=N (e.g. /tirupur-jobs?page=2).
+    """
+    if total_pages <= 1:
+        return ""
+
+    start_idx = (current_page - 1) * page_size + 1
+    end_idx = min(current_page * page_size, total_count)
+
+    links_html = []
+
+    # Previous Page link
+    if current_page > 1:
+        prev_href = f"{base_url_path}?page={current_page - 1}" if current_page > 2 else base_url_path
+        links_html.append(f'<a href="{prev_href}" class="pag-btn pag-prev" rel="prev">&larr; Previous</a>')
+    else:
+        links_html.append('<span class="pag-btn pag-disabled">&larr; Previous</span>')
+
+    # Page numbers with windowing
+    for p in range(1, total_pages + 1):
+        if p == 1 or p == total_pages or abs(p - current_page) <= 2:
+            p_href = base_url_path if p == 1 else f"{base_url_path}?page={p}"
+            if p == current_page:
+                links_html.append(f'<span class="pag-num pag-current">{p}</span>')
+            else:
+                links_html.append(f'<a href="{p_href}" class="pag-num">{p}</a>')
+        elif abs(p - current_page) == 3:
+            links_html.append('<span class="pag-ellipsis">&hellip;</span>')
+
+    # Next Page link
+    if current_page < total_pages:
+        next_href = f"{base_url_path}?page={current_page + 1}"
+        links_html.append(f'<a href="{next_href}" class="pag-btn pag-next" rel="next">Next &rarr;</a>')
+    else:
+        links_html.append('<span class="pag-btn pag-disabled">Next &rarr;</span>')
+
+    return f"""
+    <nav class="pagination-container" aria-label="Job listing navigation">
+        <div class="pagination-info">Showing <strong>{start_idx}–{end_idx}</strong> of <strong>{total_count}</strong> active verified jobs</div>
+        <div class="pagination-links">
+            {"".join(links_html)}
+        </div>
+    </nav>
+    """
+
+
+def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResponse:
     page_info = SEO_LANDING_PAGES.get(page_slug)
     if not page_info:
         raise HTTPException(status_code=404, detail="Page not found")
 
-    canonical_url = f"{CANONICAL_DOMAIN}/{page_slug}"
-    escaped_title = html.escape(page_info["title"])
-    escaped_desc = html.escape(page_info["description"])
-    escaped_h1 = html.escape(page_info["h1"])
+    PAGE_SIZE = 20
+
+    current_page = 1
+    if request:
+        try:
+            raw_p = request.query_params.get("page")
+            if raw_p and raw_p.isdigit():
+                current_page = max(1, int(raw_p))
+        except Exception:
+            current_page = 1
 
     # Query REAL matching active published jobs from the database
     matching_jobs = []
     total_matching_count = 0
+    total_pages = 1
+    offset = 0
+
     if db_helpers["db_enabled"] and db_helpers["query_db"]:
         try:
             count_res = db_helpers["query_db"]("""
                 SELECT COUNT(*) AS total
                 FROM jobs j
                 WHERE LOWER(j.status) = 'published'
-                  AND COALESCE(j.is_archived, FALSE) = FALSE;
+                  AND COALESCE(j.is_archived, FALSE) = FALSE
+                  AND (j.expires_at IS NULL OR j.expires_at >= CURRENT_TIMESTAMP);
             """)
             if count_res and count_res[0].get("total") is not None:
                 total_matching_count = int(count_res[0]["total"])
+
+            total_pages = max(1, (total_matching_count + PAGE_SIZE - 1) // PAGE_SIZE) if total_matching_count > 0 else 1
+            if current_page > total_pages and total_matching_count > 0:
+                current_page = total_pages
+            offset = (current_page - 1) * PAGE_SIZE
 
             query = """
                 SELECT j.id, j.title, j.slug, j.department, j.job_role, j.location,
@@ -1142,12 +1206,31 @@ def render_seo_landing_page(page_slug: str) -> HTMLResponse:
                 LEFT JOIN company_profiles cp ON j.company_profile_id = cp.id
                 WHERE LOWER(j.status) = 'published'
                   AND COALESCE(j.is_archived, FALSE) = FALSE
+                  AND (j.expires_at IS NULL OR j.expires_at >= CURRENT_TIMESTAMP)
                 ORDER BY j.is_featured DESC, j.published_at DESC NULLS LAST, j.id DESC
-                LIMIT 20;
+                LIMIT %s OFFSET %s;
             """
-            matching_jobs = db_helpers["query_db"](query)
+            matching_jobs = db_helpers["query_db"](query, (PAGE_SIZE, offset))
         except Exception as e:
             logger.warning(f"Error querying jobs for landing page {page_slug}: {e}")
+
+    # Canonical and Paginated Title & Link Tags
+    base_slug_path = f"/{page_slug}"
+    if current_page > 1:
+        canonical_url = f"{CANONICAL_DOMAIN}{base_slug_path}?page={current_page}"
+        escaped_title = f"{html.escape(page_info['title'])} — Page {current_page}"
+        prev_url = f"{CANONICAL_DOMAIN}{base_slug_path}?page={current_page - 1}" if current_page > 2 else f"{CANONICAL_DOMAIN}{base_slug_path}"
+        next_url = f"{CANONICAL_DOMAIN}{base_slug_path}?page={current_page + 1}" if current_page < total_pages else None
+    else:
+        canonical_url = f"{CANONICAL_DOMAIN}{base_slug_path}"
+        escaped_title = html.escape(page_info["title"])
+        prev_url = None
+        next_url = f"{CANONICAL_DOMAIN}{base_slug_path}?page=2" if total_pages > 1 else None
+
+    escaped_desc = html.escape(page_info["description"])
+    escaped_h1 = html.escape(page_info["h1"])
+
+    pagination_html = build_pagination_component(base_slug_path, current_page, total_pages, total_matching_count, PAGE_SIZE)
 
     # Build job list HTML & Schema.org ItemList elements
     item_list_elements = []
@@ -1164,7 +1247,7 @@ def render_seo_landing_page(page_slug: str) -> HTMLResponse:
             
             item_list_elements.append({
                 "@type": "ListItem",
-                "position": idx,
+                "position": offset + idx,
                 "name": job.get("title") or "Garment Vacancy",
                 "url": j_canonical_item_url
             })
@@ -1293,6 +1376,8 @@ def render_seo_landing_page(page_slug: str) -> HTMLResponse:
     <title>{escaped_title}</title>
     <meta name="description" content="{escaped_desc}">
     <link rel="canonical" href="{canonical_url}">
+    {f'<link rel="prev" href="{prev_url}">' if prev_url else ''}
+    {f'<link rel="next" href="{next_url}">' if next_url else ''}
     <meta name="robots" content="index, follow">
 
     <!-- Open Graph / Facebook -->
@@ -1336,6 +1421,64 @@ def render_seo_landing_page(page_slug: str) -> HTMLResponse:
         .breadcrumbs-bar a:hover {{ color: var(--dg-red); }}
         .breadcrumbs-bar span {{ color: #CBD5E1; margin: 0 8px; }}
         .breadcrumbs-bar strong {{ color: var(--dg-navy); }}
+
+        /* Pagination Styles */
+        .pagination-container {{
+            margin: 36px 0 24px 0;
+            text-align: center;
+        }}
+        .pagination-info {{
+            font-size: 13.5px;
+            color: var(--dg-slate);
+            margin-bottom: 14px;
+            font-weight: 500;
+        }}
+        .pagination-links {{
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 6px;
+        }}
+        .pag-btn, .pag-num {{
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 14px;
+            background: #ffffff;
+            border: 1px solid #CBD5E1;
+            border-radius: 6px;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--dg-navy);
+            text-decoration: none;
+            transition: all 0.15s ease-in-out;
+            min-width: 38px;
+            box-sizing: border-box;
+        }}
+        .pag-btn:hover, .pag-num:hover {{
+            border-color: var(--dg-red);
+            color: var(--dg-red);
+            background: #FFFBFB;
+        }}
+        .pag-current {{
+            background: var(--dg-red) !important;
+            border-color: var(--dg-red) !important;
+            color: #ffffff !important;
+            cursor: default;
+        }}
+        .pag-disabled {{
+            color: #94A3B8;
+            border-color: #E2E8F0;
+            background: #F8FAFC;
+            cursor: not-allowed;
+            pointer-events: none;
+        }}
+        .pag-ellipsis {{
+            padding: 0 4px;
+            color: #94A3B8;
+            font-weight: 700;
+        }}
         
         .landing-hero {{
             background: linear-gradient(135deg, #081226 0%, #111E38 100%);
@@ -1729,6 +1872,7 @@ def render_seo_landing_page(page_slug: str) -> HTMLResponse:
         </div>
 
         {jobs_list_html}
+        {pagination_html}
 
         <!-- About Section -->
         <div class="content-box">
@@ -1785,8 +1929,8 @@ def render_seo_landing_page(page_slug: str) -> HTMLResponse:
 
 # --- 5.5. PRIMARY CANONICAL LANDING ROUTES ---
 @router.get("/tirupur-jobs", response_class=HTMLResponse)
-def get_tirupur_jobs_page():
-    return render_seo_landing_page("tirupur-jobs")
+def get_tirupur_jobs_page(request: Request):
+    return render_seo_landing_page("tirupur-jobs", request)
 
 @router.get("/tirupur-jobs/", include_in_schema=False)
 def redirect_tirupur_jobs_slash(request: Request):
@@ -1795,8 +1939,8 @@ def redirect_tirupur_jobs_slash(request: Request):
     return RedirectResponse(url=target, status_code=301)
 
 @router.get("/tirupur-garment-jobs", response_class=HTMLResponse)
-def get_tirupur_garment_jobs_page():
-    return render_seo_landing_page("tirupur-garment-jobs")
+def get_tirupur_garment_jobs_page(request: Request):
+    return render_seo_landing_page("tirupur-garment-jobs", request)
 
 @router.get("/tirupur-garment-jobs/", include_in_schema=False)
 def redirect_tirupur_garment_jobs_slash(request: Request):
@@ -1805,8 +1949,8 @@ def redirect_tirupur_garment_jobs_slash(request: Request):
     return RedirectResponse(url=target, status_code=301)
 
 @router.get("/garment-jobs-in-tirupur", response_class=HTMLResponse)
-def get_garment_jobs_in_tirupur_page():
-    return render_seo_landing_page("garment-jobs-in-tirupur")
+def get_garment_jobs_in_tirupur_page(request: Request):
+    return render_seo_landing_page("garment-jobs-in-tirupur", request)
 
 @router.get("/garment-jobs-in-tirupur/", include_in_schema=False)
 def redirect_garment_jobs_in_tirupur_slash(request: Request):
@@ -1815,8 +1959,8 @@ def redirect_garment_jobs_in_tirupur_slash(request: Request):
     return RedirectResponse(url=target, status_code=301)
 
 @router.get("/apparel-jobs-in-tirupur", response_class=HTMLResponse)
-def get_apparel_jobs_in_tirupur_page():
-    return render_seo_landing_page("apparel-jobs-in-tirupur")
+def get_apparel_jobs_in_tirupur_page(request: Request):
+    return render_seo_landing_page("apparel-jobs-in-tirupur", request)
 
 @router.get("/apparel-jobs-in-tirupur/", include_in_schema=False)
 def redirect_apparel_jobs_in_tirupur_slash(request: Request):
@@ -1974,16 +2118,43 @@ def get_job_or_category_page(slug: str, request: Request):
     # 1. Check if it's a known category hub
     if clean_slug in CATEGORY_MAPPINGS:
         cat_info = CATEGORY_MAPPINGS[clean_slug]
-        canonical_url = f"{CANONICAL_DOMAIN}/jobs/{clean_slug}"
-        escaped_title = html.escape(cat_info["title"])
-        escaped_desc = html.escape(cat_info["description"])
-        escaped_h1 = html.escape(cat_info["h1"])
+
+        PAGE_SIZE = 20
+
+        current_page = 1
+        if request:
+            try:
+                raw_p = request.query_params.get("page")
+                if raw_p and raw_p.isdigit():
+                    current_page = max(1, int(raw_p))
+            except Exception:
+                current_page = 1
 
         # Query REAL matching active jobs from the database
         matching_jobs = []
+        total_category_count = 0
+        total_pages = 1
+        offset = 0
+
         if db_helpers["db_enabled"] and db_helpers["query_db"]:
             try:
                 keyword = f"%{cat_info['department_keyword']}%"
+                count_res = db_helpers["query_db"]("""
+                    SELECT COUNT(*) AS total
+                    FROM jobs j
+                    WHERE LOWER(j.status) = 'published'
+                      AND COALESCE(j.is_archived, FALSE) = FALSE
+                      AND (j.expires_at IS NULL OR j.expires_at >= CURRENT_TIMESTAMP)
+                      AND (j.department ILIKE %s OR j.job_role ILIKE %s OR j.title ILIKE %s);
+                """, (keyword, keyword, keyword))
+                if count_res and count_res[0].get("total") is not None:
+                    total_category_count = int(count_res[0]["total"])
+
+                total_pages = max(1, (total_category_count + PAGE_SIZE - 1) // PAGE_SIZE) if total_category_count > 0 else 1
+                if current_page > total_pages and total_category_count > 0:
+                    current_page = total_pages
+                offset = (current_page - 1) * PAGE_SIZE
+
                 query = """
                     SELECT j.id, j.title, j.slug, j.department, j.job_role, j.location,
                            j.salary_text, j.experience_min, j.experience_max, j.job_type,
@@ -1992,13 +2163,31 @@ def get_job_or_category_page(slug: str, request: Request):
                     LEFT JOIN companies c ON j.company_id = c.id
                     WHERE LOWER(j.status) = 'published'
                       AND COALESCE(j.is_archived, FALSE) = FALSE
+                      AND (j.expires_at IS NULL OR j.expires_at >= CURRENT_TIMESTAMP)
                       AND (j.department ILIKE %s OR j.job_role ILIKE %s OR j.title ILIKE %s)
                     ORDER BY j.is_featured DESC, j.published_at DESC NULLS LAST, j.id DESC
-                    LIMIT 20;
+                    LIMIT %s OFFSET %s;
                 """
-                matching_jobs = db_helpers["query_db"](query, (keyword, keyword, keyword))
+                matching_jobs = db_helpers["query_db"](query, (keyword, keyword, keyword, PAGE_SIZE, offset))
             except Exception as e:
                 logger.warning(f"Error querying jobs for category {slug}: {e}")
+
+        base_cat_path = f"/jobs/{clean_slug}"
+        if current_page > 1:
+            canonical_url = f"{CANONICAL_DOMAIN}{base_cat_path}?page={current_page}"
+            escaped_title = f"{html.escape(cat_info['title'])} — Page {current_page}"
+            prev_url = f"{CANONICAL_DOMAIN}{base_cat_path}?page={current_page - 1}" if current_page > 2 else f"{CANONICAL_DOMAIN}{base_cat_path}"
+            next_url = f"{CANONICAL_DOMAIN}{base_cat_path}?page={current_page + 1}" if current_page < total_pages else None
+        else:
+            canonical_url = f"{CANONICAL_DOMAIN}{base_cat_path}"
+            escaped_title = html.escape(cat_info["title"])
+            prev_url = None
+            next_url = f"{CANONICAL_DOMAIN}{base_cat_path}?page=2" if total_pages > 1 else None
+
+        escaped_desc = html.escape(cat_info["description"])
+        escaped_h1 = html.escape(cat_info["h1"])
+
+        pagination_html = build_pagination_component(base_cat_path, current_page, total_pages, total_category_count, PAGE_SIZE)
 
         jobs_list_html = ""
         if matching_jobs:
@@ -2072,6 +2261,8 @@ def get_job_or_category_page(slug: str, request: Request):
     <title>{escaped_title}</title>
     <meta name="description" content="{escaped_desc}">
     <link rel="canonical" href="{canonical_url}">
+    {f'<link rel="prev" href="{prev_url}">' if prev_url else ''}
+    {f'<link rel="next" href="{next_url}">' if next_url else ''}
 
     <!-- Open Graph -->
     <meta property="og:title" content="{escaped_title}">
@@ -2126,6 +2317,64 @@ def get_job_or_category_page(slug: str, request: Request):
         .breadcrumbs-bar a:hover {{ color: var(--dg-red); }}
         .breadcrumbs-bar span {{ color: #CBD5E1; margin: 0 8px; }}
         .breadcrumbs-bar strong {{ color: var(--dg-navy); }}
+
+        /* Pagination Styles */
+        .pagination-container {{
+            margin: 36px 0 24px 0;
+            text-align: center;
+        }}
+        .pagination-info {{
+            font-size: 13.5px;
+            color: var(--dg-slate);
+            margin-bottom: 14px;
+            font-weight: 500;
+        }}
+        .pagination-links {{
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 6px;
+        }}
+        .pag-btn, .pag-num {{
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 14px;
+            background: #ffffff;
+            border: 1px solid #CBD5E1;
+            border-radius: 6px;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--dg-navy);
+            text-decoration: none;
+            transition: all 0.15s ease-in-out;
+            min-width: 38px;
+            box-sizing: border-box;
+        }}
+        .pag-btn:hover, .pag-num:hover {{
+            border-color: var(--dg-red);
+            color: var(--dg-red);
+            background: #FFFBFB;
+        }}
+        .pag-current {{
+            background: var(--dg-red) !important;
+            border-color: var(--dg-red) !important;
+            color: #ffffff !important;
+            cursor: default;
+        }}
+        .pag-disabled {{
+            color: #94A3B8;
+            border-color: #E2E8F0;
+            background: #F8FAFC;
+            cursor: not-allowed;
+            pointer-events: none;
+        }}
+        .pag-ellipsis {{
+            padding: 0 4px;
+            color: #94A3B8;
+            font-weight: 700;
+        }}
     </style>
 </head>
 <body>
@@ -2165,6 +2414,7 @@ def get_job_or_category_page(slug: str, request: Request):
     <main class="container" style="max-width: 900px; margin: 40px auto;">
         <h2 style="font-size: 20px; color: #081226; margin-bottom: 20px;">Current Openings in this Category</h2>
         {jobs_list_html}
+        {pagination_html}
 
         <div style="background: #ffffff; border: 1px solid #E2E8F0; border-radius: 12px; padding: 32px; margin-top: 40px;">
             <h2 style="font-size: 20px; color: #081226; margin-top: 0; margin-bottom: 16px;">Key Skills & Industry Responsibilities</h2>
