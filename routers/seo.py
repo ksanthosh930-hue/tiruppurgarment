@@ -1309,7 +1309,7 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
             <div class="landing-job-card">
                 <div class="job-card-main">
                     <div class="job-card-header">
-                        <h3 class="job-title"><a href="{j_url}" onclick="if(!event.ctrlKey &amp;&amp; !event.metaKey &amp;&amp; !event.shiftKey &amp;&amp; event.button === 0){{ openCategoryJobModal('{j_slug}', event); }}">{j_title}</a></h3>
+                        <h3 class="job-title"><a href="{j_url}" onclick="return handleCategoryJobClick('{j_slug}', event);">{j_title}</a></h3>
                         <span class="job-badge-active">Active Vacancy</span>
                     </div>
                     <div class="job-company-meta">
@@ -1323,7 +1323,7 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
                     </div>
                 </div>
                 <div class="job-card-actions">
-                    <a href="{j_url}" onclick="if(!event.ctrlKey &amp;&amp; !event.metaKey &amp;&amp; !event.shiftKey &amp;&amp; event.button === 0){{ openCategoryJobModal('{j_slug}', event); }}" class="btn-view-job">View & Apply →</a>
+                    <a href="{j_url}" onclick="return handleCategoryJobClick('{j_slug}', event);" class="btn-view-job">View & Apply →</a>
                 </div>
             </div>
             """
@@ -2046,6 +2046,30 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
             border-radius: 6px;
             font-size: 12px;
         }}
+        .btn-modal-util {{
+            background: #ffffff;
+            border: 1px solid #CBD5E1;
+            color: #475569;
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }}
+        .btn-modal-util:hover {{
+            border-color: #9E1B32;
+            color: #9E1B32;
+            background: #FFF5F5;
+        }}
+        .btn-modal-util.saved {{
+            background: #FEE2E2;
+            border-color: #FCA5A5;
+            color: #9E1B32;
+        }}
     </style>
 </head>
 <body>
@@ -2166,7 +2190,15 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
                     <h2 id="catModalTitle" style="font-size: 22px; font-weight: 800; color: #081226; margin: 0 0 6px 0;">Job Title</h2>
                     <div id="catModalCompany" style="font-size: 14px; font-weight: 600; color: #64748B;"></div>
                 </div>
-                <button type="button" class="modal-close" aria-label="Close dialog" onclick="closeCategoryJobModal()">&times;</button>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <button type="button" class="btn-modal-util" id="catModalShareBtn" onclick="handleCategoryShareClick()" aria-label="Share Job">
+                        <span>↗</span> <span>Share</span>
+                    </button>
+                    <button type="button" class="btn-modal-util" id="catModalSaveBtn" onclick="handleCategorySaveClick()" aria-label="Save Job">
+                        <span id="catModalSaveIcon">♡</span> <span id="catModalSaveText">Save Job</span>
+                    </button>
+                    <button type="button" class="modal-close" aria-label="Close dialog" onclick="closeCategoryJobModal()">&times;</button>
+                </div>
             </div>
             <div class="modal-body">
                 <!-- Specs Grid -->
@@ -2236,8 +2268,70 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
             }}
         }}
 
-        var catModalPushState = false;
-        var currentCategoryPath = window.location.pathname + window.location.search;
+        var currentActiveJob = null;
+        var savedJobs = [];
+        try {{
+            savedJobs = JSON.parse(localStorage.getItem('tirupur_saved_jobs') || '[]');
+        }} catch(e) {{}}
+
+        function isJobSaved(id) {{
+            return savedJobs.indexOf(id) !== -1;
+        }}
+
+        window.handleCategorySaveClick = function() {{
+            if (!currentActiveJob) return;
+            var id = currentActiveJob.id;
+            var idx = savedJobs.indexOf(id);
+            if (idx === -1) {{
+                savedJobs.push(id);
+            }} else {{
+                savedJobs.splice(idx, 1);
+            }}
+            try {{
+                localStorage.setItem('tirupur_saved_jobs', JSON.stringify(savedJobs));
+            }} catch(e) {{}}
+            updateSaveButtonUI();
+        }};
+
+        function updateSaveButtonUI() {{
+            var saveBtn = document.getElementById('catModalSaveBtn');
+            var saveIcon = document.getElementById('catModalSaveIcon');
+            var saveText = document.getElementById('catModalSaveText');
+            if (!saveBtn || !currentActiveJob) return;
+            var saved = isJobSaved(currentActiveJob.id);
+            if (saved) {{
+                saveBtn.classList.add('saved');
+                if (saveIcon) saveIcon.textContent = '♥';
+                if (saveText) saveText.textContent = 'Saved';
+            }} else {{
+                saveBtn.classList.remove('saved');
+                if (saveIcon) saveIcon.textContent = '♡';
+                if (saveText) saveText.textContent = 'Save Job';
+            }}
+        }}
+
+        window.handleCategoryShareClick = function() {{
+            if (!currentActiveJob) return;
+            var jobUrl = window.location.origin + '/jobs/' + encodeURIComponent(currentActiveJob.slug);
+            var title = (currentActiveJob.title || 'Garment Job') + ' in Tiruppur';
+            var text = 'Garment vacancy: ' + (currentActiveJob.title || '') + (currentActiveJob.company_name ? ' at ' + currentActiveJob.company_name : '');
+            if (navigator.share) {{
+                navigator.share({{
+                    title: title,
+                    text: text,
+                    url: jobUrl
+                }}).catch(function() {{}});
+            }} else if (navigator.clipboard) {{
+                navigator.clipboard.writeText(jobUrl).then(function() {{
+                    var shareBtn = document.getElementById('catModalShareBtn');
+                    if (shareBtn) {{
+                        var orig = shareBtn.innerHTML;
+                        shareBtn.innerHTML = '<span>✓</span> <span>Copied!</span>';
+                        setTimeout(function() {{ shareBtn.innerHTML = orig; }}, 2000);
+                    }}
+                }});
+            }}
+        }};
 
         function escapeHtml(str) {{
             if (!str) return '';
@@ -2249,22 +2343,34 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
                 .replace(/'/g, '&#039;');
         }}
 
-        window.openCategoryJobModal = function(jobSlug, event) {{
-            if (event) {{
-                event.preventDefault();
+        window.handleCategoryJobClick = function(jobSlug, event) {{
+            if (!event) event = window.event;
+            if (event && (event.ctrlKey || event.metaKey || event.shiftKey || event.button === 1)) {{
+                return true;
             }}
+            if (event) {{
+                if (event.preventDefault) event.preventDefault();
+                if (event.stopPropagation) event.stopPropagation();
+            }}
+            openCategoryJobModal(jobSlug);
+            return false;
+        }};
+
+        window.openCategoryJobModal = function(jobSlug) {{
             var job = categoryJobs[jobSlug];
             if (!job) {{
-                window.location.href = '/jobs/' + encodeURIComponent(jobSlug);
+                console.warn('Job details not found in cache for slug:', jobSlug);
                 return;
             }}
+
+            currentActiveJob = job;
 
             document.getElementById('catModalTitle').textContent = job.title || 'Job Vacancy';
             document.getElementById('catModalDept').textContent = job.department || 'Garments';
 
             var compEl = document.getElementById('catModalCompany');
             if (job.company_name && job.company_name.trim()) {{
-                compEl.innerHTML = '🏢 <span style="font-weight: 600; color: #64748b; font-size: 13px;">Company:</span> <strong style="color: #081226; font-size: 14.5px;">' + escapeHtml(job.company_name) + '</strong>';
+                compEl.innerHTML = '🏢 <span style="font-weight: 600; color: #64748b; font-size: 13px; text-transform: uppercase;">Company:</span> <strong style="color: #081226; font-size: 14.5px;">' + escapeHtml(job.company_name) + '</strong>';
                 compEl.style.display = 'block';
             }} else {{
                 compEl.innerHTML = '';
@@ -2305,23 +2411,72 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
                 skillsWrap.style.display = 'none';
             }}
 
+            updateSaveButtonUI();
+
             var actionsBar = document.getElementById('catModalActions');
             actionsBar.innerHTML = '';
 
-            // WhatsApp action
+            // 1. Save Job
+            var barSaveBtn = document.createElement('button');
+            barSaveBtn.type = 'button';
+            barSaveBtn.className = 'btn-action btn-direct-link';
+            barSaveBtn.innerHTML = '♡ Save Job';
+            barSaveBtn.onclick = function() {{
+                handleCategorySaveClick();
+                var saved = isJobSaved(job.id);
+                barSaveBtn.innerHTML = saved ? '♥ Saved' : '♡ Save Job';
+            }};
+            if (isJobSaved(job.id)) barSaveBtn.innerHTML = '♥ Saved';
+            actionsBar.appendChild(barSaveBtn);
+
+            // 2. Share Job
+            var barShareBtn = document.createElement('button');
+            barShareBtn.type = 'button';
+            barShareBtn.className = 'btn-action btn-direct-link';
+            barShareBtn.innerHTML = '↗ Share Job';
+            barShareBtn.onclick = handleCategoryShareClick;
+            actionsBar.appendChild(barShareBtn);
+
+            // 3. Apply Now (Primary)
+            var applyBtn = document.createElement('a');
+            applyBtn.className = 'btn-action btn-apply-primary';
             if (job.contact_whatsapp && job.contact_whatsapp.trim()) {{
                 var cleanWA = job.contact_whatsapp.replace(/[^0-9]/g, '');
                 var waText = encodeURIComponent('Hello, I saw your job vacancy "' + job.title + '" on DigiGarment Tiruppur Jobs. I would like to apply.');
+                applyBtn.href = 'https://wa.me/' + cleanWA + '?text=' + waText;
+                applyBtn.target = '_blank';
+                applyBtn.rel = 'noopener noreferrer';
+                applyBtn.innerHTML = '🚀 Apply Now';
+            }} else if (job.application_url && job.application_url.trim()) {{
+                applyBtn.href = job.application_url;
+                applyBtn.target = '_blank';
+                applyBtn.rel = 'noopener noreferrer';
+                applyBtn.innerHTML = '🚀 Apply Now';
+            }} else if (job.contact_email && job.contact_email.trim()) {{
+                var emailSub = encodeURIComponent('Application for ' + job.title + ' - DigiGarment');
+                applyBtn.href = 'mailto:' + encodeURIComponent(job.contact_email) + '?subject=' + emailSub;
+                applyBtn.innerHTML = '🚀 Apply Now';
+            }} else {{
+                applyBtn.href = '/jobs/' + encodeURIComponent(job.slug);
+                applyBtn.target = '_blank';
+                applyBtn.innerHTML = '🚀 Apply Now';
+            }}
+            actionsBar.appendChild(applyBtn);
+
+            // 4. WhatsApp HR action
+            if (job.contact_whatsapp && job.contact_whatsapp.trim()) {{
+                var cleanWA2 = job.contact_whatsapp.replace(/[^0-9]/g, '');
+                var waText2 = encodeURIComponent('Hello, I saw your job vacancy "' + job.title + '" on DigiGarment Tiruppur Jobs. I would like to apply.');
                 var waLink = document.createElement('a');
                 waLink.className = 'btn-action btn-whatsapp';
-                waLink.href = 'https://wa.me/' + cleanWA + '?text=' + waText;
+                waLink.href = 'https://wa.me/' + cleanWA2 + '?text=' + waText2;
                 waLink.target = '_blank';
                 waLink.rel = 'noopener noreferrer';
                 waLink.innerHTML = '💬 WhatsApp HR';
                 actionsBar.appendChild(waLink);
             }}
 
-            // Call action
+            // 5. Call action
             if (job.contact_phone && job.contact_phone.trim()) {{
                 var cleanPhone = job.contact_phone.replace(/[^0-9+]/g, '');
                 var callLink = document.createElement('a');
@@ -2331,7 +2486,7 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
                 actionsBar.appendChild(callLink);
             }}
 
-            // Email action
+            // 6. Email action
             if (job.contact_email && job.contact_email.trim()) {{
                 var emailSubject = encodeURIComponent('Application for ' + job.title + ' - DigiGarment');
                 var emailLink = document.createElement('a');
@@ -2341,40 +2496,18 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
                 actionsBar.appendChild(emailLink);
             }}
 
-            // Company Portal Apply
+            // 7. Company Portal Apply
             if (job.application_url && job.application_url.trim()) {{
                 var portalLink = document.createElement('a');
-                portalLink.className = 'btn-action btn-apply-primary';
+                portalLink.className = 'btn-action btn-direct-link';
                 portalLink.href = job.application_url;
                 portalLink.target = '_blank';
                 portalLink.rel = 'noopener noreferrer';
-                portalLink.innerHTML = '🌐 Apply on Company Portal &rarr;';
+                portalLink.innerHTML = '🌐 Company Portal &rarr;';
                 actionsBar.appendChild(portalLink);
             }}
 
-            // Share Button
-            var shareBtn = document.createElement('button');
-            shareBtn.type = 'button';
-            shareBtn.className = 'btn-action btn-direct-link';
-            shareBtn.innerHTML = '↗ Share';
-            shareBtn.onclick = function() {{
-                var jobUrl = window.location.origin + '/jobs/' + encodeURIComponent(job.slug);
-                if (navigator.share) {{
-                    navigator.share({{
-                        title: job.title + ' in Tiruppur',
-                        text: 'Garment job vacancy: ' + job.title + (job.company_name ? ' at ' + job.company_name : ''),
-                        url: jobUrl
-                    }}).catch(function() {{}});
-                }} else if (navigator.clipboard) {{
-                    navigator.clipboard.writeText(jobUrl).then(function() {{
-                        shareBtn.innerHTML = '✓ Link Copied!';
-                        setTimeout(function() {{ shareBtn.innerHTML = '↗ Share'; }}, 2000);
-                    }});
-                }}
-            }};
-            actionsBar.appendChild(shareBtn);
-
-            // Direct Job Page Link
+            // 8. Direct Job Page Link
             var directLink = document.createElement('a');
             directLink.className = 'btn-action btn-direct-link';
             directLink.href = '/jobs/' + encodeURIComponent(job.slug);
@@ -2385,31 +2518,15 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
             var modal = document.getElementById('categoryJobModal');
             modal.style.display = 'flex';
             document.body.style.overflow = 'hidden';
-
-            if (window.history && window.history.pushState) {{
-                var targetUrl = '/jobs/' + encodeURIComponent(job.slug);
-                if (window.location.pathname !== targetUrl) {{
-                    window.history.pushState({{ modalJobSlug: jobSlug }}, '', targetUrl);
-                    catModalPushState = true;
-                }}
-            }}
         }};
 
-        window.closeCategoryJobModal = function(triggerBack) {{
-            if (triggerBack === undefined) triggerBack = true;
+        window.closeCategoryJobModal = function() {{
             var modal = document.getElementById('categoryJobModal');
             if (!modal || modal.style.display === 'none') return;
 
             modal.style.display = 'none';
             document.body.style.overflow = '';
-
-            if (triggerBack && catModalPushState) {{
-                catModalPushState = false;
-                window.history.back();
-            }} else if (window.history && window.history.replaceState) {{
-                window.history.replaceState(null, '', currentCategoryPath);
-                catModalPushState = false;
-            }}
+            currentActiveJob = null;
         }};
 
         window.handleCategoryModalBackdrop = function(e) {{
@@ -2421,14 +2538,6 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
         window.addEventListener('keydown', function(e) {{
             if (e.key === 'Escape') {{
                 closeCategoryJobModal();
-            }}
-        }});
-
-        window.addEventListener('popstate', function(e) {{
-            if (e.state && e.state.modalJobSlug) {{
-                openCategoryJobModal(e.state.modalJobSlug);
-            }} else {{
-                closeCategoryJobModal(false);
             }}
         }});
     }})();
@@ -2889,10 +2998,10 @@ def get_job_or_category_page(slug: str, request: Request):
                 jobs_list_html += f"""
                 <div style="background: #ffffff; border: 1px solid #E2E8F0; border-radius: 10px; padding: 20px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                     <div>
-                        <h3 style="margin: 0 0 6px 0; font-size: 17px; color: #081226;"><a href="/jobs/{j_slug}" onclick="if(!event.ctrlKey &amp;&amp; !event.metaKey &amp;&amp; !event.shiftKey &amp;&amp; event.button === 0){{ openCategoryJobModal('{j_slug}', event); }}" style="color: #081226; text-decoration: none;">{j_title}</a></h3>
+                        <h3 style="margin: 0 0 6px 0; font-size: 17px; color: #081226;"><a href="/jobs/{j_slug}" onclick="return handleCategoryJobClick('{j_slug}', event);" style="color: #081226; text-decoration: none;">{j_title}</a></h3>
                         <div style="font-size: 13px; color: #64748B;">🏢 {j_company} &nbsp;•&nbsp; 📍 {j_loc} &nbsp; {j_sal}</div>
                     </div>
-                    <a href="/jobs/{j_slug}" onclick="if(!event.ctrlKey &amp;&amp; !event.metaKey &amp;&amp; !event.shiftKey &amp;&amp; event.button === 0){{ openCategoryJobModal('{j_slug}', event); }}" style="background: #9E1B32; color: #ffffff; padding: 8px 18px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">View Details &rarr;</a>
+                    <a href="/jobs/{j_slug}" onclick="return handleCategoryJobClick('{j_slug}', event);" style="background: #9E1B32; color: #ffffff; padding: 8px 18px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">View Details &rarr;</a>
                 </div>
                 """
         else:
@@ -3289,6 +3398,30 @@ def get_job_or_category_page(slug: str, request: Request):
             border-radius: 6px;
             font-size: 12px;
         }}
+        .btn-modal-util {{
+            background: #ffffff;
+            border: 1px solid #CBD5E1;
+            color: #475569;
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }}
+        .btn-modal-util:hover {{
+            border-color: #9E1B32;
+            color: #9E1B32;
+            background: #FFF5F5;
+        }}
+        .btn-modal-util.saved {{
+            background: #FEE2E2;
+            border-color: #FCA5A5;
+            color: #9E1B32;
+        }}
     </style>
 </head>
 <body>
@@ -3363,7 +3496,15 @@ def get_job_or_category_page(slug: str, request: Request):
                     <h2 id="catModalTitle" style="font-size: 22px; font-weight: 800; color: #081226; margin: 0 0 6px 0;">Job Title</h2>
                     <div id="catModalCompany" style="font-size: 14px; font-weight: 600; color: #64748B;"></div>
                 </div>
-                <button type="button" class="modal-close" aria-label="Close dialog" onclick="closeCategoryJobModal()">&times;</button>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <button type="button" class="btn-modal-util" id="catModalShareBtn" onclick="handleCategoryShareClick()" aria-label="Share Job">
+                        <span>↗</span> <span>Share</span>
+                    </button>
+                    <button type="button" class="btn-modal-util" id="catModalSaveBtn" onclick="handleCategorySaveClick()" aria-label="Save Job">
+                        <span id="catModalSaveIcon">♡</span> <span id="catModalSaveText">Save Job</span>
+                    </button>
+                    <button type="button" class="modal-close" aria-label="Close dialog" onclick="closeCategoryJobModal()">&times;</button>
+                </div>
             </div>
             <div class="modal-body">
                 <!-- Specs Grid -->
@@ -3433,8 +3574,70 @@ def get_job_or_category_page(slug: str, request: Request):
             }}
         }}
 
-        var catModalPushState = false;
-        var currentCategoryPath = window.location.pathname + window.location.search;
+        var currentActiveJob = null;
+        var savedJobs = [];
+        try {{
+            savedJobs = JSON.parse(localStorage.getItem('tirupur_saved_jobs') || '[]');
+        }} catch(e) {{}}
+
+        function isJobSaved(id) {{
+            return savedJobs.indexOf(id) !== -1;
+        }}
+
+        window.handleCategorySaveClick = function() {{
+            if (!currentActiveJob) return;
+            var id = currentActiveJob.id;
+            var idx = savedJobs.indexOf(id);
+            if (idx === -1) {{
+                savedJobs.push(id);
+            }} else {{
+                savedJobs.splice(idx, 1);
+            }}
+            try {{
+                localStorage.setItem('tirupur_saved_jobs', JSON.stringify(savedJobs));
+            }} catch(e) {{}}
+            updateSaveButtonUI();
+        }};
+
+        function updateSaveButtonUI() {{
+            var saveBtn = document.getElementById('catModalSaveBtn');
+            var saveIcon = document.getElementById('catModalSaveIcon');
+            var saveText = document.getElementById('catModalSaveText');
+            if (!saveBtn || !currentActiveJob) return;
+            var saved = isJobSaved(currentActiveJob.id);
+            if (saved) {{
+                saveBtn.classList.add('saved');
+                if (saveIcon) saveIcon.textContent = '♥';
+                if (saveText) saveText.textContent = 'Saved';
+            }} else {{
+                saveBtn.classList.remove('saved');
+                if (saveIcon) saveIcon.textContent = '♡';
+                if (saveText) saveText.textContent = 'Save Job';
+            }}
+        }}
+
+        window.handleCategoryShareClick = function() {{
+            if (!currentActiveJob) return;
+            var jobUrl = window.location.origin + '/jobs/' + encodeURIComponent(currentActiveJob.slug);
+            var title = (currentActiveJob.title || 'Garment Job') + ' in Tiruppur';
+            var text = 'Garment vacancy: ' + (currentActiveJob.title || '') + (currentActiveJob.company_name ? ' at ' + currentActiveJob.company_name : '');
+            if (navigator.share) {{
+                navigator.share({{
+                    title: title,
+                    text: text,
+                    url: jobUrl
+                }}).catch(function() {{}});
+            }} else if (navigator.clipboard) {{
+                navigator.clipboard.writeText(jobUrl).then(function() {{
+                    var shareBtn = document.getElementById('catModalShareBtn');
+                    if (shareBtn) {{
+                        var orig = shareBtn.innerHTML;
+                        shareBtn.innerHTML = '<span>✓</span> <span>Copied!</span>';
+                        setTimeout(function() {{ shareBtn.innerHTML = orig; }}, 2000);
+                    }}
+                }});
+            }}
+        }};
 
         function escapeHtml(str) {{
             if (!str) return '';
@@ -3446,22 +3649,35 @@ def get_job_or_category_page(slug: str, request: Request):
                 .replace(/'/g, '&#039;');
         }}
 
-        window.openCategoryJobModal = function(jobSlug, event) {{
-            if (event) {{
-                event.preventDefault();
+        window.handleCategoryJobClick = function(jobSlug, event) {{
+            if (!event) event = window.event;
+            // If user held Ctrl, Cmd, Shift, or used middle click, allow opening in new tab
+            if (event && (event.ctrlKey || event.metaKey || event.shiftKey || event.button === 1)) {{
+                return true;
             }}
+            if (event) {{
+                if (event.preventDefault) event.preventDefault();
+                if (event.stopPropagation) event.stopPropagation();
+            }}
+            openCategoryJobModal(jobSlug);
+            return false;
+        }};
+
+        window.openCategoryJobModal = function(jobSlug) {{
             var job = categoryJobs[jobSlug];
             if (!job) {{
-                window.location.href = '/jobs/' + encodeURIComponent(jobSlug);
+                console.warn('Job details not found in cache for slug:', jobSlug);
                 return;
             }}
+
+            currentActiveJob = job;
 
             document.getElementById('catModalTitle').textContent = job.title || 'Job Vacancy';
             document.getElementById('catModalDept').textContent = job.department || 'Garments';
 
             var compEl = document.getElementById('catModalCompany');
             if (job.company_name && job.company_name.trim()) {{
-                compEl.innerHTML = '🏢 <span style="font-weight: 600; color: #64748b; font-size: 13px;">Company:</span> <strong style="color: #081226; font-size: 14.5px;">' + escapeHtml(job.company_name) + '</strong>';
+                compEl.innerHTML = '🏢 <span style="font-weight: 600; color: #64748b; font-size: 13px; text-transform: uppercase;">Company:</span> <strong style="color: #081226; font-size: 14.5px;">' + escapeHtml(job.company_name) + '</strong>';
                 compEl.style.display = 'block';
             }} else {{
                 compEl.innerHTML = '';
@@ -3502,23 +3718,72 @@ def get_job_or_category_page(slug: str, request: Request):
                 skillsWrap.style.display = 'none';
             }}
 
+            updateSaveButtonUI();
+
             var actionsBar = document.getElementById('catModalActions');
             actionsBar.innerHTML = '';
 
-            // WhatsApp action
+            // 1. Save Job
+            var barSaveBtn = document.createElement('button');
+            barSaveBtn.type = 'button';
+            barSaveBtn.className = 'btn-action btn-direct-link';
+            barSaveBtn.innerHTML = '♡ Save Job';
+            barSaveBtn.onclick = function() {{
+                handleCategorySaveClick();
+                var saved = isJobSaved(job.id);
+                barSaveBtn.innerHTML = saved ? '♥ Saved' : '♡ Save Job';
+            }};
+            if (isJobSaved(job.id)) barSaveBtn.innerHTML = '♥ Saved';
+            actionsBar.appendChild(barSaveBtn);
+
+            // 2. Share Job
+            var barShareBtn = document.createElement('button');
+            barShareBtn.type = 'button';
+            barShareBtn.className = 'btn-action btn-direct-link';
+            barShareBtn.innerHTML = '↗ Share Job';
+            barShareBtn.onclick = handleCategoryShareClick;
+            actionsBar.appendChild(barShareBtn);
+
+            // 3. Apply Now (Primary)
+            var applyBtn = document.createElement('a');
+            applyBtn.className = 'btn-action btn-apply-primary';
             if (job.contact_whatsapp && job.contact_whatsapp.trim()) {{
                 var cleanWA = job.contact_whatsapp.replace(/[^0-9]/g, '');
                 var waText = encodeURIComponent('Hello, I saw your job vacancy "' + job.title + '" on DigiGarment Tiruppur Jobs. I would like to apply.');
+                applyBtn.href = 'https://wa.me/' + cleanWA + '?text=' + waText;
+                applyBtn.target = '_blank';
+                applyBtn.rel = 'noopener noreferrer';
+                applyBtn.innerHTML = '🚀 Apply Now';
+            }} else if (job.application_url && job.application_url.trim()) {{
+                applyBtn.href = job.application_url;
+                applyBtn.target = '_blank';
+                applyBtn.rel = 'noopener noreferrer';
+                applyBtn.innerHTML = '🚀 Apply Now';
+            }} else if (job.contact_email && job.contact_email.trim()) {{
+                var emailSub = encodeURIComponent('Application for ' + job.title + ' - DigiGarment');
+                applyBtn.href = 'mailto:' + encodeURIComponent(job.contact_email) + '?subject=' + emailSub;
+                applyBtn.innerHTML = '🚀 Apply Now';
+            }} else {{
+                applyBtn.href = '/jobs/' + encodeURIComponent(job.slug);
+                applyBtn.target = '_blank';
+                applyBtn.innerHTML = '🚀 Apply Now';
+            }}
+            actionsBar.appendChild(applyBtn);
+
+            // 4. WhatsApp HR action
+            if (job.contact_whatsapp && job.contact_whatsapp.trim()) {{
+                var cleanWA2 = job.contact_whatsapp.replace(/[^0-9]/g, '');
+                var waText2 = encodeURIComponent('Hello, I saw your job vacancy "' + job.title + '" on DigiGarment Tiruppur Jobs. I would like to apply.');
                 var waLink = document.createElement('a');
                 waLink.className = 'btn-action btn-whatsapp';
-                waLink.href = 'https://wa.me/' + cleanWA + '?text=' + waText;
+                waLink.href = 'https://wa.me/' + cleanWA2 + '?text=' + waText2;
                 waLink.target = '_blank';
                 waLink.rel = 'noopener noreferrer';
                 waLink.innerHTML = '💬 WhatsApp HR';
                 actionsBar.appendChild(waLink);
             }}
 
-            // Call action
+            // 5. Call action
             if (job.contact_phone && job.contact_phone.trim()) {{
                 var cleanPhone = job.contact_phone.replace(/[^0-9+]/g, '');
                 var callLink = document.createElement('a');
@@ -3528,7 +3793,7 @@ def get_job_or_category_page(slug: str, request: Request):
                 actionsBar.appendChild(callLink);
             }}
 
-            // Email action
+            // 6. Email action
             if (job.contact_email && job.contact_email.trim()) {{
                 var emailSubject = encodeURIComponent('Application for ' + job.title + ' - DigiGarment');
                 var emailLink = document.createElement('a');
@@ -3538,40 +3803,18 @@ def get_job_or_category_page(slug: str, request: Request):
                 actionsBar.appendChild(emailLink);
             }}
 
-            // Company Portal Apply
+            // 7. Company Portal Apply
             if (job.application_url && job.application_url.trim()) {{
                 var portalLink = document.createElement('a');
-                portalLink.className = 'btn-action btn-apply-primary';
+                portalLink.className = 'btn-action btn-direct-link';
                 portalLink.href = job.application_url;
                 portalLink.target = '_blank';
                 portalLink.rel = 'noopener noreferrer';
-                portalLink.innerHTML = '🌐 Apply on Company Portal &rarr;';
+                portalLink.innerHTML = '🌐 Company Portal &rarr;';
                 actionsBar.appendChild(portalLink);
             }}
 
-            // Share Button
-            var shareBtn = document.createElement('button');
-            shareBtn.type = 'button';
-            shareBtn.className = 'btn-action btn-direct-link';
-            shareBtn.innerHTML = '↗ Share';
-            shareBtn.onclick = function() {{
-                var jobUrl = window.location.origin + '/jobs/' + encodeURIComponent(job.slug);
-                if (navigator.share) {{
-                    navigator.share({{
-                        title: job.title + ' in Tiruppur',
-                        text: 'Garment job vacancy: ' + job.title + (job.company_name ? ' at ' + job.company_name : ''),
-                        url: jobUrl
-                    }}).catch(function() {{}});
-                }} else if (navigator.clipboard) {{
-                    navigator.clipboard.writeText(jobUrl).then(function() {{
-                        shareBtn.innerHTML = '✓ Link Copied!';
-                        setTimeout(function() {{ shareBtn.innerHTML = '↗ Share'; }}, 2000);
-                    }});
-                }}
-            }};
-            actionsBar.appendChild(shareBtn);
-
-            // Direct Job Page Link
+            // 8. Direct Job Page Link
             var directLink = document.createElement('a');
             directLink.className = 'btn-action btn-direct-link';
             directLink.href = '/jobs/' + encodeURIComponent(job.slug);
@@ -3582,31 +3825,15 @@ def get_job_or_category_page(slug: str, request: Request):
             var modal = document.getElementById('categoryJobModal');
             modal.style.display = 'flex';
             document.body.style.overflow = 'hidden';
-
-            if (window.history && window.history.pushState) {{
-                var targetUrl = '/jobs/' + encodeURIComponent(job.slug);
-                if (window.location.pathname !== targetUrl) {{
-                    window.history.pushState({{ modalJobSlug: jobSlug }}, '', targetUrl);
-                    catModalPushState = true;
-                }}
-            }}
         }};
 
-        window.closeCategoryJobModal = function(triggerBack) {{
-            if (triggerBack === undefined) triggerBack = true;
+        window.closeCategoryJobModal = function() {{
             var modal = document.getElementById('categoryJobModal');
             if (!modal || modal.style.display === 'none') return;
 
             modal.style.display = 'none';
             document.body.style.overflow = '';
-
-            if (triggerBack && catModalPushState) {{
-                catModalPushState = false;
-                window.history.back();
-            }} else if (window.history && window.history.replaceState) {{
-                window.history.replaceState(null, '', currentCategoryPath);
-                catModalPushState = false;
-            }}
+            currentActiveJob = null;
         }};
 
         window.handleCategoryModalBackdrop = function(e) {{
@@ -3618,14 +3845,6 @@ def get_job_or_category_page(slug: str, request: Request):
         window.addEventListener('keydown', function(e) {{
             if (e.key === 'Escape') {{
                 closeCategoryJobModal();
-            }}
-        }});
-
-        window.addEventListener('popstate', function(e) {{
-            if (e.state && e.state.modalJobSlug) {{
-                openCategoryJobModal(e.state.modalJobSlug);
-            }} else {{
-                closeCategoryJobModal(false);
             }}
         }});
     }})();
