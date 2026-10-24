@@ -81,6 +81,14 @@ def get_sitemap_xml():
         {"loc": f"{CANONICAL_DOMAIN}/jobs/quality-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
         {"loc": f"{CANONICAL_DOMAIN}/jobs/cutting-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
         {"loc": f"{CANONICAL_DOMAIN}/jobs/sewing-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
+        {"loc": f"{CANONICAL_DOMAIN}/jobs/cutting-incharge-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
+        {"loc": f"{CANONICAL_DOMAIN}/jobs/production-manager-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
+        {"loc": f"{CANONICAL_DOMAIN}/jobs/quality-manager-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
+        {"loc": f"{CANONICAL_DOMAIN}/jobs/fabric-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
+        {"loc": f"{CANONICAL_DOMAIN}/jobs/stores-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
+        {"loc": f"{CANONICAL_DOMAIN}/jobs/finishing-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
+        {"loc": f"{CANONICAL_DOMAIN}/jobs/accounts-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
+        {"loc": f"{CANONICAL_DOMAIN}/jobs/hr-admin-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
     ]
 
     job_urls = []
@@ -2070,6 +2078,134 @@ CATEGORY_MAPPINGS = {
                 "a": "Single needle lockstitch (SNLS), 3/4/5-thread overlock, 3-needle flatlock (coverstitch), and specialized buttonhole/bartack machines."
             }
         ]
+    },
+    "cutting-incharge-jobs-tiruppur": {
+        "h1": "Cutting Incharge Jobs in Tiruppur",
+        "title": "Cutting Incharge Jobs in Tiruppur | Apparel & Garment Cutting Vacancies",
+        "description": "Find verified cutting incharge and cutting section supervisor jobs in Tiruppur garment export houses. Active openings for manual and automatic machine cutting.",
+        "sql_condition": "(j.title ILIKE %s OR j.title ILIKE %s OR j.job_role ILIKE %s OR j.job_role ILIKE %s)",
+        "sql_params": ["%cutting%incharge%", "%cutting%in-charge%", "%cutting%incharge%", "%cutting%in-charge%"],
+        "intro": "Cutting Incharges oversee fabric lay planning, spreading table allocation, automatic cutting machines, bundle numbering, and panel quality in apparel factories.",
+        "skills": ["Cutting Section Supervision", "Lay & Marker Planning", "Band Knife & Straight Knife", "Automatic Spreader Operation", "Panel Quality Checking"],
+        "faq": [
+            {
+                "q": "What does a Cutting Incharge do in Tiruppur garment factories?",
+                "a": "A Cutting Incharge manages fabric spreading, marker efficiency, cutting master allocation, bundle generation, and cutting room wastage control."
+            },
+            {
+                "q": "What experience is typically required for cutting incharge vacancies?",
+                "a": "Most Tiruppur export units require 3 to 7 years of hands-on experience in woven or knitwear cutting room management."
+            }
+        ]
+    },
+    "production-manager-jobs-tiruppur": {
+        "h1": "Garment Production Manager Jobs in Tiruppur",
+        "title": "Production Manager Jobs in Tiruppur | Apparel Factory Management Vacancies",
+        "description": "Explore verified garment production manager and senior production manager vacancies in Tiruppur knitwear export factories.",
+        "sql_condition": "(j.title ILIKE %s OR j.job_role ILIKE %s)",
+        "sql_params": ["%production manager%", "%production manager%"],
+        "intro": "Production Managers oversee entire sewing and assembly floor operations, line balancing, daily output targets, and factory shipment schedules.",
+        "skills": ["Plant Production Management", "Line Balancing & SAM/SMV", "Factory Capacity Planning", "WIP Control", "IE & Productivity Optimization"],
+        "faq": [
+            {
+                "q": "What qualifications are needed for a Garment Production Manager in Tiruppur?",
+                "a": "A degree or diploma in Garment/Textile Technology along with 7+ years of experience leading multi-line sewing operations."
+            },
+            {
+                "q": "What are the core KPIs for production managers?",
+                "a": "Daily production target achievement, line efficiency percentage, defect reduction, and on-time shipment completion."
+            }
+        ]
+    },
+    "quality-manager-jobs-tiruppur": {
+        "h1": "Garment Quality Manager Jobs in Tiruppur",
+        "title": "Quality Manager Jobs in Tiruppur | QA & QAM Vacancies",
+        "description": "Find verified Quality Assurance Manager (QAM) and Quality Manager vacancies across Tiruppur garment export units.",
+        "sql_condition": "(j.title ILIKE %s OR j.job_role ILIKE %s OR j.title ILIKE %s OR j.job_role ILIKE %s OR j.title ILIKE %s OR j.job_role ILIKE %s OR j.title ILIKE %s OR j.job_role ILIKE %s)",
+        "sql_params": ["%quality manager%", "%quality manager%", "%quality assurance manager%", "%quality assurance manager%", "%qa manager%", "%qa manager%", "%qam%", "%qam%"],
+        "intro": "Quality Assurance Managers (QAM) establish factory audit standards, buyer AQL compliance, lab testing protocols, and inline quality control systems.",
+        "skills": ["AQL 1.5/2.5/4.0 Standards", "Buyer Quality Compliance", "Inline & Final Audit Systems", "Lab Testing & Fabric GSM", "Defect Prevention (CAPA)"],
+        "faq": [
+            {
+                "q": "What certifications or experience are expected for Quality Managers in Tiruppur?",
+                "a": "Deep familiarity with buyer technical manuals (US/EU retail standards), AQL inspection systems, and 5+ years of managerial experience."
+            }
+        ]
+    },
+    "fabric-jobs-tiruppur": {
+        "h1": "Fabric & Yarn Follow-up Jobs in Tiruppur",
+        "title": "Fabric Follow-up Jobs in Tiruppur | Sourcing & Quality Vacancies",
+        "description": "Find verified fabric follow-up, yarn sourcing, knitting, and fabric quality controller jobs in Tiruppur textile units.",
+        "sql_condition": "(j.department ILIKE %s OR j.job_role ILIKE %s OR j.title ILIKE %s)",
+        "sql_params": ["%Fabric%", "%Fabric%", "%Fabric%"],
+        "intro": "Fabric follow-up executives coordinate yarn procurement, knitting, dyeing, compacting, shrinkage testing, and on-time mill deliveries.",
+        "skills": ["Yarn & Fabric Sourcing", "Dyeing & Compacting Follow-up", "Shrinkage & GSM Testing", "Color Matching & Lab Dips", "Mill Coordination"],
+        "faq": [
+            {
+                "q": "What does a fabric follow-up executive do in Tiruppur?",
+                "a": "They track fabric through knitting, dyeing, and finishing stages to ensure color fastness, correct GSM, and on-schedule factory delivery."
+            }
+        ]
+    },
+    "stores-jobs-tiruppur": {
+        "h1": "Garment Store & Purchase Jobs in Tiruppur",
+        "title": "Garment Store In-Charge & Purchase Jobs in Tiruppur | Inventory Vacancies",
+        "description": "Explore verified store incharge, store assistant, trim store, and purchase manager jobs across Tiruppur garment factories.",
+        "sql_condition": "(j.department ILIKE %s OR j.department ILIKE %s OR j.job_role ILIKE %s OR j.job_role ILIKE %s OR j.title ILIKE %s OR j.title ILIKE %s)",
+        "sql_params": ["%Store%", "%Purchase%", "%Store%", "%Purchase%", "%Store%", "%Purchase%"],
+        "intro": "Store in-charges and purchase executives manage fabric rolls, accessory inventory, trims BOM matching, and vendor supply chain logistics.",
+        "skills": ["Trim & Accessory Management", "Fabric Roll Stock Inventory", "Purchase Order (PO) Processing", "ERP & Excel Tracking", "GRN & Stock Audit"],
+        "faq": [
+            {
+                "q": "What responsibilities are involved in garment store jobs?",
+                "a": "Receiving raw materials, verifying GRNs against purchase orders, issuing trims to sewing lines, and maintaining zero-shortage inventories."
+            }
+        ]
+    },
+    "finishing-jobs-tiruppur": {
+        "h1": "Garment Finishing & Packing Jobs in Tiruppur",
+        "title": "Finishing Incharge & Packing Jobs in Tiruppur | Apparel Logistics Vacancies",
+        "description": "Browse verified finishing incharge, packing supervisor, and dispatch jobs in Tiruppur export garment units.",
+        "sql_condition": "(j.department ILIKE %s OR j.department ILIKE %s OR j.job_role ILIKE %s OR j.job_role ILIKE %s OR j.title ILIKE %s OR j.title ILIKE %s)",
+        "sql_params": ["%Finish%", "%Packing%", "%Finish%", "%Packing%", "%Finish%", "%Packing%"],
+        "intro": "Finishing in-charges oversee steam pressing, tag attachment, folding, polybag packing, carton barcode verification, and container dispatch.",
+        "skills": ["Finishing Floor Supervision", "Steam Ironing & Pressing", "Packing Ratio & Barcode Verification", "Carton Packing & Weighing", "Export Dispatch"],
+        "faq": [
+            {
+                "q": "What is the role of a Finishing Incharge in apparel manufacturing?",
+                "a": "Managing final garment presentation, pressing, labeling compliance, carton packing integrity, and meeting buyer dispatch dates."
+            }
+        ]
+    },
+    "accounts-jobs-tiruppur": {
+        "h1": "Garment Accounts & Finance Jobs in Tiruppur",
+        "title": "Garment Accountant Jobs in Tiruppur | Tally & Finance Vacancies",
+        "description": "Find verified accountant, senior accountant, and billing executive vacancies in Tiruppur garment and textile companies.",
+        "sql_condition": "(j.department ILIKE %s OR j.job_role ILIKE %s OR j.title ILIKE %s)",
+        "sql_params": ["%Account%", "%Account%", "%Account%"],
+        "intro": "Garment accountants handle vendor ledger reconciliation, GST filings, worker payroll, jobwork billing, and banking transactions in apparel units.",
+        "skills": ["Tally ERP / Prime", "Garment Jobwork Billing", "GST & TDS Compliance", "Bank Reconciliation", "Factory Payroll & PF/ESI"],
+        "faq": [
+            {
+                "q": "What software skills are needed for garment accountant jobs in Tiruppur?",
+                "a": "Proficiency in Tally Prime, advanced Excel formulas, and familiarity with garment jobwork billing mechanisms."
+            }
+        ]
+    },
+    "hr-admin-jobs-tiruppur": {
+        "h1": "Garment HR & Factory Admin Jobs in Tiruppur",
+        "title": "Garment HR Manager & Admin Jobs in Tiruppur | Compliance Vacancies",
+        "description": "Explore verified HR manager, factory compliance officer, and administrative assistant jobs in Tiruppur apparel units.",
+        "sql_condition": "(j.department ILIKE %s OR j.department ILIKE %s OR j.job_role ILIKE %s OR j.job_role ILIKE %s OR j.title ILIKE %s OR j.title ILIKE %s)",
+        "sql_params": ["%HR%", "%Admin%", "%HR%", "%Admin%", "%HR%", "%Admin%"],
+        "intro": "HR & Admin professionals oversee factory compliance, social audit standards (BSCI/Sedex), operator recruitment, welfare, and statutory filings.",
+        "skills": ["Factory Social Compliance", "Labor Laws & Factory Act", "Operator Attendance & Payroll", "Hostel & Transport Admin", "Recruitment & Onboarding"],
+        "faq": [
+            {
+                "q": "What compliance standards do Garment HR managers handle in Tiruppur?",
+                "a": "Factory safety audits, statutory labor compliance (PF, ESI, Minimum Wages), and buyer social codes of conduct (BSCI, Sedex, WRAP)."
+            }
+        ]
     }
 }
 
@@ -2138,15 +2274,22 @@ def get_job_or_category_page(slug: str, request: Request):
 
         if db_helpers["db_enabled"] and db_helpers["query_db"]:
             try:
-                keyword = f"%{cat_info['department_keyword']}%"
-                count_res = db_helpers["query_db"]("""
+                if "sql_condition" in cat_info:
+                    sql_cond = cat_info["sql_condition"]
+                    sql_params = tuple(cat_info["sql_params"])
+                else:
+                    keyword = f"%{cat_info['department_keyword']}%"
+                    sql_cond = "(j.department ILIKE %s OR j.job_role ILIKE %s OR j.title ILIKE %s)"
+                    sql_params = (keyword, keyword, keyword)
+
+                count_res = db_helpers["query_db"](f"""
                     SELECT COUNT(*) AS total
                     FROM jobs j
                     WHERE LOWER(j.status) = 'published'
                       AND COALESCE(j.is_archived, FALSE) = FALSE
                       AND (j.expires_at IS NULL OR j.expires_at >= CURRENT_TIMESTAMP)
-                      AND (j.department ILIKE %s OR j.job_role ILIKE %s OR j.title ILIKE %s);
-                """, (keyword, keyword, keyword))
+                      AND {sql_cond};
+                """, sql_params)
                 if count_res and count_res[0].get("total") is not None:
                     total_category_count = int(count_res[0]["total"])
 
@@ -2155,7 +2298,7 @@ def get_job_or_category_page(slug: str, request: Request):
                     current_page = total_pages
                 offset = (current_page - 1) * PAGE_SIZE
 
-                query = """
+                query = f"""
                     SELECT j.id, j.title, j.slug, j.department, j.job_role, j.location,
                            j.salary_text, j.experience_min, j.experience_max, j.job_type,
                            c.name AS company_name
@@ -2164,11 +2307,11 @@ def get_job_or_category_page(slug: str, request: Request):
                     WHERE LOWER(j.status) = 'published'
                       AND COALESCE(j.is_archived, FALSE) = FALSE
                       AND (j.expires_at IS NULL OR j.expires_at >= CURRENT_TIMESTAMP)
-                      AND (j.department ILIKE %s OR j.job_role ILIKE %s OR j.title ILIKE %s)
+                      AND {sql_cond}
                     ORDER BY j.is_featured DESC, j.published_at DESC NULLS LAST, j.id DESC
                     LIMIT %s OFFSET %s;
                 """
-                matching_jobs = db_helpers["query_db"](query, (keyword, keyword, keyword, PAGE_SIZE, offset))
+                matching_jobs = db_helpers["query_db"](query, (*sql_params, PAGE_SIZE, offset))
             except Exception as e:
                 logger.warning(f"Error querying jobs for category {slug}: {e}")
 
@@ -2228,6 +2371,38 @@ def get_job_or_category_page(slug: str, request: Request):
                 "name": f["q"],
                 "acceptedAnswer": {"@type": "Answer", "text": f["a"]}
             })
+
+        all_cat_links = [
+            ("/jobs/cutting-incharge-jobs-tiruppur", "Cutting Incharge Jobs"),
+            ("/jobs/cutting-jobs-tiruppur", "Cutting & Pattern Master"),
+            ("/jobs/production-manager-jobs-tiruppur", "Production Manager Jobs"),
+            ("/jobs/production-jobs-tiruppur", "Line & Production Supervisor"),
+            ("/jobs/quality-manager-jobs-tiruppur", "Quality Manager Jobs"),
+            ("/jobs/quality-jobs-tiruppur", "Quality Controller & QA"),
+            ("/jobs/merchandiser-jobs-tiruppur", "Garment Merchandiser"),
+            ("/jobs/sewing-jobs-tiruppur", "Sewing Machine Mechanic"),
+            ("/jobs/fabric-jobs-tiruppur", "Fabric & Sourcing"),
+            ("/jobs/stores-jobs-tiruppur", "Store & Purchase"),
+            ("/jobs/finishing-jobs-tiruppur", "Finishing & Packing"),
+            ("/jobs/accounts-jobs-tiruppur", "Accounts & Finance"),
+            ("/jobs/hr-admin-jobs-tiruppur", "HR & Factory Admin"),
+            ("/tirupur-jobs", "Tirupur Jobs Portal"),
+            ("/garment-jobs-in-tirupur", "Garment Jobs in Tirupur"),
+            ("/tirupur-garment-jobs", "Tirupur Garment Industry"),
+            ("/apparel-jobs-in-tirupur", "Apparel Jobs in Tirupur"),
+        ]
+        cross_nav_pills = "".join(
+            f'<a href="{url}" style="display: inline-block; background: {"#081226" if url == base_cat_path else "#F1F5F9"}; color: {"#ffffff" if url == base_cat_path else "#081226"}; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 500; text-decoration: none; margin: 4px;">{name}</a>'
+            for url, name in all_cat_links
+        )
+        cross_nav_html = f"""
+        <div style="background: #ffffff; border: 1px solid #E2E8F0; border-radius: 12px; padding: 28px; margin-top: 32px;">
+            <h2 style="font-size: 18px; color: #081226; margin-top: 0; margin-bottom: 14px;">Explore Other Garment Job Hubs in Tiruppur</h2>
+            <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                {cross_nav_pills}
+            </div>
+        </div>
+        """
 
         cat_schema_json = json.dumps({
             "@context": "https://schema.org",
@@ -2416,7 +2591,9 @@ def get_job_or_category_page(slug: str, request: Request):
         {jobs_list_html}
         {pagination_html}
 
-        <div style="background: #ffffff; border: 1px solid #E2E8F0; border-radius: 12px; padding: 32px; margin-top: 40px;">
+        {cross_nav_html}
+
+        <div style="background: #ffffff; border: 1px solid #E2E8F0; border-radius: 12px; padding: 32px; margin-top: 32px;">
             <h2 style="font-size: 20px; color: #081226; margin-top: 0; margin-bottom: 16px;">Key Skills & Industry Responsibilities</h2>
             <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px;">
                 {"".join(f'<span style="background: #F1F5F9; color: #081226; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 500;">{html.escape(s)}</span>' for s in cat_info["skills"])}
