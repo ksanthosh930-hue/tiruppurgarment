@@ -26,6 +26,34 @@ def init_seo_db_helpers(enabled: bool, query_fn):
     db_helpers["db_enabled"] = enabled
     db_helpers["query_db"] = query_fn
 
+
+def get_display_job_title(job: Dict[str, Any]) -> str:
+    """
+    Returns an accurate, user-friendly display title for job listings and detail views.
+    If the stored title is generic ('Multiple Positions', 'Various Openings', 'Openings', etc.),
+    safely falls back to `job_role` if non-empty and meaningful.
+    Preserves genuine titles and never invents fake designations.
+    """
+    if not job:
+        return "Garment Vacancy"
+    raw_title = (job.get("title") or "").strip()
+    generic_patterns = {
+        "multiple positions", "multiple openings", "various openings", 
+        "various positions", "openings", "vacancy", "urgent vacancy", 
+        "urgent openings", "multiple vacancies", "job opening", "job openings"
+    }
+    is_generic = (
+        not raw_title 
+        or raw_title.lower() in generic_patterns 
+        or raw_title.lower().startswith("multiple position")
+        or raw_title.lower().startswith("various opening")
+    )
+    if is_generic:
+        role = (job.get("job_role") or "").strip()
+        if role and role != "-" and role.lower() not in generic_patterns and len(role) >= 3:
+            return role
+    return raw_title or "Garment Vacancy"
+
 # --- 1. ROBOTS.TXT ---
 @router.get("/robots.txt", response_class=PlainTextResponse)
 def get_robots_txt():
@@ -632,6 +660,12 @@ def get_blog_detail_page(slug: str):
     if not article:
         raise HTTPException(status_code=404, detail="Article not found")
 
+    if slug == "what-is-sam-in-garment-manufacturing":
+        template_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "sam_blog_post.html")
+        if os.path.exists(template_file):
+            with open(template_file, "r", encoding="utf-8") as f:
+                return HTMLResponse(content=f.read())
+
     canonical_url = f"{CANONICAL_DOMAIN}/blog/{slug}"
     escaped_title = html.escape(article["title"])
     escaped_desc = html.escape(article["description"])
@@ -920,6 +954,18 @@ SEO_LANDING_PAGES = {
         "h1": "Tirupur Garment Jobs",
         "intro": "The dedicated industry authority for garment manufacturing careers, knitwear export house vacancies, and apparel production jobs across Tirupur.",
         "location_filter": "Tiruppur",
+        "sql_condition": """(
+            j.department IN ('Production', 'Quality', 'Merchandising', 'Cutting', 'Fabric', 'Stores & Purchase', 'Finishing & Logistics', 'Finishing', 'Printing & Embroidery', 'Printing')
+            OR j.title ILIKE %s OR j.title ILIKE %s OR j.title ILIKE %s OR j.title ILIKE %s
+        )
+        AND j.title NOT ILIKE %s
+        AND j.title NOT ILIKE %s
+        AND j.title NOT ILIKE %s
+        AND j.title NOT ILIKE %s""",
+        "sql_params": [
+            "%garment%", "%textile%", "%apparel%", "%knit%",
+            "%driver%", "%cook%", "%housekeeping%", "%security guard%"
+        ],
         "about_heading": "Garment Manufacturing & Export House Careers in Tirupur",
         "about_paragraphs": [
             "Tirupur's garment manufacturing ecosystem operates as a vertically integrated supply chain serving top international apparel brands and domestic retailers. From tech pack evaluation and sampling to fabric spreading, computer-aided pattern grading, sewing assembly lines, and export carton auditing, Tirupur's export factories require specialized technical expertise at every manufacturing milestone.",
@@ -994,6 +1040,22 @@ SEO_LANDING_PAGES = {
         "h1": "Garment Jobs in Tirupur",
         "intro": "Comprehensive career guidance, qualification standards, and verified vacancies for garment professionals and job seekers entering the Tirupur apparel sector.",
         "location_filter": "Tiruppur",
+        "sql_condition": """(
+            j.department IN ('Merchandising', 'Quality', 'Cutting')
+            OR j.job_role ILIKE %s OR j.title ILIKE %s
+            OR j.job_role ILIKE %s OR j.title ILIKE %s
+            OR j.job_role ILIKE %s OR j.title ILIKE %s
+            OR j.job_role ILIKE %s OR j.title ILIKE %s
+        )
+        AND j.title NOT ILIKE %s
+        AND j.title NOT ILIKE %s""",
+        "sql_params": [
+            "%merchandis%", "%merchandis%",
+            "%quality%", "%quality%",
+            "%pattern%", "%pattern%",
+            "%supervisor%", "%supervisor%",
+            "%driver%", "%cook%"
+        ],
         "about_heading": "Guide to Finding Garment Jobs & Building a Career in Tirupur",
         "about_paragraphs": [
             "Navigating the garment job market in Tirupur requires understanding what export manufacturers and apparel units value most. Whether you are a fresher beginning your career or an experienced professional advancing to a supervisory role, aligning your capabilities with factory floor expectations is key to long-term success.",
@@ -1076,6 +1138,27 @@ SEO_LANDING_PAGES = {
         "h1": "Apparel Jobs in Tirupur",
         "intro": "Browse career opportunities in apparel manufacturing, fashion merchandising, and textile engineering across Tirupur.",
         "location_filter": "Tiruppur",
+        "sql_condition": """(
+            j.department = 'Merchandising'
+            OR j.job_role ILIKE %s OR j.title ILIKE %s
+            OR j.job_role ILIKE %s OR j.title ILIKE %s
+            OR j.job_role ILIKE %s OR j.title ILIKE %s
+            OR j.job_role ILIKE %s OR j.title ILIKE %s
+            OR j.job_role ILIKE %s OR j.title ILIKE %s
+            OR j.job_role ILIKE %s OR j.title ILIKE %s
+            OR j.job_role ILIKE %s OR j.title ILIKE %s
+            OR j.job_role ILIKE %s OR j.title ILIKE %s
+        )""",
+        "sql_params": [
+            "%merchandis%", "%merchandis%",
+            "%pattern%", "%pattern%",
+            "%cad%", "%cad%",
+            "%sampling%", "%sampling%",
+            "%design%", "%design%",
+            "%industrial engineer%", "%industrial engineer%",
+            "%sam%", "%sam%",
+            "%fashion%", "%fashion%"
+        ],
         "about_heading": "Apparel Industry Opportunities in Tirupur",
         "about_paragraphs": [
             "The modern apparel industry in Tirupur is adopting lean manufacturing, digital standard allowed minute (SAM) calculators, automated fabric spreading, and real-time shopfloor production tracking. Apparel professionals with expertise in both traditional garment construction and modern digital tools are in high demand.",
@@ -1189,13 +1272,21 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
 
     if db_helpers["db_enabled"] and db_helpers["query_db"]:
         try:
-            count_res = db_helpers["query_db"]("""
+            sql_where = ""
+            sql_params = []
+            if page_info.get("sql_condition"):
+                sql_where = f" AND {page_info['sql_condition']}"
+                sql_params = list(page_info.get("sql_params", []))
+
+            count_query = f"""
                 SELECT COUNT(*) AS total
                 FROM jobs j
                 WHERE LOWER(j.status) = 'published'
                   AND COALESCE(j.is_archived, FALSE) = FALSE
-                  AND (j.expires_at IS NULL OR j.expires_at >= CURRENT_TIMESTAMP);
-            """)
+                  AND (j.expires_at IS NULL OR j.expires_at >= CURRENT_TIMESTAMP)
+                  {sql_where};
+            """
+            count_res = db_helpers["query_db"](count_query, tuple(sql_params) if sql_params else None)
             if count_res and count_res[0].get("total") is not None:
                 total_matching_count = int(count_res[0]["total"])
 
@@ -1204,7 +1295,7 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
                 current_page = total_pages
             offset = (current_page - 1) * PAGE_SIZE
 
-            query = """
+            query = f"""
                 SELECT j.id, j.title, j.slug, j.department, j.job_role, j.location,
                        j.salary_text, j.salary_min, j.salary_max, j.experience_min, j.experience_max, j.job_type,
                        j.description, j.requirements, j.skills, j.qualification,
@@ -1217,10 +1308,12 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
                 WHERE LOWER(j.status) = 'published'
                   AND COALESCE(j.is_archived, FALSE) = FALSE
                   AND (j.expires_at IS NULL OR j.expires_at >= CURRENT_TIMESTAMP)
+                  {sql_where}
                 ORDER BY j.is_featured DESC, j.published_at DESC NULLS LAST, j.id DESC
                 LIMIT %s OFFSET %s;
             """
-            matching_jobs = db_helpers["query_db"](query, (PAGE_SIZE, offset))
+            exec_params = tuple(sql_params + [PAGE_SIZE, offset]) if sql_params else (PAGE_SIZE, offset)
+            matching_jobs = db_helpers["query_db"](query, exec_params)
         except Exception as e:
             logger.warning(f"Error querying jobs for landing page {page_slug}: {e}")
 
@@ -1248,7 +1341,8 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
     if matching_jobs:
         jobs_list_html = ""
         for idx, job in enumerate(matching_jobs, 1):
-            j_title = html.escape(job.get("title") or "Garment Vacancy")
+            disp_title = get_display_job_title(job)
+            j_title = html.escape(disp_title)
             j_slug = job.get("slug") or str(job.get("id"))
             j_url = f"/jobs/{j_slug}"
             j_canonical_item_url = f"{CANONICAL_DOMAIN}/jobs/{j_slug}"
@@ -1259,7 +1353,7 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
             item_list_elements.append({
                 "@type": "ListItem",
                 "position": offset + idx,
-                "name": job.get("title") or "Garment Vacancy",
+                "name": disp_title,
                 "url": j_canonical_item_url
             })
 
@@ -1286,7 +1380,7 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
 
             cat_jobs_map[j_slug] = {
                 "id": job.get("id"),
-                "title": job.get("title") or "Garment Vacancy",
+                "title": disp_title,
                 "slug": j_slug,
                 "company_name": job.get("company_name") or "",
                 "department": job.get("department") or "Garments",
@@ -2915,9 +3009,10 @@ def get_job_or_category_page(slug: str, request: Request):
                            j.salary_text, j.salary_min, j.salary_max, j.experience_min, j.experience_max, j.job_type,
                            j.description, j.requirements, j.skills, j.qualification,
                            j.contact_phone, j.contact_whatsapp, j.contact_email, j.application_url,
-                           c.name AS company_name
+                           COALESCE(cp.company_name, c.name, '') AS company_name
                     FROM jobs j
                     LEFT JOIN companies c ON j.company_id = c.id
+                    LEFT JOIN company_profiles cp ON j.company_profile_id = cp.id
                     WHERE LOWER(j.status) = 'published'
                       AND COALESCE(j.is_archived, FALSE) = FALSE
                       AND (j.expires_at IS NULL OR j.expires_at >= CURRENT_TIMESTAMP)
@@ -2950,7 +3045,8 @@ def get_job_or_category_page(slug: str, request: Request):
         cat_jobs_map = {}
         if matching_jobs:
             for job in matching_jobs:
-                j_title = html.escape(job.get("title") or "Garment Vacancy")
+                disp_title = get_display_job_title(job)
+                j_title = html.escape(disp_title)
                 j_slug = job.get("slug") or str(job.get("id"))
                 j_loc = html.escape(job.get("location") or "Tiruppur, Tamil Nadu")
                 j_company = html.escape(job.get("company_name")) if job.get("company_name") else ""
@@ -2976,7 +3072,7 @@ def get_job_or_category_page(slug: str, request: Request):
 
                 cat_jobs_map[j_slug] = {
                     "id": job.get("id"),
-                    "title": job.get("title") or "Garment Vacancy",
+                    "title": disp_title,
                     "slug": j_slug,
                     "company_name": job.get("company_name") or "",
                     "department": job.get("department") or "Garments",
@@ -3888,7 +3984,7 @@ def get_job_or_category_page(slug: str, request: Request):
         if not is_published or is_archived or is_expired:
             raise HTTPException(status_code=410, detail="This job vacancy has expired or is no longer active.")
 
-        job_title = (job.get("title") or "Garment Job Vacancy").strip()
+        job_title = get_display_job_title(job)
         job_slug = job.get("slug") or str(job.get("id"))
         canonical_url = f"{CANONICAL_DOMAIN}/jobs/{job_slug}"
         job_loc = (job.get("location") or "Tiruppur, Tamil Nadu, India").strip()

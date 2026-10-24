@@ -11,7 +11,7 @@ from typing import List, Dict, Any, Optional
 from fastapi import FastAPI, HTTPException, Cookie, Depends, Response, Form, UploadFile, File, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, RedirectResponse, JSONResponse
+from fastapi.responses import FileResponse, RedirectResponse, JSONResponse, HTMLResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from dotenv import load_dotenv
 import psycopg2
@@ -873,8 +873,135 @@ def get_index():
     return FileResponse(os.path.join(BASE_DIR, "index.html"))
 
 @app.get("/jobs")
-def get_jobs_page():
-    return FileResponse(os.path.join(BASE_DIR, "jobs.html"))
+def get_jobs_page(request: Request):
+    try:
+        jobs_file = os.path.join(BASE_DIR, "jobs.html")
+        with open(jobs_file, "r", encoding="utf-8") as f:
+            template = f.read()
+
+        if db_enabled and db_pool:
+            try:
+                import routers.jobs
+                import routers.seo
+                import html
+                import urllib.parse
+                import json
+
+                res = routers.jobs.get_public_jobs(page=1, limit=20)
+                jobs = res.get("jobs", [])
+                total = res.get("total", 0)
+
+                cards_html = []
+                for j in jobs:
+                    j_id = j.get("id")
+                    j_slug = j.get("slug") or str(j_id)
+                    j_url = f"/jobs/{urllib.parse.quote(str(j_slug))}"
+
+                    display_title = routers.seo.get_display_job_title(j)
+                    esc_title = html.escape(display_title)
+                    comp_name = html.escape(j.get("company_name") or "")
+                    comp_html = f'<div class="company-name"><span>🏢 {comp_name}</span></div>' if comp_name else ""
+                    featured_tag = '<span class="featured-tag">★ Featured</span>' if j.get("is_featured") else ""
+                    openings_cnt = int(j.get("openings_count") or 1)
+                    openings_badge = f'<span class="tag-badge" style="background:#eff6ff; color:#1d4ed8; font-weight:700;">👥 {openings_cnt} {"Openings" if openings_cnt > 1 else "Opening"}</span>'
+
+                    sal_text = j.get("salary_text")
+                    if not sal_text and j.get("salary_min"):
+                        try:
+                            sal_text = f"₹{int(j['salary_min']):,} / mo"
+                        except Exception:
+                            sal_text = "Salary Negotiable"
+                    sal_str = html.escape(sal_text or "Salary Negotiable")
+
+                    exp_min = j.get("experience_min")
+                    exp_max = j.get("experience_max")
+                    if exp_min is not None:
+                        if exp_min == 0:
+                            exp_str = "Fresher Eligible"
+                        else:
+                            exp_str = f"{exp_min}{'-' + str(exp_max) if exp_max else '+'} Yrs Exp"
+                    elif j.get("requirements") and "fresher" in str(j.get("requirements")).lower():
+                        exp_str = "Fresher Eligible"
+                    else:
+                        exp_str = "Experience not specified"
+
+                    date_str = "Recently"
+                    if j.get("published_at"):
+                        try:
+                            if isinstance(j["published_at"], str):
+                                dt = datetime.datetime.fromisoformat(j["published_at"].replace("Z", "+00:00"))
+                            else:
+                                dt = j["published_at"]
+                            date_str = dt.strftime("%b %d")
+                        except Exception:
+                            date_str = "Recently"
+
+                    loc_str = html.escape(j.get("location") or "Tiruppur, Tamil Nadu")
+                    dept_str = html.escape(j.get("department") or "Garments")
+                    role_str = html.escape(j.get("job_role") or display_title)
+                    type_str = html.escape(j.get("job_type") or "Full Time")
+                    desc_str = html.escape(j.get("description") or "")
+
+                    card_markup = f"""
+                    <div class="job-card {'featured' if j.get('is_featured') else ''}" onclick="openJobDetailModal({j_id})">
+                        <div>
+                            <div class="job-card-header">
+                                <div class="job-card-title-group">
+                                    <h3><a href="{j_url}" onclick="event.preventDefault(); openJobDetailModal({j_id})" style="color: inherit; text-decoration: none;">{esc_title}</a></h3>
+                                    {comp_html}
+                                </div>
+                                {featured_tag}
+                            </div>
+                            <div class="job-card-meta">
+                                <div class="meta-item"><span>📍</span> <strong>{loc_str}</strong></div>
+                                <div class="meta-item"><span>👥</span> <strong style="color: #1d4ed8;">{openings_cnt} {'Openings' if openings_cnt > 1 else 'Opening'}</strong></div>
+                                <div class="meta-item"><span>💼</span> <strong>{exp_str}</strong></div>
+                                <div class="meta-item"><span>💰</span> <strong style="color: var(--dg-red);">{sal_str}</strong></div>
+                            </div>
+                            <p class="job-card-desc">{desc_str}</p>
+                        </div>
+                        <div class="job-card-footer">
+                            <div class="card-tags">
+                                {openings_badge}
+                                <span class="tag-badge tag-dept">{dept_str}</span>
+                                <span class="tag-badge">{role_str}</span>
+                                <span class="tag-badge">{type_str}</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                <span>Posted {date_str}</span>
+                                <button type="button" class="btn-save-card" id="saveBtnCard_{j_id}" aria-label="Save job" onclick="event.stopPropagation(); handleToggleSaveJob({j_id})">
+                                    <span class="save-icon">♡</span>
+                                    <span class="save-text">Save</span>
+                                </button>
+                                <button type="button" class="btn-share-card" aria-label="Share job" onclick="event.stopPropagation(); openShareModal({j_id})">
+                                    <span class="share-icon">↗</span>
+                                    <span class="share-text">Share</span>
+                                </button>
+                                <a href="{j_url}" class="btn-view-job" onclick="event.preventDefault(); event.stopPropagation(); openJobDetailModal({j_id})" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">View Details</a>
+                            </div>
+                        </div>
+                    </div>"""
+                    cards_html.append(card_markup)
+
+                rendered_cards = "\n".join(cards_html)
+                if '<!-- Dynamically injected -->' in template:
+                    template = template.replace('<!-- Dynamically injected -->', rendered_cards, 1)
+
+                old_count = '<div class="results-count" id="resultsCount">\n                    Loading verified jobs...\n                </div>'
+                new_count = f'<div class="results-count" id="resultsCount">Showing <strong>1–{min(20, total)}</strong> of <strong>{total}</strong> active verified jobs</div>'
+                if old_count in template:
+                    template = template.replace(old_count, new_count, 1)
+
+                clean_json = json.dumps(res, default=str).replace("</", "<\\/")
+                script_tag = f'<script id="initialJobsData" type="application/json">{clean_json}</script>\n</body>'
+                template = template.replace('</body>', script_tag, 1)
+            except Exception as e:
+                logger.warning(f"Error server-rendering /jobs cards: {e}")
+
+        return HTMLResponse(content=template, media_type="text/html")
+    except Exception as e:
+        logger.error(f"Error serving /jobs: {e}")
+        return FileResponse(os.path.join(BASE_DIR, "jobs.html"))
 
 @app.get("/jobs/", include_in_schema=False)
 def get_jobs_slash_redirect(request: Request):

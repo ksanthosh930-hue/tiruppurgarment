@@ -3120,8 +3120,28 @@
                 fetchJobs();
             });
 
-            // 6. Fetch initial jobs list
-            fetchJobs();
+            // 6. Fetch initial jobs list (or hydrate from SSR data if available)
+            const initDataEl = document.getElementById("initialJobsData");
+            const hasCustomParams = window.location.search && window.location.search.replace('?', '').trim().length > 0;
+            let hydratedFromSSR = false;
+
+            if (!hasCustomParams && initDataEl) {
+                try {
+                    const initData = JSON.parse(initDataEl.textContent);
+                    if (initData && initData.success && Array.isArray(initData.jobs) && initData.jobs.length > 0) {
+                        activeJobsCache = initData.jobs;
+                        totalPages = initData.total_pages || 1;
+                        renderPagination(initData.page || 1, totalPages);
+                        hydratedFromSSR = true;
+                    }
+                } catch (e) {
+                    console.warn("Could not hydrate from SSR data:", e);
+                }
+            }
+
+            if (!hydratedFromSSR) {
+                fetchJobs();
+            }
 
             // 7. Global Escape key handling for modals
             document.addEventListener("keydown", (e) => {

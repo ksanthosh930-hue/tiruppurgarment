@@ -1,0 +1,2598 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What is SAM in Garment Manufacturing? Standard Allowed Minutes Formula & Calculation | DigiGarment</title>
+    <meta name="description"
+        content="Complete industrial engineering guide to Standard Allowed Minutes (SAM) and Standard Minute Value (SMV) in garment manufacturing. Practical formulas, step-by-step lessons in Tamil & English, worked examples, interactive quiz, and Tiruppur apparel jobs.">
+    <link rel="canonical" href="https://tirupurgarment.in/blog/what-is-sam-in-garment-manufacturing">
+
+    <!-- Open Graph & Social Cards -->
+    <meta property="og:title" content="What is SAM in Garment Manufacturing? Standard Allowed Minutes Formula & Calculation | DigiGarment">
+    <meta property="og:description"
+        content="Complete industrial engineering guide to Standard Allowed Minutes (SAM) and SMV in apparel manufacturing. Learn formulas, allowances, line balancing, and cycle times in Tamil & English.">
+    <meta property="og:url" content="https://tirupurgarment.in/blog/what-is-sam-in-garment-manufacturing">
+    <meta property="og:type" content="article">
+    <meta property="og:image" content="https://tirupurgarment.in/assets/images/hero-automation.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <!-- Fonts & Shared Stylesheet -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+
+    <!-- Structured Data: BlogPosting, BreadcrumbList, FAQPage, Course -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "BlogPosting",
+          "headline": "What is SAM in Garment Manufacturing? Complete Guide to Standard Allowed Minutes",
+          "description": "Complete industrial engineering guide to Standard Allowed Minutes (SAM) and SMV in apparel manufacturing. Learn formulas, allowances, and cycle times.",
+          "url": "https://tirupurgarment.in/blog/what-is-sam-in-garment-manufacturing",
+          "datePublished": "2026-09-01",
+          "dateModified": "2026-10-24",
+          "author": {
+            "@type": "Organization",
+            "name": "DigiGarment Industrial Engineering Team",
+            "url": "https://tirupurgarment.in/"
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "DigiGarment",
+            "url": "https://tirupurgarment.in/",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://tirupurgarment.in/assets/images/logo-light.png"
+            }
+          }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://tirupurgarment.in/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Blog",
+              "item": "https://tirupurgarment.in/blog"
+            },
+            {
+              "@type": "ListItem",
+              "position": 3,
+              "name": "What is SAM in Garment Manufacturing?",
+              "item": "https://tirupurgarment.in/blog/what-is-sam-in-garment-manufacturing"
+            }
+          ]
+        },
+        {
+          "@type": "Course",
+          "name": "Garment Manufacturing SAM & SMV Practical Learning Guide",
+          "description": "Comprehensive practical lessons in Tamil and English covering Standard Allowed Minutes, cycle times, industrial allowances, production targets, and line balancing for Tiruppur garment manufacturing.",
+          "provider": {
+            "@type": "Organization",
+            "name": "DigiGarment",
+            "sameAs": "https://tirupurgarment.in/"
+          }
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What is the difference between SAM and SMV in garment manufacturing?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "SAM (Standard Allowed Minutes) and SMV (Standard Minute Value) both represent the standardized time required by a qualified operator to complete a specific garment operation working at a standard 100% pace. In apparel engineering, 1.0 SAM equals 1.0 SMV. SAM is commonly preferred in Asian manufacturing hubs, while SMV is frequently used in American and European costing sheets."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How is Garment SAM / SMV calculated?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "SAM is calculated by adding machine sewing time to manual handling time to get Basic Time, then adding industrial allowances (Personal, Fatigue, Delay, and Bundle handling): SAM = [Basic Cycle Time * (1 + Total Allowance % / 100)] / 60."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How do you calculate hourly production target from SAM?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Theoretical hourly target at 100% efficiency is calculated as: Target (Pcs/Hour) = 60 / Operation SAM. When accounting for realistic factory line efficiency (e.g., 80%), the formula is: Target = (60 / SAM) * (Efficiency % / 100)."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What is the standard allowance percentage used in Tiruppur garment export units?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Industrial allowances in Tiruppur knitwear export units typically range between 10% and 15%. This normally includes 5% for personal needs, 3% for fatigue, 2-3% for machine delays, and 2-4% for bundle handling and parts alignment."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Why shouldn't machine nameplate RPM be used directly for sewing time calculation?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Sewing machine nameplate RPM is the maximum theoretical speed of the motor (e.g., 5,500 RPM). In real sewing operations, operators accelerate, decelerate, negotiate curves, and pause. Practical operational RPM is usually 70% to 85% of nameplate speed depending on the fabric and seam curvature."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What is Style SAM and Pitch Time in production planning?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Style SAM is the sum of SAM values of all individual operations required to produce one complete garment. Pitch Time is the Style SAM divided by the total number of operators on the line, representing the target cycle time each workstation must achieve."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+
+    <style>
+        :root {
+            --dg-navy: #081226;
+            --dg-navy-light: #111E38;
+            --dg-red: #9E1B32;
+            --dg-red-hover: #b92a43;
+            --dg-slate: #64748B;
+            --dg-slate-light: #F1F5F9;
+            --dg-bg: #F8FAFC;
+            --dg-card: #FFFFFF;
+            --dg-border: #E2E8F0;
+            --dg-dark: #0F172A;
+            --dg-emerald: #059669;
+            --dg-amber: #D97706;
+        }
+
+        body {
+            background-color: var(--dg-bg);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: var(--dg-dark);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* Container */
+        .page-container {
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+
+        /* Breadcrumbs */
+        .breadcrumbs-bar {
+            background: #ffffff;
+            border-bottom: 1px solid var(--dg-border);
+            padding: 12px 0;
+            font-size: 13px;
+        }
+        .breadcrumbs-bar a { color: var(--dg-slate); text-decoration: none; }
+        .breadcrumbs-bar a:hover { color: var(--dg-red); }
+        .breadcrumbs-bar span { color: #CBD5E1; margin: 0 8px; }
+        .breadcrumbs-bar strong { color: var(--dg-navy); }
+
+        /* Hero Section */
+        .learning-hero {
+            background: linear-gradient(135deg, #081226 0%, #111E38 50%, #1A2E56 100%);
+            color: #ffffff;
+            padding: 56px 0 44px 0;
+            text-align: center;
+            border-bottom: 3px solid var(--dg-red);
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(158, 27, 50, 0.25);
+            border: 1px solid rgba(158, 27, 50, 0.6);
+            color: #FFA5B5;
+            padding: 6px 16px;
+            border-radius: 24px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+        .learning-hero h1 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 34px;
+            font-weight: 800;
+            margin: 0 0 16px 0;
+            line-height: 1.25;
+            letter-spacing: -0.5px;
+        }
+        .learning-hero p.subtitle {
+            font-size: 17px;
+            color: #CBD5E1;
+            max-width: 820px;
+            margin: 0 auto 24px auto;
+            line-height: 1.6;
+        }
+        .hero-meta {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            font-size: 13px;
+            color: #94A3B8;
+            margin-bottom: 24px;
+        }
+        .hero-actions {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .hero-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 22px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .hero-btn-primary {
+            background: var(--dg-red);
+            color: #ffffff;
+            border: 1px solid var(--dg-red);
+        }
+        .hero-btn-primary:hover {
+            background: var(--dg-red-hover);
+            transform: translateY(-1px);
+        }
+        .hero-btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+        }
+        .hero-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        /* Language Selector Bar */
+        .language-control-wrap {
+            background: #ffffff;
+            border: 1px solid var(--dg-border);
+            border-radius: 12px;
+            padding: 14px 20px;
+            margin: 28px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+        .lang-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--dg-navy);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .lang-selector-group {
+            display: inline-flex;
+            background: #F1F5F9;
+            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid #CBD5E1;
+        }
+        .lang-btn {
+            background: transparent;
+            border: none;
+            padding: 8px 18px;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--dg-slate);
+            transition: all 0.2s ease;
+        }
+        .lang-btn.active {
+            background: var(--dg-red);
+            color: #ffffff;
+            box-shadow: 0 2px 6px rgba(158, 27, 50, 0.25);
+        }
+
+        /* Quick Explanation 4-Cards Grid */
+        .section-header {
+            margin: 36px 0 20px 0;
+        }
+        .section-header h2 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--dg-navy);
+            margin: 0 0 6px 0;
+        }
+        .section-header p {
+            color: var(--dg-slate);
+            font-size: 15px;
+            margin: 0;
+        }
+
+        .quick-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 32px;
+        }
+        @media (max-width: 992px) {
+            .quick-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 576px) {
+            .quick-grid { grid-template-columns: 1fr; }
+        }
+        .quick-card {
+            background: #ffffff;
+            border: 1px solid var(--dg-border);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border-top: 3px solid var(--dg-navy);
+        }
+        .quick-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+        }
+        .quick-card:nth-child(2) { border-top-color: var(--dg-red); }
+        .quick-card:nth-child(3) { border-top-color: var(--dg-emerald); }
+        .quick-card:nth-child(4) { border-top-color: var(--dg-amber); }
+        .quick-card h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--dg-navy);
+            margin: 0 0 10px 0;
+        }
+        .quick-card p {
+            font-size: 14px;
+            color: #475569;
+            line-height: 1.5;
+            margin: 0 0 14px 0;
+            flex-grow: 1;
+        }
+        .quick-badge {
+            display: inline-block;
+            background: #F1F5F9;
+            color: var(--dg-navy);
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Job Awareness Banner */
+        .job-banner {
+            background: linear-gradient(135deg, #081226 0%, #152238 100%);
+            border-radius: 12px;
+            padding: 28px 32px;
+            color: #ffffff;
+            margin: 32px 0 40px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+            box-shadow: 0 6px 20px rgba(8, 18, 38, 0.15);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .job-banner-content h3 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 20px;
+            font-weight: 800;
+            margin: 0 0 8px 0;
+            color: #ffffff;
+        }
+        .job-banner-content p {
+            font-size: 14px;
+            color: #CBD5E1;
+            margin: 0;
+            max-width: 650px;
+            line-height: 1.5;
+        }
+        .job-banner-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .job-banner-btn-find {
+            background: var(--dg-red);
+            color: #ffffff;
+            padding: 10px 22px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .job-banner-btn-find:hover {
+            background: var(--dg-red-hover);
+            transform: translateY(-1px);
+        }
+        .job-banner-btn-post {
+            background: rgba(255,255,255,0.12);
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            border: 1px solid rgba(255,255,255,0.25);
+            transition: all 0.2s;
+        }
+        .job-banner-btn-post:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* 8-Lesson Curriculum Section */
+        .curriculum-wrap {
+            background: #ffffff;
+            border: 1px solid var(--dg-border);
+            border-radius: 12px;
+            padding: 28px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+            margin-bottom: 40px;
+        }
+        .lesson-nav-tabs {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--dg-border);
+            margin-bottom: 28px;
+            scrollbar-width: thin;
+        }
+        .lesson-tab-btn {
+            background: #F8FAFC;
+            border: 1px solid var(--dg-border);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--dg-slate);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .lesson-tab-btn:hover {
+            background: #F1F5F9;
+            color: var(--dg-navy);
+        }
+        .lesson-tab-btn.active {
+            background: var(--dg-navy);
+            color: #ffffff;
+            border-color: var(--dg-navy);
+        }
+
+        /* Lesson Content Card */
+        .lesson-pane {
+            display: none;
+        }
+        .lesson-pane.active {
+            display: block;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .lesson-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #F1F5F9;
+        }
+        .lesson-header h3 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--dg-navy);
+            margin: 0;
+        }
+        .lesson-tag {
+            background: rgba(158, 27, 50, 0.08);
+            color: var(--dg-red);
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 16px;
+        }
+
+        .lesson-block {
+            margin-bottom: 24px;
+        }
+        .lesson-block h4 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--dg-navy);
+            margin: 0 0 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .lesson-block p {
+            font-size: 15px;
+            color: #334155;
+            line-height: 1.7;
+            margin: 0 0 12px 0;
+        }
+
+        /* Comparison Table */
+        .table-responsive {
+            overflow-x: auto;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 1px solid var(--dg-border);
+        }
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            text-align: left;
+        }
+        .comparison-table th {
+            background: #F1F5F9;
+            color: var(--dg-navy);
+            padding: 12px 16px;
+            font-weight: 700;
+            border-bottom: 2px solid var(--dg-border);
+        }
+        .comparison-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--dg-border);
+            color: #334155;
+        }
+        .comparison-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Formula Box */
+        .formula-box {
+            background: #081226;
+            color: #F8FAFC;
+            border-radius: 8px;
+            padding: 20px 24px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            margin: 20px 0;
+            border-left: 4px solid var(--dg-red);
+            overflow-x: auto;
+            line-height: 1.6;
+        }
+
+        /* Takeaway Box */
+        .takeaway-box {
+            background: #F0FDF4;
+            border: 1px solid #BBF7D0;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin: 20px 0;
+        }
+        .takeaway-box h5 {
+            color: #166534;
+            font-size: 14px;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+        }
+        .takeaway-box ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #15803D;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* Practice Question Toggle */
+        .self-check-card {
+            background: #FFFBEB;
+            border: 1px solid #FDE68A;
+            border-radius: 8px;
+            padding: 18px 20px;
+            margin-top: 24px;
+        }
+        .self-check-card h5 {
+            color: #92400E;
+            font-size: 14px;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+        }
+        .self-check-card p {
+            color: #78350F;
+            font-size: 14px;
+            margin: 0 0 12px 0;
+        }
+        .toggle-answer-btn {
+            background: #F59E0B;
+            color: #ffffff;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .toggle-answer-btn:hover { background: #D97706; }
+        .answer-reveal {
+            display: none;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed #FCD34D;
+            font-size: 13px;
+            color: #78350F;
+            font-weight: 500;
+        }
+
+        .lesson-footer-nav {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 28px;
+            padding-top: 16px;
+            border-top: 1px solid #F1F5F9;
+        }
+        .next-lesson-btn {
+            background: var(--dg-navy);
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .next-lesson-btn:hover {
+            background: var(--dg-red);
+            transform: translateX(2px);
+        }
+
+        /* Dedicated SAM Calculator Link Promo Box */
+        .calculator-promo-card {
+            background: linear-gradient(135deg, #FFF5F5 0%, #FFFFFF 100%);
+            border: 2px solid #FECDD3;
+            border-radius: 12px;
+            padding: 28px;
+            margin: 36px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+            box-shadow: 0 4px 14px rgba(158, 27, 50, 0.06);
+        }
+        .calc-promo-text h3 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--dg-navy);
+            margin: 0 0 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .calc-promo-text p {
+            color: #475569;
+            font-size: 14px;
+            margin: 0;
+            max-width: 680px;
+            line-height: 1.6;
+        }
+        .calc-promo-btn {
+            background: var(--dg-red);
+            color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: all 0.2s;
+            box-shadow: 0 3px 10px rgba(158, 27, 50, 0.25);
+        }
+        .calc-promo-btn:hover {
+            background: var(--dg-red-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(158, 27, 50, 0.35);
+        }
+
+        /* Interactive Quiz Section */
+        .quiz-section {
+            background: #ffffff;
+            border: 1px solid var(--dg-border);
+            border-radius: 12px;
+            padding: 32px;
+            margin: 36px 0;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+        }
+        .quiz-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #F1F5F9;
+        }
+        .quiz-header h3 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--dg-navy);
+            margin: 0;
+        }
+        .quiz-score-badge {
+            background: #F1F5F9;
+            color: var(--dg-navy);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            border: 1px solid #CBD5E1;
+        }
+
+        .quiz-card {
+            background: #F8FAFC;
+            border: 1px solid var(--dg-border);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .quiz-question-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--dg-navy);
+            margin: 0 0 14px 0;
+        }
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .quiz-option-btn {
+            background: #ffffff;
+            border: 1px solid #CBD5E1;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 14px;
+            text-align: left;
+            cursor: pointer;
+            color: #334155;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        .quiz-option-btn:hover:not(:disabled) {
+            border-color: var(--dg-navy);
+            background: #F8FAFC;
+        }
+        .quiz-option-btn.correct {
+            background: #ECFDF5 !important;
+            border-color: #10B981 !important;
+            color: #065F46 !important;
+            font-weight: 700;
+        }
+        .quiz-option-btn.wrong {
+            background: #FEF2F2 !important;
+            border-color: #EF4444 !important;
+            color: #991B1B !important;
+        }
+        .quiz-explanation-box {
+            display: none;
+            margin-top: 12px;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .quiz-explanation-box.show {
+            display: block;
+        }
+        .quiz-explanation-box.correct {
+            background: #E6FFFA;
+            color: #047481;
+            border-left: 3px solid #0D9488;
+        }
+        .quiz-explanation-box.wrong {
+            background: #FFF5F5;
+            color: #9B1C1C;
+            border-left: 3px solid #E02424;
+        }
+
+        .quiz-reset-btn {
+            background: #E2E8F0;
+            color: var(--dg-navy);
+            border: none;
+            padding: 8px 18px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .quiz-reset-btn:hover { background: #CBD5E1; }
+
+        /* Preserved Original Blog Content Section */
+        .original-content-section {
+            background: #ffffff;
+            border: 1px solid var(--dg-border);
+            border-radius: 12px;
+            padding: 32px;
+            margin: 36px 0;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.02);
+        }
+        .original-content-section h3 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--dg-navy);
+            margin: 0 0 14px 0;
+        }
+        .original-content-section p {
+            font-size: 15px;
+            color: #334155;
+            line-height: 1.7;
+            margin: 0 0 16px 0;
+        }
+        .original-content-section ul {
+            padding-left: 20px;
+            margin-bottom: 20px;
+        }
+        .original-content-section li {
+            font-size: 15px;
+            color: #334155;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        /* Related Jobs Section */
+        .jobs-section {
+            margin: 40px 0;
+        }
+        .jobs-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-top: 20px;
+        }
+        @media (max-width: 992px) {
+            .jobs-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 576px) {
+            .jobs-grid { grid-template-columns: 1fr; }
+        }
+        .job-card-item {
+            background: #ffffff;
+            border: 1px solid var(--dg-border);
+            border-radius: 10px;
+            padding: 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: inherit;
+        }
+        .job-card-item:hover {
+            transform: translateY(-2px);
+            border-color: var(--dg-red);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+        }
+        .job-card-role {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--dg-navy);
+            margin: 0 0 6px 0;
+            line-height: 1.3;
+        }
+        .job-card-company {
+            font-size: 13px;
+            color: var(--dg-slate);
+            margin: 0 0 10px 0;
+        }
+        .job-card-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #64748B;
+            border-top: 1px solid #F1F5F9;
+            padding-top: 10px;
+            margin-top: 8px;
+        }
+        .job-card-badge {
+            background: #F1F5F9;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            color: var(--dg-navy);
+        }
+
+        /* FAQ Accordion */
+        .faq-wrap {
+            margin: 40px 0;
+        }
+        .faq-item {
+            background: #ffffff;
+            border: 1px solid var(--dg-border);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+        .faq-btn {
+            width: 100%;
+            text-align: left;
+            background: transparent;
+            border: none;
+            padding: 18px 20px;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--dg-navy);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .faq-btn:hover { background: #F8FAFC; }
+        .faq-content {
+            display: none;
+            padding: 0 20px 20px 20px;
+            font-size: 15px;
+            color: #475569;
+            line-height: 1.7;
+            border-top: 1px solid #F1F5F9;
+        }
+        .faq-content.open { display: block; }
+        .faq-icon { font-size: 18px; color: var(--dg-slate); transition: transform 0.2s; }
+        .faq-btn.open .faq-icon { transform: rotate(180deg); }
+
+        /* Site Header & Footer styling matches DigiGarment standards */
+        .site-header {
+            background: #ffffff;
+            border-bottom: 1px solid var(--dg-border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .nav-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 70px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 24px;
+        }
+        .nav-links a {
+            color: var(--dg-slate);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--dg-red);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Site Header -->
+    <header class="site-header">
+        <div class="page-container nav-wrap">
+            <a href="/" style="display: flex; align-items: center;">
+                <img src="/assets/images/logo-light.png" alt="DigiGarment Logo" style="height: 38px;">
+            </a>
+            <nav class="nav-links">
+                <a href="/">Home</a>
+                <a href="/jobs">Tiruppur Jobs</a>
+                <a href="/tools">Tools</a>
+                <a href="/services">Services</a>
+                <a class="active" href="/blog">Blog</a>
+                <a href="/#contact">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Breadcrumbs -->
+    <div class="breadcrumbs-bar">
+        <div class="page-container">
+            <a href="/">Home</a>
+            <span>›</span>
+            <a href="/blog">Blog</a>
+            <span>›</span>
+            <strong id="breadcrumbCurrent">What is SAM in Garment Manufacturing?</strong>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="learning-hero">
+        <div class="page-container">
+            <div class="hero-badge" id="heroBadge">
+                <span>Apparel Industrial Engineering</span> • <span>Practical Learning</span>
+            </div>
+            <h1 id="heroTitle">What is SAM in Garment Manufacturing? Complete Guide to Standard Allowed Minutes</h1>
+            <p class="subtitle" id="heroSubtitle">
+                Master Standard Allowed Minutes (SAM), Standard Minute Value (SMV), cycle time calculations, allowances, line balancing, and production targets for apparel manufacturing.
+            </p>
+            <div class="hero-meta">
+                <span>By DigiGarment Industrial Engineering Team</span> • 
+                <span>Published: 2026-09-01</span> • 
+                <span>Updated: 2026-10-24</span> •
+                <span>12 Min Read</span>
+            </div>
+            <div class="hero-actions">
+                <a href="#curriculumSection" class="hero-btn hero-btn-primary" id="btnHeroLessons">Start Lessons ↓</a>
+                <a href="/tools/sam-calculator" class="hero-btn hero-btn-secondary" id="btnHeroCalculator">Open SAM Calculator ↗</a>
+                <a href="#quizSection" class="hero-btn hero-btn-secondary" id="btnHeroQuiz">Take Practice Quiz</a>
+                <a href="#jobsSection" class="hero-btn hero-btn-secondary" id="btnHeroJobs">Explore Tiruppur Jobs</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Container -->
+    <main class="page-container">
+        <!-- Language Selector -->
+        <div class="language-control-wrap">
+            <div class="lang-label">
+                <span>🌐 Preferred Language / மொழி தேர்வு:</span>
+            </div>
+            <div class="lang-selector-group">
+                <button type="button" class="lang-btn active" id="langBtnTa" onclick="setLanguage('ta')">தமிழ் + English</button>
+                <button type="button" class="lang-btn" id="langBtnEn" onclick="setLanguage('en')">English</button>
+            </div>
+        </div>
+
+        
+
+
+        <!-- Job Portal Awareness Banner -->
+        <div class="job-banner">
+            <div class="job-banner-content">
+                <h3 id="jbTitle">Looking for Garment Industry Jobs in Tiruppur?</h3>
+                <p id="jbDesc">Explore verified opportunities in Production, Industrial Engineering, Quality, Merchandising, Cutting, and Fabric across Tiruppur export units.</p>
+            </div>
+            <div class="job-banner-buttons">
+                <a href="/jobs" class="job-banner-btn-find" id="jbBtnFind">Find Jobs</a>
+                <a href="/post-a-job" class="job-banner-btn-post" id="jbBtnPost">Post a Job</a>
+            </div>
+        </div>
+
+        
+        <!-- ========================================== -->
+        <!-- SAM / SMV FORMULA REFERENCE SECTION (NEW)  -->
+        <!-- ========================================== -->
+        <section id="formulaReferenceSection" style="margin: 40px 0;">
+            <div class="section-header">
+                <h2 id="formulaRefMainTitle">SAM / SMV Formula Reference & Calculation Guide</h2>
+                <p id="formulaRefMainSubtitle">Standard allowed minutes formulas, element breakdowns, worked examples, and garment production target equations.</p>
+            </div>
+
+                        <!-- 1. SAM Formula Card (High-Impact Highlighted) -->
+            <div class="quick-card" style="margin-bottom: 24px; border: 2px solid #2563EB; border-radius: 12px; background: #ffffff; box-shadow: 0 4px 16px rgba(37, 99, 235, 0.08); padding: 24px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;">
+                    <h3 id="samFormulaCardTitle" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 19px; font-weight: 800; color: #1E3A8A; margin: 0;">
+                        1. SAM Formula (Standard Allowed Minutes)
+                    </h3>
+                    <span class="quick-badge" style="background: #DBEAFE; color: #1D4ED8; font-weight: 700; border: 1px solid #BFDBFE;">
+                        📐 CORE APPAREL FORMULA
+                    </span>
+                </div>
+
+                <!-- High-Impact Highlighted Formula Box (Light Theme) -->
+                <div class="highlight-formula-box sam-box" style="background: linear-gradient(135deg, #F0F7FF 0%, #E0F2FE 100%); border-radius: 10px; padding: 22px 24px; margin: 0 0 16px 0; border: 1.5px solid #93C5FD; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.08);">
+                    <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 18px; font-weight: 800; color: #0F172A; line-height: 1.5; margin-bottom: 14px; word-break: break-word;">
+                        <span style="color: #1D4ED8; font-weight: 800;">SAM</span> <span style="font-size: 14px; color: #64748B; font-weight: 600;">(minutes)</span> = 
+                        <span style="color: #1E293B; font-weight: 800;">[</span> 
+                        <span style="color: #047857; font-weight: 800; text-decoration: underline; text-underline-offset: 3px;">Basic Cycle Time</span> <span style="font-size: 13px; color: #065F46; font-weight: 600;">(seconds)</span> × 
+                        <span style="color: #1E293B; font-weight: 700;">(</span> 1 + <span style="color: #B45309; font-weight: 800;">Total Allowance %</span> / 100 <span style="color: #1E293B; font-weight: 700;">)</span> 
+                        <span style="color: #1E293B; font-weight: 800;">]</span> 
+                        <span style="color: #E11D48; font-weight: 900; font-size: 20px;">÷</span> <span style="color: #0F172A; font-weight: 800;">60</span>
+                    </div>
+
+                    <div style="border-top: 1px solid #BFDBFE; padding-top: 12px; font-size: 14px; color: #334155; font-family: 'Inter', sans-serif; line-height: 1.6;">
+                        <span style="font-weight: 700; color: #1E40AF; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; background: #DBEAFE; padding: 3px 8px; border-radius: 4px; margin-right: 8px; border: 1px solid #BFDBFE;">Where:</span>
+                        <strong style="color: #047857;">Basic Cycle Time (seconds)</strong> = 
+                        <span style="color: #0284C7; font-weight: 700;">Machine Sewing Time</span> + 
+                        <span style="color: #BE185D; font-weight: 700;">Handling and Positioning Time</span>
+                    </div>
+                </div>
+
+                <p id="samFormulaExplanation" style="font-size: 15px; color: #334155; line-height: 1.7; margin: 0;">
+                    To calculate SAM, first determine the Basic Cycle Time by adding Machine Sewing Time and Handling and Positioning Time. Apply the applicable Total Allowance Percentage, then divide the resulting time in seconds by 60 to convert it into minutes.
+                </p>
+            </div>
+
+                        <!-- 2. SMV Formula Card (High-Impact Highlighted) -->
+            <div class="quick-card" style="margin-bottom: 24px; border: 2px solid #E11D48; border-radius: 12px; background: #ffffff; box-shadow: 0 4px 16px rgba(225, 29, 72, 0.08); padding: 24px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;">
+                    <h3 id="smvFormulaCardTitle" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 19px; font-weight: 800; color: #9F1239; margin: 0;">
+                        2. SMV Formula (Standard Minute Value)
+                    </h3>
+                    <span class="quick-badge" style="background: #FFE4E6; color: #BE123C; font-weight: 700; border: 1px solid #FECDD3;">
+                        🌐 INTERNATIONAL GSD FORMULA
+                    </span>
+                </div>
+
+                <!-- High-Impact Highlighted Formula Box (Light Theme) -->
+                <div class="highlight-formula-box smv-box" style="background: linear-gradient(135deg, #FFF1F2 0%, #FFE4E6 100%); border-radius: 10px; padding: 22px 24px; margin: 0 0 16px 0; border: 1.5px solid #FECDD3; box-shadow: 0 4px 14px rgba(225, 29, 72, 0.08);">
+                    <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 18px; font-weight: 800; color: #0F172A; line-height: 1.5; margin-bottom: 14px; white-space: nowrap;">
+                        <span style="color: #BE123C; font-weight: 800;">SMV</span> <span style="font-size: 14px; color: #64748B; font-weight: 600;">(minutes)</span> = 
+                        <span style="color: #0284C7; font-weight: 700;">Standard Operation Time</span> 
+                        <span style="font-size: 13px; color: #0369A1; font-weight: 600; display: inline;">(seconds)</span> 
+                        <span style="color: #E11D48; font-weight: 900; font-size: 20px;">÷</span> <span style="color: #0F172A; font-weight: 800;">60</span>
+                    </div>
+
+                    <div style="border-top: 1px solid #FECDD3; padding-top: 12px; font-size: 14px; color: #334155; font-family: 'Inter', sans-serif; line-height: 1.6;">
+                        <span style="font-weight: 700; color: #9F1239; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; background: #FFE4E6; padding: 3px 8px; border-radius: 4px; margin-right: 8px; border: 1px solid #FECDD3;">When standard time includes allowances:</span><br>
+                        <span style="display: inline-block; margin-top: 6px;">
+                            <strong style="color: #BE123C;">SMV</strong> = 
+                            <span style="color: #1E293B; font-weight: 800;">[</span> 
+                            <span style="color: #047857; font-weight: 700;">Basic Cycle Time (sec)</span> × 
+                            <span style="color: #1E293B; font-weight: 700;">(</span> 1 + <span style="color: #B45309; font-weight: 800;">Total Allowance %</span> / 100 <span style="color: #1E293B; font-weight: 700;">)</span> 
+                            <span style="color: #1E293B; font-weight: 800;">]</span> 
+                            <span style="color: #E11D48; font-weight: 900; font-size: 20px;">÷</span> <span style="color: #0F172A; font-weight: 800;">60</span>
+                        </span>
+                    </div>
+                </div>
+
+                <p id="smvFormulaExplanation" style="font-size: 15px; color: #334155; line-height: 1.7; margin: 0;">
+                    SMV (Standard Minute Value) expresses the standard time assigned to a garment operation in minutes. When the same time-study method and allowance standards are used, SAM and SMV values are generally equivalent. However, terminology and calculation methods may vary between companies.
+                </p>
+            </div>
+
+            <!-- 3. Formula Elements and Their Meanings Table -->
+            <div style="background: #ffffff; border: 1px solid var(--dg-border); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.02);">
+                <h3 id="elementsTableTitle" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 19px; font-weight: 800; color: var(--dg-navy); margin: 0 0 8px 0;">
+                    3. Formula Elements and Their Meanings
+                </h3>
+                <p id="elementsTableSubtitle" style="font-size: 14px; color: var(--dg-slate); margin: 0 0 18px 0;">
+                    Detailed breakdown of every variable used in garment industrial engineering time study calculations.
+                </p>
+                <div class="table-responsive">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th id="thEl" style="width: 22%;">Formula Element</th>
+                                <th id="thMean" style="width: 38%;">Meaning</th>
+                                <th id="thUnit" style="width: 15%;">Unit</th>
+                                <th id="thEx" style="width: 25%;">Garment Industry Example</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong id="el1Name">Machine Sewing Time</strong></td>
+                                <td id="el1Mean">Machine Sewing Time is the time required for the machine to perform the stitching operation.</td>
+                                <td><span class="quick-badge">Seconds</span></td>
+                                <td id="el1Ex">Running 4-thread overlock seam on collar rib</td>
+                            </tr>
+                            <tr>
+                                <td><strong id="el2Name">Total Stitch Count</strong></td>
+                                <td id="el2Mean">Multiply the seam length by the stitch density in SPI to calculate the total number of stitches: Total Stitches = Seam Length (inches) × SPI.</td>
+                                <td><span class="quick-badge">Stitches</span></td>
+                                <td id="el2Ex">10 inches Seam × 12 SPI = 120 stitches</td>
+                            </tr>
+                            <tr>
+                                <td><strong id="el3Name">Machine Speed</strong></td>
+                                <td id="el3Mean">The sewing machine's effective stitching speed. Note that actual effective speed may be lower than rated motor RPM due to starts, stops, curves, and handling.</td>
+                                <td><span class="quick-badge">Stitches / Min</span></td>
+                                <td id="el3Ex">Rated 5,000 RPM running at 3,000 effective stitches/min</td>
+                            </tr>
+                            <tr>
+                                <td><strong id="el4Name">Handling and Positioning Time</strong></td>
+                                <td id="el4Mean">Handling and Positioning Time is the time spent picking up, aligning, positioning, and handling garment panels during the operation.</td>
+                                <td><span class="quick-badge">Seconds</span></td>
+                                <td id="el4Ex">Picking fabric panels, matching notches, and disposal (5.0s)</td>
+                            </tr>
+                            <tr>
+                                <td><strong id="el5Name">Basic Cycle Time</strong></td>
+                                <td id="el5Mean">Add Machine Sewing Time and Handling and Positioning Time to obtain the Basic Cycle Time: Basic Cycle Time = Machine Sewing Time + Handling Time.</td>
+                                <td><span class="quick-badge">Seconds</span></td>
+                                <td id="el5Ex">2.4s sewing + 5.0s handling = 7.4 seconds basic time</td>
+                            </tr>
+                            <tr>
+                                <td><strong id="el6Name">Total Allowance Percentage</strong></td>
+                                <td id="el6Mean">Allowance is additional time included in the standard according to the company's approved method. It may account for personal needs, fatigue, machine delays, and other approved work-related factors. Allowance percentages vary by company and methodology.</td>
+                                <td><span class="quick-badge">%</span></td>
+                                <td id="el6Ex">Standard relaxation allowance of 14% (personal + fatigue + delay)</td>
+                            </tr>
+                            <tr>
+                                <td><strong id="el7Name">Allowance Multiplier</strong></td>
+                                <td id="el7Mean">For a 14% allowance, multiply the Basic Cycle Time by 1.14: Multiplier = 1 + (Total Allowance % / 100).</td>
+                                <td><span class="quick-badge">Multiplier</span></td>
+                                <td id="el7Ex">1 + (14 / 100) = 1.14 multiplier on basic time</td>
+                            </tr>
+                            <tr>
+                                <td><strong id="el8Name">Conversion from Seconds to Minutes</strong></td>
+                                <td id="el8Mean">Since 60 seconds equal one minute, divide the time in seconds by 60 to convert it into minutes: Minutes = Seconds / 60.</td>
+                                <td><span class="quick-badge">Minutes</span></td>
+                                <td id="el8Ex">8.436 seconds / 60 = 0.1406 decimal minutes</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 4. Step-by-Step Worked Example -->
+            <div style="background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%); border: 2px solid #E2E8F0; border-radius: 12px; padding: 26px; margin-bottom: 24px; box-shadow: 0 4px 14px rgba(0,0,0,0.03);">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;">
+                    <h3 id="workedExTitle" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 19px; font-weight: 800; color: var(--dg-navy); margin: 0;">
+                        4. Step-by-Step Worked Numerical Example
+                    </h3>
+                    <span class="quick-badge" style="background: #E0E7FF; color: #3730A3;">Garment Operation Sample</span>
+                </div>
+                
+                <div style="background: #F1F5F9; border-radius: 8px; padding: 14px 18px; margin-bottom: 16px; font-size: 14px; color: #334155;">
+                    <strong id="workedExInputsHeading">📋 Input Parameters:</strong>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 8px;">
+                        <div>• Seam Length = <strong>10 inches</strong></div>
+                        <div>• Stitch Density = <strong>12 SPI</strong></div>
+                        <div>• Machine Speed = <strong>3,000 stitches/min</strong></div>
+                        <div>• Handling Time = <strong>5.0 seconds</strong></div>
+                        <div>• Total Allowance = <strong>14%</strong></div>
+                    </div>
+                </div>
+
+                <div class="formula-box" style="margin: 0 0 16px 0;">
+Step 1: Total Stitches = 10 inches × 12 SPI = 120 stitches
+Step 2: Machine Sewing Time = (120 / 3,000) × 60 = 2.4 seconds
+Step 3: Basic Cycle Time = 2.4s (sewing) + 5.0s (handling) = 7.4 seconds
+Step 4: Allowance Multiplier = 1 + (14 / 100) = 1.14
+Step 5: Final SAM = (7.4 × 1.14) / 60 = 8.436 / 60 ≈ 0.1406 minutes
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap; background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 8px; padding: 14px 18px; margin-bottom: 14px;">
+                    <span style="font-size: 20px;">✅</span>
+                    <div>
+                        <strong id="workedExResultBadge" style="font-size: 16px; color: #065F46;">SAM ≈ 0.141 minutes per operation</strong>
+                        <div id="workedExResultDetails" style="font-size: 13px; color: #047857; margin-top: 2px;">(Standard Allowed Time = 8.44 seconds per piece)</div>
+                    </div>
+                </div>
+
+                <p id="workedExDesc" style="font-size: 14px; color: #475569; line-height: 1.6; margin: 0;">
+                    In this example, the calculated SAM is approximately 0.141 minutes per operation. This is illustrative; actual SAM depends on the operation method, machine, operator performance, and approved allowance standards.
+                </p>
+            </div>
+
+            <!-- 5. SAM vs SMV Comparison Table -->
+            <div style="background: #ffffff; border: 1px solid var(--dg-border); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.02);">
+                <h3 id="compTableTitle" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 19px; font-weight: 800; color: var(--dg-navy); margin: 0 0 8px 0;">
+                    5. SAM vs SMV Comparison
+                </h3>
+                <p id="compTableSubtitle" style="font-size: 14px; color: var(--dg-slate); margin: 0 0 18px 0;">
+                    Key distinctions, common industry applications, and regional terminology conventions between SAM and SMV.
+                </p>
+                <div class="table-responsive">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th id="thCompAspect" style="width: 20%;">Comparison Aspect</th>
+                                <th id="thCompSam" style="width: 40%;">SAM (Standard Allowed Minutes)</th>
+                                <th id="thCompSmv" style="width: 40%;">SMV (Standard Minute Value)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong id="rowCompFull">Full Form</strong></td>
+                                <td>Standard Allowed Minutes</td>
+                                <td>Standard Minute Value</td>
+                            </tr>
+                            <tr>
+                                <td><strong id="rowCompMean">Meaning</strong></td>
+                                <td id="samMeaningText">Standard allowed minutes allocated to complete a garment operation at standard performance rating including allowances.</td>
+                                <td id="smvMeaningText">Standard minute value assigned to a work element or operation in international and British work-study standards.</td>
+                            </tr>
+                            <tr>
+                                <td><strong id="rowCompUnit">Unit</strong></td>
+                                <td>Minutes (decimal minutes)</td>
+                                <td>Minutes (decimal minutes)</td>
+                            </tr>
+                            <tr>
+                                <td><strong id="rowCompApp">Common Applications</strong></td>
+                                <td id="samAppText">Shopfloor target fixing, line balancing, operator efficiency tracking, and South Asian export factory planning.</td>
+                                <td id="smvAppText">International buyer tech packs, UK/European apparel costing sheets, and GSD (General Sewing Data) motion-time systems.</td>
+                            </tr>
+                            <tr>
+                                <td><strong id="rowCompRel">Relationship Between SAM and SMV</strong></td>
+                                <td colspan="2" id="samSmvRelText" style="text-align: left; background: #F8FAFC; color: #1E293B;">
+                                    In most garment factories, 1.0 SAM = 1.0 SMV and they are used interchangeably. However, internal company standards, time-study methodologies, and allowance policies may vary.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 6. Production Target Formulas -->
+            <div style="background: #ffffff; border: 1px solid var(--dg-border); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.02);">
+                <h3 id="targetFormulasTitle" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 19px; font-weight: 800; color: var(--dg-navy); margin: 0 0 8px 0;">
+                    6. Garment Production Target Formulas
+                </h3>
+                <p id="targetFormulasSubtitle" style="font-size: 14px; color: var(--dg-slate); margin: 0 0 18px 0;">
+                    Equations for calculating theoretical hourly output, entire sewing line targets, and efficiency-adjusted planned quotas.
+                </p>
+
+                <!-- Formula A -->
+                <div style="background: #F8FAFC; border: 1px solid var(--dg-border); border-radius: 8px; padding: 18px; margin-bottom: 16px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <strong id="targetAHeading" style="font-size: 15px; color: var(--dg-navy);">A. Single-Operation Hourly Target</strong>
+                        <span class="quick-badge">Pieces / Hour</span>
+                    </div>
+                    <div class="formula-box" style="margin: 0 0 10px 0;">
+Hourly Target = 60 / Operation SAM
+                    </div>
+                    <p id="targetADesc" style="font-size: 14px; color: #475569; line-height: 1.6; margin: 0;">
+                        Divide 60 minutes by the operation SAM to calculate the theoretical number of pieces per hour for that operation (assuming one completed cycle per piece).
+                    </p>
+                </div>
+
+                <!-- Formula B -->
+                <div style="background: #F8FAFC; border: 1px solid var(--dg-border); border-radius: 8px; padding: 18px; margin-bottom: 16px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <strong id="targetBHeading" style="font-size: 15px; color: var(--dg-navy);">B. Theoretical Sewing Line Target</strong>
+                        <span class="quick-badge">Pieces / Line / Hour</span>
+                    </div>
+                    <div class="formula-box" style="margin: 0 0 10px 0;">
+Theoretical Line Target = (Number of Operators × 60) / Total Style SAM
+                    </div>
+                    <p id="targetBDesc" style="font-size: 14px; color: #475569; line-height: 1.6; margin: 0;">
+                        Multiply the total number of operators on the line by 60, then divide by the Total Style SAM of the garment to obtain the theoretical line output (where Total Style SAM represents the complete garment's standard content).
+                    </p>
+                </div>
+
+                <!-- Formula C -->
+                <div style="background: #F8FAFC; border: 1px solid var(--dg-border); border-radius: 8px; padding: 18px; margin-bottom: 16px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <strong id="targetCHeading" style="font-size: 15px; color: var(--dg-navy);">C. Planned Line Target (Efficiency-Adjusted)</strong>
+                        <span class="quick-badge">Planned Pieces / Hour</span>
+                    </div>
+                    <div class="formula-box" style="margin: 0 0 10px 0;">
+Planned Line Target = Theoretical Line Target × Target Efficiency %
+(Convert percentage to decimal: e.g., 75% = 0.75)
+                    </div>
+                    <p id="targetCDesc" style="font-size: 14px; color: #475569; line-height: 1.6; margin: 0;">
+                        For a target efficiency of 75%, multiply the theoretical target by 0.75 to estimate the planned target. Always distinguish single-operation capacity from full line delivery, and theoretical targets from planned targets.
+                    </p>
+                </div>
+            </div>
+
+            
+            <!-- ============================================== -->
+            <!-- QUICK EXPLANATION (ALL 4 CARDS BELOW TARGETS)  -->
+            <!-- ============================================== -->
+            <div style="margin: 36px 0 28px 0;">
+                <div class="section-header" style="margin-bottom: 20px;">
+                    <h2 id="quickSectionTitle">Quick Explanation (30–60 Second Overview)</h2>
+                    <p id="quickSectionSubtitle">Essential core concepts of Standard Allowed Minutes for garment production planning.</p>
+                </div>
+
+                <div class="quick-grid">
+                    <div class="quick-card">
+                        <div>
+                            <h3 id="qc1Title">1. What is SAM?</h3>
+                            <p id="qc1Desc">Standard Allowed Minutes (SAM) is the standard time required by a qualified sewing operator working at normal rating to complete an operation, including personal, fatigue, and delay allowances.</p>
+                        </div>
+                        <div><span class="quick-badge">SAM = Allowed Minutes</span></div>
+                    </div>
+                    <div class="quick-card">
+                        <div>
+                            <h3 id="qc2Title">2. What is SMV?</h3>
+                            <p id="qc2Desc">Standard Minute Value (SMV) is internationally synonymous with SAM. Originating from British work-study traditions (GSD), 1.0 SMV is identical in duration to 1.0 SAM.</p>
+                        </div>
+                        <div><span class="quick-badge">SMV = Standard Minute Value</span></div>
+                    </div>
+                    <div class="quick-card">
+                        <div>
+                            <h3 id="qc3Title">3. SAM vs SMV Equivalence</h3>
+                            <p id="qc3Desc">Numerically, 1.0 SAM = 1.0 SMV. SAM is preferred in South Asia & Southeast Asia, while SMV is frequently used in UK/European apparel costing sheets.</p>
+                        </div>
+                        <div><span class="quick-badge">1.0 SAM ≡ 1.0 SMV</span></div>
+                    </div>
+                    <div class="quick-card">
+                        <div>
+                            <h3 id="qc4Title">4. Core Formula & Target</h3>
+                            <p id="qc4Desc">SAM = [(Sewing Time + Handling Time) × (1 + Allowance%)] / 60. Hourly production capacity at 100% efficiency equals 60 / SAM.</p>
+                        </div>
+                        <div><span class="quick-badge">Target = 60 / SAM</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7 & 8. Dual Action Callout Cards -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-top: 24px;">
+                <!-- 7. Calculator CTA -->
+                <div style="background: linear-gradient(135deg, #FFF5F5 0%, #FFFFFF 100%); border: 2px solid #FECDD3; border-radius: 12px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <h4 id="ctaCalcHeading" style="font-size: 17px; font-weight: 800; color: var(--dg-navy); margin: 0 0 8px 0;">
+                            🛠️ Calculate SAM / SMV Online
+                        </h4>
+                        <p id="ctaCalcText" style="font-size: 14px; color: #475569; line-height: 1.6; margin: 0 0 16px 0;">
+                            Use the DigiGarment calculator to calculate SAM/SMV using your operation details, machine speed, handling time, and allowance values.
+                        </p>
+                    </div>
+                    <a href="/tools/sam-calculator" class="hero-btn hero-btn-primary" id="ctaCalcBtn" style="justify-content: center; text-align: center;">
+                        Calculate SAM / SMV Now →
+                    </a>
+                </div>
+
+                <!-- 8. Continue Learning CTA -->
+                <div style="background: linear-gradient(135deg, #F0FDF4 0%, #FFFFFF 100%); border: 2px solid #BBF7D0; border-radius: 12px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <h4 id="ctaLearnHeading" style="font-size: 17px; font-weight: 800; color: #166534; margin: 0 0 8px 0;">
+                            📚 Practical Lessons & Curriculum
+                        </h4>
+                        <p id="ctaLearnText" style="font-size: 14px; color: #374151; line-height: 1.6; margin: 0 0 16px 0;">
+                            Explore the 8 detailed lessons covering collar rib attachments, pitch time equations, allowance derivations, and the interactive quiz below.
+                        </p>
+                    </div>
+                    <a href="#curriculumSection" class="hero-btn" id="ctaLearnBtn" style="background: #166534; color: #ffffff; justify-content: center; text-align: center;">
+                        Continue to Detailed SAM / SMV Lessons ↓
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8-Lesson Curriculum Section -->
+        <section id="curriculumSection">
+            <div class="section-header">
+                <h2 id="curriculumTitle">Detailed Garment SAM / SMV Lessons</h2>
+                <p id="curriculumSubtitle">Step-by-step industrial engineering curriculum from fundamentals to production target calculation.</p>
+            </div>
+
+            <div class="curriculum-wrap">
+                <!-- Navigation Tabs -->
+                <div class="lesson-nav-tabs" role="tablist">
+                    <button type="button" class="lesson-tab-btn active" onclick="switchLesson(1)" id="tabBtn1">Lesson 1: Intro</button>
+                    <button type="button" class="lesson-tab-btn" onclick="switchLesson(2)" id="tabBtn2">Lesson 2: SAM vs SMV</button>
+                    <button type="button" class="lesson-tab-btn" onclick="switchLesson(3)" id="tabBtn3">Lesson 3: Formula</button>
+                    <button type="button" class="lesson-tab-btn" onclick="switchLesson(4)" id="tabBtn4">Lesson 4: Worked Example</button>
+                    <button type="button" class="lesson-tab-btn" onclick="switchLesson(5)" id="tabBtn5">Lesson 5: Allowances</button>
+                    <button type="button" class="lesson-tab-btn" onclick="switchLesson(6)" id="tabBtn6">Lesson 6: Production Target</button>
+                    <button type="button" class="lesson-tab-btn" onclick="switchLesson(7)" id="tabBtn7">Lesson 7: Line Balancing</button>
+                    <button type="button" class="lesson-tab-btn" onclick="switchLesson(8)" id="tabBtn8">Lesson 8: Common Mistakes</button>
+                </div>
+
+                <!-- Lesson 1 -->
+                <div class="lesson-pane active" id="lessonPane1">
+                    <div class="lesson-header">
+                        <h3 id="l1Heading">Lesson 1: Introduction to SAM and SMV</h3>
+                        <span class="lesson-tag" id="l1Tag">Lesson 1 of 8</span>
+                    </div>
+                    <div class="lesson-block">
+                        <h4 id="l1ObjTitle">🎯 Learning Objective</h4>
+                        <p id="l1Obj">Understand what SAM and SMV represent, why apparel manufacturing requires standardized time values, and how they drive factory planning.</p>
+                    </div>
+                    <div class="lesson-block">
+                        <h4 id="l1BegTitle">💡 Beginner-Friendly Explanation</h4>
+                        <p id="l1Beg">In a garment factory, every operation takes time: picking fabric panels, sewing a seam, and trimming thread. If each worker took a different amount of time, a factory could never predict delivery dates or calculate costs. SAM provides the standard time for a qualified operator working at a standard rating.</p>
+                    </div>
+                    <div class="lesson-block">
+                        <h4 id="l1TechTitle">⚙️ Technical Explanation</h4>
+                        <p id="l1Tech">Standard Allowed Minutes (SAM) is established through work-study, predetermined motion time systems (GSD/PMTS), or calibrated time study. It represents Basic Time adjusted by standard performance rating and industrial allowances (personal, fatigue, machine delays, and bundle handling).</p>
+                    </div>
+                    <div class="lesson-block">
+                        <h4 id="l1ExTitle">🏭 Garment Factory Example</h4>
+                        <p id="l1Ex">For attaching a neck rib on a basic round-neck T-shirt, an industrial engineer establishes a SAM of 0.22 minutes (13.2 seconds). This value is used to calculate operator quota, line targets, and piece-rate costing.</p>
+                    </div>
+                    <div class="takeaway-box">
+                        <h5 id="l1TakeTitle">📌 Key Takeaways</h5>
+                        <ul id="l1TakeList">
+                            <li>SAM standardizes operation times across diverse operators and production shifts.</li>
+                            <li>Vital foundation for Production Planning, Line Balancing, Operator Efficiency, and Costing.</li>
+                            <li>Enables management to establish fair, objective production quotas.</li>
+                        </ul>
+                    </div>
+                    <div class="self-check-card">
+                        <h5 id="l1QTitle">❓ Self-Check Practice</h5>
+                        <p id="l1Q">Why is SAM better than simply using the fastest worker's recorded stopwatch time?</p>
+                        <button type="button" class="toggle-answer-btn" onclick="toggleAnswer(1)">Show Answer</button>
+                        <div class="answer-reveal" id="ans1">The fastest worker operates at an unsustainable sprint pace. SAM accounts for a standard sustainable 100% pace and includes necessary rest, fatigue, and delay allowances.</div>
+                    </div>
+                    <div class="lesson-footer-nav">
+                        <button type="button" class="next-lesson-btn" onclick="switchLesson(2)">Next: Lesson 2 →</button>
+                    </div>
+                </div>
+
+                <!-- Lesson 2 -->
+                <div class="lesson-pane" id="lessonPane2">
+                    <div class="lesson-header">
+                        <h3 id="l2Heading">Lesson 2: Difference Between SAM and SMV</h3>
+                        <span class="lesson-tag">Lesson 2 of 8</span>
+                    </div>
+                    <div class="lesson-block">
+                        <h4 id="l2ObjTitle">🎯 Learning Objective</h4>
+                        <p id="l2Obj">Distinguish between the terms SAM and SMV, understand regional terminology, and examine the comparison table.</p>
+                    </div>
+                    <div class="lesson-block">
+                        <h4 id="l2BegTitle">💡 Beginner-Friendly Explanation</h4>
+                        <p id="l2Beg">Many garment merchandisers ask whether SAM and SMV are different. In practice, 1.0 SAM equals 1.0 SMV. They are identical time measurements named differently depending on company heritage.</p>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>Metric / Aspect</th>
+                                    <th>SAM (Standard Allowed Minutes)</th>
+                                    <th>SMV (Standard Minute Value)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Full Meaning</strong></td>
+                                    <td>Standard Allowed Minutes</td>
+                                    <td>Standard Minute Value</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Primary Usage Region</strong></td>
+                                    <td>India (Tiruppur, Bengaluru), Bangladesh, Vietnam</td>
+                                    <td>UK, Europe, Sri Lanka, International Buyers</td>
+                                    </tr>
+                                <tr>
+                                    <td><strong>Core Unit</strong></td>
+                                    <td>Minutes (decimal minutes)</td>
+                                    <td>Minutes (decimal minutes)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Allowance Included?</strong></td>
+                                    <td>Yes (Personal, Fatigue, Delay, Bundle)</td>
+                                    <td>Yes (identical allowance inclusion)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Equivalence</strong></td>
+                                    <td colspan="2" style="text-align: center; font-weight: 700; color: var(--dg-emerald);">1.0 SAM ≡ 1.0 SMV (Numerically Identical)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="takeaway-box">
+                        <h5>📌 Key Takeaways</h5>
+                        <ul>
+                            <li>SAM and SMV are numerically equivalent: 0.50 SAM = 0.50 SMV (30 seconds).</li>
+                            <li>Buyer tech packs may use either acronym interchangeably.</li>
+                        </ul>
+                    </div>
+                    <div class="self-check-card">
+                        <h5>❓ Self-Check Practice</h5>
+                        <p>If an international European buyer sends a tech pack quoting a polo shirt with 14.5 SMV, what is its SAM?</p>
+                        <button type="button" class="toggle-answer-btn" onclick="toggleAnswer(2)">Show Answer</button>
+                        <div class="answer-reveal" id="ans2">It is exactly 14.5 SAM. 1.0 SMV is numerically equal to 1.0 SAM.</div>
+                    </div>
+                    <div class="lesson-footer-nav">
+                        <button type="button" class="next-lesson-btn" onclick="switchLesson(3)">Next: Lesson 3 →</button>
+                    </div>
+                </div>
+
+                <!-- Lesson 3 -->
+                <div class="lesson-pane" id="lessonPane3">
+                    <div class="lesson-header">
+                        <h3 id="l3Heading">Lesson 3: SAM / SMV Calculation Formula</h3>
+                        <span class="lesson-tag">Lesson 3 of 8</span>
+                    </div>
+                    <div class="lesson-block">
+                        <h4 id="l3ObjTitle">🎯 Learning Objective</h4>
+                        <p id="l3Obj">Master the core mathematical variables: Seam Length, SPI, RPM, Sewing Time, Handling Time, Basic Cycle Time, and Allowances.</p>
+                    </div>
+                    <div class="formula-box">
+1. Total Stitches = Seam Length (inches) × Stitch Density (SPI)
+2. Machine Sewing Time (Seconds) = (Total Stitches / Machine RPM) × 60
+3. Basic Cycle Time (Seconds) = Machine Sewing Time + Manual Handling Time
+4. Allowed Time (Seconds) = Basic Cycle Time × [1 + (Total Allowance % / 100)]
+5. Operation SAM (Minutes) = Allowed Time (Seconds) / 60
+                    </div>
+                    <div class="lesson-block">
+                        <h4 id="l3TechTitle">⚙️ Variable Breakdown</h4>
+                        <p id="l3Tech">
+                            • <strong>Seam Length (L):</strong> Distance sewn in inches (or cm converted to inches by dividing by 2.54).<br>
+                            • <strong>SPI (Stitches Per Inch):</strong> Stitch density specified in buyer tech pack (commonly 10–14 SPI for knitwear).<br>
+                            • <strong>Machine RPM:</strong> Operational speed of the machine (typically 4,000–5,000 RPM for overlock/flatlock).<br>
+                            • <strong>Handling Time:</strong> Manual duration to pick, position, align, and dispose of components.<br>
+                            • <strong>Total Allowance %:</strong> Industrial relaxation and delay percentage (typically 10–14%).
+                        </p>
+                    </div>
+                    <div class="takeaway-box">
+                        <h5>📌 Key Takeaways</h5>
+                        <ul>
+                            <li>Sewing time depends strictly on stitches and operational RPM.</li>
+                            <li>Handling time is often 50% to 70% of the total basic cycle time in garment operations.</li>
+                            <li>Always divide final allowed seconds by 60 to obtain decimal minutes (SAM).</li>
+                        </ul>
+                    </div>
+                    <div class="self-check-card">
+                        <h5>❓ Self-Check Practice</h5>
+                        <p>If a seam has 240 stitches and the sewing machine runs at 4,800 RPM, how many seconds does machine sewing take?</p>
+                        <button type="button" class="toggle-answer-btn" onclick="toggleAnswer(3)">Show Answer</button>
+                        <div class="answer-reveal" id="ans3">(240 / 4,800) × 60 = 0.05 × 60 = 3.0 seconds.</div>
+                    </div>
+                    <div class="lesson-footer-nav">
+                        <button type="button" class="next-lesson-btn" onclick="switchLesson(4)">Next: Lesson 4 →</button>
+                    </div>
+                </div>
+
+                <!-- Lesson 4 -->
+                <div class="lesson-pane" id="lessonPane4">
+                    <div class="lesson-header">
+                        <h3 id="l4Heading">Lesson 4: Step-by-Step Worked Numerical Example</h3>
+                        <span class="lesson-tag">Lesson 4 of 8</span>
+                    </div>
+                    <div class="lesson-block">
+                        <h4 id="l4ObjTitle">🎯 Operation: Attach Neck Rib to T-Shirt Collar (Overlock)</h4>
+                        <p id="l4Obj">Follow an exact practical engineering calculation from physical inputs to final hourly output.</p>
+                    </div>
+                    <div class="lesson-block">
+                        <h4>📋 Input Parameters</h4>
+                        <p>
+                            • <strong>Seam Length:</strong> 24 inches (collar circumference)<br>
+                            • <strong>Stitch Density:</strong> 12 SPI<br>
+                            • <strong>Machine Operating Speed:</strong> 4,800 RPM (4-thread overlock)<br>
+                            • <strong>Manual Handling Time:</strong> 6.0 seconds (pick rib, match notches, align collar, dispose)<br>
+                            • <strong>Total Allowances:</strong> 12%
+                        </p>
+                    </div>
+                    <div class="formula-box">
+Step 1: Total Stitches = 24 inches × 12 SPI = 288 stitches
+Step 2: Machine Sewing Time = (288 / 4,800) × 60 = 3.60 seconds
+Step 3: Basic Cycle Time = 3.60s (sewing) + 6.00s (handling) = 9.60 seconds
+Step 4: Allowance Time = 9.60s × 0.12 = 1.152 seconds
+Step 5: Allowed Cycle Time = 9.60s + 1.152s = 10.752 seconds
+Step 6: Operation SAM = 10.752 / 60 = 0.1792 Minutes
+Step 7: Theoretical Hourly Target (100% Efficiency) = 60 / 0.1792 = 334.82 Pcs/Hour
+Step 8: Realistic Target at 80% Line Efficiency = 334.82 × 0.80 = 267.86 Pcs/Hour
+                    </div>
+                    <div class="takeaway-box">
+                        <h5>📌 Key Takeaways</h5>
+                        <ul>
+                            <li>At 100% efficiency, one operator completes ~334 neck ribs per hour.</li>
+                            <li>At realistic 80% line efficiency, target is ~267 pieces per hour.</li>
+                            <li>Use our dedicated calculator tool to simulate custom seam lengths and allowances.</li>
+                        </ul>
+                    </div>
+                    <div class="self-check-card">
+                        <h5>❓ Self-Check Practice</h5>
+                        <p>If manual handling time increases from 6.0s to 8.0s, what is the new basic cycle time?</p>
+                        <button type="button" class="toggle-answer-btn" onclick="toggleAnswer(4)">Show Answer</button>
+                        <div class="answer-reveal" id="ans4">Basic Cycle Time = 3.60s + 8.00s = 11.60 seconds.</div>
+                    </div>
+                    <div class="lesson-footer-nav">
+                        <button type="button" class="next-lesson-btn" onclick="switchLesson(5)">Next: Lesson 5 →</button>
+                    </div>
+                </div>
+
+                <!-- Lesson 5 -->
+                <div class="lesson-pane" id="lessonPane5">
+                    <div class="lesson-header">
+                        <h3 id="l5Heading">Lesson 5: Industrial Allowances & Standard Time Derivation</h3>
+                        <span class="lesson-tag">Lesson 5 of 8</span>
+                    </div>
+                    <div class="lesson-block">
+                        <h4 id="l5ObjTitle">🎯 Learning Objective</h4>
+                        <p id="l5Obj">Understand the components of industrial relaxation allowances and how Observed Time becomes Standard Allowed Time.</p>
+                    </div>
+                    <div class="lesson-block">
+                        <h4 id="l5BegTitle">💡 Why Are Allowances Necessary?</h4>
+                        <p id="l5Beg">No human operator can sew continuously without breathing pauses, drinking water, adjusting lighting, replacing needle threads, or experiencing physical fatigue. Allowances ensure targets are fair and sustainable throughout an 8-hour shift.</p>
+                    </div>
+                    <div class="lesson-block">
+                        <h4>📊 Standard Allowance Breakdown in Apparel Units</h4>
+                        <p>
+                            • <strong>Personal Allowance (5–7%):</strong> Restroom visits, hydration, personal hygiene.<br>
+                            • <strong>Fatigue Allowance (3–5%):</strong> Physiological recovery from repetitive muscle strain and posture fatigue.<br>
+                            • <strong>Machine & Tool Delay (2–4%):</strong> Thread breaks, bobbin change, needle replacement, minor tension adjustment.<br>
+                            • <strong>Bundle Handling (2–4%):</strong> Untying bundles, moving ticket barcodes, stacking panels.
+                        </p>
+                    </div>
+                    <div class="formula-box">
+Observed Time (Stopwatch) × Operator Rating % = Basic Time
+Basic Time + Relaxation & Delay Allowances = Standard Allowed Time (SAM)
+                    </div>
+                    <div class="takeaway-box">
+                        <h5>📌 Key Takeaways</h5>
+                        <ul>
+                            <li>Total allowance in Tiruppur knitwear export units typically sums to 11%–14%.</li>
+                            <li>Allowances must never be arbitrarily inflated; they must reflect actual factory working conditions.</li>
+                        </ul>
+                    </div>
+                    <div class="self-check-card">
+                        <h5>❓ Self-Check Practice</h5>
+                        <p>An operation has a Basic Time of 15 seconds and total allowances of 12%. What is the allowed time in seconds?</p>
+                        <button type="button" class="toggle-answer-btn" onclick="toggleAnswer(5)">Show Answer</button>
+                        <div class="answer-reveal" id="ans5">Allowed Time = 15 × 1.12 = 16.8 seconds (0.28 SAM).</div>
+                    </div>
+                    <div class="lesson-footer-nav">
+                        <button type="button" class="next-lesson-btn" onclick="switchLesson(6)">Next: Lesson 6 →</button>
+                    </div>
+                </div>
+
+                <!-- Lesson 6 -->
+                <div class="lesson-pane" id="lessonPane6">
+                    <div class="lesson-header">
+                        <h3 id="l6Heading">Lesson 6: Production Target Calculation</h3>
+                        <span class="lesson-tag">Lesson 6 of 8</span>
+                    </div>
+                    <div class="lesson-block">
+                        <h4 id="l6ObjTitle">🎯 Learning Objective</h4>
+                        <p id="l6Obj">Calculate individual operator targets, hourly line targets, and 8-hour shift quotas adjusted for realistic line efficiency.</p>
+                    </div>
+                    <div class="formula-box">
+1. Single Operator Hourly Target (100% Efficiency) = 60 / Operation SAM
+2. Single Operator Hourly Target (Adjusted) = (60 / Operation SAM) × (Efficiency % / 100)
+3. 8-Hour Shift Quota = Adjusted Hourly Target × 8 Hours
+                    </div>
+                    <div class="lesson-block">
+                        <h4>🏭 Capacity vs Line Target Distinction</h4>
+                        <p>A common mistake in garment production planning is confusing <strong>single operation capacity</strong> with <strong>production line output</strong>. A fast overlock operation may have an individual capacity of 300 pieces/hour, but if the bottleneck flatlock operation can only produce 120 pieces/hour, the entire line's output is capped at 120 pieces/hour.</p>
+                    </div>
+                    <div class="takeaway-box">
+                        <h5>📌 Key Takeaways</h5>
+                        <ul>
+                            <li>Always adjust theoretical 100% output by historical sewing line efficiency (e.g., 65%–85%).</li>
+                            <li>The slowest operation (bottleneck) dictates overall line delivery.</li>
+                        </ul>
+                    </div>
+                    <div class="self-check-card">
+                        <h5>❓ Self-Check Practice</h5>
+                        <p>If an operation SAM is 0.40 minutes, what is the single operator target for an 8-hour shift at 75% efficiency?</p>
+                        <button type="button" class="toggle-answer-btn" onclick="toggleAnswer(6)">Show Answer</button>
+                        <div class="answer-reveal" id="ans6">(60 / 0.40) × 0.75 = 150 × 0.75 = 112.5 pcs/hr × 8 hrs = 900 pieces per shift.</div>
+                    </div>
+                    <div class="lesson-footer-nav">
+                        <button type="button" class="next-lesson-btn" onclick="switchLesson(7)">Next: Lesson 7 →</button>
+                    </div>
+                </div>
+
+                <!-- Lesson 7 -->
+                <div class="lesson-pane" id="lessonPane7">
+                    <div class="lesson-header">
+                        <h3 id="l7Heading">Lesson 7: Line Balancing, Style SAM & Capacity Planning</h3>
+                        <span class="lesson-tag">Lesson 7 of 8</span>
+                    </div>
+                    <div class="lesson-block">
+                        <h4 id="l7ObjTitle">🎯 Learning Objective</h4>
+                        <p id="l7Obj">Learn how Style SAM, Pitch Time, and workstation allocation create a balanced sewing line without bottlenecks.</p>
+                    </div>
+                    <div class="formula-box">
+1. Total Style SAM = Sum of all individual operation SAMs in garment breakdown
+2. Pitch Time (Target Cycle Time) = Total Style SAM / Total Number of Sewing Operators
+3. Theoretical Operators Required = (Target Hourly Output × Total Style SAM) / (60 × Efficiency %)
+                    </div>
+                    <div class="lesson-block">
+                        <h4 id="l7ExTitle">🏭 Practical Factory Line Scenario</h4>
+                        <p id="l7Ex">Suppose a polo T-shirt has a Total Style SAM of 18.0 minutes. A factory wants to run a sewing line with 30 operators. The Pitch Time is 18.0 / 30 = 0.60 minutes (36 seconds). Industrial engineers must combine or split operations so each workstation takes approximately 36 seconds, preventing work-in-progress (WIP) pileups.</p>
+                    </div>
+                    <div class="takeaway-box">
+                        <h5>📌 Key Takeaways</h5>
+                        <ul>
+                            <li>Pitch time represents the heartbeat of the production line.</li>
+                            <li>Operations taking longer than the pitch time become bottlenecks and require workstation sharing or duplicate machines.</li>
+                        </ul>
+                    </div>
+                    <div class="self-check-card">
+                        <h5>❓ Self-Check Practice</h5>
+                        <p>A style has 12.0 total SAM. If the line has 20 operators, what is the line pitch time?</p>
+                        <button type="button" class="toggle-answer-btn" onclick="toggleAnswer(7)">Show Answer</button>
+                        <div class="answer-reveal" id="ans7">Pitch Time = 12.0 / 20 = 0.60 minutes (36 seconds).</div>
+                    </div>
+                    <div class="lesson-footer-nav">
+                        <button type="button" class="next-lesson-btn" onclick="switchLesson(8)">Next: Lesson 8 →</button>
+                    </div>
+                </div>
+
+                <!-- Lesson 8 -->
+                <div class="lesson-pane" id="lessonPane8">
+                    <div class="lesson-header">
+                        <h3 id="l8Heading">Lesson 8: Common Industrial Engineering Calculation Mistakes</h3>
+                        <span class="lesson-tag">Lesson 8 of 8</span>
+                    </div>
+                    <div class="lesson-block">
+                        <h4 id="l8ObjTitle">🎯 Learning Objective</h4>
+                        <p id="l8Obj">Avoid the most frequent mistakes made in garment factory costing, time study, and production scheduling.</p>
+                    </div>
+                    <div class="lesson-block">
+                        <h4 id="l8TechTitle">⚠️ The Top 5 Costly Calculation Errors</h4>
+                        <p id="l8Tech">
+                            <strong>1. Using Machine Nameplate RPM:</strong> Calculating sewing time using the maximum theoretical motor rating (e.g., 5,500 RPM) instead of real operating speed (4,000–4,800 RPM). Result: Unrealistic targets and missed ship dates.<br><br>
+                            <strong>2. Ignoring Handling & Positioning Time:</strong> Assuming sewing time is the entire operation time. In reality, handling time comprises 50% to 70% of the cycle.<br><br>
+                            <strong>3. Imperial vs Metric Unit Mismatch:</strong> Multiplying seam length in centimeters by Stitches Per Inch (SPI) without converting to SPC (Stitches Per Centimeter). Result: 2.54× error.<br><br>
+                            <strong>4. Compounding Allowances:</strong> Adding allowance percentages sequentially rather than as a single calibrated lump sum on basic time.<br><br>
+                            <strong>5. Confusing Observed Time with Standard Allowed Time:</strong> Forgetting to normalize observed stopwatch time by the operator performance rating.
+                        </p>
+                    </div>
+                    <div class="takeaway-box">
+                        <h5>📌 Key Takeaways</h5>
+                        <ul>
+                            <li>Always test actual machine running speed on the production floor.</li>
+                            <li>Record handling motions rigorously using standard motion analysis.</li>
+                            <li>Verify units before computing total stitches.</li>
+                        </ul>
+                    </div>
+                    <div class="self-check-card">
+                        <h5>❓ Self-Check Practice</h5>
+                        <p>If a seam is 50 cm long and the tech pack specifies 12 SPI, how should you find the stitch count?</p>
+                        <button type="button" class="toggle-answer-btn" onclick="toggleAnswer(8)">Show Answer</button>
+                        <div class="answer-reveal" id="ans8">Convert cm to inches first: 50 / 2.54 = 19.685 inches. Then 19.685 × 12 SPI = 236 stitches. (Alternatively convert 12 SPI to 4.72 SPC).</div>
+                    </div>
+                    <div class="lesson-footer-nav">
+                        <button type="button" class="next-lesson-btn" onclick="switchLesson(1)">↺ Return to Lesson 1</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dedicated Interactive SAM Calculator Link Promo Card -->
+        <div class="calculator-promo-card">
+            <div class="calc-promo-text">
+                <h3 id="calcPromoHeading">🛠️ Interactive SAM & SMV Calculator Tool</h3>
+                <p id="calcPromoText">
+                    Need to compute custom garment seam SAMs, calculate stitch-level sewing times, build multi-operation style breakdown sheets, and export CSV reports for factory production planning? Use our dedicated free engineering calculator.
+                </p>
+            </div>
+            <a href="/tools/sam-calculator" class="calc-promo-btn" id="calcPromoBtn">Open SAM Calculator Tool →</a>
+        </div>
+
+        <!-- Interactive Practice Quiz Section -->
+        <section class="quiz-section" id="quizSection">
+            <div class="quiz-header">
+                <div>
+                    <h3 id="quizMainTitle">Interactive SAM & SMV Practice Quiz</h3>
+                    <p style="margin: 4px 0 0 0; font-size: 14px; color: var(--dg-slate);" id="quizSubtitle">Test your understanding with 5 practical apparel engineering questions.</p>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div class="quiz-score-badge" id="quizScoreDisplay">Score: 0 / 5</div>
+                    <button type="button" class="quiz-reset-btn" onclick="resetQuiz()" id="quizResetBtn">Reset Quiz</button>
+                </div>
+            </div>
+
+            <div id="quizContainer">
+                <!-- Question 1 -->
+                <div class="quiz-card" id="qCard1">
+                    <div class="quiz-question-title" id="q1Text">1. What does 1.0 SAM represent in garment manufacturing?</div>
+                    <div class="quiz-options">
+                        <button type="button" class="quiz-option-btn" onclick="submitAnswer(1, 0)">A) Exactly 100 seconds of sewing machine motor operation</button>
+                        <button type="button" class="quiz-option-btn" onclick="submitAnswer(1, 1)">B) Standard Allowed Minutes: Total allowed time for a qualified operator working at standard rating including allowances</button>
+                        <button type="button" class="quiz-option-btn" onclick="submitAnswer(1, 2)">C) Minimum piece-rate bonus time given to trainee tailors</button>
+                        <button type="button" class="quiz-option-btn" onclick="submitAnswer(1, 3)">D) The time required to cut one bundle of fabric</button>
+                    </div>
+                    <div class="quiz-explanation-box" id="q1Exp"></div>
+                </div>
+
+                <!-- Question 2 -->
+                <div class="quiz-card" id="qCard2">
+                    <div class="quiz-question-title" id="q2Text">2. How is Machine Sewing Time in seconds calculated?</div>
+                    <div class="quiz-options">
+                        <button type="button" class="quiz-option-btn" onclick="submitAnswer(2, 0)">A) (Total Stitches / Machine RPM) × 60</button>
+                        <button type="button" class="quiz-option-btn" onclick="submitAnswer(2, 1)">B) Seam Length × SPI × RPM</button>
+                        <button type="button" class="quiz-option-btn" onclick="submitAnswer(2, 2)">C) Total Stitches × 60 × RPM</button>
+                        <button type="button" class="quiz-option-btn" onclick="submitAnswer(2, 3)">D) Machine RPM / Seam Length</button>
+                    </div>
+                    <div class="quiz-explanation-box" id="q2Exp"></div>
+                </div>
+
+                <!-- Question 3 -->
+                <div class="quiz-card" id="qCard3">
+                    <div class="quiz-question-title" id="q3Text">3. In the Lesson 4 neck rib example, if sewing takes 3.6s and handling takes 6.0s, what is the Basic Cycle Time?</div>
+                    <div class="quiz-options">
+                        <button type="button" class="quiz-option-btn" onclick="submitAnswer(3, 0)">A) 2.4 seconds</button>
+                        <button type="button" class="quiz-option-btn" onclick="submitAnswer(3, 1)">B) 10.752 seconds</button>
+                        <button type="button" class="quiz-option-btn" onclick="submitAnswer(3, 2)">C) 9.60 seconds</button>
+                        <button type="button" class="quiz-option-btn" onclick="submitAnswer(3, 3)">D) 21.6 seconds</button>
+                    </div>
+                    <div class="quiz-explanation-box" id="q3Exp"></div>
+                </div>
+
+                <!-- Question 4 -->
+                <div class="quiz-card" id="qCard4">
+                    <div class="quiz-question-title" id="q4Text">4. If Basic Cycle Time is 10.0 seconds and allowances total 12%, what is the Allowed Time?</div>
+                    <div class="quiz-options">
+                        <button type="button" class="quiz-option-btn" onclick="submitAnswer(4, 0)">A) 11.20 seconds</button>
+                        <button type="button" class="quiz-option-btn" onclick="submitAnswer(4, 1)">B) 8.80 seconds</button>
+                        <button type="button" class="quiz-option-btn" onclick="submitAnswer(4, 2)">C) 12.00 seconds</button>
+                        <button type="button" class="quiz-option-btn" onclick="submitAnswer(4, 3)">D) 22.00 seconds</button>
+                    </div>
+                    <div class="quiz-explanation-box" id="q4Exp"></div>
+                </div>
+
+                <!-- Question 5 -->
+                <div class="quiz-card" id="qCard5">
+                    <div class="quiz-question-title" id="q5Text">5. Can the daily output of a sewing line exceed the capacity of its slowest bottleneck operation?</div>
+                    <div class="quiz-options">
+                        <button type="button" class="quiz-option-btn" onclick="submitAnswer(5, 0)">A) Yes, if other operators sew faster</button>
+                        <button type="button" class="quiz-option-btn" onclick="submitAnswer(5, 1)">B) No, the line output is strictly limited by the bottleneck workstation unless additional operators or machines are added</button>
+                        <button type="button" class="quiz-option-btn" onclick="submitAnswer(5, 2)">C) Yes, by increasing the fabric bundle size</button>
+                        <button type="button" class="quiz-option-btn" onclick="submitAnswer(5, 3)">D) Only in cutting and washing departments</button>
+                    </div>
+                    <div class="quiz-explanation-box" id="q5Exp"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Preserved Original Blog Content Section -->
+        <article class="original-content-section">
+            <h3 id="origWhyHeading">Why SAM Accuracy Matters in Apparel Production</h3>
+            <p id="origWhyP1">
+                In export garment manufacturing across Tiruppur, standard time determination directly influences business viability. Without calibrated SAM benchmarks, factory management encounters three acute vulnerabilities:
+            </p>
+            <ul id="origWhyList">
+                <li><strong>Unrealistic Line Targets:</strong> Setting targets too high leads to worker frustration, high defect rates, and operator attrition. Setting targets too low causes severe capacity underutilization and missed export shipment dates.</li>
+                <li><strong>Accurate Costing for Global Buyers:</strong> In FOB (Free on Board) and CMT (Cut, Make & Trim) contracts, labor cost per garment unit equals <code>(Style SAM × Minute Cost Rate)</code>. A 10% estimation error on an order of 100,000 pieces can erode factory profitability completely.</li>
+                <li><strong>Bottleneck Identification & Line Balancing:</strong> Transparent operation times enable line supervisors to pinpoint operations with excessive cycle times and assign floaters or assist attachments before work-in-progress (WIP) builds up.</li>
+            </ul>
+        </article>
+
+        <!-- Related Garment Jobs in Tiruppur -->
+        <section class="jobs-section" id="jobsSection">
+            <div class="section-header" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px;">
+                <div>
+                    <h2 id="relJobsTitle">Related Garment Industry Jobs in Tiruppur</h2>
+                    <p id="relJobsSubtitle">Explore active opportunities in Industrial Engineering, Production, Quality, and Merchandising.</p>
+                </div>
+                <a href="/jobs" style="color: var(--dg-red); font-weight: 700; text-decoration: none; font-size: 14px;" id="viewAllJobsLink">View All Active Jobs →</a>
+            </div>
+
+            <div class="jobs-grid" id="relatedJobsGrid">
+                <!-- Fallback / Static cards immediately visible for SEO crawlers and fast paint -->
+                <a href="/jobs/production-manager" class="job-card-item">
+                    <div>
+                        <div class="job-card-role">Production Manager / Floor Incharge</div>
+                        <div class="job-card-company">Export Garment Unit</div>
+                    </div>
+                    <div class="job-card-meta">
+                        <span class="job-card-badge">Production</span>
+                        <span>Tiruppur</span>
+                    </div>
+                </a>
+                <a href="/jobs/quality-manager" class="job-card-item">
+                    <div>
+                        <div class="job-card-role">Quality Assurance Manager (QA/QC)</div>
+                        <div class="job-card-company">Apparel Manufacturing</div>
+                    </div>
+                    <div class="job-card-meta">
+                        <span class="job-card-badge">Quality</span>
+                        <span>Tiruppur</span>
+                    </div>
+                </a>
+                <a href="/jobs/merchandiser" class="job-card-item">
+                    <div>
+                        <div class="job-card-role">Garment Merchandiser / Costing</div>
+                        <div class="job-card-company">Knitwear Export House</div>
+                    </div>
+                    <div class="job-card-meta">
+                        <span class="job-card-badge">Merchandising</span>
+                        <span>Tiruppur</span>
+                    </div>
+                </a>
+                <a href="/jobs/cutting" class="job-card-item">
+                    <div>
+                        <div class="job-card-role">Cutting Incharge & CAD Master</div>
+                        <div class="job-card-company">Garment Factory</div>
+                    </div>
+                    <div class="job-card-meta">
+                        <span class="job-card-badge">Cutting</span>
+                        <span>Tiruppur</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Frequently Asked Questions -->
+        <section class="faq-wrap">
+            <div class="section-header">
+                <h2 id="faqMainTitle">Frequently Asked Questions (FAQ)</h2>
+                <p id="faqSubtitle">Common questions about SAM / SMV formulas and factory application in Tiruppur.</p>
+            </div>
+
+            <div class="faq-item">
+                <button type="button" class="faq-btn" onclick="toggleFaq(this)">
+                    <span id="faq1Q">What is the difference between SAM and SMV in garment manufacturing?</span>
+                    <span class="faq-icon">▼</span>
+                </button>
+                <div class="faq-content" id="faq1A">
+                    SAM (Standard Allowed Minutes) and SMV (Standard Minute Value) both represent the standardized time required by a qualified operator to complete a specific garment operation working at a standard 100% pace. In apparel engineering, 1.0 SAM equals 1.0 SMV. SAM is commonly preferred in Asian manufacturing hubs, while SMV is frequently used in American and European costing sheets.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button type="button" class="faq-btn" onclick="toggleFaq(this)">
+                    <span id="faq2Q">How is Garment SAM / SMV calculated?</span>
+                    <span class="faq-icon">▼</span>
+                </button>
+                <div class="faq-content" id="faq2A">
+                    SAM is calculated by adding machine sewing time to manual handling time to get Basic Time, then adding industrial allowances (Personal, Fatigue, Delay, and Bundle handling): SAM = [Basic Cycle Time × (1 + Total Allowance % / 100)] / 60.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button type="button" class="faq-btn" onclick="toggleFaq(this)">
+                    <span id="faq3Q">How do you calculate hourly production target from SAM?</span>
+                    <span class="faq-icon">▼</span>
+                </button>
+                <div class="faq-content" id="faq3A">
+                    Theoretical hourly target at 100% efficiency is calculated as: Target (Pcs/Hour) = 60 / Operation SAM. When accounting for realistic factory line efficiency (e.g., 80%), the formula is: Target = (60 / SAM) × (Efficiency % / 100).
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button type="button" class="faq-btn" onclick="toggleFaq(this)">
+                    <span id="faq4Q">What is the standard allowance percentage used in Tiruppur garment export units?</span>
+                    <span class="faq-icon">▼</span>
+                </button>
+                <div class="faq-content" id="faq4A">
+                    Industrial allowances in Tiruppur knitwear export units typically range between 10% and 15%. This normally includes 5% for personal needs, 3% for fatigue, 2–3% for machine delays, and 2–4% for bundle handling and parts alignment.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button type="button" class="faq-btn" onclick="toggleFaq(this)">
+                    <span id="faq5Q">Why shouldn't machine nameplate RPM be used directly for sewing time calculation?</span>
+                    <span class="faq-icon">▼</span>
+                </button>
+                <div class="faq-content" id="faq5A">
+                    Sewing machine nameplate RPM is the maximum theoretical speed of the motor (e.g., 5,500 RPM). In real sewing operations, operators accelerate, decelerate, negotiate curves, and pause. Practical operational RPM is usually 70% to 85% of nameplate speed depending on the fabric and seam curvature.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button type="button" class="faq-btn" onclick="toggleFaq(this)">
+                    <span id="faq6Q">What is Style SAM and Pitch Time in production planning?</span>
+                    <span class="faq-icon">▼</span>
+                </button>
+                <div class="faq-content" id="faq6A">
+                    Style SAM is the sum of SAM values of all individual operations required to produce one complete garment. Pitch Time is the Style SAM divided by the total number of operators on the line, representing the target cycle time each workstation must achieve.
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Site Footer -->
+    <footer style="background: #081226; color: #94A3B8; padding: 48px 0 24px 0; font-size: 14px; border-top: 1px solid rgba(255,255,255,0.08);">
+        <div class="page-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; margin-bottom: 24px;">
+                <div>
+                    <img src="/assets/images/logo-light.png" alt="DigiGarment Logo" style="height: 34px; margin-bottom: 8px;">
+                    <p style="margin: 0; color: #64748B;">Practical digital solutions & industrial engineering for garment manufacturing.</p>
+                </div>
+                <div style="display: flex; gap: 18px; flex-wrap: wrap;">
+                    <a href="/" style="color: #CBD5E1; text-decoration: none;">Home</a>
+                    <a href="/jobs" style="color: #CBD5E1; text-decoration: none;">Tiruppur Jobs</a>
+                    <a href="/tools/sam-calculator" style="color: #CBD5E1; text-decoration: none;">SAM Calculator</a>
+                    <a href="/tools" style="color: #CBD5E1; text-decoration: none;">Tools Hub</a>
+                    <a href="/services" style="color: #CBD5E1; text-decoration: none;">Services</a>
+                    <a href="/blog" style="color: #CBD5E1; text-decoration: none;">Blog</a>
+                </div>
+            </div>
+            <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; text-align: center; color: #64748B; font-size: 13px;">
+                © 2026 DigiGarment. All rights reserved. Tiruppur Garment Industry Platform.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Interactive Scripts: Language switcher, Lessons, Quiz & Job Loader -->
+    <script>
+        // --- 1. Bilingual Content Store ---
+        const CONTENT = {
+            en: {
+                heroBadge: "Apparel Industrial Engineering • Practical Learning",
+                heroTitle: "What is SAM in Garment Manufacturing? Complete Guide to Standard Allowed Minutes",
+                heroSubtitle: "Master Standard Allowed Minutes (SAM), Standard Minute Value (SMV), cycle time calculations, allowances, line balancing, and production targets for apparel manufacturing.",
+                btnHeroLessons: "Start Lessons ↓",
+                btnHeroCalculator: "Open SAM Calculator ↗",
+                btnHeroQuiz: "Take Practice Quiz",
+                btnHeroJobs: "Explore Tiruppur Jobs",
+
+                quickSectionTitle: "Quick Explanation (30–60 Second Overview)",
+                quickSectionSubtitle: "Essential core concepts of Standard Allowed Minutes for garment production planning.",
+                qc1Title: "1. What is SAM?",
+                qc1Desc: "Standard Allowed Minutes (SAM) is the standard time required by a qualified sewing operator working at normal rating to complete an operation, including personal, fatigue, and delay allowances.",
+                qc2Title: "2. What is SMV?",
+                qc2Desc: "Standard Minute Value (SMV) is internationally synonymous with SAM. Originating from British work-study traditions (GSD), 1.0 SMV is identical in duration to 1.0 SAM.",
+                qc3Title: "3. SAM vs SMV Equivalence",
+                qc3Desc: "Numerically, 1.0 SAM = 1.0 SMV. SAM is preferred in South Asia & Southeast Asia, while SMV is frequently used in UK/European apparel costing sheets.",
+                qc4Title: "4. Core Formula & Target",
+                qc4Desc: "SAM = [(Sewing Time + Handling Time) × (1 + Allowance%)] / 60. Hourly production capacity at 100% efficiency equals 60 / SAM.",
+
+                jbTitle: "Looking for Garment Industry Jobs in Tiruppur?",
+                jbDesc: "Explore verified opportunities in Production, Industrial Engineering, Quality, Merchandising, Cutting, and Fabric across Tiruppur export units.",
+                jbBtnFind: "Find Jobs",
+                jbBtnPost: "Post a Job",
+
+                curriculumTitle: "Detailed Garment SAM / SMV Lessons",
+                curriculumSubtitle: "Step-by-step industrial engineering curriculum from fundamentals to production target calculation.",
+
+                l1Heading: "Lesson 1: Introduction to SAM and SMV",
+                l1Tag: "Lesson 1 of 8",
+                l1ObjTitle: "🎯 Learning Objective",
+                l1Obj: "Understand what SAM and SMV represent, why apparel manufacturing requires standardized time values, and how they drive factory planning.",
+                l1BegTitle: "💡 Beginner-Friendly Explanation",
+                l1Beg: "In a garment factory, every operation takes time: picking fabric panels, sewing a seam, and trimming thread. If each worker took a different amount of time, a factory could never predict delivery dates or calculate costs. SAM provides the standard time for a qualified operator working at a standard rating.",
+                l1TechTitle: "⚙️ Technical Explanation",
+                l1Tech: "Standard Allowed Minutes (SAM) is established through work-study, predetermined motion time systems (GSD/PMTS), or calibrated time study. It represents Basic Time adjusted by standard performance rating and industrial allowances (personal, fatigue, machine delays, and bundle handling).",
+                l1ExTitle: "🏭 Garment Factory Example",
+                l1Ex: "For attaching a neck rib on a basic round-neck T-shirt, an industrial engineer establishes a SAM of 0.22 minutes (13.2 seconds). This value is used to calculate operator quota, line targets, and piece-rate costing.",
+
+                calcPromoHeading: "🛠️ Interactive SAM & SMV Calculator Tool",
+                calcPromoText: "Need to compute custom garment seam SAMs, calculate stitch-level sewing times, build multi-operation style breakdown sheets, and export CSV reports for factory production planning? Use our dedicated free engineering calculator.",
+                calcPromoBtn: "Open SAM Calculator Tool →",
+
+                quizMainTitle: "Interactive SAM & SMV Practice Quiz",
+                quizSubtitle: "Test your understanding with 5 practical apparel engineering questions.",
+
+                l2Heading: "Lesson 2: Difference Between SAM and SMV",
+                l2ObjTitle: "🎯 Learning Objective",
+                l2Obj: "Distinguish between the terms SAM and SMV, understand regional terminology, and examine the comparison table.",
+                l2BegTitle: "💡 Beginner-Friendly Explanation",
+                l2Beg: "Many garment merchandisers ask whether SAM and SMV are different. In practice, 1.0 SAM equals 1.0 SMV. They are identical time measurements named differently depending on company heritage.",
+
+                l3Heading: "Lesson 3: SAM / SMV Calculation Formula",
+                l3ObjTitle: "🎯 Learning Objective",
+                l3Obj: "Master the core mathematical variables: Seam Length, SPI, RPM, Sewing Time, Handling Time, Basic Cycle Time, and Allowances.",
+                l3TechTitle: "⚙️ Variable Breakdown",
+                l3Tech: "• <strong>Seam Length (L):</strong> Distance sewn in inches.<br>• <strong>SPI (Stitches Per Inch):</strong> Stitch density specified in tech pack.<br>• <strong>Machine RPM:</strong> Operational speed of the machine.<br>• <strong>Handling Time:</strong> Manual duration to pick, position, align, and dispose of components.<br>• <strong>Total Allowance %:</strong> Industrial relaxation and delay percentage (typically 10–14%).",
+
+                l4Heading: "Lesson 4: Step-by-Step Worked Numerical Example",
+                l4ObjTitle: "🎯 Operation: Attach Neck Rib to T-Shirt Collar (Overlock)",
+                l4Obj: "Follow an exact practical engineering calculation from physical inputs to final hourly output.",
+
+                l5Heading: "Lesson 5: Industrial Allowances & Standard Time Derivation",
+                l5ObjTitle: "🎯 Learning Objective",
+                l5Obj: "Understand the components of industrial relaxation allowances and how Observed Time becomes Standard Allowed Time.",
+                l5BegTitle: "💡 Why Are Allowances Necessary?",
+                l5Beg: "No human operator can sew continuously without breathing pauses, drinking water, adjusting lighting, replacing needle threads, or experiencing physical fatigue. Allowances ensure targets are fair and sustainable throughout an 8-hour shift.",
+
+                l6Heading: "Lesson 6: Production Target Calculation",
+                l6ObjTitle: "🎯 Learning Objective",
+                l6Obj: "Calculate individual operator targets, hourly line targets, and 8-hour shift quotas adjusted for realistic line efficiency.",
+
+                l7Heading: "Lesson 7: Line Balancing, Style SAM & Capacity Planning",
+                l7ObjTitle: "🎯 Learning Objective",
+                l7Obj: "Learn how Style SAM, Pitch Time, and workstation allocation create a balanced sewing line without bottlenecks.",
+                l7ExTitle: "🏭 Practical Factory Line Scenario",
+                l7Ex: "Suppose a polo T-shirt has a Total Style SAM of 18.0 minutes. A factory wants to run a sewing line with 30 operators. The Pitch Time is 18.0 / 30 = 0.60 minutes (36 seconds). Industrial engineers must combine or split operations so each workstation takes approximately 36 seconds, preventing work-in-progress (WIP) pileups.",
+
+                l8Heading: "Lesson 8: Common Industrial Engineering Calculation Mistakes",
+                l8ObjTitle: "🎯 Learning Objective",
+                l8Obj: "Avoid the most frequent mistakes made in garment factory costing, time study, and production scheduling.",
+                l8TechTitle: "⚠️ The Top 5 Costly Calculation Errors",
+                l8Tech: "<strong>1. Using Machine Nameplate RPM:</strong> Calculating sewing time using maximum motor rating (5,500 RPM) instead of actual speed (4,000–4,800 RPM).<br><br><strong>2. Ignoring Handling Time:</strong> Assuming sewing time is the entire operation time.<br><br><strong>3. Unit Mismatch:</strong> Confusing centimeters and inches when applying SPI.<br><br><strong>4. Compounding Allowances:</strong> Adding allowance percentages sequentially instead of as a lump sum.<br><br><strong>5. Forgetting Performance Rating:</strong> Treating raw stopwatch time as standard allowed time.",
+
+                origWhyHeading: "Why SAM Accuracy Matters in Apparel Production",
+                origWhyP1: "In export garment manufacturing across Tiruppur, standard time determination directly influences business viability. Without calibrated SAM benchmarks, factory management encounters three acute vulnerabilities:",
+
+                relJobsTitle: "Related Garment Industry Jobs in Tiruppur",
+                relJobsSubtitle: "Explore active opportunities in Industrial Engineering, Production, Quality, and Merchandising.",
+                viewAllJobsLink: "View All Active Jobs →",
+
+                faqMainTitle: "Frequently Asked Questions (FAQ)",
+                faqSubtitle: "Common questions about SAM / SMV formulas and factory application in Tiruppur.",
+
+                formulaRefMainTitle: "SAM / SMV Formula Reference & Calculation Guide",
+                formulaRefMainSubtitle: "Standard allowed minutes formulas, element breakdowns, worked examples, and garment production target equations.",
+                samFormulaCardTitle: "1. SAM Formula (Standard Allowed Minutes)",
+                samFormulaExplanation: "To calculate SAM, first determine the Basic Cycle Time by adding Machine Sewing Time and Handling and Positioning Time. Apply the applicable Total Allowance Percentage, then divide the resulting time in seconds by 60 to convert it into minutes.",
+                smvFormulaCardTitle: "2. SMV Formula (Standard Minute Value)",
+                smvFormulaExplanation: "SMV (Standard Minute Value) expresses the standard time assigned to a garment operation in minutes. When the same time-study method and allowance standards are used, SAM and SMV values are generally equivalent. However, terminology and calculation methods may vary between companies.",
+                elementsTableTitle: "3. Formula Elements and Their Meanings",
+                elementsTableSubtitle: "Detailed breakdown of every variable used in garment industrial engineering time study calculations.",
+                thEl: "Formula Element",
+                thMean: "Meaning",
+                thUnit: "Unit",
+                thEx: "Garment Industry Example",
+                el1Name: "Machine Sewing Time",
+                el1Mean: "Machine Sewing Time is the time required for the machine to perform the stitching operation.",
+                el1Ex: "Running 4-thread overlock seam on collar rib",
+                el2Name: "Total Stitch Count",
+                el2Mean: "Multiply the seam length by the stitch density in SPI to calculate the total number of stitches: Total Stitches = Seam Length (inches) × SPI.",
+                el2Ex: "10 inches Seam × 12 SPI = 120 stitches",
+                el3Name: "Machine Speed",
+                el3Mean: "The sewing machine's effective stitching speed. Note that actual effective speed may be lower than rated motor RPM due to starts, stops, curves, and handling.",
+                el3Ex: "Rated 5,000 RPM running at 3,000 effective stitches/min",
+                el4Name: "Handling and Positioning Time",
+                el4Mean: "Handling and Positioning Time is the time spent picking up, aligning, positioning, and handling garment panels during the operation.",
+                el4Ex: "Picking fabric panels, matching notches, and disposal (5.0s)",
+                el5Name: "Basic Cycle Time",
+                el5Mean: "Add Machine Sewing Time and Handling and Positioning Time to obtain the Basic Cycle Time: Basic Cycle Time = Machine Sewing Time + Handling Time.",
+                el5Ex: "2.4s sewing + 5.0s handling = 7.4 seconds basic time",
+                el6Name: "Total Allowance Percentage",
+                el6Mean: "Allowance is additional time included in the standard according to the company's approved method. It may account for personal needs, fatigue, machine delays, and other approved work-related factors. Allowance percentages vary by company and methodology.",
+                el6Ex: "Standard relaxation allowance of 14% (personal + fatigue + delay)",
+                el7Name: "Allowance Multiplier",
+                el7Mean: "For a 14% allowance, multiply the Basic Cycle Time by 1.14: Multiplier = 1 + (Total Allowance % / 100).",
+                el7Ex: "1 + (14 / 100) = 1.14 multiplier on basic time",
+                el8Name: "Conversion from Seconds to Minutes",
+                el8Mean: "Since 60 seconds equal one minute, divide the time in seconds by 60 to convert it into minutes: Minutes = Seconds / 60.",
+                el8Ex: "8.436 seconds / 60 = 0.1406 decimal minutes",
+                workedExTitle: "4. Step-by-Step Worked Numerical Example",
+                workedExInputsHeading: "📋 Input Parameters:",
+                workedExResultBadge: "SAM ≈ 0.141 minutes per operation",
+                workedExResultDetails: "(Standard Allowed Time = 8.44 seconds per piece)",
+                workedExDesc: "In this example, the calculated SAM is approximately 0.141 minutes per operation. This is illustrative; actual SAM depends on the operation method, machine, operator performance, and approved allowance standards.",
+                compTableTitle: "5. SAM vs SMV Comparison",
+                compTableSubtitle: "Key distinctions, common industry applications, and regional terminology conventions between SAM and SMV.",
+                thCompAspect: "Comparison Aspect",
+                thCompSam: "SAM (Standard Allowed Minutes)",
+                thCompSmv: "SMV (Standard Minute Value)",
+                rowCompFull: "Full Form",
+                rowCompMean: "Meaning",
+                rowCompUnit: "Unit",
+                rowCompApp: "Common Applications",
+                rowCompRel: "Relationship Between SAM and SMV",
+                samMeaningText: "Standard allowed minutes allocated to complete a garment operation at standard performance rating including allowances.",
+                smvMeaningText: "Standard minute value assigned to a work element or operation in international and British work-study standards.",
+                samAppText: "Shopfloor target fixing, line balancing, operator efficiency tracking, and South Asian export factory planning.",
+                smvAppText: "International buyer tech packs, UK/European apparel costing sheets, and GSD (General Sewing Data) motion-time systems.",
+                samSmvRelText: "In most garment factories, 1.0 SAM = 1.0 SMV and they are used interchangeably. However, internal company standards, time-study methodologies, and allowance policies may vary.",
+                targetFormulasTitle: "6. Garment Production Target Formulas",
+                targetFormulasSubtitle: "Equations for calculating theoretical hourly output, entire sewing line targets, and efficiency-adjusted planned quotas.",
+                targetAHeading: "A. Single-Operation Hourly Target",
+                targetADesc: "Divide 60 minutes by the operation SAM to calculate the theoretical number of pieces per hour for that operation (assuming one completed cycle per piece).",
+                targetBHeading: "B. Theoretical Sewing Line Target",
+                targetBDesc: "Multiply the total number of operators on the line by 60, then divide by the Total Style SAM of the garment to obtain the theoretical line output (where Total Style SAM represents the complete garment's standard content).",
+                targetCHeading: "C. Planned Line Target (Efficiency-Adjusted)",
+                targetCDesc: "For a target efficiency of 75%, multiply the theoretical target by 0.75 to estimate the planned target. Always distinguish single-operation capacity from full line delivery, and theoretical targets from planned targets.",
+                ctaCalcHeading: "🛠️ Calculate SAM / SMV Online",
+                ctaCalcText: "Use the DigiGarment calculator to calculate SAM/SMV using your operation details, machine speed, handling time, and allowance values.",
+                ctaCalcBtn: "Calculate SAM / SMV Now →",
+                ctaLearnHeading: "📚 Practical Lessons & Curriculum",
+                ctaLearnText: "Explore the 8 detailed lessons covering collar rib attachments, pitch time equations, allowance derivations, and the interactive quiz below.",
+                ctaLearnBtn: "Continue to Detailed SAM / SMV Lessons ↓"
+
+
+            },
+            ta: {
+                heroBadge: "Garment Industrial Engineering • செய்முறை பாடங்கள்",
+                heroTitle: "Garment Manufacturing-ல் SAM என்றால் என்ன? Complete SAM & SMV வழிகாட்டி",
+                heroSubtitle: "Garment manufacturing-ல் SAM, SMV calculation, allowance கூட்டல், line balancing மற்றும் production target நிர்ணயம் செய்வதை practical examples மூலம் கற்றுக்கொள்ளுங்கள்.",
+                btnHeroLessons: "பாடங்களைத் தொடங்குக ↓",
+                btnHeroCalculator: "SAM Calculator திறக்க ↗",
+                btnHeroQuiz: "பயிற்சி வினாடி வினா",
+                btnHeroJobs: "திருப்பூர் வேலைவாய்ப்புகள்",
+
+                quickSectionTitle: "சுருக்கமான விளக்கம் (30–60 நொடிகளில் புரிந்துகொள்ள)",
+                quickSectionSubtitle: "Garment production planning-ல் SAM குறித்த மிக முக்கியமான அடிப்படைக் கருத்துக்கள்.",
+                qc1Title: "1. SAM என்றால் என்ன?",
+                qc1Desc: "SAM (Standard Allowed Minutes) என்பது ஒரு தகுதிவாய்ந்த தையல் தொழிலாளி standard rating-ல் ஒரு garment operation-ஐ முழுமையாக முடிக்க அனுமதிக்கப்படும் standard நேரம் ஆகும் (allowances உட்பட).",
+                qc2Title: "2. SMV என்றால் என்ன?",
+                qc2Desc: "SMV (Standard Minute Value) என்பது சர்வதேச அளவில் SAM-க்கு சமமான வார்த்தையாகும். பிரிட்டிஷ் work-study முறையில் உருவான இது, 1.0 SMV = 1.0 SAM என்ற சமமான நேர அளவைக் குறிக்கும்.",
+                qc3Title: "3. SAM vs SMV வேறுபாடு",
+                qc3Desc: "கணக்கீட்டு அளவில் 1.0 SAM = 1.0 SMV. இந்தியா, வங்கதேசம் போன்ற நாடுகளில் SAM என்றும், UK/ஐரோப்பிய வாங்குபவர்கள் (Buyers) மத்தியில் SMV என்றும் அழைக்கப்படுகிறது.",
+                qc4Title: "4. முக்கிய Formula & Target",
+                qc4Desc: "SAM = [(Sewing Time + Handling Time) × (1 + Allowance%)] / 60. 100% efficiency-ல் ஒரு மணிநேர தயாரிப்பு இலக்கு = 60 / SAM.",
+
+                jbTitle: "திருப்பூரில் Garment Industry Jobs தேடுகிறீர்களா?",
+                jbDesc: "Production, Industrial Engineering, Quality, Merchandising, Cutting மற்றும் Fabric துறைகளில் உள்ள புதிய வேலைவாய்ப்புகளைப் பாருங்கள்.",
+                jbBtnFind: "வேலை தேடுங்கள்",
+                jbBtnPost: "வேலைவாய்ப்பு பதிவிட",
+
+                curriculumTitle: "விவரமான Garment SAM / SMV பாடங்கள்",
+                curriculumSubtitle: "அடிப்படைக் கருத்துக்கள் முதல் Production Target கணக்கீடு வரை 8 practical பாடங்கள்.",
+
+                l1Heading: "பாடம் 1: SAM மற்றும் SMV ஓர் அறிமுகம்",
+                l1Tag: "பாடம் 1 / 8",
+                l1ObjTitle: "🎯 கற்றல் நோக்கம்",
+                l1Obj: "SAM மற்றும் SMV என்றால் என்ன, ஆடை உற்பத்தியில் time standards ஏன் அவசியம், மற்றும் அவை factory திட்டமிடலுக்கு எவ்வாறு பயன்படுகின்றன என்பதைப் புரிந்துகொள்ளுதல்.",
+                l1BegTitle: "💡 எளிய விளக்கம்",
+                l1Beg: "ஒரு garment factory-ல் ஒவ்வொரு operation-க்கும் நேரம் தேவைப்படுகிறது. ஒவ்வொரு தொழிலாளியும் ஒவ்வொரு நேரத்தில் முடித்தால், சரியான delivery date அல்லது தயாரிப்பு செலவை கணக்கிட முடியாது. ஒரு தகுதியான தையல் தொழிலாளி standard வேகத்தில் வேலை செய்ய அனுமதிக்கப்பட்ட standard நேரமே SAM ஆகும்.",
+                l1TechTitle: "⚙️ தொழிற்நுட்ப விளக்கம்",
+                l1Tech: "SAM என்பது Time Study அல்லது GSD (General Sewing Data) போன்ற முறைகள் மூலம் நிர்ணயிக்கப்படுகிறது. இது Basic Time-உடன் தனிநபர் தேவை, சோர்வு (fatigue) மற்றும் இயந்திர தாமதங்களுக்கான allowance-களை சேர்த்து கணக்கிடப்படுகிறது.",
+                l1ExTitle: "🏭 Garment Factory உதாரணம்",
+                l1Ex: "ஒரு basic round neck T-shirt-ல் neck rib இணைக்கும் operation-க்கு SAM 0.22 நிமிடங்கள் (13.2 வினாடிகள்) என நிர்ணயிக்கப்பட்டால், இதை வைத்து ஒரு மணிநேரத்திற்கு எத்தனை பீஸ்கள் தைக்க வேண்டும் என்று target நிர்ணயிக்கப்படுகிறது.",
+
+                calcPromoHeading: "🛠️ Interactive SAM & SMV கால்குலேட்டர் கருவி",
+                calcPromoText: "உங்கள் garment seam-களுக்கான SAM கணக்கிட, stitch-level தையல் நேரங்களை சோதிக்க, style breakdown sheets உருவாக்க, மற்றும் CSV-ஆக பதிவிறக்கம் செய்ய எங்கள் பிரத்யேக கால்குலேட்டரைப் பயன்படுத்துங்கள்.",
+                calcPromoBtn: "SAM கால்குலேட்டரைத் திறக்க →",
+
+                quizMainTitle: "பயிற்சி வினாடி வினா (Practice Quiz)",
+                quizSubtitle: "ஆடை தயாரிப்பு பொறியியல் குறித்த 5 நடைமுறை கேள்விகள் மூலம் உங்கள் அறிவை சோதியுங்கள்.",
+
+                l2Heading: "பாடம் 2: SAM மற்றும் SMV வேறுபாடுகள்",
+                l2ObjTitle: "🎯 கற்றல் நோக்கம்",
+                l2Obj: "SAM மற்றும் SMV என்ற சொற்களுக்கு இடையிலான ஒற்றுமை மற்றும் சர்வதேச பயன்பாட்டைப் புரிந்துகொள்ளுதல்.",
+                l2BegTitle: "💡 எளிய விளக்கம்",
+                l2Beg: "Garment Merchandiser-கள் பலரும் SAM மற்றும் SMV வேறுபட்டவையா என்று கேட்பதுண்டு. நடைமுறையில் 1.0 SAM = 1.0 SMV ஆகும். இரண்டுமே சமமான கால அளவைக் குறிக்கின்றன.",
+
+                l3Heading: "பாடம் 3: SAM / SMV கணக்கீட்டு Formula",
+                l3ObjTitle: "🎯 கற்றல் நோக்கம்",
+                l3Obj: "Seam Length, SPI, RPM, Sewing Time, Handling Time, Basic Cycle Time மற்றும் Allowances ஆகிய மாறிகளைப் புரிந்துகொள்ளுதல்.",
+                l3TechTitle: "⚙️ மாறிகள் விளக்கம்",
+                l3Tech: "• <strong>Seam Length (L):</strong> தையல் நீளம் (இஞ்சுகளில்).<br>• <strong>SPI (Stitches Per Inch):</strong> Tech pack-ல் குறிப்பிடப்படும் stitch density.<br>• <strong>Machine RPM:</strong> தையல் இயந்திரத்தின் நடைமுறை இயங்கும் வேகம்.<br>• <strong>Handling Time:</strong> துணிகளை எடுத்து, பொருத்தி, முடித்தபின் வைக்கும் நேரம்.<br>• <strong>Total Allowance %:</strong> தொழிலாளி ஓய்வு மற்றும் இயந்திர தாமதங்களுக்கான சதவீதம் (பொதுவாக 10–14%).",
+
+                l4Heading: "பாடம் 4: படி-படியான செய்முறை கணக்கீட்டு உதாரணம்",
+                l4ObjTitle: "🎯 Operation: T-Shirt-ல் Neck Rib தைக்கும் செயல்முறை (Overlock)",
+                l4Obj: "உண்மையான அளவீடுகளைப் பயன்படுத்தி final hourly production target கணக்கிடும் முழுமையான முறை.",
+
+                l5Heading: "பாடம் 5: தொழிற்சாலை Allowances மற்றும் Standard Time உருவாக்கம்",
+                l5ObjTitle: "🎯 கற்றல் நோக்கம்",
+                l5Obj: "தொழிற்சாலை Allowance-களின் வகைகள் மற்றும் Observed Time எவ்வாறு Standard Allowed Time-ஆக மாறுகிறது என்பதைப் புரிந்துகொள்ளுதல்.",
+                l5BegTitle: "💡 Allowances ஏன் அவசியம்?",
+                l5Beg: "எந்த ஒரு மனிதராலும் 8 மணிநேரம் இடைவிடாமல் தொடர்ந்து ஒரே வேகத்தில் தைக்க முடியாது. நீர் அருந்த, சோர்வு நீங்க, நூல் அறுந்தால் மாற்ற allowances அனுமதிக்கப்பட வேண்டும்.",
+
+                l6Heading: "பாடம் 6: Production Target கணக்கீடு",
+                l6ObjTitle: "🎯 கற்றல் நோக்கம்",
+                l6Obj: "ஒரு தொழிலாளியின் மணிநேர இலக்கு, shift இலக்கு மற்றும் line efficiency-க்கு ஏற்ப கணக்கிடுதல்.",
+
+                l7Heading: "பாடம் 7: Line Balancing, Style SAM & Capacity Planning",
+                l7ObjTitle: "🎯 கற்றல் நோக்கம்",
+                l7Obj: "Style SAM, Pitch Time மற்றும் தையல் இயந்திரங்களை balance செய்யும் முறையைப் புரிந்துகொள்ளுதல்.",
+                l7ExTitle: "🏭 நடைமுறை Factory Line உதாரணம்",
+                l7Ex: "ஒரு Polo T-shirt-ன் Total Style SAM 18.0 நிமிடங்கள் மற்றும் தையல் லைனில் 30 தொழிலாளர்கள் இருந்தால், Pitch Time = 18.0 / 30 = 0.60 நிமிடங்கள் (36 வினாடிகள்). ஒவ்வொரு ஸ்டேஷனிலும் 36 வினாடிகளுக்குள் வேலை முடியும்படி line balance செய்ய வேண்டும்.",
+
+                l8Heading: "பாடம் 8: அடிக்கடி செய்யப்படும் 5 முக்கிய கணக்கீட்டுத் தவறுகள்",
+                l8ObjTitle: "🎯 கற்றல் நோக்கம்",
+                l8Obj: "Garment costing மற்றும் production planning-ல் பொதுவாக ஏற்படும் தவறுகளைத் தவிர்த்தல்.",
+                l8TechTitle: "⚠️ 5 முக்கிய தவறுகள்",
+                l8Tech: "<strong>1. Machine Nameplate RPM பயன்படுத்துதல்:</strong> மோட்டாரின் அதிகபட்ச வேகத்தை வைத்து கணக்கிடுவது தவறு. நடைமுறை வேகமே (4,000–4,800 RPM) பயன்படுத்தப்பட வேண்டும்.<br><br><strong>2. Handling Time-ஐ புறக்கணித்தல்:</strong> தையல் நேரத்தை மட்டுமே கணக்கில் எடுப்பது தவறு. Handling Time மொத்த நேரத்தில் 50% முதல் 70% வரை இருக்கும்.<br><br><strong>3. Unit குழப்பம்:</strong> Centimeter மற்றும் Inch-ஐ சரியாக மாற்றாமல் கணக்கிடுவது.<br><br><strong>4. Compounding Allowances:</strong> Allowance-களை தனித்தனியாக கூட்டுவது.<br><br><strong>5. Rating-ஐ மறப்பது:</strong> Stopwatch நேரத்தை நேரடியாக SAM-ஆக எடுத்துக்கொள்வது.",
+
+                origWhyHeading: "ஆடை உற்பத்தியில் SAM துல்லியம் ஏன் முக்கியமானது?",
+                origWhyP1: "திருப்பூர் ஏற்றுமதி ஆடை உற்பத்தியில், துல்லியமான SAM கணக்கீடு இல்லாவிட்டால் மூன்று பெரும் இழப்புகள் ஏற்படும்:",
+
+                relJobsTitle: "திருப்பூர் Garment Industry வேலைவாய்ப்புகள்",
+                relJobsSubtitle: "Production, Industrial Engineering, Quality மற்றும் Merchandising துறைகளில் உள்ள வேலைவாய்ப்புகள்.",
+                viewAllJobsLink: "அனைத்து வேலைகளையும் பார்க்க →",
+
+                faqMainTitle: "அடிக்கடி கேட்கப்படும் கேள்விகள் (FAQ)",
+                faqSubtitle: "திருப்பூர் garment உற்பத்தி மற்றும் SAM / SMV தொடர்பான பொதுவான சந்தேகங்கள்.",
+
+                formulaRefMainTitle: "SAM / SMV கணக்கீட்டு Formula & முழுமையான வழிகாட்டி",
+                formulaRefMainSubtitle: "ஆடை உற்பத்திக்கான SAM மற்றும் SMV formulas, மாறிகள் விளக்கம், செய்முறை உதாரணம் மற்றும் Production Target சமன்பாடுகள்.",
+                samFormulaCardTitle: "1. SAM Formula (Standard Allowed Minutes)",
+                samFormulaExplanation: "SAM-ஐ calculate செய்ய முதலில் Basic Cycle Time கணக்கிட வேண்டும். அதாவது Machine Sewing Time மற்றும் Handling and Positioning Time ஆகியவற்றைக் கூட்ட வேண்டும். அதன் பிறகு Total Allowance Percentage-ஐ apply செய்து, கிடைக்கும் seconds value-ஐ 60-ஆல் divide செய்து minutes-ஆக மாற்ற வேண்டும்.",
+                smvFormulaCardTitle: "2. SMV Formula (Standard Minute Value)",
+                smvFormulaExplanation: "SMV (Standard Minute Value) என்பது ஒரு garment operation-க்கு நிர்ணயிக்கப்பட்ட standard time-ஐ minutes-ல் குறிப்பிடுகிறது. ஒரே time-study method மற்றும் allowance standard பயன்படுத்தப்பட்டால், SAM மற்றும் SMV values பொதுவாக ஒரே மாதிரியாக இருக்கலாம். ஆனால் company-க்கு company terminology மற்றும் calculation method மாறலாம்.",
+                elementsTableTitle: "3. Formula Elements மற்றும் அவற்றின் விளக்கங்கள்",
+                elementsTableSubtitle: "Garment Industrial Engineering-ல் நேரம் கணக்கிட பயன்படும் ஒவ்வொரு மாறியின் துல்லியமான விளக்கம்.",
+                thEl: "Formula மாறிகள்",
+                thMean: "விளக்கம்",
+                thUnit: "அலகு (Unit)",
+                thEx: "Garment Industry உதாரணம்",
+                el1Name: "Machine Sewing Time",
+                el1Mean: "Machine Sewing Time என்பது sewing machine துணியில் stitching செய்ய எடுத்துக்கொள்ளும் நேரம்.",
+                el1Ex: "Collar rib-ல் 4-thread overlock தையல் ஓடும் நேரம்",
+                el2Name: "Total Stitch Count",
+                el2Mean: "Seam Length மற்றும் SPI தெரிந்தால், இரண்டையும் multiply செய்து Total Stitch Count கணக்கிடலாம்: Total Stitches = Seam Length (inches) × SPI.",
+                el2Ex: "10 inches Seam × 12 SPI = 120 stitches",
+                el3Name: "Machine Speed",
+                el3Mean: "தையல் இயந்திரத்தின் நடைமுறை இயங்கும் வேகம். தொடக்கம், நிறுத்தம், வளைவுகள் மற்றும் handling காரணமாக மோட்டாரின் rated RPM-ஐ விட நடைமுறை வேகம் குறைவாக இருக்கும்.",
+                el3Ex: "5,000 RPM மோட்டார் 3,000 effective stitches/min வேகத்தில் இயங்குதல்",
+                el4Name: "Handling and Positioning Time",
+                el4Mean: "Fabric panels-ஐ pick up செய்வது, align செய்வது, position செய்வது மற்றும் operation-ஐ complete செய்ய garment-ஐ handle செய்வது போன்ற செயல்களுக்கு எடுத்துக்கொள்ளும் நேரம்.",
+                el4Ex: "துணி பாகங்களை எடுத்து நாட்ச்களை இணைத்து வைக்கும் நேரம் (5.0 வினாடிகள்)",
+                el5Name: "Basic Cycle Time",
+                el5Mean: "Machine Sewing Time மற்றும் Handling and Positioning Time ஆகியவற்றைக் கூட்டினால் Basic Cycle Time கிடைக்கும்: Basic Cycle Time = Machine Sewing Time + Handling Time.",
+                el5Ex: "2.4s sewing + 5.0s handling = 7.4 வினாடிகள் Basic Time",
+                el6Name: "Total Allowance Percentage",
+                el6Mean: "Allowance என்பது Personal Needs (5–7%), Fatigue (3–5%) மற்றும் approved work-related delays (2–4%) போன்றவற்றைக் கருத்தில் கொண்டு standard time-ல் சேர்க்கப்படும் கூடுதல் நேரமாகும். Allowance percentage ஒவ்வொரு factory-யின் approved method-ஐப் பொறுத்து மாறலாம்.",
+                el6Ex: "14% Standard relaxation allowance (தனிநபர் + சோர்வு + தாமதம்)",
+                el7Name: "Allowance Multiplier",
+                el7Mean: "14% Allowance என்றால் Basic Cycle Time-ஐ 1.14-ஆல் multiply செய்ய வேண்டும்: Multiplier = 1 + (Total Allowance % / 100).",
+                el7Ex: "1 + (14 / 100) = 1.14 Multiplier",
+                el8Name: "Conversion from Seconds to Minutes",
+                el8Mean: "60 seconds = 1 minute. அதனால் seconds-ல் கிடைக்கும் time-ஐ 60-ஆல் divide செய்தால் minutes கிடைக்கும்: Minutes = Seconds / 60.",
+                el8Ex: "8.436 வினாடிகள் / 60 = 0.1406 decimal minutes",
+                workedExTitle: "4. படி-படியான செய்முறை கணக்கீட்டு உதாரணம்",
+                workedExInputsHeading: "📋 கணக்கீட்டு அளவீடுகள் (Input Parameters):",
+                workedExResultBadge: "SAM ≈ 0.141 நிமிடங்கள் (Minutes / Operation)",
+                workedExResultDetails: "(ஒரு பீஸ் தைக்க அனுமதிக்கப்பட்ட நேரம் = 8.44 வினாடிகள்)",
+                workedExDesc: "இந்த example-ல் ஒரு operation-க்கான SAM சுமார் 0.141 minutes. இது விளக்கத்திற்கான sample calculation மட்டுமே; actual SAM operation method, machine, operator performance மற்றும் approved allowance standards ஆகியவற்றைப் பொறுத்து மாறலாம்.",
+                compTableTitle: "5. SAM vs SMV ஒப்பீடு (Comparison)",
+                compTableSubtitle: "SAM மற்றும் SMV ஆகியவற்றுக்கு இடையேயான முக்கிய வேறுபாடுகள் மற்றும் சர்வதேச ஆடைத் தொழில் பயன்பாடு.",
+                thCompAspect: "ஒப்பீட்டு அம்சங்கள்",
+                thCompSam: "SAM (Standard Allowed Minutes)",
+                thCompSmv: "SMV (Standard Minute Value)",
+                rowCompFull: "முழு வடிவம் (Full Form)",
+                rowCompMean: "அர்த்தம் (Meaning)",
+                rowCompUnit: "அலகு (Unit)",
+                rowCompApp: "பயன்படும் இடங்கள்",
+                rowCompRel: "SAM மற்றும் SMV இடையேயான தொடர்பு",
+                samMeaningText: "ஒரு garment operation-ஐ standard pace-ல் முடிக்க அனுமதிக்கப்பட்ட standard minutes நேரம் (allowance உட்பட).",
+                smvMeaningText: "பிரிட்டிஷ் மற்றும் சர்வதேச work-study முறையில் ஒரு operation-க்கு நிர்ணயிக்கப்பட்ட நிமிட மதிப்பு.",
+                samAppText: "Shopfloor target fixing, line balancing, operator efficiency மற்றும் South Asian export units-ல் அதிகம் பயன்படுகிறது.",
+                smvAppText: "International buyer tech packs, UK/European apparel costing sheets, மற்றும் GSD (General Sewing Data) systems.",
+                samSmvRelText: "பெரும்பாலான garment ஆலைகளில் 1.0 SAM = 1.0 SMV என சமமாக பயன்படுத்தப்படுகிறது. இருப்பினும் நிறுவனத்தின் internal standards மற்றும் allowance policies ஆகியவற்றைப் பொறுத்து terminology மாறலாம்.",
+                targetFormulasTitle: "6. Garment Production Target கணக்கீட்டு Formulas",
+                targetFormulasSubtitle: "ஒரு தொழிலாளியின் மணிநேர இலக்கு, sewing line இலக்கு மற்றும் line efficiency அடிப்படையிலான planned quota சமன்பாடுகள்.",
+                targetAHeading: "A. ஒரு தொழிலாளியின் மணிநேர இலக்கு (Single-Operation Target)",
+                targetADesc: "ஒரு operation-ன் SAM தெரிந்தால், 60-ஐ SAM-ஆல் divide செய்து ஒரு மணி நேரத்தில் theoretical-ஆக எத்தனை pieces செய்ய முடியும் என்பதைக் கணக்கிடலாம் (Hourly Target = 60 / SAM).",
+                targetBHeading: "B. தையல் லைனின் மொத்த இலக்கு (Theoretical Line Target)",
+                targetBDesc: "மொத்த தையல் லைனில் உள்ள தொழிலாளர்களின் எண்ணிக்கை × 60-ஐ, அந்த ஆடையின் Total Style SAM-ஆல் divide செய்தால் theoretical line target கிடைக்கும்.",
+                targetCHeading: "C. திட்டமிடப்பட்ட உற்பத்தி இலக்கு (Planned Line Target)",
+                targetCDesc: "Target Efficiency 75% என்றால், theoretical target-ஐ 0.75-ஆல் multiply செய்து planned target கணக்கிடலாம். Single operation திறனையும் line delivery-யையும் எப்போதும் தனித்தனியாகப் பார்க்க வேண்டும்.",
+                ctaCalcHeading: "🛠️ ஆன்லைனில் SAM / SMV கணக்கிடுங்கள்",
+                ctaCalcText: "உங்கள் operation details மற்றும் allowance values பயன்படுத்தி SAM/SMV calculate செய்ய DigiGarment Calculator-ஐ பயன்படுத்துங்கள்.",
+                ctaCalcBtn: "இப்போதே SAM / SMV கணக்கிடுங்கள் →",
+                ctaLearnHeading: "📚 விரிவான செய்முறை பாடங்கள்",
+                ctaLearnText: "Collar rib கணக்கீடுகள், line balancing மற்றும் IE தவறுகள் அடங்கிய 8 விரிவான பாடங்களை படிக்க கீழே செல்லுங்கள்.",
+                ctaLearnBtn: "விரிவான SAM / SMV பாடங்களைத் தொடருங்கள் ↓"
+            }
+        };
+
+        // --- 2. Language Switcher Logic ---
+        function setLanguage(lang) {
+            const t = CONTENT[lang] || CONTENT.en;
+            for (const key in t) {
+                const el = document.getElementById(key);
+                if (el) el.innerHTML = t[key];
+            }
+
+            document.getElementById("langBtnTa").classList.toggle("active", lang === 'ta');
+            document.getElementById("langBtnEn").classList.toggle("active", lang === 'en');
+            localStorage.setItem("sam_blog_lang", lang);
+        }
+
+        // --- 3. Lesson Tab Switcher ---
+        function switchLesson(lessonNum) {
+            for (let i = 1; i <= 8; i++) {
+                const pane = document.getElementById("lessonPane" + i);
+                const tab = document.getElementById("tabBtn" + i);
+                if (pane) pane.classList.toggle("active", i === lessonNum);
+                if (tab) tab.classList.toggle("active", i === lessonNum);
+            }
+        }
+
+        // --- 4. Self Check Toggle ---
+        function toggleAnswer(lessonNum) {
+            const ans = document.getElementById("ans" + lessonNum);
+            if (ans) {
+                ans.style.display = (ans.style.display === "block") ? "none" : "block";
+            }
+        }
+
+        // --- 5. FAQ Accordion Toggle ---
+        function toggleFaq(btn) {
+            btn.classList.toggle("open");
+            const content = btn.nextElementSibling;
+            if (content) {
+                content.classList.toggle("open");
+            }
+        }
+
+        // --- 6. Interactive Quiz Engine ---
+        const QUIZ_ANSWERS = { 1: 1, 2: 0, 3: 2, 4: 0, 5: 1 };
+        const QUIZ_EXPLANATIONS = {
+            1: "Correct! SAM represents Standard Allowed Minutes: the total standardized time allocated for a qualified operator working at a standard rating including allowances.",
+            2: "Correct! Machine Sewing Time in seconds = (Total Stitches / Machine RPM) × 60.",
+            3: "Correct! Basic Cycle Time = Sewing Time (3.6s) + Handling Time (6.0s) = 9.60 seconds.",
+            4: "Correct! Allowed Time = 10.0s × [1 + (12 / 100)] = 10.0 × 1.12 = 11.20 seconds.",
+            5: "Correct! Production line capacity is strictly governed by the slowest bottleneck operation unless balanced."
+        };
+        const QUIZ_WRONG_EXPLANATIONS = {
+            1: "Incorrect. SAM is Standard Allowed Minutes (standard operation time including allowances).",
+            2: "Incorrect. Total stitches divided by machine RPM yields minutes, multiplied by 60 gives seconds.",
+            3: "Incorrect. Basic cycle time is the sum of machine sewing (3.6s) and manual handling (6.0s), which is 9.60s.",
+            4: "Incorrect. Allowed time = Basic Time × 1.12 = 11.20 seconds.",
+            5: "Incorrect. A production line cannot output more than its bottleneck workstation."
+        };
+
+        let userAnswers = {};
+
+        function submitAnswer(qNum, optionIdx) {
+            if (userAnswers[qNum] !== undefined) return;
+            userAnswers[qNum] = optionIdx;
+
+            const card = document.getElementById("qCard" + qNum);
+            const buttons = card.querySelectorAll(".quiz-option-btn");
+            const expBox = document.getElementById("q" + qNum + "Exp");
+            const isCorrect = (optionIdx === QUIZ_ANSWERS[qNum]);
+
+            buttons.forEach((btn, idx) => {
+                btn.disabled = true;
+                if (idx === QUIZ_ANSWERS[qNum]) {
+                    btn.classList.add("correct");
+                } else if (idx === optionIdx && !isCorrect) {
+                    btn.classList.add("wrong");
+                }
+            });
+
+            expBox.classList.add("show", isCorrect ? "correct" : "wrong");
+            expBox.innerText = isCorrect ? QUIZ_EXPLANATIONS[qNum] : QUIZ_WRONG_EXPLANATIONS[qNum];
+
+            updateQuizScore();
+        }
+
+        function updateQuizScore() {
+            let score = 0;
+            for (const q in userAnswers) {
+                if (userAnswers[q] === QUIZ_ANSWERS[q]) score++;
+            }
+            document.getElementById("quizScoreDisplay").innerText = "Score: " + score + " / 5";
+        }
+
+        function resetQuiz() {
+            userAnswers = {};
+            for (let q = 1; q <= 5; q++) {
+                const card = document.getElementById("qCard" + q);
+                if (card) {
+                    const buttons = card.querySelectorAll(".quiz-option-btn");
+                    buttons.forEach(btn => {
+                        btn.disabled = false;
+                        btn.classList.remove("correct", "wrong");
+                    });
+                    const expBox = document.getElementById("q" + q + "Exp");
+                    if (expBox) {
+                        expBox.classList.remove("show", "correct", "wrong");
+                        expBox.innerText = "";
+                    }
+                }
+            }
+            document.getElementById("quizScoreDisplay").innerText = "Score: 0 / 5";
+        }
+
+        // --- 7. Load Active Related Jobs ---
+        async function loadRelatedJobs() {
+            try {
+                const res = await fetch("/api/public/jobs?limit=4");
+                if (!res.ok) return;
+                const data = await res.json();
+                const jobs = data.jobs || data.data || [];
+                if (jobs.length > 0) {
+                    const grid = document.getElementById("relatedJobsGrid");
+                    grid.innerHTML = "";
+                    jobs.slice(0, 4).forEach(j => {
+                        const slug = j.slug || j.id;
+                        const title = j.title || "Garment Specialist";
+                        const comp = j.company_name || "Tiruppur Export House";
+                        const dept = j.department || "Garments";
+                        const loc = j.location || "Tiruppur";
+
+                        const a = document.createElement("a");
+                        a.href = "/jobs/" + slug;
+                        a.className = "job-card-item";
+                        a.innerHTML = `
+                            <div>
+                                <div class="job-card-role">${title}</div>
+                                <div class="job-card-company">${comp}</div>
+                            </div>
+                            <div class="job-card-meta">
+                                <span class="job-card-badge">${dept}</span>
+                                <span>${loc}</span>
+                            </div>
+                        `;
+                        grid.appendChild(a);
+                    });
+                }
+            } catch (err) {
+                console.log("Using static job fallback cards:", err);
+            }
+        }
+
+        // On Load initialization
+        document.addEventListener("DOMContentLoaded", () => {
+            const savedLang = localStorage.getItem("sam_blog_lang") || "ta";
+            setLanguage(savedLang);
+            loadRelatedJobs();
+        });
+    </script>
+</body>
+</html>
