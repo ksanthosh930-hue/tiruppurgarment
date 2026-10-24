@@ -253,7 +253,7 @@
             margin: 36px auto;
             padding: 0 24px;
             display: grid;
-            grid-template-columns: 280px 1fr;
+            grid-template-columns: 280px minmax(0, 1fr);
             gap: 32px;
             align-items: start;
         }
@@ -334,6 +334,8 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
+            min-width: 0;
+            max-width: 100%;
         }
 
         .jobs-top-bar {
@@ -873,6 +875,8 @@
             justify-content: center;
             gap: 8px;
             margin: 32px 0 60px 0;
+            flex-wrap: wrap;
+            max-width: 100%;
         }
 
         .page-btn {
@@ -1384,7 +1388,7 @@
             <!-- Pagination -->
             <div class="pagination-wrap" id="paginationWrap" style="display: none;">
                 <button class="page-btn" id="prevPageBtn" onclick="changePage(-1)">&lsaquo; Previous</button>
-                <div id="pageNumbers" style="display: flex; gap: 6px;"></div>
+                <div id="pageNumbers" style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: center;"></div>
                 <button class="page-btn" id="nextPageBtn" onclick="changePage(1)">Next &rsaquo;</button>
             </div>
         </section>
@@ -2397,18 +2401,45 @@
             document.getElementById("prevPageBtn").disabled = page <= 1;
             document.getElementById("nextPageBtn").disabled = page >= total;
 
-            for (let i = 1; i <= total; i++) {
-                const btn = document.createElement("button");
-                btn.className = `page-btn ${i === page ? 'active' : ''}`;
-                btn.textContent = i;
-                btn.onclick = () => {
-                    searchState.page = i;
-                    updateURLFromSearchState(true);
-                    fetchJobs();
-                    window.scrollTo({ top: 400, behavior: 'smooth' });
-                };
-                nums.appendChild(btn);
+            const delta = 2;
+            const range = [];
+            for (let i = Math.max(2, page - delta); i <= Math.min(total - 1, page + delta); i++) {
+                range.push(i);
             }
+
+            if (page - delta > 2) {
+                range.unshift("...");
+            }
+            if (page + delta < total - 1) {
+                range.push("...");
+            }
+
+            range.unshift(1);
+            if (total > 1) {
+                range.push(total);
+            }
+
+            range.forEach(item => {
+                if (item === "...") {
+                    const dots = document.createElement("span");
+                    dots.className = "page-dots";
+                    dots.textContent = "...";
+                    dots.style.cssText = "padding: 8px 6px; color: var(--dg-slate); font-weight: 700; user-select: none; display: inline-flex; align-items: center;";
+                    nums.appendChild(dots);
+                } else {
+                    const btn = document.createElement("button");
+                    btn.type = "button";
+                    btn.className = `page-btn ${item === page ? 'active' : ''}`;
+                    btn.textContent = item;
+                    btn.onclick = () => {
+                        searchState.page = item;
+                        updateURLFromSearchState(true);
+                        fetchJobs();
+                        window.scrollTo({ top: 400, behavior: 'smooth' });
+                    };
+                    nums.appendChild(btn);
+                }
+            });
         }
 
         function changePage(delta) {
