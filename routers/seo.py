@@ -1206,7 +1206,9 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
 
             query = """
                 SELECT j.id, j.title, j.slug, j.department, j.job_role, j.location,
-                       j.salary_text, j.experience_min, j.experience_max, j.job_type,
+                       j.salary_text, j.salary_min, j.salary_max, j.experience_min, j.experience_max, j.job_type,
+                       j.description, j.requirements, j.skills, j.qualification,
+                       j.contact_phone, j.contact_whatsapp, j.contact_email, j.application_url,
                        COALESCE(cp.company_name, c.name, '') AS company_name,
                        COALESCE(cp.location, c.location, j.location) AS company_location
                 FROM jobs j
@@ -1242,6 +1244,7 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
 
     # Build job list HTML & Schema.org ItemList elements
     item_list_elements = []
+    cat_jobs_map = {}
     if matching_jobs:
         jobs_list_html = ""
         for idx, job in enumerate(matching_jobs, 1):
@@ -1265,18 +1268,48 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
             if exp_min is not None and exp_max is not None:
                 exp_text = f"{exp_min}–{exp_max} Yrs Exp"
             elif exp_min is not None:
-                exp_text = f"{exp_min}+ Yrs Exp"
+                exp_text = f"{exp_min}+ Yrs Exp" if exp_min > 0 else "Fresher Eligible"
+            elif job.get("requirements") and "fresher" in str(job.get("requirements")).lower():
+                exp_text = "Fresher Eligible"
             else:
                 exp_text = "Experience not specified"
 
             sal_badge = f"<span class='job-pill pill-sal'>💰 {html.escape(job['salary_text'])}</span>" if job.get("salary_text") else ""
             dept_badge = f"<span class='job-pill pill-dept'>🏷️ {j_dept}</span>" if j_dept else ""
 
+            sal_text = job.get("salary_text") or ""
+            if not sal_text and job.get("salary_min"):
+                try:
+                    sal_text = f"₹{int(job['salary_min']):,} / mo"
+                except Exception:
+                    sal_text = ""
+
+            cat_jobs_map[j_slug] = {
+                "id": job.get("id"),
+                "title": job.get("title") or "Garment Vacancy",
+                "slug": j_slug,
+                "company_name": job.get("company_name") or "",
+                "department": job.get("department") or "Garments",
+                "job_role": job.get("job_role") or "-",
+                "location": job.get("location") or "Tiruppur, Tamil Nadu",
+                "experience": exp_text,
+                "salary": sal_text or "Negotiable",
+                "job_type": job.get("job_type") or "Full Time",
+                "qualification": job.get("qualification") or "Any Qualification",
+                "description": job.get("description") or "",
+                "requirements": job.get("requirements") or "",
+                "skills": job.get("skills") or "",
+                "contact_phone": job.get("contact_phone") or "",
+                "contact_whatsapp": job.get("contact_whatsapp") or "",
+                "contact_email": job.get("contact_email") or "",
+                "application_url": job.get("application_url") or "",
+            }
+
             jobs_list_html += f"""
             <div class="landing-job-card">
                 <div class="job-card-main">
                     <div class="job-card-header">
-                        <h3 class="job-title"><a href="{j_url}">{j_title}</a></h3>
+                        <h3 class="job-title"><a href="{j_url}" onclick="if(!event.ctrlKey &amp;&amp; !event.metaKey &amp;&amp; !event.shiftKey &amp;&amp; event.button === 0){{ openCategoryJobModal('{j_slug}', event); }}">{j_title}</a></h3>
                         <span class="job-badge-active">Active Vacancy</span>
                     </div>
                     <div class="job-company-meta">
@@ -1290,7 +1323,7 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
                     </div>
                 </div>
                 <div class="job-card-actions">
-                    <a href="{j_url}" class="btn-view-job">View & Apply →</a>
+                    <a href="{j_url}" onclick="if(!event.ctrlKey &amp;&amp; !event.metaKey &amp;&amp; !event.shiftKey &amp;&amp; event.button === 0){{ openCategoryJobModal('{j_slug}', event); }}" class="btn-view-job">View & Apply →</a>
                 </div>
             </div>
             """
@@ -1303,6 +1336,9 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
             <a href="/jobs" class="btn-cta" style="display: inline-block; padding: 10px 22px; font-size: 14px; margin-top: 0;">Browse All Jobs</a>
         </div>
         """
+
+    landing_jobs_json = json.dumps(cat_jobs_map, default=str).replace("</", "<\\/")
+
 
     # Build FAQ HTML & Schema.org FAQPage
     faq_html = ""
@@ -1342,7 +1378,6 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
     extra_section_html = page_info.get("extra_section_html", "")
 
     # JSON-LD Graph (CollectionPage, BreadcrumbList, ItemList, FAQPage) - Explicitly NO fake JobPosting
-    import json
     schema_graph = [
         {
             "@type": "CollectionPage",
@@ -1820,6 +1855,197 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
             .btn-view-job {{ width: 100%; text-align: center; box-sizing: border-box; }}
             .job-card-actions {{ width: 100%; }}
         }}
+
+        /* Job Detail Popup Modal */
+        .modal {{
+            position: fixed;
+            inset: 0;
+            background: rgba(8, 18, 38, 0.65);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }}
+        .modal-dialog {{
+            background: #ffffff;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 720px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: modalSlide 0.22s ease-out;
+            position: relative;
+            box-sizing: border-box;
+        }}
+        @keyframes modalSlide {{
+            from {{ transform: translateY(18px); opacity: 0; }}
+            to {{ transform: translateY(0); opacity: 1; }}
+        }}
+        .modal-header {{
+            padding: 22px 26px;
+            border-bottom: 1px solid #E2E8F0;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            position: sticky;
+            top: 0;
+            background: #ffffff;
+            z-index: 10;
+        }}
+        .modal-close {{
+            background: #F1F5F9;
+            border: none;
+            font-size: 24px;
+            color: var(--dg-slate);
+            cursor: pointer;
+            line-height: 1;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+            flex-shrink: 0;
+        }}
+        .modal-close:hover {{
+            background: #E2E8F0;
+            color: #0F172A;
+        }}
+        .modal-body {{
+            padding: 24px 26px 28px 26px;
+        }}
+        .specs-grid {{
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            background: #F8FAFC;
+            padding: 16px;
+            border-radius: 10px;
+            border: 1px solid #E2E8F0;
+            margin-bottom: 22px;
+        }}
+        @media (max-width: 600px) {{
+            .specs-grid {{ grid-template-columns: repeat(2, 1fr); }}
+            .modal-header {{ padding: 18px 20px; }}
+            .modal-body {{ padding: 18px 20px 24px 20px; }}
+            .modal-dialog {{ max-height: 94vh; }}
+        }}
+        .spec-item small {{
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #64748B;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }}
+        .spec-item strong {{
+            font-size: 13.5px;
+            color: var(--dg-navy);
+            word-break: break-word;
+        }}
+        .section-title {{
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--dg-navy);
+            margin: 20px 0 8px 0;
+        }}
+        .rich-text {{
+            font-size: 14px;
+            line-height: 1.65;
+            color: #334155;
+            white-space: pre-wrap;
+        }}
+        .skills-wrap {{
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }}
+        .skill-pill {{
+            background: #EEF2F6;
+            color: #1E293B;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12.5px;
+            font-weight: 600;
+        }}
+        .actions-bar {{
+            margin-top: 28px;
+            padding-top: 20px;
+            border-top: 1px solid #E2E8F0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }}
+        .btn-action {{
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 11px 18px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s ease;
+            border: none;
+            box-sizing: border-box;
+        }}
+        .btn-whatsapp {{
+            background: #25D366;
+            color: #ffffff;
+        }}
+        .btn-whatsapp:hover {{
+            background: #1EBE5D;
+        }}
+        .btn-call {{
+            background: #0284C7;
+            color: #ffffff;
+        }}
+        .btn-call:hover {{
+            background: #0369A1;
+        }}
+        .btn-email {{
+            background: #475569;
+            color: #ffffff;
+        }}
+        .btn-email:hover {{
+            background: #334155;
+        }}
+        .btn-direct-link {{
+            background: #F1F5F9;
+            color: #081226;
+            border: 1px solid #CBD5E1;
+        }}
+        .btn-direct-link:hover {{
+            background: #E2E8F0;
+        }}
+        .btn-apply-primary {{
+            background: var(--dg-red);
+            color: #ffffff;
+            flex: 1;
+            min-width: 140px;
+        }}
+        .btn-apply-primary:hover {{
+            background: var(--dg-red-hover);
+        }}
+        .tag-dept {{
+            background: rgba(158, 27, 50, 0.08);
+            color: var(--dg-red);
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+        }}
     </style>
 </head>
 <body>
@@ -1930,6 +2156,283 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
             <p style="margin-top: 24px; font-size: 12px; color: #475569;">© 2026 DigiGarment. All rights reserved.</p>
         </div>
     </footer>
+
+    <!-- Job Detail Popup Modal -->
+    <div class="modal" id="categoryJobModal" onclick="handleCategoryModalBackdrop(event)">
+        <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="catModalTitle" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div>
+                    <span id="catModalDept" class="tag-dept" style="display: inline-block; margin-bottom: 6px;"></span>
+                    <h2 id="catModalTitle" style="font-size: 22px; font-weight: 800; color: #081226; margin: 0 0 6px 0;">Job Title</h2>
+                    <div id="catModalCompany" style="font-size: 14px; font-weight: 600; color: #64748B;"></div>
+                </div>
+                <button type="button" class="modal-close" aria-label="Close dialog" onclick="closeCategoryJobModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Specs Grid -->
+                <div class="specs-grid">
+                    <div class="spec-item">
+                        <small>Location</small>
+                        <strong id="catModalLoc">-</strong>
+                    </div>
+                    <div class="spec-item">
+                        <small>Experience</small>
+                        <strong id="catModalExp">-</strong>
+                    </div>
+                    <div class="spec-item">
+                        <small>Salary</small>
+                        <strong id="catModalSal" style="color: #9E1B32;">-</strong>
+                    </div>
+                    <div class="spec-item">
+                        <small>Job Role</small>
+                        <strong id="catModalRole">-</strong>
+                    </div>
+                    <div class="spec-item">
+                        <small>Job Type</small>
+                        <strong id="catModalType">-</strong>
+                    </div>
+                    <div class="spec-item">
+                        <small>Qualification</small>
+                        <strong id="catModalQual">-</strong>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="section-title">Job Description & Responsibilities</div>
+                <div class="rich-text" id="catModalDesc"></div>
+
+                <!-- Requirements -->
+                <div id="catModalReqsWrap" style="display: none;">
+                    <div class="section-title">Candidate Requirements</div>
+                    <div class="rich-text" id="catModalReqs"></div>
+                </div>
+
+                <!-- Skills -->
+                <div id="catModalSkillsWrap" style="display: none;">
+                    <div class="section-title">Required Key Skills</div>
+                    <div class="skills-wrap" id="catModalSkills"></div>
+                </div>
+
+                <!-- Action Bar -->
+                <div class="actions-bar" id="catModalActions">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script id="category-jobs-data" type="application/json">
+    {landing_jobs_json}
+    </script>
+    <script>
+    (function() {{
+        var jobsDataEl = document.getElementById('category-jobs-data');
+        var categoryJobs = {{}};
+        if (jobsDataEl) {{
+            try {{
+                categoryJobs = JSON.parse(jobsDataEl.textContent || '{{}}');
+            }} catch(e) {{
+                console.error("Failed to parse jobs data", e);
+            }}
+        }}
+
+        var catModalPushState = false;
+        var currentCategoryPath = window.location.pathname + window.location.search;
+
+        function escapeHtml(str) {{
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }}
+
+        window.openCategoryJobModal = function(jobSlug, event) {{
+            if (event) {{
+                event.preventDefault();
+            }}
+            var job = categoryJobs[jobSlug];
+            if (!job) {{
+                window.location.href = '/jobs/' + encodeURIComponent(jobSlug);
+                return;
+            }}
+
+            document.getElementById('catModalTitle').textContent = job.title || 'Job Vacancy';
+            document.getElementById('catModalDept').textContent = job.department || 'Garments';
+
+            var compEl = document.getElementById('catModalCompany');
+            if (job.company_name && job.company_name.trim()) {{
+                compEl.innerHTML = '🏢 <span style="font-weight: 600; color: #64748b; font-size: 13px;">Company:</span> <strong style="color: #081226; font-size: 14.5px;">' + escapeHtml(job.company_name) + '</strong>';
+                compEl.style.display = 'block';
+            }} else {{
+                compEl.innerHTML = '';
+                compEl.style.display = 'none';
+            }}
+
+            document.getElementById('catModalLoc').textContent = job.location || 'Tiruppur, Tamil Nadu';
+            document.getElementById('catModalExp').textContent = job.experience || 'Experience not specified';
+            document.getElementById('catModalSal').textContent = job.salary || 'Negotiable';
+            document.getElementById('catModalRole').textContent = job.job_role || '-';
+            document.getElementById('catModalType').textContent = job.job_type || 'Full Time';
+            document.getElementById('catModalQual').textContent = job.qualification || 'Any Qualification';
+            document.getElementById('catModalDesc').textContent = job.description || 'No detailed description provided.';
+
+            var reqsWrap = document.getElementById('catModalReqsWrap');
+            if (job.requirements && job.requirements.trim()) {{
+                reqsWrap.style.display = 'block';
+                document.getElementById('catModalReqs').textContent = job.requirements;
+            }} else {{
+                reqsWrap.style.display = 'none';
+            }}
+
+            var skillsWrap = document.getElementById('catModalSkillsWrap');
+            var skillsContainer = document.getElementById('catModalSkills');
+            skillsContainer.innerHTML = '';
+            if (job.skills && job.skills.trim()) {{
+                skillsWrap.style.display = 'block';
+                job.skills.split(',').forEach(function(s) {{
+                    var trimmed = s.trim();
+                    if (trimmed) {{
+                        var sp = document.createElement('span');
+                        sp.className = 'skill-pill';
+                        sp.textContent = trimmed;
+                        skillsContainer.appendChild(sp);
+                    }}
+                }});
+            }} else {{
+                skillsWrap.style.display = 'none';
+            }}
+
+            var actionsBar = document.getElementById('catModalActions');
+            actionsBar.innerHTML = '';
+
+            // WhatsApp action
+            if (job.contact_whatsapp && job.contact_whatsapp.trim()) {{
+                var cleanWA = job.contact_whatsapp.replace(/[^0-9]/g, '');
+                var waText = encodeURIComponent('Hello, I saw your job vacancy "' + job.title + '" on DigiGarment Tiruppur Jobs. I would like to apply.');
+                var waLink = document.createElement('a');
+                waLink.className = 'btn-action btn-whatsapp';
+                waLink.href = 'https://wa.me/' + cleanWA + '?text=' + waText;
+                waLink.target = '_blank';
+                waLink.rel = 'noopener noreferrer';
+                waLink.innerHTML = '💬 WhatsApp HR';
+                actionsBar.appendChild(waLink);
+            }}
+
+            // Call action
+            if (job.contact_phone && job.contact_phone.trim()) {{
+                var cleanPhone = job.contact_phone.replace(/[^0-9+]/g, '');
+                var callLink = document.createElement('a');
+                callLink.className = 'btn-action btn-call';
+                callLink.href = 'tel:' + cleanPhone;
+                callLink.innerHTML = '📞 Call (' + escapeHtml(job.contact_phone) + ')';
+                actionsBar.appendChild(callLink);
+            }}
+
+            // Email action
+            if (job.contact_email && job.contact_email.trim()) {{
+                var emailSubject = encodeURIComponent('Application for ' + job.title + ' - DigiGarment');
+                var emailLink = document.createElement('a');
+                emailLink.className = 'btn-action btn-email';
+                emailLink.href = 'mailto:' + encodeURIComponent(job.contact_email) + '?subject=' + emailSubject;
+                emailLink.innerHTML = '✉️ Email Resume';
+                actionsBar.appendChild(emailLink);
+            }}
+
+            // Company Portal Apply
+            if (job.application_url && job.application_url.trim()) {{
+                var portalLink = document.createElement('a');
+                portalLink.className = 'btn-action btn-apply-primary';
+                portalLink.href = job.application_url;
+                portalLink.target = '_blank';
+                portalLink.rel = 'noopener noreferrer';
+                portalLink.innerHTML = '🌐 Apply on Company Portal &rarr;';
+                actionsBar.appendChild(portalLink);
+            }}
+
+            // Share Button
+            var shareBtn = document.createElement('button');
+            shareBtn.type = 'button';
+            shareBtn.className = 'btn-action btn-direct-link';
+            shareBtn.innerHTML = '↗ Share';
+            shareBtn.onclick = function() {{
+                var jobUrl = window.location.origin + '/jobs/' + encodeURIComponent(job.slug);
+                if (navigator.share) {{
+                    navigator.share({{
+                        title: job.title + ' in Tiruppur',
+                        text: 'Garment job vacancy: ' + job.title + (job.company_name ? ' at ' + job.company_name : ''),
+                        url: jobUrl
+                    }}).catch(function() {{}});
+                }} else if (navigator.clipboard) {{
+                    navigator.clipboard.writeText(jobUrl).then(function() {{
+                        shareBtn.innerHTML = '✓ Link Copied!';
+                        setTimeout(function() {{ shareBtn.innerHTML = '↗ Share'; }}, 2000);
+                    }});
+                }}
+            }};
+            actionsBar.appendChild(shareBtn);
+
+            // Direct Job Page Link
+            var directLink = document.createElement('a');
+            directLink.className = 'btn-action btn-direct-link';
+            directLink.href = '/jobs/' + encodeURIComponent(job.slug);
+            directLink.target = '_blank';
+            directLink.innerHTML = '🔗 Open Full Page';
+            actionsBar.appendChild(directLink);
+
+            var modal = document.getElementById('categoryJobModal');
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+
+            if (window.history && window.history.pushState) {{
+                var targetUrl = '/jobs/' + encodeURIComponent(job.slug);
+                if (window.location.pathname !== targetUrl) {{
+                    window.history.pushState({{ modalJobSlug: jobSlug }}, '', targetUrl);
+                    catModalPushState = true;
+                }}
+            }}
+        }};
+
+        window.closeCategoryJobModal = function(triggerBack) {{
+            if (triggerBack === undefined) triggerBack = true;
+            var modal = document.getElementById('categoryJobModal');
+            if (!modal || modal.style.display === 'none') return;
+
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+
+            if (triggerBack && catModalPushState) {{
+                catModalPushState = false;
+                window.history.back();
+            }} else if (window.history && window.history.replaceState) {{
+                window.history.replaceState(null, '', currentCategoryPath);
+                catModalPushState = false;
+            }}
+        }};
+
+        window.handleCategoryModalBackdrop = function(e) {{
+            if (e.target && e.target.id === 'categoryJobModal') {{
+                closeCategoryJobModal();
+            }}
+        }};
+
+        window.addEventListener('keydown', function(e) {{
+            if (e.key === 'Escape') {{
+                closeCategoryJobModal();
+            }}
+        }});
+
+        window.addEventListener('popstate', function(e) {{
+            if (e.state && e.state.modalJobSlug) {{
+                openCategoryJobModal(e.state.modalJobSlug);
+            }} else {{
+                closeCategoryJobModal(false);
+            }}
+        }});
+    }})();
+    </script>
 </body>
 </html>
 """)
@@ -2300,7 +2803,9 @@ def get_job_or_category_page(slug: str, request: Request):
 
                 query = f"""
                     SELECT j.id, j.title, j.slug, j.department, j.job_role, j.location,
-                           j.salary_text, j.experience_min, j.experience_max, j.job_type,
+                           j.salary_text, j.salary_min, j.salary_max, j.experience_min, j.experience_max, j.job_type,
+                           j.description, j.requirements, j.skills, j.qualification,
+                           j.contact_phone, j.contact_whatsapp, j.contact_email, j.application_url,
                            c.name AS company_name
                     FROM jobs j
                     LEFT JOIN companies c ON j.company_id = c.id
@@ -2333,6 +2838,7 @@ def get_job_or_category_page(slug: str, request: Request):
         pagination_html = build_pagination_component(base_cat_path, current_page, total_pages, total_category_count, PAGE_SIZE)
 
         jobs_list_html = ""
+        cat_jobs_map = {}
         if matching_jobs:
             for job in matching_jobs:
                 j_title = html.escape(job.get("title") or "Garment Vacancy")
@@ -2340,14 +2846,53 @@ def get_job_or_category_page(slug: str, request: Request):
                 j_loc = html.escape(job.get("location") or "Tiruppur, Tamil Nadu")
                 j_company = html.escape(job.get("company_name")) if job.get("company_name") else ""
                 j_sal = f"<span style='color: #10B981; font-weight: 600;'>{html.escape(job['salary_text'])}</span>" if job.get("salary_text") else ""
+
+                exp_min = job.get("experience_min")
+                exp_max = job.get("experience_max")
+                if exp_min is not None and exp_max is not None:
+                    exp_text = f"{exp_min}–{exp_max} Years"
+                elif exp_min is not None:
+                    exp_text = f"{exp_min}+ Years" if exp_min > 0 else "Fresher Eligible"
+                elif job.get("requirements") and "fresher" in str(job.get("requirements")).lower():
+                    exp_text = "Fresher Eligible"
+                else:
+                    exp_text = "Experience not specified"
+
+                sal_text = job.get("salary_text") or ""
+                if not sal_text and job.get("salary_min"):
+                    try:
+                        sal_text = f"₹{int(job['salary_min']):,} / mo"
+                    except Exception:
+                        sal_text = ""
+
+                cat_jobs_map[j_slug] = {
+                    "id": job.get("id"),
+                    "title": job.get("title") or "Garment Vacancy",
+                    "slug": j_slug,
+                    "company_name": job.get("company_name") or "",
+                    "department": job.get("department") or "Garments",
+                    "job_role": job.get("job_role") or "-",
+                    "location": job.get("location") or "Tiruppur, Tamil Nadu",
+                    "experience": exp_text,
+                    "salary": sal_text or "Negotiable",
+                    "job_type": job.get("job_type") or "Full Time",
+                    "qualification": job.get("qualification") or "Any Qualification",
+                    "description": job.get("description") or "",
+                    "requirements": job.get("requirements") or "",
+                    "skills": job.get("skills") or "",
+                    "contact_phone": job.get("contact_phone") or "",
+                    "contact_whatsapp": job.get("contact_whatsapp") or "",
+                    "contact_email": job.get("contact_email") or "",
+                    "application_url": job.get("application_url") or "",
+                }
                 
                 jobs_list_html += f"""
                 <div style="background: #ffffff; border: 1px solid #E2E8F0; border-radius: 10px; padding: 20px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                     <div>
-                        <h3 style="margin: 0 0 6px 0; font-size: 17px; color: #081226;"><a href="/jobs/{j_slug}" style="color: #081226; text-decoration: none;">{j_title}</a></h3>
+                        <h3 style="margin: 0 0 6px 0; font-size: 17px; color: #081226;"><a href="/jobs/{j_slug}" onclick="if(!event.ctrlKey &amp;&amp; !event.metaKey &amp;&amp; !event.shiftKey &amp;&amp; event.button === 0){{ openCategoryJobModal('{j_slug}', event); }}" style="color: #081226; text-decoration: none;">{j_title}</a></h3>
                         <div style="font-size: 13px; color: #64748B;">🏢 {j_company} &nbsp;•&nbsp; 📍 {j_loc} &nbsp; {j_sal}</div>
                     </div>
-                    <a href="/jobs/{j_slug}" style="background: #9E1B32; color: #ffffff; padding: 8px 18px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600;">View Details &rarr;</a>
+                    <a href="/jobs/{j_slug}" onclick="if(!event.ctrlKey &amp;&amp; !event.metaKey &amp;&amp; !event.shiftKey &amp;&amp; event.button === 0){{ openCategoryJobModal('{j_slug}', event); }}" style="background: #9E1B32; color: #ffffff; padding: 8px 18px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">View Details &rarr;</a>
                 </div>
                 """
         else:
@@ -2356,6 +2901,9 @@ def get_job_or_category_page(slug: str, request: Request):
                 No vacancies currently published in this specific category. You can register your candidate profile below to be matched with upcoming openings.
             </div>
             """
+
+        category_jobs_json = json.dumps(cat_jobs_map, default=str).replace("</", "<\\/")
+
 
         faq_html = ""
         faq_schema_items = []
@@ -2550,6 +3098,197 @@ def get_job_or_category_page(slug: str, request: Request):
             color: #94A3B8;
             font-weight: 700;
         }}
+
+        /* Job Detail Popup Modal */
+        .modal {{
+            position: fixed;
+            inset: 0;
+            background: rgba(8, 18, 38, 0.65);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }}
+        .modal-dialog {{
+            background: #ffffff;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 720px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: modalSlide 0.22s ease-out;
+            position: relative;
+            box-sizing: border-box;
+        }}
+        @keyframes modalSlide {{
+            from {{ transform: translateY(18px); opacity: 0; }}
+            to {{ transform: translateY(0); opacity: 1; }}
+        }}
+        .modal-header {{
+            padding: 22px 26px;
+            border-bottom: 1px solid #E2E8F0;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            position: sticky;
+            top: 0;
+            background: #ffffff;
+            z-index: 10;
+        }}
+        .modal-close {{
+            background: #F1F5F9;
+            border: none;
+            font-size: 24px;
+            color: var(--dg-slate);
+            cursor: pointer;
+            line-height: 1;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+            flex-shrink: 0;
+        }}
+        .modal-close:hover {{
+            background: #E2E8F0;
+            color: #0F172A;
+        }}
+        .modal-body {{
+            padding: 24px 26px 28px 26px;
+        }}
+        .specs-grid {{
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            background: #F8FAFC;
+            padding: 16px;
+            border-radius: 10px;
+            border: 1px solid #E2E8F0;
+            margin-bottom: 22px;
+        }}
+        @media (max-width: 600px) {{
+            .specs-grid {{ grid-template-columns: repeat(2, 1fr); }}
+            .modal-header {{ padding: 18px 20px; }}
+            .modal-body {{ padding: 18px 20px 24px 20px; }}
+            .modal-dialog {{ max-height: 94vh; }}
+        }}
+        .spec-item small {{
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #64748B;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }}
+        .spec-item strong {{
+            font-size: 13.5px;
+            color: var(--dg-navy);
+            word-break: break-word;
+        }}
+        .section-title {{
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--dg-navy);
+            margin: 20px 0 8px 0;
+        }}
+        .rich-text {{
+            font-size: 14px;
+            line-height: 1.65;
+            color: #334155;
+            white-space: pre-wrap;
+        }}
+        .skills-wrap {{
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }}
+        .skill-pill {{
+            background: #EEF2F6;
+            color: #1E293B;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12.5px;
+            font-weight: 600;
+        }}
+        .actions-bar {{
+            margin-top: 28px;
+            padding-top: 20px;
+            border-top: 1px solid #E2E8F0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }}
+        .btn-action {{
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 11px 18px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s ease;
+            border: none;
+            box-sizing: border-box;
+        }}
+        .btn-whatsapp {{
+            background: #25D366;
+            color: #ffffff;
+        }}
+        .btn-whatsapp:hover {{
+            background: #1EBE5D;
+        }}
+        .btn-call {{
+            background: #0284C7;
+            color: #ffffff;
+        }}
+        .btn-call:hover {{
+            background: #0369A1;
+        }}
+        .btn-email {{
+            background: #475569;
+            color: #ffffff;
+        }}
+        .btn-email:hover {{
+            background: #334155;
+        }}
+        .btn-direct-link {{
+            background: #F1F5F9;
+            color: #081226;
+            border: 1px solid #CBD5E1;
+        }}
+        .btn-direct-link:hover {{
+            background: #E2E8F0;
+        }}
+        .btn-apply-primary {{
+            background: var(--dg-red);
+            color: #ffffff;
+            flex: 1;
+            min-width: 140px;
+        }}
+        .btn-apply-primary:hover {{
+            background: var(--dg-red-hover);
+        }}
+        .tag-dept {{
+            background: rgba(158, 27, 50, 0.08);
+            color: var(--dg-red);
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+        }}
     </style>
 </head>
 <body>
@@ -2614,6 +3353,283 @@ def get_job_or_category_page(slug: str, request: Request):
             <a href="/blog" style="color: #94A3B8; margin: 0 10px; text-decoration: none;">Blog</a>
         </div>
     </footer>
+
+    <!-- Job Detail Popup Modal -->
+    <div class="modal" id="categoryJobModal" onclick="handleCategoryModalBackdrop(event)">
+        <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="catModalTitle" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div>
+                    <span id="catModalDept" class="tag-dept" style="display: inline-block; margin-bottom: 6px;"></span>
+                    <h2 id="catModalTitle" style="font-size: 22px; font-weight: 800; color: #081226; margin: 0 0 6px 0;">Job Title</h2>
+                    <div id="catModalCompany" style="font-size: 14px; font-weight: 600; color: #64748B;"></div>
+                </div>
+                <button type="button" class="modal-close" aria-label="Close dialog" onclick="closeCategoryJobModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Specs Grid -->
+                <div class="specs-grid">
+                    <div class="spec-item">
+                        <small>Location</small>
+                        <strong id="catModalLoc">-</strong>
+                    </div>
+                    <div class="spec-item">
+                        <small>Experience</small>
+                        <strong id="catModalExp">-</strong>
+                    </div>
+                    <div class="spec-item">
+                        <small>Salary</small>
+                        <strong id="catModalSal" style="color: #9E1B32;">-</strong>
+                    </div>
+                    <div class="spec-item">
+                        <small>Job Role</small>
+                        <strong id="catModalRole">-</strong>
+                    </div>
+                    <div class="spec-item">
+                        <small>Job Type</small>
+                        <strong id="catModalType">-</strong>
+                    </div>
+                    <div class="spec-item">
+                        <small>Qualification</small>
+                        <strong id="catModalQual">-</strong>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="section-title">Job Description & Responsibilities</div>
+                <div class="rich-text" id="catModalDesc"></div>
+
+                <!-- Requirements -->
+                <div id="catModalReqsWrap" style="display: none;">
+                    <div class="section-title">Candidate Requirements</div>
+                    <div class="rich-text" id="catModalReqs"></div>
+                </div>
+
+                <!-- Skills -->
+                <div id="catModalSkillsWrap" style="display: none;">
+                    <div class="section-title">Required Key Skills</div>
+                    <div class="skills-wrap" id="catModalSkills"></div>
+                </div>
+
+                <!-- Action Bar -->
+                <div class="actions-bar" id="catModalActions">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script id="category-jobs-data" type="application/json">
+    {category_jobs_json}
+    </script>
+    <script>
+    (function() {{
+        var jobsDataEl = document.getElementById('category-jobs-data');
+        var categoryJobs = {{}};
+        if (jobsDataEl) {{
+            try {{
+                categoryJobs = JSON.parse(jobsDataEl.textContent || '{{}}');
+            }} catch(e) {{
+                console.error("Failed to parse category jobs data", e);
+            }}
+        }}
+
+        var catModalPushState = false;
+        var currentCategoryPath = window.location.pathname + window.location.search;
+
+        function escapeHtml(str) {{
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }}
+
+        window.openCategoryJobModal = function(jobSlug, event) {{
+            if (event) {{
+                event.preventDefault();
+            }}
+            var job = categoryJobs[jobSlug];
+            if (!job) {{
+                window.location.href = '/jobs/' + encodeURIComponent(jobSlug);
+                return;
+            }}
+
+            document.getElementById('catModalTitle').textContent = job.title || 'Job Vacancy';
+            document.getElementById('catModalDept').textContent = job.department || 'Garments';
+
+            var compEl = document.getElementById('catModalCompany');
+            if (job.company_name && job.company_name.trim()) {{
+                compEl.innerHTML = '🏢 <span style="font-weight: 600; color: #64748b; font-size: 13px;">Company:</span> <strong style="color: #081226; font-size: 14.5px;">' + escapeHtml(job.company_name) + '</strong>';
+                compEl.style.display = 'block';
+            }} else {{
+                compEl.innerHTML = '';
+                compEl.style.display = 'none';
+            }}
+
+            document.getElementById('catModalLoc').textContent = job.location || 'Tiruppur, Tamil Nadu';
+            document.getElementById('catModalExp').textContent = job.experience || 'Experience not specified';
+            document.getElementById('catModalSal').textContent = job.salary || 'Negotiable';
+            document.getElementById('catModalRole').textContent = job.job_role || '-';
+            document.getElementById('catModalType').textContent = job.job_type || 'Full Time';
+            document.getElementById('catModalQual').textContent = job.qualification || 'Any Qualification';
+            document.getElementById('catModalDesc').textContent = job.description || 'No detailed description provided.';
+
+            var reqsWrap = document.getElementById('catModalReqsWrap');
+            if (job.requirements && job.requirements.trim()) {{
+                reqsWrap.style.display = 'block';
+                document.getElementById('catModalReqs').textContent = job.requirements;
+            }} else {{
+                reqsWrap.style.display = 'none';
+            }}
+
+            var skillsWrap = document.getElementById('catModalSkillsWrap');
+            var skillsContainer = document.getElementById('catModalSkills');
+            skillsContainer.innerHTML = '';
+            if (job.skills && job.skills.trim()) {{
+                skillsWrap.style.display = 'block';
+                job.skills.split(',').forEach(function(s) {{
+                    var trimmed = s.trim();
+                    if (trimmed) {{
+                        var sp = document.createElement('span');
+                        sp.className = 'skill-pill';
+                        sp.textContent = trimmed;
+                        skillsContainer.appendChild(sp);
+                    }}
+                }});
+            }} else {{
+                skillsWrap.style.display = 'none';
+            }}
+
+            var actionsBar = document.getElementById('catModalActions');
+            actionsBar.innerHTML = '';
+
+            // WhatsApp action
+            if (job.contact_whatsapp && job.contact_whatsapp.trim()) {{
+                var cleanWA = job.contact_whatsapp.replace(/[^0-9]/g, '');
+                var waText = encodeURIComponent('Hello, I saw your job vacancy "' + job.title + '" on DigiGarment Tiruppur Jobs. I would like to apply.');
+                var waLink = document.createElement('a');
+                waLink.className = 'btn-action btn-whatsapp';
+                waLink.href = 'https://wa.me/' + cleanWA + '?text=' + waText;
+                waLink.target = '_blank';
+                waLink.rel = 'noopener noreferrer';
+                waLink.innerHTML = '💬 WhatsApp HR';
+                actionsBar.appendChild(waLink);
+            }}
+
+            // Call action
+            if (job.contact_phone && job.contact_phone.trim()) {{
+                var cleanPhone = job.contact_phone.replace(/[^0-9+]/g, '');
+                var callLink = document.createElement('a');
+                callLink.className = 'btn-action btn-call';
+                callLink.href = 'tel:' + cleanPhone;
+                callLink.innerHTML = '📞 Call (' + escapeHtml(job.contact_phone) + ')';
+                actionsBar.appendChild(callLink);
+            }}
+
+            // Email action
+            if (job.contact_email && job.contact_email.trim()) {{
+                var emailSubject = encodeURIComponent('Application for ' + job.title + ' - DigiGarment');
+                var emailLink = document.createElement('a');
+                emailLink.className = 'btn-action btn-email';
+                emailLink.href = 'mailto:' + encodeURIComponent(job.contact_email) + '?subject=' + emailSubject;
+                emailLink.innerHTML = '✉️ Email Resume';
+                actionsBar.appendChild(emailLink);
+            }}
+
+            // Company Portal Apply
+            if (job.application_url && job.application_url.trim()) {{
+                var portalLink = document.createElement('a');
+                portalLink.className = 'btn-action btn-apply-primary';
+                portalLink.href = job.application_url;
+                portalLink.target = '_blank';
+                portalLink.rel = 'noopener noreferrer';
+                portalLink.innerHTML = '🌐 Apply on Company Portal &rarr;';
+                actionsBar.appendChild(portalLink);
+            }}
+
+            // Share Button
+            var shareBtn = document.createElement('button');
+            shareBtn.type = 'button';
+            shareBtn.className = 'btn-action btn-direct-link';
+            shareBtn.innerHTML = '↗ Share';
+            shareBtn.onclick = function() {{
+                var jobUrl = window.location.origin + '/jobs/' + encodeURIComponent(job.slug);
+                if (navigator.share) {{
+                    navigator.share({{
+                        title: job.title + ' in Tiruppur',
+                        text: 'Garment job vacancy: ' + job.title + (job.company_name ? ' at ' + job.company_name : ''),
+                        url: jobUrl
+                    }}).catch(function() {{}});
+                }} else if (navigator.clipboard) {{
+                    navigator.clipboard.writeText(jobUrl).then(function() {{
+                        shareBtn.innerHTML = '✓ Link Copied!';
+                        setTimeout(function() {{ shareBtn.innerHTML = '↗ Share'; }}, 2000);
+                    }});
+                }}
+            }};
+            actionsBar.appendChild(shareBtn);
+
+            // Direct Job Page Link
+            var directLink = document.createElement('a');
+            directLink.className = 'btn-action btn-direct-link';
+            directLink.href = '/jobs/' + encodeURIComponent(job.slug);
+            directLink.target = '_blank';
+            directLink.innerHTML = '🔗 Open Full Page';
+            actionsBar.appendChild(directLink);
+
+            var modal = document.getElementById('categoryJobModal');
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+
+            if (window.history && window.history.pushState) {{
+                var targetUrl = '/jobs/' + encodeURIComponent(job.slug);
+                if (window.location.pathname !== targetUrl) {{
+                    window.history.pushState({{ modalJobSlug: jobSlug }}, '', targetUrl);
+                    catModalPushState = true;
+                }}
+            }}
+        }};
+
+        window.closeCategoryJobModal = function(triggerBack) {{
+            if (triggerBack === undefined) triggerBack = true;
+            var modal = document.getElementById('categoryJobModal');
+            if (!modal || modal.style.display === 'none') return;
+
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+
+            if (triggerBack && catModalPushState) {{
+                catModalPushState = false;
+                window.history.back();
+            }} else if (window.history && window.history.replaceState) {{
+                window.history.replaceState(null, '', currentCategoryPath);
+                catModalPushState = false;
+            }}
+        }};
+
+        window.handleCategoryModalBackdrop = function(e) {{
+            if (e.target && e.target.id === 'categoryJobModal') {{
+                closeCategoryJobModal();
+            }}
+        }};
+
+        window.addEventListener('keydown', function(e) {{
+            if (e.key === 'Escape') {{
+                closeCategoryJobModal();
+            }}
+        }});
+
+        window.addEventListener('popstate', function(e) {{
+            if (e.state && e.state.modalJobSlug) {{
+                openCategoryJobModal(e.state.modalJobSlug);
+            }} else {{
+                closeCategoryJobModal(false);
+            }}
+        }});
+    }})();
+    </script>
 </body>
 </html>
 """
