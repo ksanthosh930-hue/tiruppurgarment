@@ -525,8 +525,8 @@ def get_service_detail_page(slug: str):
 # --- 5. BLOG POST PAGES ---
 BLOG_ARTICLES = {
     "what-is-sam-in-garment-manufacturing": {
-        "title": "What is SAM in Garment Manufacturing? Standard Allowed Minutes Formula & Calculation",
-        "description": "Complete industrial engineering guide to Standard Allowed Minutes (SAM) and SMV in apparel manufacturing. Learn formulas, allowances, and cycle times.",
+        "title": "SMV Calculation in Garments – Formula, Examples & Calculator | DigiGarment",
+        "description": "Learn SMV calculation in garment manufacturing with the formula, step-by-step examples, and a free SMV calculator. Calculate Standard Minute Value for sewing easily.",
         "h1": "What is SAM in Garment Manufacturing? Complete Guide to Standard Allowed Minutes",
         "date": "2026-09-01",
         "category": "Industrial Engineering",
