@@ -4,15 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAM & SMV Calculator for Garment Industry | DigiGarment</title>
+    <title>Time Study SMV &amp; SAM Calculator for Garment Manufacturing | DigiGarment</title>
     <meta name="description"
-        content="Calculate Standard Allowed Minutes (SAM) and Standard Minute Value (SMV) for apparel manufacturing operations, sewing lines, cycle times, and line balancing.">
+        content="Calculate garment Standard Minute Value (SMV) from time study data and allowances. Free spreadsheet SMV calculator with production target estimation and advanced SAM parameters.">
     <link rel="canonical" href="https://tirupurgarment.in/tools/sam-calculator">
 
     <!-- Open Graph & Social Cards -->
-    <meta property="og:title" content="SAM & SMV Calculator for Garment Industry | DigiGarment">
+    <meta property="og:title" content="Time Study SMV &amp; SAM Calculator for Garment Manufacturing | DigiGarment">
     <meta property="og:description"
-        content="Calculate Standard Allowed Minutes (SAM) and Standard Minute Value (SMV) for apparel manufacturing operations, sewing lines, cycle times, and line balancing.">
+        content="Calculate garment Standard Minute Value (SMV) from time study data and allowances. Free spreadsheet SMV calculator with production target estimation and advanced SAM parameters.">
     <meta property="og:url" content="https://tirupurgarment.in/tools/sam-calculator">
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://tirupurgarment.in/assets/images/hero-automation.jpg">
@@ -895,6 +895,145 @@
         .print-metadata {
             display: none;
         }
+
+        /* Mode Switcher Tabs Bar */
+        .calc-tabs-bar {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            background: #ffffff;
+            padding: 8px;
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        @media (max-width: 768px) {
+            .calc-tabs-bar {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+
+        .calc-tab-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 20px;
+            background: #F8FAFC;
+            border: 2px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .calc-tab-btn:hover {
+            background: #F1F5F9;
+            border-color: #CBD5E1;
+        }
+
+        .calc-tab-btn.active {
+            background: #ffffff;
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(158, 27, 50, 0.08);
+        }
+
+        .tab-btn-icon {
+            font-size: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+
+        .calc-tab-btn.active .tab-btn-icon {
+            background: rgba(158, 27, 50, 0.06);
+            border-color: rgba(158, 27, 50, 0.2);
+        }
+
+        .tab-btn-body {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            flex: 1;
+        }
+
+        .tab-btn-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .calc-tab-btn.active .tab-btn-title {
+            color: var(--primary);
+        }
+
+        .tab-btn-desc {
+            font-size: 12.5px;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .tab-btn-badge {
+            background: var(--primary);
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+        }
+
+        /* Time Study Table Input Styling */
+        .ts-input-num {
+            text-align: right;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+        }
+
+        .ts-row-smv {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            font-weight: 700;
+            color: #065F46;
+            background: #ECFDF5;
+            padding: 6px 10px;
+            border-radius: 6px;
+            display: inline-block;
+            min-width: 90px;
+            text-align: right;
+        }
+
+        .btn-del-row {
+            background: transparent;
+            border: none;
+            color: #94A3B8;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-del-row:hover {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
     </style>
 </head>
 
@@ -939,14 +1078,250 @@
 
         <!-- Tool Description Header -->
         <div class="calc-header">
-            <h1><span class="icon">⚒</span> Technical SAM / SMV Calculator</h1>
-            <p>Measure, optimize, and standardize garment production operations. Calculate Standard Allowed Minutes
-                (SAM) / Standard Minute Value (SMV) in real time using parameters such as machine speed, seam length,
-                stitch density, operators handling times, and specialized garment manufacturing allowances.</p>
+            <h1><span class="icon">⚒</span> Time Study SMV &amp; SAM Calculator</h1>
+            <p>Calculate Standard Minute Value (SMV) from factory time study cycle times and allowances, or compute Standard Allowed Minutes (SAM) using machine speed, seam length, and technical parameters.</p>
         </div>
 
-        <!-- Main Calculator Grid -->
-        <div class="calc-grid">
+        <!-- Mode Switcher Tabs Bar -->
+        <div class="calc-tabs-bar" role="tablist" aria-label="Calculator Modes">
+            <button type="button" class="calc-tab-btn active" id="tabBtnTimeStudy" role="tab" aria-selected="true" aria-controls="panelTimeStudy" onclick="switchCalculatorTab('time-study')">
+                <span class="tab-btn-icon">⏱️</span>
+                <span class="tab-btn-body">
+                    <span class="tab-btn-title">Time Study Based SMV Calculator</span>
+                    <span class="tab-btn-desc">Operation-wise cycle times, allowances &amp; production targets</span>
+                </span>
+                <span class="tab-btn-badge">Default</span>
+            </button>
+            <button type="button" class="calc-tab-btn" id="tabBtnAdvancedSam" role="tab" aria-selected="false" aria-controls="panelAdvancedSam" onclick="switchCalculatorTab('advanced-sam')">
+                <span class="tab-btn-icon">⚙️</span>
+                <span class="tab-btn-body">
+                    <span class="tab-btn-title">Advanced SAM Calculator</span>
+                    <span class="tab-btn-desc">Machine speed (RPM), stitch density, allowances &amp; style sheets</span>
+                </span>
+            </button>
+        </div>
+
+        <!-- TAB 1: Time Study Based SMV Calculator (Default) -->
+        <div id="panelTimeStudy" class="calc-tab-panel" role="tabpanel" aria-labelledby="tabBtnTimeStudy" style="display: block;">
+            
+            <!-- Intro & Formula Header Card (Phase 4) -->
+            <div class="calc-card" style="padding: 24px 28px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 12px;">
+                    <div>
+                        <h2 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; color: var(--dark-navy); margin: 0 0 6px 0;">
+                            Time Study Based SMV Calculator
+                        </h2>
+                        <p style="color: var(--text-muted); font-size: 14.5px; margin: 0; line-height: 1.6; max-width: 900px;">
+                            Calculate garment SMV from operation-wise time study data, allowances, and production efficiency. Add sewing operations, calculate total SMV, and estimate production targets.
+                        </p>
+                    </div>
+                    <span style="background: #EFF6FF; color: #1D4ED8; font-weight: 700; font-size: 12px; padding: 6px 12px; border-radius: 20px; border: 1px solid #BFDBFE;">
+                        📐 INDUSTRIAL ENGINEERING FORMULA
+                    </span>
+                </div>
+
+                <!-- Visibly Displayed Formula Box -->
+                <div style="background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%); border: 1.5px solid #CBD5E1; border-radius: 12px; padding: 20px 24px; margin-top: 14px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 14px;">
+                        <div style="background: #ffffff; border: 1px solid #E2E8F0; border-radius: 8px; padding: 14px 18px; border-left: 4px solid #3B82F6;">
+                            <span style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748B; letter-spacing: 0.5px;">Step 1: Convert Seconds to Minutes</span>
+                            <div style="font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; color: #0F172A; margin-top: 4px;">
+                                Basic Time (Min) = Average Observed Time (Sec) ÷ 60
+                            </div>
+                        </div>
+                        <div style="background: #ffffff; border: 1px solid #E2E8F0; border-radius: 8px; padding: 14px 18px; border-left: 4px solid #10B981;">
+                            <span style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748B; letter-spacing: 0.5px;">Step 2: Apply Industrial Allowance %</span>
+                            <div style="font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; color: #0F172A; margin-top: 4px;">
+                                SMV = Basic Time × [ 1 + ( Allowance % ÷ 100 ) ]
+                            </div>
+                        </div>
+                    </div>
+                    <div style="background: #ffffff; border: 1px dashed #94A3B8; border-radius: 8px; padding: 12px 18px; font-size: 13.5px; color: #334155; line-height: 1.6;">
+                        <strong style="color: #1E3A8A;">Worked Example:</strong> If average observed sewing time = <strong>30.0 sec</strong> and approved allowance = <strong>15%</strong>:<br>
+                        Basic Time = 30.0 ÷ 60 = <strong>0.50 minutes</strong> &nbsp;|&nbsp; 
+                        Operation SMV = 0.50 × (1 + 15 / 100) = 0.50 × 1.15 = <strong>0.5750 minutes</strong> (≈ 34.5 seconds standard allowed time per piece).
+                    </div>
+                </div>
+            </div>
+
+            <!-- Spreadsheet-Style Editable Operations Table (Phase 3) -->
+            <div class="calc-card" style="padding: 24px 28px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px;">
+                    <div>
+                        <h3 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 18px; font-weight: 800; color: var(--dark-navy); margin: 0 0 4px 0;">
+                            Garment Operation Time Study Sheet
+                        </h3>
+                        <p style="color: var(--text-muted); font-size: 13.5px; margin: 0;">
+                            Edit operation names, observed cycle times in seconds, and allowance percentages directly in the table.
+                        </p>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <button type="button" class="btn-primary-custom" id="btnTsAddOp" onclick="addTimeStudyRow()" style="padding: 9px 16px; font-size: 13.5px;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            Add Operation
+                        </button>
+                        <button type="button" class="btn-outline-custom" id="btnTsReset" onclick="resetTimeStudyTable()" style="padding: 9px 14px; font-size: 13.5px; color: #64748B;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                            Reset
+                        </button>
+                        <button type="button" class="btn-outline-custom" id="btnTsExportCsv" onclick="exportTimeStudyCsv()" style="padding: 9px 14px; font-size: 13.5px; color: #166534; border-color: #BBF7D0; background: #F0FDF4;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            Export to Excel / CSV
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Editable Spreadsheet Table -->
+                <div class="table-responsive" style="margin-top: 16px;">
+                    <table class="operations-table" id="timeStudyTable" style="margin: 0;">
+                        <thead>
+                            <tr>
+                                <th style="width: 60px; text-align: center;">S.No</th>
+                                <th style="min-width: 240px;">Operation Name</th>
+                                <th style="width: 170px; text-align: right;">Average Time (Sec)</th>
+                                <th style="width: 170px; text-align: right;">Allowance (%)</th>
+                                <th style="width: 170px; text-align: right;">Operation SMV (Min)</th>
+                                <th style="width: 70px; text-align: center;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="timeStudyTableBody">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- KPI Summary Dashboard for Time Study -->
+                <div class="summary-dashboard" style="margin-top: 20px;">
+                    <div class="summary-widget">
+                        <span class="summary-widget-label">Total Operations</span>
+                        <span class="summary-widget-value" id="tsSummaryOpCount">0</span>
+                        <span class="summary-widget-sub">sewing process steps</span>
+                    </div>
+                    <div class="summary-widget">
+                        <span class="summary-widget-label">Observed Cycle Time</span>
+                        <span class="summary-widget-value" id="tsSummaryObsSecs">0.0 <span style="font-size: 14px; font-weight: 500;">sec</span></span>
+                        <span class="summary-widget-sub" id="tsSummaryObsMins">≈ 0.00 mins basic time</span>
+                    </div>
+                    <div class="summary-widget highlighted">
+                        <span class="summary-widget-label">Total Garment SMV</span>
+                        <span class="summary-widget-value" id="tsSummaryTotalSmv" style="color: #9E1B32;">0.0000 <span style="font-size: 14px; font-weight: 600;">min</span></span>
+                        <span class="summary-widget-sub" id="tsSummaryTotalSecs">≈ 0.0s standard allowed time</span>
+                    </div>
+                    <div class="summary-widget">
+                        <span class="summary-widget-label">Weighted Allowance</span>
+                        <span class="summary-widget-value" id="tsSummaryAvgAllowance">0.0 <span style="font-size: 14px; font-weight: 500;">%</span></span>
+                        <span class="summary-widget-sub">average relaxation factor</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Production Target Calculator Section (Phase 5) -->
+            <div class="calc-card" style="padding: 24px 28px; background: #FFFFFF; border-radius: 16px; border: 1.5px solid #E2E8F0;">
+                <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 14px; margin-bottom: 20px;">
+                    <h3 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 800; color: var(--dark-navy); margin: 0 0 4px 0; display: flex; align-items: center; gap: 8px;">
+                        <span>🎯</span> Production Target Calculator
+                    </h3>
+                    <p style="color: var(--text-muted); font-size: 14px; margin: 0; line-height: 1.5;">
+                        Estimate hourly and shift production output using the calculated Total Garment SMV, available working minutes, and target operator efficiency.
+                    </p>
+                </div>
+
+                <div class="calc-grid" style="align-items: start;">
+                    <!-- Target Inputs -->
+                    <div style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 12px; padding: 22px;">
+                        <h4 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 15px; font-weight: 700; color: var(--dark-navy); margin: 0 0 16px 0;">
+                            Production Parameters
+                        </h4>
+
+                        <!-- Available Working Minutes -->
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <label for="tsWorkingMinutes">
+                                <span>Available Working Minutes per Shift</span>
+                                <span class="unit">(Net Production Time)</span>
+                            </label>
+                            <input type="number" id="tsWorkingMinutes" class="form-control" value="480" min="1" max="1440" step="5" oninput="calculateProductionTarget()">
+                            <span style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Standard 8-hour shift = 480 minutes (net time excluding scheduled meal/tea breaks).</span>
+                        </div>
+
+                        <!-- Target Efficiency -->
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <label for="tsEfficiency">
+                                <span>Target Efficiency (%)</span>
+                                <span class="unit" id="tsEfficiencyVal">85%</span>
+                            </label>
+                            <div class="slider-container" style="display: flex; align-items: center; gap: 12px;">
+                                <input type="range" id="tsEfficiencySlider" min="30" max="100" step="1" value="85" style="flex: 1;" oninput="syncTsEfficiencySlider(this.value)">
+                                <input type="number" id="tsEfficiency" class="form-control slider-value" style="width: 80px;" min="1" max="100" step="1" value="85" oninput="syncTsEfficiencyNumber(this.value)">
+                            </div>
+                        </div>
+
+                        <!-- Total Garment SMV Display -->
+                        <div class="form-group">
+                            <label>
+                                <span>Total Garment SMV</span>
+                                <span class="unit">(Auto-synced from table)</span>
+                            </label>
+                            <input type="text" id="tsTargetSmvDisplay" class="form-control" readonly style="background: #F1F5F9; font-weight: 700; font-family: 'JetBrains Mono', monospace;" value="0.0000 min">
+                        </div>
+                    </div>
+
+                    <!-- Target Outputs -->
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                        <div style="background: linear-gradient(135deg, #081226 0%, #111E38 100%); color: #ffffff; border-radius: 12px; padding: 22px; box-shadow: var(--shadow-md);">
+                            <span style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: #94A3B8; font-weight: 600;">Planned Production Target</span>
+                            <div style="display: flex; align-items: baseline; gap: 10px; margin: 8px 0 4px 0;">
+                                <span style="font-family: 'JetBrains Mono', monospace; font-size: 38px; font-weight: 800; color: #4ADE80;" id="tsTargetPlannedPcs">0</span>
+                                <span style="font-size: 18px; font-weight: 600; color: #CBD5E1;">pieces / shift</span>
+                            </div>
+                            <div style="font-size: 13px; color: #94A3B8;" id="tsTargetPlannedPcsExact">
+                                (Exact target: 0.00 pcs at 85% efficiency)
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                            <div style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px;">
+                                <span style="font-size: 11.5px; text-transform: uppercase; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">Theoretical (100% Eff)</span>
+                                <div style="font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 800; color: var(--dark-navy);" id="tsTargetTheoreticalPcs">0 pcs</div>
+                                <span style="font-size: 12px; color: var(--text-muted);">maximum capacity</span>
+                            </div>
+                            <div style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px;">
+                                <span style="font-size: 11.5px; text-transform: uppercase; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">Hourly Output Rate</span>
+                                <div style="font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 800; color: var(--primary);" id="tsTargetHourlyPcs">0 pcs/hr</div>
+                                <span style="font-size: 12px; color: var(--text-muted);">at planned efficiency</span>
+                            </div>
+                        </div>
+
+                        <!-- Technical Formula Note -->
+                        <div style="background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 10px; padding: 14px 16px; font-size: 12.5px; color: #1E3A8A; line-height: 1.5;">
+                            <strong>Production Target Formula:</strong><br>
+                            <code style="word-break: break-word; white-space: normal;">Target = (Available Working Minutes × Efficiency %) ÷ Total SMV</code><br>
+                            <span style="font-size: 12px; color: #334155; margin-top: 4px; display: block;">
+                                Calculates output for one individual operator or single production resource. To calculate line targets for an assembly line with N operators, multiply this output by the number of line operators or use the <em>Advanced SAM Calculator</em> tab.
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: Advanced SAM Calculator (Preserved Technical Calculator) -->
+        <div id="panelAdvancedSam" class="calc-tab-panel" role="tabpanel" aria-labelledby="tabBtnAdvancedSam" style="display: none;">
+            <div style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 12px; padding: 16px 22px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                <div>
+                    <h2 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 19px; font-weight: 800; color: var(--dark-navy); margin: 0 0 4px 0;">
+                        Advanced SAM Calculator (Industrial Engineering Parameters)
+                    </h2>
+                    <p style="color: var(--text-muted); font-size: 13.5px; margin: 0;">
+                        Calculate operation SAM using machine motor speed (RPM), seam length, stitch density (SPI/SPC), operator handling time, and individual allowances.
+                    </p>
+                </div>
+                <span style="background: #F1F5F9; color: #475569; font-weight: 700; font-size: 12px; padding: 5px 12px; border-radius: 6px; border: 1px solid #CBD5E1;">
+                    ⚙️ Machine &amp; Stitch Level
+                </span>
+            </div>
+
+            <!-- Main Calculator Grid -->
+            <div class="calc-grid">
 
             <!-- Left Side: Inputs Card -->
             <div class="calc-card">
@@ -1305,87 +1680,95 @@
                 </div>
             </div>
         </div>
+        </div> <!-- /panelAdvancedSam -->
 
-        <!-- Educational & Engineering Guide Section -->
+        <!-- Educational & Engineering Guide Section (Phase 6) -->
         <section class="calc-card" style="margin-top: 32px; padding: 40px; background: #ffffff; border-radius: 16px;">
             <div style="max-width: 1000px; margin: 0 auto;">
-                <h2
-                    style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 26px; font-weight: 800; color: var(--dark-navy); margin-bottom: 20px;">
-                    Understanding Standard Allowed Minutes (SAM) & Standard Minute Value (SMV)
+                
+                <!-- Section 1: What is SMV -->
+                <h2 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 24px; font-weight: 800; color: var(--dark-navy); margin-bottom: 14px;">
+                    What Is SMV in Garment Manufacturing?
                 </h2>
+                <p style="color: #334155; font-size: 15px; line-height: 1.7; margin-bottom: 24px;">
+                    In apparel manufacturing and industrial engineering (IE), <strong>Standard Minute Value (SMV)</strong>—also referred to internationally as <strong>Standard Allowed Minutes (SAM)</strong>—is the total standardized time allocated for a qualified operator to complete a specific sewing or finishing operation working at a standard 100% performance rating, including all required handling motions and approved industrial allowances. SMV forms the core basis for sewing line balancing, piece-rate costing, operator incentive systems, and daily garment production targets.
+                </p>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px;">
-                    <div
-                        style="background: #F8FAFC; padding: 24px; border-radius: 12px; border: 1px solid var(--border-color);">
-                        <h3
-                            style="font-size: 18px; font-weight: 700; color: var(--primary); margin-top: 0; margin-bottom: 10px;">
-                            What is SAM?</h3>
-                        <p style="color: var(--text-muted); font-size: 14px; line-height: 1.6; margin: 0;">
-                            <strong>Standard Allowed Minutes (SAM)</strong> is the standardized time allocated to a
-                            qualified operator to complete a specific manufacturing task when working at a normal pace,
-                            including basic handling, sewing cycle, and industrial allowances.
-                        </p>
+                <!-- Section 2: SMV Calculation Formula -->
+                <h2 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; color: var(--dark-navy); margin: 32px 0 14px 0;">
+                    SMV Calculation Formula
+                </h2>
+                <p style="color: #334155; font-size: 14.5px; line-height: 1.6; margin-bottom: 16px;">
+                    The mathematical formula for calculating Standard Minute Value (SMV) from average observed time study data consists of two distinct steps:
+                </p>
+                <div style="background: #081226; color: #F8FAFC; padding: 22px 26px; border-radius: 12px; font-family: 'JetBrains Mono', monospace; font-size: 14px; line-height: 1.8; margin-bottom: 24px;">
+                    <div style="color: #93C5FD; margin-bottom: 8px;">1. Basic Time (Minutes) = Average Observed Time (Seconds) ÷ 60</div>
+                    <div style="color: #4ADE80; font-weight: 700;">2. Operation SMV (Minutes) = Basic Time (Minutes) × [ 1 + ( Total Allowance % ÷ 100 ) ]</div>
+                </div>
+
+                <!-- Section 3: How to Calculate SMV from Time Study -->
+                <h2 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; color: var(--dark-navy); margin: 32px 0 14px 0;">
+                    How to Calculate SMV from Time Study
+                </h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-bottom: 24px;">
+                    <div style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 10px; padding: 18px;">
+                        <strong style="color: #1E3A8A; font-size: 15px; display: block; margin-bottom: 6px;">1. Record Observed Time</strong>
+                        <span style="font-size: 13.5px; color: #475569; line-height: 1.5;">Use a digital stopwatch to record 5 to 10 cycle times for an operation. Average them to determine the reliable Average Observed Time in seconds.</span>
                     </div>
-                    <div
-                        style="background: #F8FAFC; padding: 24px; border-radius: 12px; border: 1px solid var(--border-color);">
-                        <h3
-                            style="font-size: 18px; font-weight: 700; color: var(--dark-navy); margin-top: 0; margin-bottom: 10px;">
-                            What is SMV?</h3>
-                        <p style="color: var(--text-muted); font-size: 14px; line-height: 1.6; margin: 0;">
-                            <strong>Standard Minute Value (SMV)</strong> is essentially identical to SAM in modern
-                            apparel engineering. It reflects the standard minute value of garment construction used
-                            globally in production planning, order costing, and line capacity balancing.
-                        </p>
+                    <div style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 10px; padding: 18px;">
+                        <strong style="color: #1E3A8A; font-size: 15px; display: block; margin-bottom: 6px;">2. Convert Seconds to Decimal Minutes</strong>
+                        <span style="font-size: 13.5px; color: #475569; line-height: 1.5;">Divide observed seconds by 60. For example, an observed cycle time of 30 seconds equals 0.50 decimal minutes of basic time.</span>
+                    </div>
+                    <div style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 10px; padding: 18px;">
+                        <strong style="color: #1E3A8A; font-size: 15px; display: block; margin-bottom: 6px;">3. Apply Allowance Percentage</strong>
+                        <span style="font-size: 13.5px; color: #475569; line-height: 1.5;">Add approved relaxation allowances (personal needs, fatigue, machine delay, and bundle tying—typically 12% to 15% in garment units).</span>
+                    </div>
+                    <div style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 10px; padding: 18px;">
+                        <strong style="color: #1E3A8A; font-size: 15px; display: block; margin-bottom: 6px;">4. Sum to Total Garment SMV</strong>
+                        <span style="font-size: 13.5px; color: #475569; line-height: 1.5;">Add each operation's SMV together across the operation breakdown to obtain the complete Total Style SAM/SMV for the garment.</span>
                     </div>
                 </div>
 
-                <h3 style="font-size: 20px; font-weight: 700; color: var(--dark-navy); margin: 32px 0 16px 0;">Technical
-                    Calculation Formula</h3>
-                <div
-                    style="background: #081226; color: #F8FAFC; padding: 24px; border-radius: 12px; font-family: 'JetBrains Mono', monospace; font-size: 14px; line-height: 1.8; margin-bottom: 24px;">
-                    <p style="margin: 0 0 8px 0;"><span style="color: #F87171;">1. Total Stitches</span> = Seam Length ×
-                        Stitch Density (SPI / SPC)</p>
-                    <p style="margin: 0 0 8px 0;"><span style="color: #F87171;">2. Machine Sewing Time (s)</span> =
-                        (Total Stitches / Machine Speed RPM) × 60</p>
-                    <p style="margin: 0 0 8px 0;"><span style="color: #F87171;">3. Basic Cycle Time (s)</span> = Machine
-                        Sewing Time + Handling/Positioning Time</p>
-                    <p style="margin: 0 0 8px 0;"><span style="color: #F87171;">4. Total Allowances (%)</span> =
-                        Personal + Fatigue + Machine Delay + Bundle Handling</p>
-                    <p style="margin: 0;"><span style="color: #4ADE80;">5. Operation SAM (Minutes)</span> = [Basic Cycle
-                        Time × (1 + Total Allowance % / 100)] / 60</p>
-                </div>
-
-                <h3 style="font-size: 20px; font-weight: 700; color: var(--dark-navy); margin: 32px 0 16px 0;">
-                    Industrial Garment Allowances Guide</h3>
-                <div
-                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 32px;">
-                    <div style="border: 1px solid var(--border-color); padding: 16px; border-radius: 10px;">
-                        <strong style="color: var(--dark-navy); display: block; margin-bottom: 4px;">Personal Allowance
-                            (3% - 5%)</strong>
-                        <span style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">Covers basic personal
-                            needs such as drinking water and short breaks during working hours.</span>
+                <!-- Section 4: How to Calculate Production Target Using SMV -->
+                <h2 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; color: var(--dark-navy); margin: 32px 0 14px 0;">
+                    How to Calculate Production Target Using SMV
+                </h2>
+                <p style="color: #334155; font-size: 14.5px; line-height: 1.6; margin-bottom: 16px;">
+                    Once total garment SMV or single-operation SMV is determined, production targets are calculated using available working minutes and target line efficiency:
+                </p>
+                <div style="background: #F1F5F9; border-left: 4px solid #10B981; padding: 16px 20px; border-radius: 0 8px 8px 0; margin-bottom: 20px;">
+                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; color: #065F46;">
+                        Production Target (Pieces) = (Available Working Minutes × Target Efficiency %) ÷ Total SMV
                     </div>
-                    <div style="border: 1px solid var(--border-color); padding: 16px; border-radius: 10px;">
-                        <strong style="color: var(--dark-navy); display: block; margin-bottom: 4px;">Fatigue Allowance
-                            (2% - 4%)</strong>
-                        <span style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">Compensates for
-                            physical and mental tiredness from repetitive sewing motions.</span>
-                    </div>
-                    <div style="border: 1px solid var(--border-color); padding: 16px; border-radius: 10px;">
-                        <strong style="color: var(--dark-navy); display: block; margin-bottom: 4px;">Machine Delay (1% -
-                            3%)</strong>
-                        <span style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">Accounts for minor
-                            thread breaks, bobbin changes, and needle replacements.</span>
-                    </div>
-                    <div style="border: 1px solid var(--border-color); padding: 16px; border-radius: 10px;">
-                        <strong style="color: var(--dark-navy); display: block; margin-bottom: 4px;">Bundle Handling (2%
-                            - 4%)</strong>
-                        <span style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">Allocated time for
-                            opening, sorting, and tying work bundles between garment panels.</span>
+                    <div style="font-size: 13px; color: #475569; margin-top: 6px;">
+                        <em>Example:</em> 480 working minutes × 85% efficiency (0.85) ÷ 2.2438 Total SMV = 408 ÷ 2.2438 ≈ <strong>181 pieces per shift</strong>.
                     </div>
                 </div>
 
-                <!-- Educational Reference Callout Card -->
+                <!-- Section 5: Advanced SAM Calculator Parameters -->
+                <h2 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; color: var(--dark-navy); margin: 32px 0 16px 0;">
+                    Advanced SAM Calculator &amp; Industrial Engineering Parameters
+                </h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 32px;">
+                    <div style="border: 1px solid var(--border-color); padding: 16px; border-radius: 10px;">
+                        <strong style="color: var(--dark-navy); display: block; margin-bottom: 4px;">Personal Allowance (3% - 5%)</strong>
+                        <span style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">Covers basic personal needs such as drinking water and short breaks during working hours.</span>
+                    </div>
+                    <div style="border: 1px solid var(--border-color); padding: 16px; border-radius: 10px;">
+                        <strong style="color: var(--dark-navy); display: block; margin-bottom: 4px;">Fatigue Allowance (2% - 4%)</strong>
+                        <span style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">Compensates for physical and mental tiredness from repetitive sewing motions.</span>
+                    </div>
+                    <div style="border: 1px solid var(--border-color); padding: 16px; border-radius: 10px;">
+                        <strong style="color: var(--dark-navy); display: block; margin-bottom: 4px;">Machine Delay (1% - 3%)</strong>
+                        <span style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">Accounts for minor thread breaks, bobbin changes, and needle replacements.</span>
+                    </div>
+                    <div style="border: 1px solid var(--border-color); padding: 16px; border-radius: 10px;">
+                        <strong style="color: var(--dark-navy); display: block; margin-bottom: 4px;">Bundle Handling (2% - 4%)</strong>
+                        <span style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">Allocated time for opening, sorting, and tying work bundles between garment panels.</span>
+                    </div>
+                </div>
+
+                <!-- Educational Reference Callout Card (Preserved) -->
                 <div style="background: #F0F7FF; border: 1.5px solid #BFDBFE; border-radius: 10px; padding: 20px 24px; margin: 32px 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
                     <div style="max-width: 780px;">
                         <h4 style="font-size: 16px; font-weight: 700; color: #1E3A8A; margin: 0 0 6px 0; font-family: 'Plus Jakarta Sans', sans-serif;">Need the complete SMV calculation formula &amp; step-by-step examples?</h4>
@@ -1394,40 +1777,27 @@
                     <a href="/blog/what-is-sam-in-garment-manufacturing" style="display: inline-flex; align-items: center; justify-content: center; background: #1D4ED8; color: #ffffff; padding: 10px 18px; border-radius: 6px; font-weight: 600; font-size: 13.5px; text-decoration: none; white-space: nowrap;">Read SMV Calculation Guide →</a>
                 </div>
 
-                <h3 style="font-size: 20px; font-weight: 700; color: var(--dark-navy); margin: 32px 0 16px 0;">
-                    Frequently Asked Questions (FAQ)</h3>
+                <!-- Frequently Asked Questions (FAQ) Section -->
+                <h2 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; color: var(--dark-navy); margin: 32px 0 16px 0;">
+                    Frequently Asked Questions (FAQ)
+                </h2>
                 <div style="display: flex; flex-direction: column; gap: 16px;">
-                    <details
-                        style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; cursor: pointer;">
-                        <summary style="font-weight: 700; color: var(--dark-navy); font-size: 15px;">What is the
-                            difference between SAM and SMV in garment manufacturing?</summary>
+                    <details style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; cursor: pointer;">
+                        <summary style="font-weight: 700; color: var(--dark-navy); font-size: 15px;">What is the difference between SAM and SMV in garment manufacturing?</summary>
                         <p style="margin: 12px 0 0 0; color: var(--text-muted); font-size: 14px; line-height: 1.6;">
-                            SAM (Standard Allowed Minutes) and SMV (Standard Minute Value) both represent the
-                            standardized time required by a qualified operator to complete a specific garment operation.
-                            In most modern apparel engineering and industrial engineering practices, the terms are used
-                            interchangeably, with SAM commonly preferred in Asian manufacturing hubs and SMV frequently
-                            used in European and American costing sheets.
+                            SAM (Standard Allowed Minutes) and SMV (Standard Minute Value) both represent the standardized time required by a qualified operator to complete a specific garment operation. In most modern apparel engineering and industrial engineering practices, the terms are used interchangeably, with SAM commonly preferred in Asian manufacturing hubs and SMV frequently used in European and American costing sheets.
                         </p>
                     </details>
-                    <details
-                        style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; cursor: pointer;">
-                        <summary style="font-weight: 700; color: var(--dark-navy); font-size: 15px;">How is Garment SAM
-                            calculated?</summary>
+                    <details style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; cursor: pointer;">
+                        <summary style="font-weight: 700; color: var(--dark-navy); font-size: 15px;">How is Garment SAM / SMV calculated from Time Study?</summary>
                         <p style="margin: 12px 0 0 0; color: var(--text-muted); font-size: 14px; line-height: 1.6;">
-                            SAM is calculated by adding the machine sewing time to the operator handling/positioning
-                            time, and then adding manufacturing allowances (personal, fatigue, delay, and bundle
-                            handling): SAM = (Basic Time + Handling Time) × (1 + Total Allowance Percentage / 100).
+                            From time study, basic time is calculated by converting average observed seconds into minutes: Basic Time = Observed Time (Sec) ÷ 60. Then allowances are added: SMV = Basic Time × (1 + Allowance % ÷ 100). In machine-level technical analysis, basic time is derived from machine RPM, stitch density, and handling motions.
                         </p>
                     </details>
-                    <details
-                        style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; cursor: pointer;">
-                        <summary style="font-weight: 700; color: var(--dark-navy); font-size: 15px;">How do you
-                            calculate hourly production target from SAM?</summary>
+                    <details style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; cursor: pointer;">
+                        <summary style="font-weight: 700; color: var(--dark-navy); font-size: 15px;">How do you calculate hourly production target from SMV?</summary>
                         <p style="margin: 12px 0 0 0; color: var(--text-muted); font-size: 14px; line-height: 1.6;">
-                            Hourly target at 100% efficiency is calculated as: Target (Pcs/Hour) = 60 / SAM. When
-                            planning for a line target with multiple operators at an operational efficiency percentage,
-                            the formula is: Line Target/Hour = (Number of Operators × 60 / Style SAM) × (Efficiency % /
-                            100).
+                            Hourly target at 100% efficiency is calculated as: Target (Pcs/Hour) = 60 ÷ SMV. When planning for a shift target at a specific operational efficiency (e.g., 85%), the formula is: Planned Target = (Working Minutes × Efficiency % ÷ 100) ÷ Total SMV.
                         </p>
                     </details>
                 </div>
@@ -1989,10 +2359,323 @@
                 });
             }
 
+            // ==========================================
+            // --- TIME STUDY BASED SMV CALCULATOR LOGIC ---
+            // ==========================================
+
+            let timeStudyOperations = [
+                { id: 1, name: "Collar Join", timeSec: 25.0, allowancePct: 15.0 },
+                { id: 2, name: "Sleeve Attach", timeSec: 35.0, allowancePct: 15.0 },
+                { id: 3, name: "Side Seam Stitching", timeSec: 30.0, allowancePct: 15.0 },
+                { id: 4, name: "Bottom Hemming", timeSec: 22.0, allowancePct: 14.0 }
+            ];
+
+            const timeStudyTableBody = document.getElementById("timeStudyTableBody");
+            const tsSummaryOpCount = document.getElementById("tsSummaryOpCount");
+            const tsSummaryObsSecs = document.getElementById("tsSummaryObsSecs");
+            const tsSummaryObsMins = document.getElementById("tsSummaryObsMins");
+            const tsSummaryTotalSmv = document.getElementById("tsSummaryTotalSmv");
+            const tsSummaryTotalSecs = document.getElementById("tsSummaryTotalSecs");
+            const tsSummaryAvgAllowance = document.getElementById("tsSummaryAvgAllowance");
+
+            const tsWorkingMinutes = document.getElementById("tsWorkingMinutes");
+            const tsEfficiency = document.getElementById("tsEfficiency");
+            const tsEfficiencySlider = document.getElementById("tsEfficiencySlider");
+            const tsEfficiencyVal = document.getElementById("tsEfficiencyVal");
+            const tsTargetSmvDisplay = document.getElementById("tsTargetSmvDisplay");
+            const tsTargetPlannedPcs = document.getElementById("tsTargetPlannedPcs");
+            const tsTargetPlannedPcsExact = document.getElementById("tsTargetPlannedPcsExact");
+            const tsTargetTheoreticalPcs = document.getElementById("tsTargetTheoreticalPcs");
+            const tsTargetHourlyPcs = document.getElementById("tsTargetHourlyPcs");
+
+            function calcRowSmv(timeSec, allowancePct) {
+                const t = Math.max(0, parseFloat(timeSec) || 0);
+                const a = Math.max(0, parseFloat(allowancePct) || 0);
+                const basicMin = t / 60;
+                return basicMin * (1 + (a / 100));
+            }
+
+            function escapeHtml(str) {
+                return String(str || "")
+                    .replace(/&/g, "&amp;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#39;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;");
+            }
+
+            function renderTimeStudyTable() {
+                if (!timeStudyTableBody) return;
+                timeStudyTableBody.innerHTML = "";
+
+                if (timeStudyOperations.length === 0) {
+                    const emptyTr = document.createElement("tr");
+                    emptyTr.innerHTML = `
+                        <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 32px 16px;">
+                            <div style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">No operations in Time Study Sheet</div>
+                            <div style="font-size: 13px;">Click <strong>+ Add Operation</strong> above or <strong>Reset</strong> to restore example operations.</div>
+                        </td>
+                    `;
+                    timeStudyTableBody.appendChild(emptyTr);
+                    updateTimeStudyTotals();
+                    return;
+                }
+
+                timeStudyOperations.forEach((op, index) => {
+                    const rowSmv = calcRowSmv(op.timeSec, op.allowancePct);
+                    const tr = document.createElement("tr");
+                    tr.dataset.id = String(op.id);
+                    tr.innerHTML = `
+                        <td style="text-align: center; font-weight: 600; color: var(--text-muted); font-size: 13px;">${index + 1}</td>
+                        <td>
+                            <input type="text" class="form-control" value="${escapeHtml(op.name)}" placeholder="Operation Name"
+                                onchange="onTsNameChange(${op.id}, this.value)" style="padding: 8px 12px; font-size: 13.5px;">
+                        </td>
+                        <td>
+                            <input type="number" class="form-control ts-input-num" value="${op.timeSec}" min="0" max="7200" step="0.1" placeholder="0.0"
+                                oninput="onTsTimeChange(${op.id}, this.value)" style="padding: 8px 12px; font-size: 13.5px;">
+                        </td>
+                        <td>
+                            <input type="number" class="form-control ts-input-num" value="${op.allowancePct}" min="0" max="100" step="0.5" placeholder="15"
+                                oninput="onTsAllowanceChange(${op.id}, this.value)" style="padding: 8px 12px; font-size: 13.5px;">
+                        </td>
+                        <td style="text-align: right;">
+                            <span class="ts-row-smv" id="tsSmvRow_${op.id}">${rowSmv.toFixed(4)} min</span>
+                        </td>
+                        <td style="text-align: center;">
+                            <button type="button" class="btn-del-row" title="Delete Operation" onclick="deleteTimeStudyRow(${op.id})">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </button>
+                        </td>
+                    `;
+                    timeStudyTableBody.appendChild(tr);
+                });
+
+                updateTimeStudyTotals();
+            }
+
+            window.onTsNameChange = function(id, val) {
+                const op = timeStudyOperations.find(o => o.id === id);
+                if (op) {
+                    op.name = val;
+                }
+            };
+
+            window.onTsTimeChange = function(id, val) {
+                const op = timeStudyOperations.find(o => o.id === id);
+                if (op) {
+                    const num = Math.max(0, parseFloat(val) || 0);
+                    op.timeSec = num;
+                    const smvSpan = document.getElementById(`tsSmvRow_${id}`);
+                    if (smvSpan) {
+                        smvSpan.textContent = calcRowSmv(op.timeSec, op.allowancePct).toFixed(4) + " min";
+                    }
+                    updateTimeStudyTotals();
+                }
+            };
+
+            window.onTsAllowanceChange = function(id, val) {
+                const op = timeStudyOperations.find(o => o.id === id);
+                if (op) {
+                    const num = Math.max(0, Math.min(100, parseFloat(val) || 0));
+                    op.allowancePct = num;
+                    const smvSpan = document.getElementById(`tsSmvRow_${id}`);
+                    if (smvSpan) {
+                        smvSpan.textContent = calcRowSmv(op.timeSec, op.allowancePct).toFixed(4) + " min";
+                    }
+                    updateTimeStudyTotals();
+                }
+            };
+
+            window.addTimeStudyRow = function() {
+                const nextId = Date.now();
+                const nextSeq = timeStudyOperations.length + 1;
+                timeStudyOperations.push({
+                    id: nextId,
+                    name: `Operation ${nextSeq}`,
+                    timeSec: 25.0,
+                    allowancePct: 15.0
+                });
+                renderTimeStudyTable();
+                showToast("Operation added to Time Study.");
+            };
+
+            window.deleteTimeStudyRow = function(id) {
+                timeStudyOperations = timeStudyOperations.filter(o => o.id !== id);
+                renderTimeStudyTable();
+            };
+
+            window.resetTimeStudyTable = function() {
+                timeStudyOperations = [
+                    { id: 1, name: "Collar Join", timeSec: 25.0, allowancePct: 15.0 },
+                    { id: 2, name: "Sleeve Attach", timeSec: 35.0, allowancePct: 15.0 },
+                    { id: 3, name: "Side Seam Stitching", timeSec: 30.0, allowancePct: 15.0 },
+                    { id: 4, name: "Bottom Hemming", timeSec: 22.0, allowancePct: 14.0 }
+                ];
+                renderTimeStudyTable();
+                showToast("Time Study Table reset to default operations.");
+            };
+
+            function updateTimeStudyTotals() {
+                let totalSecs = 0;
+                let totalSmv = 0;
+                let sumAllowance = 0;
+
+                timeStudyOperations.forEach(op => {
+                    const t = Math.max(0, parseFloat(op.timeSec) || 0);
+                    const a = Math.max(0, parseFloat(op.allowancePct) || 0);
+                    totalSecs += t;
+                    totalSmv += calcRowSmv(t, a);
+                    sumAllowance += a;
+                });
+
+                const count = timeStudyOperations.length;
+                const avgAllowance = count > 0 ? (sumAllowance / count) : 0;
+                const totalBasicMins = totalSecs / 60;
+                const totalStandardSecs = totalSmv * 60;
+
+                if (tsSummaryOpCount) tsSummaryOpCount.textContent = count;
+                if (tsSummaryObsSecs) tsSummaryObsSecs.innerHTML = `${totalSecs.toFixed(1)} <span style="font-size: 14px; font-weight: 500;">sec</span>`;
+                if (tsSummaryObsMins) tsSummaryObsMins.textContent = `≈ ${totalBasicMins.toFixed(2)} mins basic time`;
+                if (tsSummaryTotalSmv) tsSummaryTotalSmv.innerHTML = `${totalSmv.toFixed(4)} <span style="font-size: 14px; font-weight: 600;">min</span>`;
+                if (tsSummaryTotalSecs) tsSummaryTotalSecs.textContent = `≈ ${totalStandardSecs.toFixed(1)}s standard allowed time`;
+                if (tsSummaryAvgAllowance) tsSummaryAvgAllowance.innerHTML = `${avgAllowance.toFixed(1)} <span style="font-size: 14px; font-weight: 500;">%</span>`;
+
+                if (tsTargetSmvDisplay) {
+                    tsTargetSmvDisplay.value = `${totalSmv.toFixed(4)} min`;
+                }
+
+                calculateProductionTarget();
+            }
+
+            window.syncTsEfficiencySlider = function(val) {
+                const num = Math.max(1, Math.min(100, parseFloat(val) || 85));
+                if (tsEfficiency) tsEfficiency.value = num;
+                if (tsEfficiencyVal) tsEfficiencyVal.textContent = `${num}%`;
+                calculateProductionTarget();
+            };
+
+            window.syncTsEfficiencyNumber = function(val) {
+                const num = Math.max(1, Math.min(100, parseFloat(val) || 85));
+                if (tsEfficiencySlider) tsEfficiencySlider.value = num;
+                if (tsEfficiencyVal) tsEfficiencyVal.textContent = `${num}%`;
+                calculateProductionTarget();
+            };
+
+            window.calculateProductionTarget = function() {
+                const workMins = Math.max(0, parseFloat(tsWorkingMinutes ? tsWorkingMinutes.value : 480) || 0);
+                const eff = Math.max(0, Math.min(100, parseFloat(tsEfficiency ? tsEfficiency.value : 85) || 0));
+
+                let totalSmv = 0;
+                timeStudyOperations.forEach(op => {
+                    totalSmv += calcRowSmv(op.timeSec, op.allowancePct);
+                });
+
+                if (totalSmv > 0 && workMins > 0 && eff > 0) {
+                    const theoretical = workMins / totalSmv;
+                    const planned = (workMins * (eff / 100)) / totalSmv;
+                    const rounded = Math.floor(planned);
+                    const hourlyRate = (60 * (eff / 100)) / totalSmv;
+
+                    if (tsTargetPlannedPcs) tsTargetPlannedPcs.textContent = rounded.toLocaleString();
+                    if (tsTargetPlannedPcsExact) tsTargetPlannedPcsExact.textContent = `(Exact target: ${planned.toFixed(2)} pcs at ${eff}% efficiency)`;
+                    if (tsTargetTheoreticalPcs) tsTargetTheoreticalPcs.textContent = `${Math.floor(theoretical).toLocaleString()} pcs`;
+                    if (tsTargetHourlyPcs) tsTargetHourlyPcs.textContent = `${Math.floor(hourlyRate).toLocaleString()} pcs/hr`;
+                } else {
+                    if (tsTargetPlannedPcs) tsTargetPlannedPcs.textContent = "0";
+                    if (tsTargetPlannedPcsExact) tsTargetPlannedPcsExact.textContent = `(Add operations above to calculate target)`;
+                    if (tsTargetTheoreticalPcs) tsTargetTheoreticalPcs.textContent = "0 pcs";
+                    if (tsTargetHourlyPcs) tsTargetHourlyPcs.textContent = "0 pcs/hr";
+                }
+            };
+
+            window.exportTimeStudyCsv = function() {
+                if (!timeStudyOperations.length) {
+                    showToast("No operations to export.", false);
+                    return;
+                }
+                const headers = ["S.No", "Operation Name", "Average Observed Time (Sec)", "Allowance (%)", "Basic Time (Min)", "Operation SMV (Min)"];
+                const rows = timeStudyOperations.map((op, idx) => {
+                    const t = Math.max(0, parseFloat(op.timeSec) || 0);
+                    const a = Math.max(0, parseFloat(op.allowancePct) || 0);
+                    const basicMin = (t / 60).toFixed(4);
+                    const smv = calcRowSmv(t, a).toFixed(4);
+                    const escapedName = '"' + (op.name || "").replace(/"/g, '""') + '"';
+                    return [idx + 1, escapedName, t.toFixed(2), a.toFixed(1) + "%", basicMin, smv].join(",");
+                });
+
+                let totalSecs = 0;
+                let totalSmv = 0;
+                timeStudyOperations.forEach(op => {
+                    const t = Math.max(0, parseFloat(op.timeSec) || 0);
+                    const a = Math.max(0, parseFloat(op.allowancePct) || 0);
+                    totalSecs += t;
+                    totalSmv += calcRowSmv(t, a);
+                });
+
+                const workMins = parseFloat(tsWorkingMinutes ? tsWorkingMinutes.value : 480) || 480;
+                const eff = parseFloat(tsEfficiency ? tsEfficiency.value : 85) || 85;
+                const plannedTarget = totalSmv > 0 ? Math.floor((workMins * (eff / 100)) / totalSmv) : 0;
+
+                rows.push("");
+                rows.push([ "", '"TOTAL GARMENT SMV (MINUTES)"', "", "", "", totalSmv.toFixed(4) ].join(","));
+                rows.push([ "", '"TOTAL OBSERVED SECONDS"', "", "", "", totalSecs.toFixed(2) ].join(","));
+                rows.push([ "", '"NET WORKING MINUTES PER SHIFT"', "", "", "", workMins ].join(","));
+                rows.push([ "", '"TARGET EFFICIENCY"', "", "", "", eff + "%" ].join(","));
+                rows.push([ "", '"ESTIMATED PRODUCTION TARGET (PIECES)"', "", "", "", plannedTarget ].join(","));
+
+                const csvContent = "\uFEFF" + headers.join(",") + "\n" + rows.join("\n");
+                const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.setAttribute("href", url);
+                link.setAttribute("download", `garment_time_study_smv_${new Date().toISOString().slice(0, 10)}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                showToast("Time Study Sheet exported successfully.");
+            };
+
+            // Tab Switcher Function
+            window.switchCalculatorTab = function(tabId) {
+                const tabBtnTimeStudy = document.getElementById("tabBtnTimeStudy");
+                const tabBtnAdvancedSam = document.getElementById("tabBtnAdvancedSam");
+                const panelTimeStudy = document.getElementById("panelTimeStudy");
+                const panelAdvancedSam = document.getElementById("panelAdvancedSam");
+
+                if (!tabBtnTimeStudy || !tabBtnAdvancedSam || !panelTimeStudy || !panelAdvancedSam) return;
+
+                if (tabId === 'advanced-sam') {
+                    tabBtnTimeStudy.classList.remove("active");
+                    tabBtnAdvancedSam.classList.add("active");
+                    tabBtnTimeStudy.setAttribute("aria-selected", "false");
+                    tabBtnAdvancedSam.setAttribute("aria-selected", "true");
+                    panelTimeStudy.style.display = "none";
+                    panelAdvancedSam.style.display = "block";
+
+                    // Re-calculate advanced SAM so UI is refreshed
+                    if (typeof calculateSAM === 'function') {
+                        calculateSAM();
+                    }
+                } else {
+                    tabBtnTimeStudy.classList.add("active");
+                    tabBtnAdvancedSam.classList.remove("active");
+                    tabBtnTimeStudy.setAttribute("aria-selected", "true");
+                    tabBtnAdvancedSam.setAttribute("aria-selected", "false");
+                    panelTimeStudy.style.display = "block";
+                    panelAdvancedSam.style.display = "none";
+                }
+            };
+
             // --- Bootstrapping ---
             tryLoadLogo();
             applyMachinePreset(); // Setup initial machine (SNLS) preset
             loadStyleLibrary(); // Load stored styles from LocalStorage
+
+            // Initialize Time Study Table & Defaults
+            renderTimeStudyTable();
+            switchCalculatorTab('time-study');
         });
     </script>
     <script src="/js/auth-nav.js"></script>
