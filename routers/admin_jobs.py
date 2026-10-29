@@ -1,5 +1,6 @@
 import re
 import uuid
+import json
 import logging
 from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, HTTPException, Depends, Form, Query, Body, Request, Cookie
@@ -912,3 +913,279 @@ def update_admin_company(
     except Exception as e:
         logger.error(f"Error updating company {company_id}: {e}")
         raise HTTPException(status_code=500, detail=f"Database error updating company: {e}")
+
+# --- 7. JOB SEEKER ANALYTICS DASHBOARD APIS ---
+
+@router.get("/analytics/jobs")
+def get_job_seeker_analytics(
+    range: str = Query("7d", pattern="^(today|7d|30d|all)$"),
+    source: str = Query("all", pattern="^(all|direct|imported)$"),
+    department: Optional[str] = Query(None),
+    admin: Dict[str, Any] = Depends(require_admin)
+):
+    """
+    Returns aggregated job seeker engagement analytics and metrics
+    based on real records in job_analytics_events, jobs, public_users, and job_applications.
+    """
+    if not db_helpers["db_enabled"] or not db_helpers["query_db"]:
+        return {
+            "success": True,
+            "range": range,
+            "source": source,
+            "metrics": {
+                "total_page_views": 0,
+                "unique_visitors": 0,
+                "total_job_views": 0,
+                "anon_job_views": 0,
+                "registered_job_views": 0,
+                "registered_job_seekers": 0,
+                "new_registrations": 0,
+                "total_saves": 0,
+                "apply_clicks": 0,
+                "successful_applications": 0,
+                "whatsapp_clicks": 0,
+                "call_clicks": 0,
+                "conversion_rate": 0.0
+            },
+            "top_jobs": [],
+            "daily_trends": [],
+            "popular_searches": []
+        }
+
+    try:
+        # Build date condition (IST timezone considered for today)
+        time_filter = ""
+        params = []
+        if range == "today":
+            time_filter = "e.created_at >= (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')::date AT TIME ZONE 'Asia/Kolkata'"
+        elif range == "7d":
+            time_filter = "e.created_at >= (CURRENT_TIMESTAMP - INTERVAL '7 days')"
+        elif range == "30d":
+            time_filter = "e.created_at >= (CURRENT_TIMESTAMP - INTERVAL '30 days')"
+        else: # all
+            time_filter = "1=1"
+
+        # Build source condition
+        source_filter = ""
+        if source == "direct":
+            source_filter = "AND (j.employer_user_id IS NOT NULL OR LOWER(TRIM(COALESCE(j.source_type, ''))) IN ('employer', 'manual', 'direct company', 'direct'))"
+        elif source == "imported":
+            source_filter = "AND (j.employer_user_id IS NULL AND LOWER(TRIM(COALESCE(j.source_type, ''))) NOT IN ('employer', 'manual', 'direct company', 'direct'))"
+
+        dept_filter = ""
+        if department and department.strip():
+            dept_filter = "AND LOWER(TRIM(j.department)) = LOWER(TRIM(%s))"
+            params.append(department.strip())
+
+        # 1. Total Registered Job Seekers (all-time)
+        user_rows = db_helpers["query_db"]("""
+            SELECT COUNT(*) AS total_seekers FROM public_users WHERE account_type = 'individual';
+        """)
+        total_registered_seekers = user_rows[0]["total_seekers"] if user_rows else 0
+
+        # 2. Main KPI Aggregates from job_analytics_events
+        kpi_query = f"""
+            SELECT
+                COUNT(*) FILTER (WHERE e.event_type = 'page_view') AS total_page_views,
+                COUNT(DISTINCT e.visitor_id) AS unique_visitors,
+                COUNT(*) FILTER (WHERE e.event_type = 'job_view') AS total_job_views,
+                COUNT(*) FILTER (WHERE e.event_type = 'job_view' AND e.user_id IS NULL) AS anon_job_views,
+                COUNT(*) FILTER (WHERE e.event_type = 'job_view' AND e.user_id IS NOT NULL) AS registered_job_views,
+                COUNT(*) FILTER (WHERE e.event_type = 'job_save') AS total_saves,
+                COUNT(*) FILTER (WHERE e.event_type = 'apply_click') AS apply_clicks,
+                COUNT(*) FILTER (WHERE e.event_type = 'application_submit') AS successful_applications,
+                COUNT(*) FILTER (WHERE e.event_type = 'whatsapp_click') AS whatsapp_clicks,
+                COUNT(*) FILTER (WHERE e.event_type = 'call_click') AS call_clicks,
+                COUNT(*) FILTER (WHERE e.event_type = 'registration_complete') AS new_registrations
+            FROM job_analytics_events e
+            LEFT JOIN jobs j ON e.job_id = j.id
+            WHERE {time_filter} {source_filter} {dept_filter};
+        """
+        kpi_rows = db_helpers["query_db"](kpi_query, tuple(params))
+        kpi = kpi_rows[0] if kpi_rows else {}
+
+        # Fallback/cross-check applications count from job_applications table for the window
+        app_time_filter = time_filter.replace("e.created_at", "a.applied_at")
+        app_source_filter = source_filter.replace("j.", "jb.")
+        app_dept_filter = dept_filter.replace("j.", "jb.")
+        app_count_query = f"""
+            SELECT COUNT(*) AS app_count
+            FROM job_applications a
+            JOIN jobs jb ON a.job_id = jb.id
+            WHERE {app_time_filter} {app_source_filter} {app_dept_filter};
+        """
+        app_db_rows = db_helpers["query_db"](app_count_query, tuple(params))
+        actual_apps_db = app_db_rows[0]["app_count"] if app_db_rows else 0
+        successful_apps = max(kpi.get("successful_applications") or 0, actual_apps_db)
+
+        tot_views = kpi.get("total_job_views") or 0
+        new_regs = kpi.get("new_registrations") or 0
+        conv_rate = round((new_regs / tot_views * 100), 2) if tot_views > 0 else 0.0
+
+        metrics = {
+            "total_page_views": kpi.get("total_page_views") or 0,
+            "unique_visitors": kpi.get("unique_visitors") or 0,
+            "total_job_views": tot_views,
+            "anon_job_views": kpi.get("anon_job_views") or 0,
+            "registered_job_views": kpi.get("registered_job_views") or 0,
+            "registered_job_seekers": total_registered_seekers,
+            "new_registrations": new_regs,
+            "total_saves": kpi.get("total_saves") or 0,
+            "apply_clicks": kpi.get("apply_clicks") or 0,
+            "successful_applications": successful_apps,
+            "whatsapp_clicks": kpi.get("whatsapp_clicks") or 0,
+            "call_clicks": kpi.get("call_clicks") or 0,
+            "conversion_rate": conv_rate
+        }
+
+        # 3. Top / Job Performance Table
+        top_jobs_query = f"""
+            SELECT 
+                j.id AS job_id,
+                j.title,
+                COALESCE(cp.company_name, c.name, '') AS company_name,
+                j.source_type,
+                j.employer_user_id,
+                (j.employer_user_id IS NOT NULL OR LOWER(TRIM(COALESCE(j.source_type, ''))) IN ('employer', 'manual', 'direct company', 'direct')) AS is_direct_job,
+                COUNT(*) FILTER (WHERE e.event_type = 'job_view') AS detail_views,
+                COUNT(DISTINCT e.visitor_id) FILTER (WHERE e.event_type = 'job_view') AS unique_views,
+                COUNT(*) FILTER (WHERE e.event_type = 'job_view' AND e.user_id IS NOT NULL) AS registered_views,
+                COUNT(*) FILTER (WHERE e.event_type = 'job_save') AS save_count,
+                COUNT(*) FILTER (WHERE e.event_type = 'apply_click') AS apply_clicks,
+                COUNT(*) FILTER (WHERE e.event_type = 'application_submit') AS application_count,
+                COUNT(*) FILTER (WHERE e.event_type = 'whatsapp_click') AS whatsapp_clicks,
+                COUNT(*) FILTER (WHERE e.event_type = 'call_click') AS call_clicks
+            FROM jobs j
+            LEFT JOIN companies c ON j.company_id = c.id
+            LEFT JOIN company_profiles cp ON j.company_profile_id = cp.id
+            JOIN job_analytics_events e ON j.id = e.job_id
+            WHERE {time_filter} {source_filter} {dept_filter}
+            GROUP BY j.id, j.title, COALESCE(cp.company_name, c.name, ''), j.source_type, j.employer_user_id
+            ORDER BY detail_views DESC, save_count DESC
+            LIMIT 50;
+        """
+        top_jobs = db_helpers["query_db"](top_jobs_query, tuple(params)) or []
+
+        # 4. Daily Trends
+        daily_query = f"""
+            SELECT 
+                TO_CHAR(e.created_at AT TIME ZONE 'Asia/Kolkata', 'YYYY-MM-DD') AS date_str,
+                COUNT(*) FILTER (WHERE e.event_type = 'page_view') AS page_views,
+                COUNT(*) FILTER (WHERE e.event_type = 'job_view') AS job_views,
+                COUNT(DISTINCT e.visitor_id) AS unique_visitors,
+                COUNT(*) FILTER (WHERE e.event_type = 'application_submit') AS applications
+            FROM job_analytics_events e
+            LEFT JOIN jobs j ON e.job_id = j.id
+            WHERE {time_filter} {source_filter} {dept_filter}
+            GROUP BY date_str
+            ORDER BY date_str ASC
+            LIMIT 31;
+        """
+        daily_trends = db_helpers["query_db"](daily_query, tuple(params)) or []
+
+        # 5. Popular Searches
+        search_query = f"""
+            SELECT 
+                LOWER(TRIM(metadata->>'search_term')) AS term,
+                COUNT(*) AS search_count
+            FROM job_analytics_events e
+            WHERE e.event_type = 'search'
+              AND {time_filter}
+              AND metadata->>'search_term' IS NOT NULL
+              AND LENGTH(TRIM(metadata->>'search_term')) > 1
+            GROUP BY term
+            ORDER BY search_count DESC
+            LIMIT 15;
+        """
+        search_rows = db_helpers["query_db"](search_query) or []
+
+        return {
+            "success": True,
+            "range": range,
+            "source": source,
+            "metrics": metrics,
+            "top_jobs": top_jobs,
+            "daily_trends": daily_trends,
+            "popular_searches": search_rows
+        }
+    except Exception as e:
+        logger.error(f"Error generating job seeker analytics: {e}")
+        raise HTTPException(status_code=500, detail=f"Database error in analytics: {e}")
+
+
+@router.get("/analytics/jobs/{job_id}/viewers")
+def get_job_viewers_history(
+    job_id: int,
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    admin: Dict[str, Any] = Depends(require_admin)
+):
+    """
+    Returns history of registered job seekers who viewed a specific job vacancy,
+    along with whether they subsequently applied.
+    Protected administrative route.
+    """
+    if not db_helpers["db_enabled"] or not db_helpers["query_db"]:
+        return {"success": True, "job_id": job_id, "viewers": [], "total": 0}
+
+    try:
+        # Check job existence
+        job_chk = db_helpers["query_db"]("""
+            SELECT j.id, j.title, COALESCE(cp.company_name, c.name, '') AS company_name 
+            FROM jobs j 
+            LEFT JOIN companies c ON j.company_id = c.id
+            LEFT JOIN company_profiles cp ON j.company_profile_id = cp.id
+            WHERE j.id = %s;
+        """, (job_id,))
+        if not job_chk:
+            raise HTTPException(status_code=404, detail="Job not found.")
+
+        # Query registered viewers
+        viewers_query = """
+            SELECT 
+                u.id AS user_id,
+                u.email,
+                p.full_name,
+                p.mobile,
+                p.job_title,
+                p.experience_years,
+                p.location,
+                MAX(e.created_at) AS last_viewed_at,
+                MIN(e.created_at) AS first_viewed_at,
+                COUNT(e.id) AS view_count,
+                (app.id IS NOT NULL) AS has_applied,
+                app.applied_at,
+                app.status AS application_status
+            FROM job_analytics_events e
+            JOIN public_users u ON e.user_id = u.id
+            LEFT JOIN individual_profiles p ON u.id = p.user_id
+            LEFT JOIN job_applications app ON (app.job_id = e.job_id AND app.candidate_user_id = u.id)
+            WHERE e.job_id = %s AND e.event_type = 'job_view' AND e.user_id IS NOT NULL
+            GROUP BY u.id, u.email, p.full_name, p.mobile, p.job_title, p.experience_years, p.location, app.id, app.applied_at, app.status
+            ORDER BY last_viewed_at DESC
+            LIMIT %s OFFSET %s;
+        """
+        rows = db_helpers["query_db"](viewers_query, (job_id, limit, offset)) or []
+
+        count_query = """
+            SELECT COUNT(DISTINCT e.user_id) AS total_viewers
+            FROM job_analytics_events e
+            WHERE e.job_id = %s AND e.event_type = 'job_view' AND e.user_id IS NOT NULL;
+        """
+        total_rows = db_helpers["query_db"](count_query, (job_id,))
+        total_count = total_rows[0]["total_viewers"] if total_rows else 0
+
+        return {
+            "success": True,
+            "job": job_chk[0],
+            "viewers": rows,
+            "total": total_count,
+            "limit": limit,
+            "offset": offset
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching viewers for job {job_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Database error loading job viewers: {e}")
+

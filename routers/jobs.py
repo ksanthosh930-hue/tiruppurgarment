@@ -1,6 +1,7 @@
 import os
 import re
 import uuid
+import json
 import shutil
 import mimetypes
 import logging
@@ -174,7 +175,106 @@ FALLBACK_CANDIDATES = []
 FALLBACK_APPLICATIONS = []
 FALLBACK_SAVED_JOBS = []
 
+# --- ANALYTICS & ACCESS CONTROL MODELS & HELPERS ---
+
+class AnalyticsTrackRequest(BaseModel):
+    event_type: str
+    job_id: Optional[int] = None
+    visitor_id: str
+    session_id: Optional[str] = None
+    metadata: Optional[Dict[str, Any]] = None
+
+ALLOWED_EVENT_TYPES = {
+    "page_view", "job_view", "job_save", "job_unsave",
+    "apply_click", "whatsapp_click", "call_click", "search", "registration_complete"
+}
+
+def _check_public_auth(request: Optional[Request]) -> bool:
+    if not request:
+        return False
+    session_cookie = request.cookies.get("public_session_id")
+    if not session_cookie or not db_helpers["db_enabled"] or not db_helpers["query_db"]:
+        return False
+    try:
+        u_rows = db_helpers["query_db"](
+            "SELECT u.id FROM public_user_sessions s JOIN public_users u ON s.user_id = u.id WHERE s.token = %s AND s.expires_at > CURRENT_TIMESTAMP AND u.is_active = TRUE LIMIT 1;",
+            (session_cookie,)
+        )
+        return bool(u_rows)
+    except Exception as e:
+        logger.warning(f"Error validating public session cookie: {e}")
+        return False
+
+def _enrich_and_filter_job(job: dict, is_authenticated: bool) -> dict:
+    if not job:
+        return job
+    emp_user_id = job.get("employer_user_id")
+    src_type = (job.get("source_type") or "").lower().strip()
+    
+    # Classification: Direct jobs are employer direct postings or manual admin entries
+    is_direct = (emp_user_id is not None) or (src_type in ("employer", "manual", "direct company", "direct"))
+    allow_apply = is_direct and (job.get("status") or "").lower() == "published"
+    
+    job["is_direct_job"] = is_direct
+    job["allow_direct_apply"] = allow_apply
+    
+    # Protection: If visitor is NOT authenticated, mask sensitive employer direct contact details
+    job["is_authenticated"] = is_authenticated
+    if not is_authenticated:
+        job["contact_phone"] = None
+        job["contact_whatsapp"] = None
+        job["contact_email"] = None
+        job["application_url"] = None
+        job["login_required"] = True
+    else:
+        job["login_required"] = False
+        
+    return job
+
 # --- PUBLIC ENDPOINTS ---
+
+@router.post("/analytics/track")
+async def track_analytics_event(payload: AnalyticsTrackRequest, request: Request):
+    """
+    Ingests job portal analytics events (page_view, job_view, apply_click, whatsapp_click, call_click, etc.).
+    Derives authenticated user identity securely from server-side session.
+    """
+    if payload.event_type not in ALLOWED_EVENT_TYPES:
+        raise HTTPException(status_code=400, detail="Invalid event type.")
+        
+    visitor_id = (payload.visitor_id or "").strip()[:64]
+    if not visitor_id:
+        raise HTTPException(status_code=400, detail="Missing visitor_id.")
+
+    user_id = None
+    session_cookie = request.cookies.get("public_session_id")
+    if session_cookie and db_helpers["db_enabled"] and db_helpers["query_db"]:
+        try:
+            u_rows = db_helpers["query_db"](
+                "SELECT user_id FROM public_user_sessions WHERE token = %s AND expires_at > CURRENT_TIMESTAMP LIMIT 1;",
+                (session_cookie,)
+            )
+            if u_rows:
+                user_id = u_rows[0]["user_id"]
+        except Exception:
+            pass
+
+    if db_helpers["db_enabled"] and db_helpers["execute_db"]:
+        try:
+            import json
+            meta_json = json.dumps(payload.metadata or {})
+            db_helpers["execute_db"](
+                """
+                INSERT INTO job_analytics_events (event_type, job_id, visitor_id, user_id, session_id, metadata, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s::jsonb, CURRENT_TIMESTAMP);
+                """,
+                (payload.event_type, payload.job_id, visitor_id, user_id, payload.session_id, meta_json)
+            )
+        except Exception as e:
+            logger.error(f"Failed to record analytics event: {e}")
+            return {"success": False, "error": str(e)}
+
+    return {"success": True}
 
 @router.get("/jobs")
 def get_public_jobs(
@@ -187,7 +287,8 @@ def get_public_jobs(
     job_type: Optional[str] = Query(None, description="Full Time, Part Time, Contract"),
     sort: Optional[str] = Query("latest", description="latest, salary_high"),
     page: int = Query(1, ge=1),
-    limit: int = Query(12, ge=1, le=50)
+    limit: int = Query(12, ge=1, le=50),
+    request: Request = None
 ):
     """
     Public paginated jobs search & multi-facet filtering.
@@ -249,9 +350,10 @@ def get_public_jobs(
         paginated_jobs = filtered[start:end]
         total_pages = max(1, (total + limit_num - 1) // limit_num)
         
+        is_auth = _check_public_auth(request)
         return {
             "success": True,
-            "jobs": paginated_jobs,
+            "jobs": [_enrich_and_filter_job(dict(j), is_auth) for j in paginated_jobs],
             "page": page_num,
             "limit": limit_num,
             "total": total,
@@ -323,7 +425,7 @@ def get_public_jobs(
         offset = (page_num - 1) * limit_num
         data_query = f"""
             SELECT 
-                j.id, j.company_id, j.title, j.slug, j.department, j.job_role, j.job_type,
+                j.id, j.company_id, j.employer_user_id, j.title, j.slug, j.department, j.job_role, j.job_type,
                 j.location, j.openings_count, j.experience_min, j.experience_max, j.salary_min, j.salary_max,
                 j.salary_text, j.description, j.requirements, j.skills, j.qualification,
                 j.gender, j.contact_phone, j.contact_whatsapp, j.contact_email, j.application_url,
@@ -348,13 +450,15 @@ def get_public_jobs(
         rows = db_helpers["query_db"](data_query, tuple(query_params))
         total_pages = max(1, (total + limit_num - 1) // limit_num)
 
+        is_auth = _check_public_auth(request)
         return {
             "success": True,
-            "jobs": rows,
+            "jobs": [_enrich_and_filter_job(dict(r), is_auth) for r in rows],
             "page": page_num,
             "limit": limit_num,
             "total": total,
-            "total_pages": total_pages
+            "total_pages": total_pages,
+            "authenticated": is_auth
         }
     except Exception as e:
         logger.error(f"Error querying public jobs: {e}")
@@ -369,20 +473,22 @@ def get_public_jobs(
         }
 
 @router.get("/jobs/{slug}")
-def get_public_job_detail(slug: str):
+def get_public_job_detail(slug: str, request: Request = None):
     """
     Fetches full detail of a single active published job by slug or ID.
+    Enforces authentication checks: unauthenticated users receive preview data with contact info masked.
     """
+    is_auth = _check_public_auth(request)
     if not db_helpers["db_enabled"] or not db_helpers["query_db"]:
         matches = [j for j in FALLBACK_JOBS if (j.get("slug") == slug or str(j.get("id")) == slug) and (j.get("status") or "").lower() == "published" and not j.get("is_archived")]
         if not matches:
             raise HTTPException(status_code=404, detail="Job posting not found or no longer active.")
-        return {"success": True, "job": matches[0]}
+        return {"success": True, "job": _enrich_and_filter_job(dict(matches[0]), is_auth), "authenticated": is_auth}
 
     try:
         query = """
             SELECT 
-                j.id, j.company_id, j.company_profile_id, j.title, j.slug, j.department, j.job_role, j.job_type,
+                j.id, j.company_id, j.company_profile_id, j.employer_user_id, j.title, j.slug, j.department, j.job_role, j.job_type,
                 j.location, j.openings_count, j.experience_min, j.experience_max, j.salary_min, j.salary_max,
                 j.salary_text, j.description, j.requirements, j.skills, j.qualification,
                 j.gender, j.contact_phone, j.contact_whatsapp, j.contact_email, j.application_url,
@@ -406,7 +512,7 @@ def get_public_job_detail(slug: str):
         rows = db_helpers["query_db"](query, (str(slug), str(slug)))
         if not rows:
             raise HTTPException(status_code=404, detail="Job posting not found or no longer active.")
-        return {"success": True, "job": rows[0]}
+        return {"success": True, "job": _enrich_and_filter_job(dict(rows[0]), is_auth), "authenticated": is_auth}
     except HTTPException:
         raise
     except Exception as e:
@@ -745,7 +851,7 @@ async def submit_job_application(
     try:
         # 2. Check Job Eligibility
         job_rows = db_helpers["query_db"]("""
-            SELECT id, status, is_archived, expires_at 
+            SELECT id, status, is_archived, expires_at, source_type, employer_user_id 
             FROM jobs 
             WHERE id = %s;
         """, (job_id,))
@@ -756,6 +862,16 @@ async def submit_job_application(
         st = (job.get("status") or "").lower()
         if st != "published" or job.get("is_archived"):
             raise HTTPException(status_code=400, detail="This job vacancy is no longer active or accepting applications.")
+
+        # Source eligibility: only verified direct employer or manual direct jobs can accept direct DigiGarment applications
+        is_direct = (job.get("employer_user_id") is not None) or (
+            (job.get("source_type") or "").lower().strip() in ("employer", "manual", "direct company", "direct")
+        )
+        if not is_direct:
+            raise HTTPException(
+                status_code=400,
+                detail="Direct application through DigiGarment is only available for direct employer listings. For external imported listings, please connect via WhatsApp or phone call directly."
+            )
 
         # 3. Duplicate Application Protection
         dup_rows = db_helpers["query_db"]("""
@@ -789,6 +905,17 @@ async def submit_job_application(
         ))
 
         app_id = rows[0]["id"]
+
+        # Track application_submit event
+        try:
+            db_helpers["execute_db_returning"]("""
+                INSERT INTO job_analytics_events (event_type, job_id, user_id, session_id, metadata)
+                VALUES ('application_submit', %s, %s, %s, %s)
+                RETURNING id;
+            """, (job_id, user_id, session_cookie, json.dumps({"application_id": app_id})))
+        except Exception as ae:
+            logger.warning(f"Could not track application_submit event: {ae}")
+
         return {
             "success": True,
             "application_id": app_id,

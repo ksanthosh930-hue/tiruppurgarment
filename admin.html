@@ -46,6 +46,7 @@
                 <li class="sidebar-menu-item" data-tab="ingestion"><a><span>📥</span> Ingestion Queue</a></li>
                 <li class="sidebar-menu-item" data-tab="sources"><a><span>🌐</span> Job Sources</a></li>
                 <li class="sidebar-menu-item" data-tab="companies"><a><span>🏢</span> Companies</a></li>
+                <li class="sidebar-menu-item" data-tab="job-analytics"><a><span>📊</span> Job Seeker Analytics</a></li>
                 <li class="sidebar-menu-item" data-tab="comingsoon"><a><span>⏳</span> Coming Soon CMS</a></li>
                 <li class="sidebar-menu-item" data-tab="media"><a><span>🖼️</span> Media Library</a></li>
                 <li class="sidebar-menu-item" data-tab="enquiries"><a><span>📨</span> Enquiries</a></li>
@@ -1253,6 +1254,206 @@
                     </div>
                 </div>
 
+                <!-- Job Seeker Analytics Tab -->
+                <div id="tab-job-analytics" class="tab-content">
+                    <!-- Filters & Controls Bar -->
+                    <div class="card-panel" style="margin-bottom: 24px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                            <div>
+                                <h2 class="card-panel-title" style="margin: 0 0 4px 0;">📊 Job Seeker Activity &amp; Conversion Analytics</h2>
+                                <p style="margin: 0; color: #64748b; font-size: 13.5px;">Real-time database metrics on visitor impressions, contact reveals, application funnels, and registered seeker engagement.</p>
+                            </div>
+                            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                                <div>
+                                    <label style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 2px;">Time Period</label>
+                                    <select id="analyticsRangeSelect" class="form-control" style="width: auto; min-width: 130px;" onchange="loadJobSeekerAnalytics()">
+                                        <option value="today">Today (IST)</option>
+                                        <option value="7d" selected>Last 7 Days</option>
+                                        <option value="30d">Last 30 Days</option>
+                                        <option value="all">All Available</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 2px;">Job Source</label>
+                                    <select id="analyticsSourceSelect" class="form-control" style="width: auto; min-width: 140px;" onchange="loadJobSeekerAnalytics()">
+                                        <option value="all" selected>All Sources</option>
+                                        <option value="direct">Direct Employer Postings</option>
+                                        <option value="imported">External Imported Jobs</option>
+                                    </select>
+                                </div>
+                                <div style="align-self: flex-end;">
+                                    <button type="button" class="btn btn-primary" onclick="loadJobSeekerAnalytics()" style="display: flex; align-items: center; gap: 6px;">
+                                        <span>🔄</span> Refresh
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KPI Stat Cards (12 Key Metrics) -->
+                    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: rgba(14, 165, 233, 0.1); color: #0284c7;">👁️</div>
+                            <div class="stat-info">
+                                <h3 id="statPageViews">0</h3>
+                                <p>Listing Page Views</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: rgba(99, 102, 241, 0.1); color: #4f46e5;">🌐</div>
+                            <div class="stat-info">
+                                <h3 id="statUniqueVisitors">0</h3>
+                                <p>Unique Visitors (Est.)</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: #059669;">📋</div>
+                            <div class="stat-info">
+                                <h3 id="statJobViews">0</h3>
+                                <p>Total Job Detail Views</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #d97706;">👥</div>
+                            <div class="stat-info">
+                                <h3 id="statRegisteredViews">0</h3>
+                                <p>Registered User Views</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: rgba(100, 116, 139, 0.1); color: #475569;">👤</div>
+                            <div class="stat-info">
+                                <h3 id="statAnonViews">0</h3>
+                                <p>Anonymous Job Views</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: rgba(168, 85, 247, 0.1); color: #9333ea;">🎓</div>
+                            <div class="stat-info">
+                                <h3 id="statRegisteredSeekers">0</h3>
+                                <p>Total Job Seekers</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: rgba(236, 72, 153, 0.1); color: #db2777;">✨</div>
+                            <div class="stat-info">
+                                <h3 id="statNewRegistrations">0</h3>
+                                <p>New Registrations (Window)</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1); color: #dc2626;">💖</div>
+                            <div class="stat-info">
+                                <h3 id="statTotalSaves">0</h3>
+                                <p>Job Bookmarks / Saves</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1); color: #2563eb;">🚀</div>
+                            <div class="stat-info">
+                                <h3 id="statApplyClicks">0</h3>
+                                <p>Apply Now Clicks</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: rgba(16, 185, 129, 0.15); color: #047857;">📄</div>
+                            <div class="stat-info">
+                                <h3 id="statSuccessfulApps">0</h3>
+                                <p>Successful Applications</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: rgba(37, 211, 102, 0.1); color: #15803d;">💬</div>
+                            <div class="stat-info">
+                                <h3 id="statWhatsappClicks">0</h3>
+                                <p>WhatsApp HR Clicks</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: rgba(14, 165, 233, 0.1); color: #0369a1;">📞</div>
+                            <div class="stat-info">
+                                <h3 id="statCallClicks">0</h3>
+                                <p>Phone Call Clicks</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Job Performance Table Panel -->
+                    <div class="card-panel" style="margin-bottom: 24px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                            <div>
+                                <h2 class="card-panel-title" style="margin: 0 0 2px 0;">Top Performing Vacancies</h2>
+                                <p style="margin: 0; font-size: 13px; color: #64748b;">Per-job breakdown of visitor engagement, saves, and conversion actions.</p>
+                            </div>
+                            <input type="text" id="analyticsJobSearch" class="form-control" placeholder="Search table..." style="max-width: 250px;" oninput="filterAnalyticsTable()">
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table" id="analyticsJobsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Job Title &amp; Company</th>
+                                        <th>Source</th>
+                                        <th>Total Views</th>
+                                        <th>Unique Views</th>
+                                        <th>Registered</th>
+                                        <th>Saves</th>
+                                        <th>Apply Clicks</th>
+                                        <th>Applications</th>
+                                        <th>WhatsApp</th>
+                                        <th>Call</th>
+                                        <th>Audience</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="analyticsJobsBody">
+                                    <tr><td colspan="11" style="text-align: center; color: #64748b; padding: 24px;">Loading performance metrics...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Grid: Search Trends & Daily Trends -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 20px;">
+                        <!-- Popular Searches -->
+                        <div class="card-panel">
+                            <h2 class="card-panel-title" style="margin-bottom: 12px;">🔍 Popular Job Search Terms</h2>
+                            <div class="table-responsive">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Search Term</th>
+                                            <th>Frequency</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="popularSearchesBody">
+                                        <tr><td colspan="2" style="text-align: center; color: #64748b; padding: 16px;">No search activity recorded yet.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Daily Trends -->
+                        <div class="card-panel">
+                            <h2 class="card-panel-title" style="margin-bottom: 12px;">📅 Daily Activity Breakdown</h2>
+                            <div class="table-responsive">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Page Views</th>
+                                            <th>Job Views</th>
+                                            <th>Unique Visitors</th>
+                                            <th>Applications</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dailyTrendsBody">
+                                        <tr><td colspan="5" style="text-align: center; color: #64748b; padding: 16px;">No trends available.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 10. Password Tab -->
                 <div id="tab-password" class="tab-content">
                     <form id="passwordForm">
@@ -2062,6 +2263,40 @@
                 </div>
             </div>
         </div>
+    <!-- Job Registered Viewers History Modal -->
+    <div class="modal" id="jobViewersModal" style="display: none;">
+        <div class="modal-dialog modal-dialog-large" style="max-width: 960px; width: 95%;">
+            <div class="modal-header" style="background: var(--bg-navy, #0f172a); color: #ffffff; border-radius: 8px 8px 0 0; padding: 16px 20px;">
+                <div>
+                    <h3 id="jobViewersModalTitle" style="color: #ffffff; font-size: 17px; margin: 0 0 4px 0;">Registered Candidates Who Viewed This Job</h3>
+                    <p id="jobViewersModalSubtitle" style="color: #94a3b8; font-size: 13px; margin: 0;"></p>
+                </div>
+                <button type="button" class="modal-close" style="color: #ffffff;" onclick="closeJobViewersModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 20px; max-height: 80vh; overflow-y: auto;">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Candidate Name</th>
+                                <th>Contact Details</th>
+                                <th>Role &amp; Experience</th>
+                                <th>Location</th>
+                                <th>Views</th>
+                                <th>Last Viewed</th>
+                                <th>Application Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="jobViewersBody">
+                            <tr><td colspan="7" style="text-align: center; padding: 24px; color: #64748b;">Loading candidate view history...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer" style="padding: 12px 20px; display: flex; justify-content: flex-end;">
+                <button type="button" class="btn btn-secondary" onclick="closeJobViewersModal()">Close</button>
+            </div>
+        </div>
     </div>
 
     <!-- SPA Router & Page controllers Script -->
@@ -2134,11 +2369,226 @@
                 case "ingestion": loadIngestionQueue(); loadIngestionStats(); break;
                 case "sources": loadJobSources(); loadSourceLogs(); break;
                 case "companies": loadAdminCompanies(); break;
+                case "job-analytics": loadJobSeekerAnalytics(); break;
                 case "comingsoon": loadComingSoon(); break;
                 case "media": loadMedia(); break;
                 case "enquiries": loadEnquiries(); break;
             }
         }
+
+        // --- Job Seeker Analytics & Conversion Controller ---
+        let currentAnalyticsData = null;
+
+        async function loadJobSeekerAnalytics() {
+            const range = document.getElementById("analyticsRangeSelect") ? document.getElementById("analyticsRangeSelect").value : "7d";
+            const source = document.getElementById("analyticsSourceSelect") ? document.getElementById("analyticsSourceSelect").value : "all";
+
+            try {
+                const res = await fetch(`/api/admin/analytics/jobs?range=${encodeURIComponent(range)}&source=${encodeURIComponent(source)}`);
+                if (!res.ok) {
+                    if (res.status === 401 || res.status === 403) {
+                        window.location.href = "/admin/login";
+                        return;
+                    }
+                    throw new Error(`Failed to load analytics (HTTP ${res.status})`);
+                }
+                const data = await res.json();
+                if (!data || !data.success) {
+                    throw new Error("Invalid analytics response");
+                }
+
+                currentAnalyticsData = data;
+                renderAnalyticsKPIs(data.metrics || {});
+                renderAnalyticsJobsTable(data.top_jobs || []);
+                renderPopularSearches(data.popular_searches || []);
+                renderDailyTrends(data.daily_trends || []);
+            } catch (err) {
+                console.error("Error loading job seeker analytics:", err);
+                showToast("Failed to load analytics: " + err.message, false);
+            }
+        }
+
+        function renderAnalyticsKPIs(m) {
+            const setVal = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = typeof val === "number" ? val.toLocaleString() : (val || "0");
+            };
+
+            setVal("statPageViews", m.total_page_views);
+            setVal("statUniqueVisitors", m.unique_visitors);
+            setVal("statJobViews", m.total_job_views);
+            setVal("statRegisteredViews", m.registered_job_views);
+            setVal("statAnonViews", m.anon_job_views);
+            setVal("statRegisteredSeekers", m.registered_job_seekers);
+            setVal("statNewRegistrations", m.new_registrations);
+            setVal("statTotalSaves", m.total_saves);
+            setVal("statApplyClicks", m.apply_clicks);
+            setVal("statSuccessfulApps", m.successful_applications);
+            setVal("statWhatsappClicks", m.whatsapp_clicks);
+            setVal("statCallClicks", m.call_clicks);
+        }
+
+        function renderAnalyticsJobsTable(jobs) {
+            const tbody = document.getElementById("analyticsJobsBody");
+            if (!tbody) return;
+            tbody.innerHTML = "";
+
+            if (!jobs || jobs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: #64748b; padding: 24px;">No job interactions recorded for this filter period.</td></tr>`;
+                return;
+            }
+
+            jobs.forEach(j => {
+                const tr = document.createElement("tr");
+                const isDirect = Boolean(j.is_direct_job);
+                const sourceBadge = isDirect
+                    ? `<span class="badge" style="background: #ecfdf5; color: #047857; font-weight: 600; padding: 3px 8px; border-radius: 4px; font-size: 11.5px;">Direct Employer</span>`
+                    : `<span class="badge" style="background: #f1f5f9; color: #475569; font-weight: 500; padding: 3px 8px; border-radius: 4px; font-size: 11.5px;">${escapeHtml(j.source_type || 'External')}</span>`;
+
+                tr.innerHTML = `
+                    <td>
+                        <div style="font-weight: 700; color: #0f172a; font-size: 14px;">${escapeHtml(j.title)}</div>
+                        <small style="color: #64748b;">${escapeHtml(j.company_name || 'Anonymous Employer')}</small>
+                    </td>
+                    <td>${sourceBadge}</td>
+                    <td style="font-weight: 600;">${(j.detail_views || 0).toLocaleString()}</td>
+                    <td>${(j.unique_views || 0).toLocaleString()}</td>
+                    <td><span style="color: #4f46e5; font-weight: 600;">${(j.registered_views || 0).toLocaleString()}</span></td>
+                    <td>${(j.save_count || 0).toLocaleString()}</td>
+                    <td>${(j.apply_clicks || 0).toLocaleString()}</td>
+                    <td><span style="color: #059669; font-weight: 700;">${(j.application_count || 0).toLocaleString()}</span></td>
+                    <td>${(j.whatsapp_clicks || 0).toLocaleString()}</td>
+                    <td>${(j.call_clicks || 0).toLocaleString()}</td>
+                    <td>
+                        <button type="button" class="btn btn-secondary btn-sm" style="padding: 4px 8px; font-size: 11.5px; white-space: nowrap;" onclick="openJobViewersModal(${j.job_id}, '${escapeHtml(j.title.replace(/'/g, "\\'"))}')">
+                            👥 Viewers (${j.registered_views || 0})
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filterAnalyticsTable() {
+            const query = (document.getElementById("analyticsJobSearch").value || "").toLowerCase().trim();
+            if (!currentAnalyticsData || !currentAnalyticsData.top_jobs) return;
+            const filtered = currentAnalyticsData.top_jobs.filter(j => 
+                (j.title || "").toLowerCase().includes(query) ||
+                (j.company_name || "").toLowerCase().includes(query) ||
+                (j.source_type || "").toLowerCase().includes(query)
+            );
+            renderAnalyticsJobsTable(filtered);
+        }
+
+        function renderPopularSearches(searches) {
+            const tbody = document.getElementById("popularSearchesBody");
+            if (!tbody) return;
+            tbody.innerHTML = "";
+
+            if (!searches || searches.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: #64748b; padding: 16px;">No search activity recorded yet.</td></tr>`;
+                return;
+            }
+
+            searches.forEach(s => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td style="font-weight: 600; color: #0f172a;">${escapeHtml(s.term)}</td>
+                    <td style="color: #64748b;">${(s.search_count || 0).toLocaleString()} searches</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderDailyTrends(trends) {
+            const tbody = document.getElementById("dailyTrendsBody");
+            if (!tbody) return;
+            tbody.innerHTML = "";
+
+            if (!trends || trends.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #64748b; padding: 16px;">No trends available.</td></tr>`;
+                return;
+            }
+
+            trends.forEach(t => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td style="font-weight: 600;">${escapeHtml(t.date_str)}</td>
+                    <td>${(t.page_views || 0).toLocaleString()}</td>
+                    <td>${(t.job_views || 0).toLocaleString()}</td>
+                    <td>${(t.unique_visitors || 0).toLocaleString()}</td>
+                    <td style="color: #059669; font-weight: 600;">${(t.applications || 0).toLocaleString()}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function openJobViewersModal(jobId, jobTitle) {
+            const modal = document.getElementById("jobViewersModal");
+            const titleEl = document.getElementById("jobViewersModalTitle");
+            const subEl = document.getElementById("jobViewersModalSubtitle");
+            const tbody = document.getElementById("jobViewersBody");
+
+            if (titleEl) titleEl.textContent = `Candidate View History: ${jobTitle}`;
+            if (subEl) subEl.textContent = `Registered job seekers who viewed Job ID #${jobId} and application status`;
+            if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 24px; color: #64748b;">Loading candidate view history...</td></tr>`;
+
+            if (modal) modal.style.display = "flex";
+
+            try {
+                const res = await fetch(`/api/admin/analytics/jobs/${jobId}/viewers`);
+                if (!res.ok) {
+                    throw new Error(`Failed to load viewers (HTTP ${res.status})`);
+                }
+                const data = await res.json();
+                if (!data || !data.success) {
+                    throw new Error("Invalid viewers response");
+                }
+
+                const viewers = data.viewers || [];
+                if (viewers.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 24px; color: #64748b;">No registered job seekers have viewed this vacancy yet (or views were anonymous visitors).</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = "";
+                viewers.forEach(v => {
+                    const tr = document.createElement("tr");
+                    const appBadge = v.has_applied
+                        ? `<span class="badge" style="background: #ecfdf5; color: #047857; font-weight: 700; padding: 4px 8px; border-radius: 4px;">✓ Applied (${escapeHtml((v.application_status || 'submitted').toUpperCase())})</span>`
+                        : `<span style="color: #94a3b8; font-size: 13px;">Viewed Only (No App)</span>`;
+
+                    const lastViewDate = v.last_viewed_at ? new Date(v.last_viewed_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) : "-";
+
+                    tr.innerHTML = `
+                        <td style="font-weight: 600; color: #0f172a;">${escapeHtml(v.full_name || 'Job Seeker')}</td>
+                        <td>
+                            <div>📞 ${escapeHtml(v.mobile || 'No Mobile')}</div>
+                            <small style="color: #64748b;">✉️ ${escapeHtml(v.email || '')}</small>
+                        </td>
+                        <td>
+                            <div>${escapeHtml(v.job_role || 'Garment Professional')}</div>
+                            <small style="color: #64748b;">${v.experience_years ? v.experience_years + ' Yrs Exp' : 'Fresher / Unspecified'}</small>
+                        </td>
+                        <td>${escapeHtml(v.location || 'Tiruppur')}</td>
+                        <td style="font-weight: 600; text-align: center;">${v.view_count || 1}</td>
+                        <td style="font-size: 12.5px; color: #475569;">${lastViewDate}</td>
+                        <td>${appBadge}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                console.error("Error loading job viewers:", err);
+                if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #ef4444; padding: 24px;">Failed to load viewers: ${escapeHtml(err.message)}</td></tr>`;
+            }
+        }
+
+        function closeJobViewersModal() {
+            const modal = document.getElementById("jobViewersModal");
+            if (modal) modal.style.display = "none";
+        }
+        window.closeJobViewersModal = closeJobViewersModal;
+        window.openJobViewersModal = openJobViewersModal;
 
         // --- API Integration Handlers ---
 

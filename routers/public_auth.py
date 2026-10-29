@@ -1,6 +1,7 @@
 import os
 import time
 import uuid
+import json
 import logging
 import datetime
 from typing import Dict, Any, Optional
@@ -397,6 +398,15 @@ def public_login(req_data: LoginRequest, response: Response, request: Request):
         account_type = user["account_type"]
         role = "employee" if account_type == "individual" else "employer"
         redirect_url = "/dashboard/individual" if account_type == "individual" else "/dashboard/company"
+
+        # Track login analytics event
+        try:
+            _execute_db("""
+                INSERT INTO job_analytics_events (event_type, user_id, session_id, metadata)
+                VALUES ('login', %s, %s, %s);
+            """, (user["id"], session_token, json.dumps({"account_type": account_type, "role": role})))
+        except Exception as ae:
+            logger.warning(f"Could not track login event: {ae}")
         
         return {
             "success": True,
@@ -943,6 +953,16 @@ def register_complete(req_data: CompleteRegistrationRequest, response: Response)
         )
         
         redirect_url = "/dashboard/individual" if account_type == "individual" else "/dashboard/company"
+
+        # Track registration_complete analytics event
+        try:
+            _execute_db("""
+                INSERT INTO job_analytics_events (event_type, user_id, session_id, metadata)
+                VALUES ('registration_complete', %s, %s, %s);
+            """, (new_user_id, session_token, json.dumps({"account_type": account_type})))
+        except Exception as ae:
+            logger.warning(f"Could not track registration_complete event: {ae}")
+
         return {
             "success": True,
             "message": "Account created successfully.",

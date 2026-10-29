@@ -1448,6 +1448,63 @@
         </div>
     </div>
 
+    <!-- Auth Prompt / Unlock Job Details Modal -->
+    <div class="modal" id="authPromptModal" role="dialog" aria-modal="true" aria-labelledby="authPromptTitle">
+        <div class="modal-dialog" style="max-width: 500px; text-align: center;">
+            <div class="modal-header" style="justify-content: flex-end; padding: 16px 20px 0 20px; border-bottom: none;">
+                <button class="modal-close" aria-label="Close dialog" onclick="closeAuthPromptModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 0 32px 32px 32px;">
+                <div style="width: 56px; height: 56px; margin: 0 auto 16px auto; background: rgba(158, 27, 50, 0.08); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px;">
+                    🔒
+                </div>
+                <h2 id="authPromptTitle" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; color: var(--dg-navy); margin: 0 0 10px 0;">
+                    Unlock Full Garment Job Details
+                </h2>
+                <p style="font-size: 14px; line-height: 1.6; color: var(--dg-slate); margin: 0 0 20px 0;">
+                    Create your free DigiGarment account to access complete job information, available contact details, job-saving features, and eligible application workflows.
+                </p>
+
+                <!-- Job Preview Card -->
+                <div id="authPromptJobCard" style="background: #f8fafc; border: 1px solid var(--dg-border); border-radius: 10px; padding: 14px; text-align: left; margin-bottom: 20px;">
+                    <div style="font-size: 11.5px; font-weight: 700; color: var(--dg-red); text-transform: uppercase; margin-bottom: 4px;" id="authPromptJobDept">GARMENTS</div>
+                    <div style="font-size: 16px; font-weight: 700; color: var(--dg-navy);" id="authPromptJobTitle">Job Vacancy</div>
+                    <div style="font-size: 13px; color: var(--dg-slate); margin-top: 2px;" id="authPromptJobMeta">Tiruppur, Tamil Nadu</div>
+                </div>
+
+                <!-- Benefits List -->
+                <div style="text-align: left; margin-bottom: 24px; display: grid; gap: 10px; font-size: 13.5px; color: #334155;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="color: #10B981; font-weight: bold;">✓</span>
+                        <span>Direct recruiter contacts (WhatsApp &amp; Phone)</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="color: #10B981; font-weight: bold;">✓</span>
+                        <span>Complete job responsibilities and salary specifications</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="color: #10B981; font-weight: bold;">✓</span>
+                        <span>1-Click direct apply for verified employer postings</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="color: #10B981; font-weight: bold;">✓</span>
+                        <span>Save and track jobs across desktop and mobile</span>
+                    </div>
+                </div>
+
+                <!-- CTA Buttons -->
+                <div style="display: flex; gap: 12px; flex-direction: column;">
+                    <a id="authPromptSignupBtn" href="/signup" style="background: var(--dg-red); color: #ffffff; padding: 13px; border-radius: 8px; font-weight: 700; font-size: 15px; text-decoration: none; text-align: center; display: block; box-shadow: 0 4px 12px rgba(158, 27, 50, 0.25); transition: background 0.2s;">
+                        Create Free Account
+                    </a>
+                    <a id="authPromptLoginBtn" href="/login" style="background: #ffffff; color: var(--dg-navy); border: 1.5px solid var(--dg-border); padding: 12px; border-radius: 8px; font-weight: 600; font-size: 14px; text-decoration: none; text-align: center; display: block; transition: all 0.2s;">
+                        Sign In
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Job Detail Modal -->
     <div class="modal" id="jobDetailModal">
         <div class="modal-dialog">
@@ -1805,30 +1862,177 @@
             setTimeout(() => { toast.style.display = "none"; }, 4000);
         }
 
-        async function initSavedJobsState() {
+        // --- VISITOR IDENTIFICATION & ANALYTICS TRACKING ---
+        function getVisitorId() {
+            let vid = localStorage.getItem("dg_visitor_id");
+            if (!vid) {
+                vid = "v_" + (window.crypto && crypto.randomUUID ? crypto.randomUUID() : (Math.random().toString(36).substring(2) + Date.now().toString(36)));
+                localStorage.setItem("dg_visitor_id", vid);
+            }
+            return vid;
+        }
+
+        async function trackEvent(eventType, jobId = null, metadata = {}) {
             try {
-                const res = await fetch("/api/auth/me");
-                if (!res.ok) return;
-                const data = await res.json();
-                if (data && data.logged_in && data.user) {
-                    savedJobsTracker.user = data.user;
-                    if (data.user.account_type === "individual") {
-                        // Pre-fetch saved jobs for authenticated candidates in a single lightweight query
-                        const savedRes = await fetch("/api/public/employee/saved-jobs?limit=100");
-                        if (savedRes.ok) {
-                            const savedData = await savedRes.json();
-                            if (savedData && Array.isArray(savedData.jobs)) {
-                                savedData.jobs.forEach(item => {
-                                    const jId = (item.job && item.job.id) ? item.job.id : item.id;
-                                    if (jId) {
-                                        savedJobsTracker.savedJobIds.add(Number(jId));
-                                    }
-                                });
+                const payload = {
+                    event_type: eventType,
+                    job_id: jobId ? Number(jobId) : null,
+                    visitor_id: getVisitorId(),
+                    metadata: metadata || {}
+                };
+                fetch("/api/public/analytics/track", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                    keepalive: true
+                }).catch(() => {});
+            } catch (e) {
+                // Non-blocking
+            }
+        }
+        window.dgTrackEvent = trackEvent;
+
+        // --- AUTH CHECKING & ACCESS CONTROL ---
+        let currentAuthUser = null;
+        let authCheckPromise = null;
+
+        async function checkUserAuth() {
+            if (authCheckPromise) return authCheckPromise;
+            authCheckPromise = (async () => {
+                try {
+                    const res = await fetch("/api/auth/me");
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data && data.logged_in && data.user) {
+                            currentAuthUser = data.user;
+                            savedJobsTracker.user = data.user;
+                            return data.user;
+                        }
+                    }
+                } catch (e) {}
+                currentAuthUser = null;
+                return null;
+            })();
+            return authCheckPromise;
+        }
+
+        function openAuthPromptModal(job) {
+            if (!job) return;
+            localStorage.setItem("dg_intended_job_id", String(job.id));
+            trackEvent("job_view_prompt", job.id);
+
+            const redirectTarget = `/jobs?open=${encodeURIComponent(job.id)}`;
+            const enc = encodeURIComponent(redirectTarget);
+
+            const titleEl = document.getElementById("authPromptJobTitle");
+            const deptEl = document.getElementById("authPromptJobDept");
+            const metaEl = document.getElementById("authPromptJobMeta");
+            if (titleEl) titleEl.textContent = job.title || "Garment Job Vacancy";
+            if (deptEl) deptEl.textContent = (job.department || "GARMENTS").toUpperCase();
+            const comp = job.company_name ? job.company_name.trim() : "";
+            const loc = job.location ? job.location.trim() : "Tiruppur, Tamil Nadu";
+            if (metaEl) metaEl.textContent = comp ? `${comp} • ${loc}` : loc;
+
+            const signupBtn = document.getElementById("authPromptSignupBtn");
+            const loginBtn = document.getElementById("authPromptLoginBtn");
+            if (signupBtn) signupBtn.href = `/signup?redirect=${enc}`;
+            if (loginBtn) loginBtn.href = `/login?redirect=${enc}`;
+
+            const modal = document.getElementById("authPromptModal");
+            if (modal) {
+                modal.style.display = "flex";
+                document.body.style.overflow = "hidden";
+            }
+        }
+        window.openAuthPromptModal = openAuthPromptModal;
+
+        function closeAuthPromptModal() {
+            const modal = document.getElementById("authPromptModal");
+            if (modal) {
+                modal.style.display = "none";
+                document.body.style.overflow = "";
+            }
+        }
+        window.closeAuthPromptModal = closeAuthPromptModal;
+
+        async function checkAndReopenIntendedJob() {
+            const params = new URLSearchParams(window.location.search);
+            const openParam = params.get("open");
+            const storedJobId = localStorage.getItem("dg_intended_job_id");
+            const targetJobId = openParam || storedJobId;
+
+            if (!targetJobId) return;
+
+            const user = await checkUserAuth();
+            if (!user) {
+                // If not logged in and came with an open param, show auth prompt
+                const numericId = Number(targetJobId);
+                let targetJob = activeJobsCache.find(j => j.id === numericId);
+                if (targetJob) {
+                    openAuthPromptModal(targetJob);
+                } else if (!isNaN(numericId)) {
+                    try {
+                        const res = await fetch(`/api/public/jobs/${numericId}`);
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data && data.success && data.job) {
+                                openAuthPromptModal(data.job);
                             }
                         }
-                        savedJobsTracker.loaded = true;
-                        refreshVisibleCardSaveButtons();
+                    } catch (e) {}
+                }
+                return;
+            }
+
+            // Authenticated! Clean up temporary state & URL
+            localStorage.removeItem("dg_intended_job_id");
+            if (openParam) {
+                params.delete("open");
+                const newSearch = params.toString() ? `?${params.toString()}` : "";
+                window.history.replaceState({}, "", `${window.location.pathname}${newSearch}`);
+            }
+
+            const numericId = Number(targetJobId);
+            if (!isNaN(numericId)) {
+                let job = activeJobsCache.find(j => j.id === numericId);
+                if (job) {
+                    openJobDetailModal(numericId);
+                } else {
+                    try {
+                        const res = await fetch(`/api/public/jobs/${numericId}`);
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data && data.success && data.job) {
+                                activeJobsCache.push(data.job);
+                                openJobDetailModal(data.job.id);
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Error fetching intended job:", e);
                     }
+                }
+            }
+        }
+
+        async function initSavedJobsState() {
+            try {
+                const user = await checkUserAuth();
+                if (user && user.account_type === "individual") {
+                    // Pre-fetch saved jobs for authenticated candidates in a single lightweight query
+                    const savedRes = await fetch("/api/public/employee/saved-jobs?limit=100");
+                    if (savedRes.ok) {
+                        const savedData = await savedRes.json();
+                        if (savedData && Array.isArray(savedData.jobs)) {
+                            savedData.jobs.forEach(item => {
+                                const jId = (item.job && item.job.id) ? item.job.id : item.id;
+                                if (jId) {
+                                    savedJobsTracker.savedJobIds.add(Number(jId));
+                                }
+                            });
+                        }
+                    }
+                    savedJobsTracker.loaded = true;
+                    refreshVisibleCardSaveButtons();
                 }
             } catch (err) {
                 console.error("Error initializing saved jobs:", err);
@@ -1913,14 +2117,14 @@
             jobId = Number(jobId);
             if (!jobId) return;
 
-            if (!savedJobsTracker.user) {
-                if (confirm("To save jobs to your bookmarks, please sign in with your Job Seeker account. Would you like to sign in now?")) {
-                    window.location.href = `/jobseeker/login?redirect=${encodeURIComponent('/jobs')}`;
-                }
+            const user = await checkUserAuth();
+            if (!user) {
+                const job = activeJobsCache.find(j => j.id === jobId);
+                openAuthPromptModal(job || { id: jobId, title: "Garment Job Vacancy" });
                 return;
             }
 
-            if (savedJobsTracker.user.account_type === "company") {
+            if (user.account_type === "company") {
                 showToast("Employer accounts cannot bookmark jobs.", false);
                 return;
             }
@@ -1939,6 +2143,7 @@
                     });
                     const data = await res.json();
                     if (res.ok && data.success) {
+                        trackEvent("job_save", jobId);
                         showToast(data.message || "Job saved successfully.", true);
                     } else {
                         // Rollback on failure
@@ -1963,6 +2168,7 @@
                     });
                     const data = await res.json();
                     if (res.ok && data.success) {
+                        trackEvent("job_unsave", jobId);
                         showToast(data.message || "Job removed from saved jobs.", true);
                     } else {
                         // Rollback on failure
@@ -2162,6 +2368,13 @@
             renderActiveChips();
             updateURLFromSearchState(true);
             fetchJobs();
+
+            if (searchState.q && searchState.q.trim().length > 1) {
+                trackEvent("search", null, {
+                    search_term: searchState.q.trim(),
+                    department: searchState.department || null
+                });
+            }
         }
 
         async function loadFilterMetadata() {
@@ -2522,11 +2735,32 @@
         // Job Detail Modal Logic
         let modalOpenedByPushState = false;
 
-        function openJobDetailModal(jobId) {
-            const job = activeJobsCache.find(j => j.id === jobId);
+        async function openJobDetailModal(jobId) {
+            let job = activeJobsCache.find(j => j.id === jobId);
+            if (!job) {
+                try {
+                    const res = await fetch(`/api/public/jobs/${jobId}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data && data.success && data.job) {
+                            job = data.job;
+                            activeJobsCache.push(job);
+                        }
+                    }
+                } catch (e) {}
+            }
             if (!job) return;
 
+            // 1. Enforce Authentication Access Control
+            const user = await checkUserAuth();
+            if (!user) {
+                openAuthPromptModal(job);
+                return;
+            }
+
+            // 2. Authenticated Visitor -> Proceed to render details & record tracking
             currentDetailJobId = jobId;
+            trackEvent("job_view", jobId);
 
             // Sync browser URL to permalink without reloading
             if (window.history && window.history.pushState) {
@@ -2625,14 +2859,23 @@
             `;
             actionsBar.appendChild(shareActionBtn);
 
-            // 1. Direct Apply Action (Check Auth Status)
-            const applyActionWrap = document.createElement("div");
-            applyActionWrap.id = "modalApplyActionWrap";
-            applyActionWrap.innerHTML = `<button class="btn-action btn-apply-primary" onclick="handleApplyClick(${job.id}, '${escapeHtml(job.title)}')">🚀 Apply Now</button>`;
-            actionsBar.appendChild(applyActionWrap);
+            // 1. Direct Apply Action (ONLY for verified direct employer jobs)
+            const isDirectJob = Boolean(
+                job.is_direct_job ||
+                job.allow_direct_apply ||
+                job.employer_user_id ||
+                ["employer", "manual", "direct company", "direct"].includes((job.source_type || "").toLowerCase().trim())
+            );
 
-            // Asynchronously check logged-in candidate application status
-            checkApplicationStatusForModal(job.id, job.title);
+            if (isDirectJob) {
+                const applyActionWrap = document.createElement("div");
+                applyActionWrap.id = "modalApplyActionWrap";
+                applyActionWrap.innerHTML = `<button class="btn-action btn-apply-primary" onclick="handleApplyClick(${job.id}, '${escapeHtml(job.title)}')">🚀 Apply Now</button>`;
+                actionsBar.appendChild(applyActionWrap);
+
+                // Asynchronously check logged-in candidate application status
+                checkApplicationStatusForModal(job.id, job.title);
+            }
 
             // 2. WhatsApp Button (rendered ONLY if contact_whatsapp is present)
             if (job.contact_whatsapp && job.contact_whatsapp.trim()) {
@@ -2642,6 +2885,7 @@
                 waLink.className = "btn-action btn-whatsapp";
                 waLink.href = `https://wa.me/${cleanWA}?text=${waText}`;
                 waLink.target = "_blank";
+                waLink.onclick = () => trackEvent("whatsapp_click", job.id);
                 waLink.innerHTML = "💬 WhatsApp HR";
                 actionsBar.appendChild(waLink);
             }
@@ -2652,6 +2896,7 @@
                 const callLink = document.createElement("a");
                 callLink.className = "btn-action btn-call";
                 callLink.href = `tel:${cleanPhone}`;
+                callLink.onclick = () => trackEvent("call_click", job.id);
                 callLink.innerHTML = `📞 Call (${job.contact_phone})`;
                 actionsBar.appendChild(callLink);
             }
@@ -2666,15 +2911,7 @@
                 actionsBar.appendChild(emailLink);
             }
 
-            // 5. External Application URL
-            if (job.application_url && job.application_url.trim()) {
-                const extLink = document.createElement("a");
-                extLink.className = "btn-action btn-email";
-                extLink.href = job.application_url;
-                extLink.target = "_blank";
-                extLink.innerHTML = "🌐 Company Portal &rarr;";
-                actionsBar.appendChild(extLink);
-            }
+            // 5. Note: Company Portal button is deliberately REMOVED to keep visitors on DigiGarment
 
             document.getElementById("jobDetailModal").style.display = "flex";
         }
@@ -2718,15 +2955,21 @@
             }
         }
 
-        function handleApplyClick(jobId, jobTitle) {
-            if (!loggedInCandidate) {
-                // Not logged in or guest
-                if (confirm("To submit your direct application, please sign in with your Job Seeker account. Would you like to sign in now?")) {
-                    window.location.href = `/jobseeker/login?redirect=${encodeURIComponent('/jobs')}`;
-                }
+        async function handleApplyClick(jobId, jobTitle) {
+            trackEvent("apply_click", jobId);
+            const user = await checkUserAuth();
+            if (!user) {
+                const job = activeJobsCache.find(j => j.id === jobId);
+                openAuthPromptModal(job || { id: jobId, title: jobTitle });
                 return;
             }
 
+            if (user.account_type === "company") {
+                showToast("Employers cannot apply for jobs. Please sign in with a Job Seeker account.", false);
+                return;
+            }
+
+            loggedInCandidate = user;
             closeJobDetailModal();
             openDirectApplyModal(jobId, jobTitle);
         }
@@ -2779,8 +3022,15 @@
                     throw new Error(data.detail || "Application submission failed.");
                 }
 
+                trackEvent("application_submit", jobId, { application_id: data.application_id });
                 showToast("Application submitted successfully to employer!", true);
                 closeDirectApplyModal();
+
+                // Update apply button if detail modal exists
+                const wrap = document.getElementById("modalApplyActionWrap");
+                if (wrap) {
+                    wrap.innerHTML = `<span class="btn-action" style="background: #10B981; cursor: default; font-weight: 600;">✓ Applied (SUBMITTED)</span>`;
+                }
             } catch (err) {
                 showToast(err.message || "Failed to submit application.", false);
             } finally {
@@ -3143,9 +3393,31 @@
                 fetchJobs();
             }
 
-            // 7. Global Escape key handling for modals
+            // 7. Page View Analytics (deduplicated per browser session)
+            if (!sessionStorage.getItem("dg_page_view_tracked")) {
+                trackEvent("page_view");
+                sessionStorage.setItem("dg_page_view_tracked", "1");
+            }
+
+            // 8. Reopen Intended Job after authentication or direct URL
+            checkAndReopenIntendedJob();
+
+            // 9. Backdrop click to dismiss modals gracefully
+            window.addEventListener("click", (e) => {
+                const promptModal = document.getElementById("authPromptModal");
+                if (e.target === promptModal) {
+                    closeAuthPromptModal();
+                }
+                const detailModal = document.getElementById("jobDetailModal");
+                if (e.target === detailModal) {
+                    closeJobDetailModal();
+                }
+            });
+
+            // 10. Global Escape key handling for modals
             document.addEventListener("keydown", (e) => {
                 if (e.key === "Escape") {
+                    closeAuthPromptModal();
                     closeShareModal();
                     closeJobDetailModal();
                     closeCandidateModal();

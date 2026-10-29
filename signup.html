@@ -843,10 +843,37 @@
                     throw new Error(data.detail || "Failed to complete registration.");
                 }
 
-                showAlert("Account created successfully! Redirecting to dashboard...", false);
+        function getSafeRedirectUrl() {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const r = params.get("redirect") || params.get("return_to");
+                if (r && r.startsWith("/") && !r.startsWith("//") && !r.includes("\\") && !r.startsWith("/\\")) {
+                    return r;
+                }
+            } catch (e) {}
+            return null;
+        }
+
+        // Preserve redirect param on login link
+        document.addEventListener("DOMContentLoaded", () => {
+            const safeRedirect = getSafeRedirectUrl();
+            if (safeRedirect) {
+                const encoded = encodeURIComponent(safeRedirect);
+                const links = document.querySelectorAll(".auth-footer-links a");
+                links.forEach(link => {
+                    const href = link.getAttribute("href");
+                    if (href && !href.includes("redirect=")) {
+                        link.setAttribute("href", `${href}${href.includes('?') ? '&' : '?'}redirect=${encoded}`);
+                    }
+                });
+            }
+        });
+
+                showAlert("Account created successfully! Redirecting...", false);
+                const safeTarget = getSafeRedirectUrl() || data.redirect_url || (currentRole === "individual" ? "/dashboard/individual" : "/dashboard/company");
                 setTimeout(() => {
-                    window.location.href = data.redirect_url || (currentRole === "individual" ? "/dashboard/individual" : "/dashboard/company");
-                }, 1000);
+                    window.location.href = safeTarget;
+                }, 800);
             } catch (err) {
                 showAlert(err.message || "Failed to complete registration.");
                 btn.disabled = false;

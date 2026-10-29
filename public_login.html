@@ -282,6 +282,32 @@
             el.style.display = "none";
         }
 
+        function getSafeRedirectUrl() {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const r = params.get("redirect") || params.get("return_to");
+                if (r && r.startsWith("/") && !r.startsWith("//") && !r.includes("\\") && !r.startsWith("/\\")) {
+                    return r;
+                }
+            } catch (e) {}
+            return null;
+        }
+
+        // Preserve redirect param on registration links
+        document.addEventListener("DOMContentLoaded", () => {
+            const safeRedirect = getSafeRedirectUrl();
+            if (safeRedirect) {
+                const encoded = encodeURIComponent(safeRedirect);
+                const links = document.querySelectorAll(".auth-footer-links a");
+                links.forEach(link => {
+                    const href = link.getAttribute("href");
+                    if (href && !href.includes("redirect=")) {
+                        link.setAttribute("href", `${href}${href.includes('?') ? '&' : '?'}redirect=${encoded}`);
+                    }
+                });
+            }
+        });
+
         async function handleLogin(e) {
             e.preventDefault();
             hideAlert();
@@ -305,10 +331,11 @@
                     throw new Error(data.detail || "Sign in failed. Please check your credentials.");
                 }
 
-                showAlert("Signed in successfully! Redirecting to your dashboard...", false);
+                showAlert("Signed in successfully! Redirecting...", false);
+                const safeTarget = getSafeRedirectUrl() || data.redirect_url || (data.role === "employer" ? "/dashboard/company" : "/dashboard/individual");
                 setTimeout(() => {
-                    window.location.href = data.redirect_url || (data.role === "employer" ? "/dashboard/company" : "/dashboard/individual");
-                }, 600);
+                    window.location.href = safeTarget;
+                }, 500);
             } catch (err) {
                 showAlert(err.message || "Something went wrong. Please try again.");
                 btn.disabled = false;
