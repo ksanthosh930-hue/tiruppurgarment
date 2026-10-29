@@ -556,8 +556,9 @@ BLOG_ARTICLES = {
             <li><strong>Identify Bottlenecks:</strong> Highlight high-cycle-time operations that need support operators or workstation restructuring.</li>
         </ul>
 
-        <div style="background: #FFFBFB; border-left: 4px solid #9E1B32; padding: 16px; margin: 32px 0;">
-            <strong>Try our free tool:</strong> Use the <a href="/tools/sam-calculator" style="color: #9E1B32; font-weight: 700;">DigiGarment SAM / SMV Calculator</a> to compute operation minutes and export style breakdown sheets instantly.
+        <div style="background: #FDF2F4; border: 1.5px solid #FBCFE8; border-left: 4px solid #9E1B32; border-radius: 8px; padding: 20px 24px; margin: 32px 0;">
+            <p style="margin: 0 0 14px 0; font-size: 15px; font-weight: 600; color: #081226; line-height: 1.5;">Want to calculate garment standard minutes more easily? Try our free SMV/SAM Calculator.</p>
+            <a href="/tools/sam-calculator" style="display: inline-block; background: #9E1B32; color: #ffffff; padding: 10px 20px; border-radius: 6px; font-weight: 700; font-size: 14px; text-decoration: none;">Try Free SMV/SAM Calculator</a>
         </div>
         """
     },
@@ -590,6 +591,11 @@ BLOG_ARTICLES = {
         <p>At the end of an 8-hour shift, overall line efficiency is calculated by comparing actual finished pieces against total available working minutes:</p>
         <div style="background: #081226; color: #F8FAFC; padding: 16px; border-radius: 8px; font-family: monospace; font-size: 14px; margin: 16px 0;">
             Line Efficiency (%) = [(Total Pieces Produced × Style SAM) / (Number of Operators × Total Shift Minutes)] × 100
+        </div>
+
+        <div style="background: #FDF2F4; border: 1.5px solid #FBCFE8; border-left: 4px solid #9E1B32; border-radius: 8px; padding: 20px 24px; margin: 32px 0;">
+            <p style="margin: 0 0 14px 0; font-size: 15px; font-weight: 600; color: #081226; line-height: 1.5;">Want to calculate garment standard minutes more easily? Try our free SMV/SAM Calculator.</p>
+            <a href="/tools/sam-calculator" style="display: inline-block; background: #9E1B32; color: #ffffff; padding: 10px 20px; border-radius: 6px; font-weight: 700; font-size: 14px; text-decoration: none;">Try Free SMV/SAM Calculator</a>
         </div>
 
         <h2>Summary Takeaways</h2>
@@ -664,7 +670,16 @@ def get_blog_detail_page(slug: str):
         template_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "sam_blog_post.html")
         if os.path.exists(template_file):
             with open(template_file, "r", encoding="utf-8") as f:
-                return HTMLResponse(content=f.read())
+                page_html = f.read()
+            cta_banner = '''        <div style="background: #FDF2F4; border: 1.5px solid #FBCFE8; border-left: 4px solid #9E1B32; border-radius: 8px; padding: 20px 24px; margin: 32px 0;">
+            <p style="margin: 0 0 14px 0; font-size: 15px; font-weight: 600; color: #081226; line-height: 1.5;">Want to calculate garment standard minutes more easily? Try our free SMV/SAM Calculator.</p>
+            <a href="/tools/sam-calculator" style="display: inline-block; background: #9E1B32; color: #ffffff; padding: 10px 20px; border-radius: 6px; font-weight: 700; font-size: 14px; text-decoration: none;">Try Free SMV/SAM Calculator</a>
+        </div>'''
+            if '<div class="calculator-promo-card">' in page_html:
+                page_html = page_html.replace('<div class="calculator-promo-card">', cta_banner + '\n        <div class="calculator-promo-card">', 1)
+            elif "</body>" in page_html:
+                page_html = page_html.replace("</body>", cta_banner + "\n</body>", 1)
+            return HTMLResponse(content=page_html)
 
     canonical_url = f"{CANONICAL_DOMAIN}/blog/{slug}"
     escaped_title = html.escape(article["title"])
@@ -3899,17 +3914,6 @@ def get_job_or_category_page(slug: str, request: Request):
                 actionsBar.appendChild(emailLink);
             }}
 
-            // 7. Company Portal Apply
-            if (job.application_url && job.application_url.trim()) {{
-                var portalLink = document.createElement('a');
-                portalLink.className = 'btn-action btn-direct-link';
-                portalLink.href = job.application_url;
-                portalLink.target = '_blank';
-                portalLink.rel = 'noopener noreferrer';
-                portalLink.innerHTML = '🌐 Company Portal &rarr;';
-                actionsBar.appendChild(portalLink);
-            }}
-
             // 8. Direct Job Page Link
             var directLink = document.createElement('a');
             directLink.className = 'btn-action btn-direct-link';
@@ -3961,6 +3965,7 @@ def get_job_or_category_page(slug: str, request: Request):
                    j.salary_min, j.salary_max, j.salary_text, j.description,
                    j.requirements, j.skills, j.qualification, j.gender,
                    j.contact_phone, j.contact_whatsapp, j.contact_email, j.application_url,
+                   j.source_type, j.employer_user_id,
                    j.published_at, j.expires_at, j.created_at, j.status, j.is_archived,
                    COALESCE(cp.company_name, c.name, '') AS company_name,
                    COALESCE(cp.company_logo, c.logo_url, '') AS company_logo,
@@ -3975,7 +3980,7 @@ def get_job_or_category_page(slug: str, request: Request):
             # Job not found in database
             raise HTTPException(status_code=404, detail="Job posting not found.")
 
-        job = rows[0]
+        job = dict(rows[0])
         is_published = (job.get("status") or "").lower() == "published"
         is_archived = bool(job.get("is_archived"))
         exp_date = job.get("expires_at")
@@ -3983,6 +3988,34 @@ def get_job_or_category_page(slug: str, request: Request):
 
         if not is_published or is_archived or is_expired:
             raise HTTPException(status_code=410, detail="This job vacancy has expired or is no longer active.")
+
+        # Check authentication for protected contact details
+        session_cookie = request.cookies.get("public_session_id") if request else None
+        is_authenticated = False
+        if session_cookie and db_helpers["db_enabled"] and db_helpers["query_db"]:
+            try:
+                s_rows = db_helpers["query_db"]("""
+                    SELECT s.user_id 
+                    FROM public_user_sessions s
+                    JOIN public_users u ON s.user_id = u.id
+                    WHERE s.token = %s AND s.expires_at > CURRENT_TIMESTAMP AND u.is_active = TRUE;
+                """, (session_cookie,))
+                if s_rows:
+                    is_authenticated = True
+            except Exception:
+                pass
+
+        # Source classification
+        is_direct_job = (job.get("employer_user_id") is not None) or (
+            (job.get("source_type") or "").lower().strip() in ("employer", "manual", "direct company", "direct")
+        )
+
+        # Protect contact information for anonymous visitors
+        if not is_authenticated:
+            job["contact_phone"] = None
+            job["contact_whatsapp"] = None
+            job["contact_email"] = None
+            job["application_url"] = None
 
         job_title = get_display_job_title(job)
         job_slug = job.get("slug") or str(job.get("id"))
@@ -4211,7 +4244,7 @@ def get_job_or_category_page(slug: str, request: Request):
         else:
             custom_html = custom_html.replace('<div id="modalSkillsWrap">', '<div id="modalSkillsWrap" style="display: none;">', 1)
 
-        # Pre-render actions bar
+        # Pre-render actions bar according to source classification & auth
         actions_html = f"""
             <button type="button" class="btn-action btn-save-action" id="modalActionSaveBtn" aria-label="Save job" onclick="handleToggleSaveJob({job['id']})">
                 <span class="save-icon" id="modalActionSaveIcon">♡</span>
@@ -4221,22 +4254,32 @@ def get_job_or_category_page(slug: str, request: Request):
                 <span class="share-icon">↗</span>
                 <span>Share Job</span>
             </button>
+        """
+        # Apply Now is rendered ONLY for verified direct employer jobs
+        if is_direct_job:
+            actions_html += f"""
             <div id="modalApplyActionWrap">
                 <button class="btn-action btn-apply-primary" onclick="handleApplyClick({job['id']}, '{html.escape(job_title)}')">🚀 Apply Now</button>
             </div>
-        """
+            """
+
+        # WhatsApp HR rendered ONLY when authenticated and contact exists
         if job.get("contact_whatsapp") and job["contact_whatsapp"].strip():
             clean_wa = re.sub(r'[^0-9]', '', job["contact_whatsapp"])
             wa_text = urllib.parse.quote(f'Hello, I saw your job vacancy "{job_title}" on DigiGarment Tiruppur Jobs. I would like to apply.')
             actions_html += f'<a class="btn-action btn-whatsapp" href="https://wa.me/{clean_wa}?text={wa_text}" target="_blank">💬 WhatsApp HR</a>'
+
+        # Call rendered ONLY when authenticated and contact exists
         if job.get("contact_phone") and job["contact_phone"].strip():
             clean_phone = re.sub(r'[^0-9+]', '', job["contact_phone"])
             actions_html += f'<a class="btn-action btn-call" href="tel:{clean_phone}">📞 Call ({html.escape(job["contact_phone"])})</a>'
+
+        # Email rendered ONLY when authenticated and contact exists
         if job.get("contact_email") and job["contact_email"].strip():
             subj = urllib.parse.quote(f'Application for {job_title} - DigiGarment')
             actions_html += f'<a class="btn-action btn-email" href="mailto:{html.escape(job["contact_email"])}?subject={subj}">✉️ Email Resume</a>'
-        if job.get("application_url") and job["application_url"].strip():
-            actions_html += f'<a class="btn-action btn-email" href="{html.escape(job["application_url"])}" target="_blank">🌐 Company Portal &rarr;</a>'
+
+        # Note: Company Portal button is deliberately REMOVED to keep visitors on DigiGarment
 
         custom_html = custom_html.replace(
             '<div class="actions-bar" id="modalActionsBar">\n                    <!-- Dynamic Contact Actions injected only when verified data exists -->\n                </div>',
@@ -4246,6 +4289,9 @@ def get_job_or_category_page(slug: str, request: Request):
 
         # JSON representation of the job for client JS cache
         client_job = dict(job)
+        client_job["is_direct_job"] = is_direct_job
+        client_job["allow_direct_apply"] = is_direct_job
+        client_job["is_authenticated"] = is_authenticated
         for k, v in list(client_job.items()):
             if isinstance(v, (datetime.datetime, datetime.date)):
                 client_job[k] = v.isoformat()
@@ -4255,6 +4301,7 @@ def get_job_or_category_page(slug: str, request: Request):
         script_injection = f"""
         <script>
             window.SERVER_RENDERED_JOB = {json.dumps(client_job)};
+            window.IS_AUTHENTICATED_VIEWER = {"true" if is_authenticated else "false"};
             window.addEventListener('DOMContentLoaded', () => {{
                 if (window.SERVER_RENDERED_JOB && typeof activeJobsCache !== 'undefined') {{
                     const existingIdx = activeJobsCache.findIndex(j => j.id === window.SERVER_RENDERED_JOB.id);
