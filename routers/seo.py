@@ -4049,6 +4049,7 @@ def get_job_or_category_page(slug: str, request: Request):
             "datePosted": date_posted_iso,
             "employmentType": schema_job_type,
             "directApply": True,
+            "url": f"{CANONICAL_DOMAIN}/jobs?job={job_slug}",
             "jobLocation": {
                 "@type": "Place",
                 "address": {

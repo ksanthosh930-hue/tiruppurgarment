@@ -509,6 +509,21 @@
             background: linear-gradient(to right, #FFFBFB 0%, #FFFFFF 100%);
         }
 
+        .job-card.highlight-target {
+            border-color: var(--dg-red) !important;
+            box-shadow: 0 0 0 3px rgba(158, 27, 50, 0.25), 0 8px 24px rgba(158, 27, 50, 0.12) !important;
+            animation: targetCardPulse 2s ease-in-out 2;
+        }
+
+        @keyframes targetCardPulse {
+            0%, 100% {
+                box-shadow: 0 0 0 3px rgba(158, 27, 50, 0.25), 0 8px 24px rgba(158, 27, 50, 0.12);
+            }
+            50% {
+                box-shadow: 0 0 0 5px rgba(158, 27, 50, 0.45), 0 12px 28px rgba(158, 27, 50, 0.22);
+            }
+        }
+
         .job-card-header {
             display: flex;
             align-items: flex-start;
@@ -1527,7 +1542,7 @@
                         <span class="save-icon" id="modalSaveIcon">♡</span>
                         <span class="save-text" id="modalSaveText">Save Job</span>
                     </button>
-                    <button class="modal-close" aria-label="Close dialog"
+                    <button type="button" class="modal-close" aria-label="Close dialog"
                         onclick="closeJobDetailModal()">&times;</button>
                 </div>
             </div>
@@ -1965,22 +1980,8 @@
 
             const user = await checkUserAuth();
             if (!user) {
-                // If not logged in and came with an open param, show auth prompt
-                const numericId = Number(targetJobId);
-                let targetJob = activeJobsCache.find(j => j.id === numericId);
-                if (targetJob) {
-                    openAuthPromptModal(targetJob);
-                } else if (!isNaN(numericId)) {
-                    try {
-                        const res = await fetch(`/api/public/jobs/${numericId}`);
-                        if (res.ok) {
-                            const data = await res.json();
-                            if (data && data.success && data.job) {
-                                openAuthPromptModal(data.job);
-                            }
-                        }
-                    } catch (e) {}
-                }
+                // Do NOT open auth prompt popup automatically on page load.
+                // Preserve stored intended job for when the user signs in later.
                 return;
             }
 
@@ -2442,6 +2443,75 @@
             }
         }
 
+        // Target Job Scroll and Highlight Controller (Google Jobs Direct Apply)
+        let targetJobHighlighted = false;
+
+        async function handleTargetJobHighlight() {
+            if (targetJobHighlighted) return;
+
+            const params = new URLSearchParams(window.location.search);
+            const rawTarget = params.get("job") || params.get("job_id") || params.get("open");
+            if (!rawTarget || typeof rawTarget !== "string") return;
+
+            const targetId = rawTarget.trim();
+            if (!targetId) return;
+
+            // 1. Try to find the job in existing activeJobsCache (by ID or slug)
+            let targetJob = activeJobsCache.find(j => 
+                String(j.id) === targetId || (j.slug && j.slug.toLowerCase() === targetId.toLowerCase())
+            );
+
+            // 2. If not found in current page cache, safely fetch from existing public single job API
+            if (!targetJob) {
+                try {
+                    const res = await fetch(`/api/public/jobs/${encodeURIComponent(targetId)}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data && data.success && data.job) {
+                            targetJob = data.job;
+                            // Add/prepend to activeJobsCache and re-render listing
+                            const exists = activeJobsCache.some(j => j.id === targetJob.id);
+                            if (!exists) {
+                                activeJobsCache.unshift(targetJob);
+                                renderJobs(activeJobsCache);
+                if (window.SERVER_RENDERED_JOB && window.SERVER_RENDERED_JOB.id && !activeJobsCache.some(j => j.id === window.SERVER_RENDERED_JOB.id)) {
+                    activeJobsCache.push(window.SERVER_RENDERED_JOB);
+                }
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn("Could not fetch target job for highlighting:", e);
+                }
+            }
+
+            if (!targetJob) return;
+
+            // 3. Locate the rendered DOM card element
+            const safeSlug = targetJob.slug ? (window.CSS && CSS.escape ? CSS.escape(targetJob.slug) : targetJob.slug) : null;
+            const cardEl = document.getElementById(`job-card-${targetJob.id}`) ||
+                           document.querySelector(`[data-job-id="${targetJob.id}"]`) ||
+                           (safeSlug ? document.querySelector(`[data-job-slug="${safeSlug}"]`) : null);
+
+            if (!cardEl) return;
+
+            targetJobHighlighted = true;
+
+            // 4. Smooth scroll to bring the target job card into view
+            try {
+                cardEl.scrollIntoView({ behavior: "smooth", block: "center" });
+            } catch (err) {
+                cardEl.scrollIntoView();
+            }
+
+            // 5. Apply temporary visual highlight consistent with DigiGarment design
+            cardEl.classList.add("highlight-target");
+            setTimeout(() => {
+                cardEl.classList.remove("highlight-target");
+            }, 5000);
+        }
+        window.handleTargetJobHighlight = handleTargetJobHighlight;
+
         async function fetchJobs() {
             const requestId = ++currentSearchRequestId;
             const grid = document.getElementById("jobsGrid");
@@ -2484,8 +2554,12 @@
                 countEl.innerHTML = `Showing <strong>${data.total}</strong> active garment ${data.total === 1 ? 'vacancy' : 'vacancies'} in Tiruppur`;
 
                 renderJobs(activeJobsCache);
+                if (window.SERVER_RENDERED_JOB && window.SERVER_RENDERED_JOB.id && !activeJobsCache.some(j => j.id === window.SERVER_RENDERED_JOB.id)) {
+                    activeJobsCache.push(window.SERVER_RENDERED_JOB);
+                }
                 renderPagination(data.page, totalPages);
                 refreshVisibleCardSaveButtons();
+                handleTargetJobHighlight();
             } catch (err) {
                 if (requestId !== currentSearchRequestId) return;
                 console.error("Jobs fetch error:", err);
@@ -2520,6 +2594,11 @@
             jobs.forEach(j => {
                 const card = document.createElement("div");
                 card.className = `job-card ${j.is_featured ? 'featured' : ''}`;
+                card.id = `job-card-${j.id}`;
+                card.dataset.jobId = String(j.id);
+                if (j.slug) {
+                    card.dataset.jobSlug = String(j.slug);
+                }
                 card.onclick = () => openJobDetailModal(j.id);
 
                 const compRaw = (j.company_name && j.company_name.trim()) ? j.company_name.trim() : null;
@@ -2558,7 +2637,7 @@
                     <div>
                         <div class="job-card-header">
                             <div class="job-card-title-group">
-                                <h3><a href="${jobUrl}" onclick="event.preventDefault(); openJobDetailModal(${j.id})" style="color: inherit; text-decoration: none;">${escapeHtml(j.title)}</a></h3>
+                                <h3><a href="${jobUrl}" onclick="event.preventDefault(); event.stopPropagation(); openJobDetailModal(${j.id})" style="color: inherit; text-decoration: none;">${escapeHtml(j.title)}</a></h3>
                                 ${companyHtml}
                             </div>
                             ${featuredTag}
@@ -2734,8 +2813,34 @@
 
         // Job Detail Modal Logic
         let modalOpenedByPushState = false;
+        let pendingModalJobId = null;
+        let modalSavedScrollY = null;
 
-        async function openJobDetailModal(jobId) {
+        function isSameSearchState(a, b) {
+            if (!a || !b) return false;
+            return (
+                (a.q || '') === (b.q || '') &&
+                (a.department || 'All') === (b.department || 'All') &&
+                (a.role || 'All') === (b.role || 'All') &&
+                (a.location || 'All') === (b.location || 'All') &&
+                (Number(a.experience) || 0) === (Number(b.experience) || 0) &&
+                (Number(a.salary_min) || 0) === (Number(b.salary_min) || 0) &&
+                (a.job_type || 'All') === (b.job_type || 'All') &&
+                (a.sort || 'latest') === (b.sort || 'latest') &&
+                (Number(a.page) || 1) === (Number(b.page) || 1) &&
+                (Number(a.limit) || 10) === (Number(b.limit) || 10)
+            );
+        }
+
+        async function openJobDetailModal(jobId, options = {}) {
+            jobId = Number(jobId);
+            if (!jobId) return;
+            const modalEl = document.getElementById("jobDetailModal");
+            const isModalOpen = modalEl && modalEl.style.display === "flex";
+            if (pendingModalJobId === jobId) return;
+            if (!options.fromPopState && isModalOpen && currentDetailJobId === jobId) return;
+            pendingModalJobId = jobId;
+            try {
             let job = activeJobsCache.find(j => j.id === jobId);
             if (!job) {
                 try {
@@ -2759,11 +2864,16 @@
             }
 
             // 2. Authenticated Visitor -> Proceed to render details & record tracking
+            if (!isModalOpen) {
+                modalSavedScrollY = window.scrollY;
+            }
             currentDetailJobId = jobId;
             trackEvent("job_view", jobId);
 
             // Sync browser URL to permalink without reloading
-            if (window.history && window.history.pushState) {
+            if (options.fromPopState) {
+                modalOpenedByPushState = true;
+            } else if (window.history && window.history.pushState) {
                 const jobSlug = job.slug || job.id;
                 const targetUrl = `/jobs/${encodeURIComponent(jobSlug)}`;
                 if (window.location.pathname !== targetUrl) {
@@ -2914,6 +3024,11 @@
             // 5. Note: Company Portal button is deliberately REMOVED to keep visitors on DigiGarment
 
             document.getElementById("jobDetailModal").style.display = "flex";
+            } finally {
+                if (pendingModalJobId === jobId) {
+                    pendingModalJobId = null;
+                }
+            }
         }
 
         let loggedInCandidate = null;
@@ -3041,6 +3156,9 @@
 
         function closeJobDetailModal() {
             const modal = document.getElementById("jobDetailModal");
+            const isVisible = modal && modal.style.display && modal.style.display !== "none";
+            if (!isVisible && currentDetailJobId === null) return;
+            pendingModalJobId = null;
             if (modal) modal.style.display = "none";
             currentDetailJobId = null;
 
@@ -3049,18 +3167,47 @@
                 window.history.back();
             } else if (window.history && window.history.replaceState && window.location.pathname.startsWith('/jobs/')) {
                 window.history.replaceState(null, "", "/jobs" + (window.location.search || ""));
+                if (modalSavedScrollY !== null) {
+                    if (window.scrollY !== modalSavedScrollY) window.scrollTo(0, modalSavedScrollY);
+                    modalSavedScrollY = null;
+                }
             }
         }
 
         window.addEventListener('popstate', (e) => {
             if (e.state && e.state.modalJobId) {
-                openJobDetailModal(e.state.modalJobId);
+                openJobDetailModal(e.state.modalJobId, { fromPopState: true });
+                return;
+            }
+            const path = window.location.pathname || "";
+            if (path.startsWith('/jobs/') && path.length > '/jobs/'.length) {
+                const rawSlug = decodeURIComponent(path.slice('/jobs/'.length)).replace(/\/+$/, '').trim();
+                const cachedJob = rawSlug ? activeJobsCache.find(j => j.slug === rawSlug || String(j.id) === rawSlug) : null;
+                if (cachedJob) {
+                    openJobDetailModal(cachedJob.id, { fromPopState: true });
+                    return;
+                }
             } else {
                 const modal = document.getElementById("jobDetailModal");
+                pendingModalJobId = null;
                 if (modal && modal.style.display !== "none") {
                     modal.style.display = "none";
                     currentDetailJobId = null;
                     modalOpenedByPushState = false;
+                }
+                currentDetailJobId = null;
+                modalOpenedByPushState = false;
+                if (modalSavedScrollY !== null) {
+                    if (window.scrollY !== modalSavedScrollY) window.scrollTo(0, modalSavedScrollY);
+                    modalSavedScrollY = null;
+                }
+                const urlNavState = getSearchStateFromURL();
+                const grid = document.getElementById("jobsGrid");
+                const hasRenderedCards = Boolean(grid && grid.querySelector(".job-card")) && activeJobsCache.length > 0;
+                if (!isSameSearchState(searchState, urlNavState) || !hasRenderedCards) {
+                    Object.assign(searchState, urlNavState);
+                    applySearchStateToUI();
+                    fetchJobs();
                 }
             }
         });
@@ -3362,14 +3509,15 @@
                 });
             }
 
-            // 5. Browser Back / Forward (popstate) navigation support
-            window.addEventListener("popstate", () => {
-                const navState = getSearchStateFromURL();
+            // 5. Browser Back / Forward (popstate) navigation is handled by the consolidated popstate listener above.
+
+            /* Consolidated into primary popstate listener above
                 Object.assign(searchState, navState);
                 applySearchStateToUI();
                 fetchJobs();
             });
 
+            */
             // 6. Fetch initial jobs list (or hydrate from SSR data if available)
             const initDataEl = document.getElementById("initialJobsData");
             const hasCustomParams = window.location.search && window.location.search.replace('?', '').trim().length > 0;
@@ -3383,6 +3531,7 @@
                         totalPages = initData.total_pages || 1;
                         renderPagination(initData.page || 1, totalPages);
                         hydratedFromSSR = true;
+                        handleTargetJobHighlight();
                     }
                 } catch (e) {
                     console.warn("Could not hydrate from SSR data:", e);
