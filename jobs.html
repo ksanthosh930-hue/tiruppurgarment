@@ -2838,7 +2838,7 @@
             const modalEl = document.getElementById("jobDetailModal");
             const isModalOpen = modalEl && modalEl.style.display === "flex";
             if (pendingModalJobId === jobId) return;
-            if (!options.fromPopState && isModalOpen && currentDetailJobId === jobId) return;
+            if (!options.fromPopState && !options.preserveHistory && isModalOpen && currentDetailJobId === jobId) return;
             pendingModalJobId = jobId;
             try {
             let job = activeJobsCache.find(j => j.id === jobId);
@@ -2864,6 +2864,23 @@
             }
 
             // 2. Authenticated Visitor -> Proceed to render details & record tracking
+            if (job.login_required || job.is_authenticated !== true) {
+                try {
+                    const res = await fetch(`/api/public/jobs/${jobId}`, { cache: "no-store" });
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data && data.success && data.job) {
+                            job = data.job;
+                            const existingIdx = activeJobsCache.findIndex(j => j.id === jobId);
+                            if (existingIdx !== -1) {
+                                activeJobsCache[existingIdx] = job;
+                            } else {
+                                activeJobsCache.push(job);
+                            }
+                        }
+                    }
+                } catch (e) {}
+            }
             if (!isModalOpen) {
                 modalSavedScrollY = window.scrollY;
             }
@@ -2873,7 +2890,7 @@
             // Sync browser URL to permalink without reloading
             if (options.fromPopState) {
                 modalOpenedByPushState = true;
-            } else if (window.history && window.history.pushState) {
+            } else if (!options.preserveHistory && window.history && window.history.pushState) {
                 const jobSlug = job.slug || job.id;
                 const targetUrl = `/jobs/${encodeURIComponent(jobSlug)}`;
                 if (window.location.pathname !== targetUrl) {
@@ -3550,6 +3567,13 @@
 
             // 8. Reopen Intended Job after authentication or direct URL
             checkAndReopenIntendedJob();
+            if (window.SERVER_RENDERED_JOB && window.SERVER_RENDERED_JOB.id && !window.SERVER_RENDERED_JOB.is_authenticated) {
+                checkUserAuth().then(u => {
+                    if (u) {
+                        openJobDetailModal(window.SERVER_RENDERED_JOB.id, { preserveHistory: true });
+                    }
+                });
+            }
 
             // 9. Backdrop click to dismiss modals gracefully
             window.addEventListener("click", (e) => {

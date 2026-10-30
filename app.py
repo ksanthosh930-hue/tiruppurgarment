@@ -887,7 +887,7 @@ def get_jobs_page(request: Request):
                 import urllib.parse
                 import json
 
-                res = routers.jobs.get_public_jobs(page=1, limit=20)
+                res = routers.jobs.get_public_jobs(page=1, limit=20, request=request)
                 jobs = res.get("jobs", [])
                 total = res.get("total", 0)
 
@@ -947,7 +947,7 @@ def get_jobs_page(request: Request):
                         <div>
                             <div class="job-card-header">
                                 <div class="job-card-title-group">
-                                    <h3><a href="{j_url}" onclick="event.preventDefault(); openJobDetailModal({j_id})" style="color: inherit; text-decoration: none;">{esc_title}</a></h3>
+                                    <h3><a href="{j_url}" onclick="event.preventDefault(); event.stopPropagation(); openJobDetailModal({j_id})" style="color: inherit; text-decoration: none;">{esc_title}</a></h3>
                                     {comp_html}
                                 </div>
                                 {featured_tag}
