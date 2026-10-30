@@ -10,6 +10,7 @@ from contextlib import asynccontextmanager
 from typing import List, Dict, Any, Optional
 from fastapi import FastAPI, HTTPException, Cookie, Depends, Response, Form, UploadFile, File, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, RedirectResponse, JSONResponse, HTMLResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -103,6 +104,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(GZipMiddleware, minimum_size=500)
+
+@app.middleware("http")
+async def add_static_cache_headers(request: Request, call_next):
+    response = await call_next(request)
+    path = request.url.path
+    if path.startswith(("/css/", "/js/", "/assets/")) and response.status_code == 200:
+        if "Cache-Control" not in response.headers:
+            response.headers["Cache-Control"] = "public, max-age=86400"
+    return response
 
 @app.get("/health")
 @app.get("/api/health")
@@ -1066,7 +1077,7 @@ def get_blog_page():
 
 @app.get("/sam-calculator")
 def get_sam_calculator_page():
-    return FileResponse(os.path.join(BASE_DIR, "sam_calculator.html"))
+    return RedirectResponse(url="/tools/sam-calculator", status_code=301)
 
 @app.get("/logo.png")
 def get_logo():

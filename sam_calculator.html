@@ -4,21 +4,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Free SMV &amp; SAM Calculator for Garments | Formula &amp; Guide</title>
+    <title>SMV Calculation Formula &amp; Free SAM Calculator for Garments (2026 Guide)</title>
     <meta name="description"
-        content="Calculate garment SMV and SAM online for free. Learn the formulas, step-by-step calculations, garment operation breakdowns, and production efficiency.">
+        content="Free online SMV &amp; SAM Calculator for garments. Learn the exact SMV calculation formula, Standard Minute Value step-by-step examples, time study sheet, and line target math.">
     <link rel="canonical" href="https://tirupurgarment.in/tools/sam-calculator">
 
     <!-- Open Graph & Social Cards -->
-    <meta property="og:title" content="Free SMV &amp; SAM Calculator for Garments | Formula &amp; Guide">
+    <meta property="og:title" content="SMV Calculation Formula &amp; Free SAM Calculator for Garments (2026 Guide)">
     <meta property="og:description"
-        content="Calculate garment SMV and SAM online for free. Learn the formulas, step-by-step calculations, garment operation breakdowns, and production efficiency.">
+        content="Free online SMV &amp; SAM Calculator for garments. Learn the exact SMV calculation formula, Standard Minute Value step-by-step examples, time study sheet, and line target math.">
     <meta property="og:url" content="https://tirupurgarment.in/tools/sam-calculator">
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://tirupurgarment.in/assets/images/hero-automation.jpg">
     <meta name="twitter:card" content="summary_large_image">
 
-    <!-- Structured Data: WebApplication, BreadcrumbList -->
+    <!-- Structured Data: WebApplication, BreadcrumbList, HowTo & FAQPage -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "HowTo",
+          "name": "How to Calculate SMV (Standard Minute Value) in Garment Manufacturing",
+          "description": "Step-by-step industrial engineering formula to calculate garment SMV and SAM from observed stopwatch cycle time, performance rating, and relaxation allowances.",
+          "step": [
+            {
+              "@type": "HowToStep",
+              "position": 1,
+              "name": "Convert Observed Time to Basic Time (Normal Time)",
+              "text": "Divide average observed cycle time in seconds by 60 to get basic minutes, and multiply by operator performance rating: Basic Time (Min) = (Observed Seconds / 60) x (Rating % / 100)."
+            },
+            {
+              "@type": "HowToStep",
+              "position": 2,
+              "name": "Add Industrial Relaxation & Bundle Allowances",
+              "text": "Apply personal, fatigue, machine delay, and bundle allowances (typically 12% to 18%): SMV = Basic Time x [1 + (Allowance % / 100)]."
+            },
+            {
+              "@type": "HowToStep",
+              "position": 3,
+              "name": "Calculate Total Garment SMV & Production Target",
+              "text": "Sum all individual operation SMVs to get Total Garment SMV, then calculate shift output: Target = (Available Working Minutes x Efficiency %) / Total Garment SMV."
+            }
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What is the SMV calculation formula in garment manufacturing?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "The standard SMV calculation formula is: Basic Time (Normal Time) = Observed Time x (Performance Rating / 100), and SMV (Standard Minute Value) = Basic Time x [1 + (Allowance % / 100)]. If observed time is recorded in seconds, divide by 60 first."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What is SMV in garment manufacturing?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Standard Minute Value (SMV), also called Standard Allowed Minutes (SAM), is the standardized time in decimal minutes required for a qualified operator working at 100% standard pace to complete a garment operation, including handling motions and industrial allowances."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What is the difference between SMV and SAM?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "SMV (Standard Minute Value) and SAM (Standard Allowed Minutes) represent the exact same standard time metric. Asian manufacturing hubs (Tiruppur, Dhaka, Colombo) commonly use SAM on sewing floors, while US/EU buyers and costing engineers frequently use SMV."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How do I calculate garment production targets using SMV or SAM?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Multiply available working minutes (Operators x Shift Minutes) by planned efficiency %, then divide by Total Garment SMV: Target Output = (Available Working Minutes x Efficiency %) / Total Garment SMV."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -1050,7 +1119,7 @@
         <!-- Tool Description Header -->
         <!-- Tool Description Header -->
         <div class="calc-header">
-            <h1><span class="icon">⚒</span> Time Study SMV &amp; SAM Calculator</h1>
+            <h1><span class="icon">⚒</span> Garment SMV Calculation Formula &amp; Free SAM Calculator</h1>
             <p>Calculate Standard Minute Value (SMV) and Standard Allowed Minutes (SAM) for garment manufacturing. Use this free garment industrial engineering tool to understand operation times, standard time allowances, production targets, and efficiency calculations.</p>
         </div>
 
@@ -2068,6 +2137,22 @@
                     </div>
 
                     <!-- Internal Linking Cards -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 36px;">
+                        <div style="background: #FDF2F4; border: 1.5px solid #FBCFE8; border-radius: 10px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px;">
+                            <div>
+                                <h4 style="font-size: 15.5px; font-weight: 700; color: #9E1B32; margin: 0 0 6px 0;">Sewing Line Balancing &amp; Production Planning</h4>
+                                <p style="font-size: 13.5px; color: #475569; margin: 0; line-height: 1.5;">Explore digital pitch time computation, workstation allocation, and linear programming sewing line balancing solutions.</p>
+                            </div>
+                            <a href="/services/garment-production-planning" style="display: inline-block; background: #9E1B32; color: #ffffff; padding: 9px 16px; border-radius: 6px; font-weight: 600; font-size: 13px; text-decoration: none; align-self: flex-start;">Explore Line Balancing &rarr;</a>
+                        </div>
+                        <div style="background: #FFFBEB; border: 1.5px solid #FDE68A; border-radius: 10px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px;">
+                            <div>
+                                <h4 style="font-size: 15.5px; font-weight: 700; color: #92400E; margin: 0 0 6px 0;">Hiring IE, Production &amp; Quality Talent in Tiruppur?</h4>
+                                <p style="font-size: 13.5px; color: #475569; margin: 0; line-height: 1.5;">Browse verified Industrial Engineer, Production Manager, Merchandiser, and Quality Controller vacancies in Tiruppur.</p>
+                            </div>
+                            <a href="/tirupur-garment-jobs" style="display: inline-block; background: #B45309; color: #ffffff; padding: 9px 16px; border-radius: 6px; font-weight: 600; font-size: 13px; text-decoration: none; align-self: flex-start;">Browse Tirupur Garment Jobs &rarr;</a>
+                        </div>
+                    </div>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-top: 36px;">
                         <div style="background: #F0F7FF; border: 1.5px solid #BFDBFE; border-radius: 10px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px;">
                             <div>

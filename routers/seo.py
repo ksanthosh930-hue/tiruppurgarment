@@ -40,7 +40,8 @@ def get_display_job_title(job: Dict[str, Any]) -> str:
     generic_patterns = {
         "multiple positions", "multiple openings", "various openings", 
         "various positions", "openings", "vacancy", "urgent vacancy", 
-        "urgent openings", "multiple vacancies", "job opening", "job openings"
+        "urgent openings", "multiple vacancies", "job opening", "job openings",
+        "job", "jobs", "garment job", "tirupur job", "tiruppur job", "company job"
     }
     is_generic = (
         not raw_title 
@@ -52,7 +53,10 @@ def get_display_job_title(job: Dict[str, Any]) -> str:
         role = (job.get("job_role") or "").strip()
         if role and role != "-" and role.lower() not in generic_patterns and len(role) >= 3:
             return role
-    return raw_title or "Garment Vacancy"
+        dept = (job.get("department") or "").strip()
+        if dept and dept.lower() not in ("garments", "general", "other"):
+            return f"{dept} Vacancy"
+    return raw_title if (raw_title and not is_generic) else "Garment Industry Vacancy"
 
 # --- 1. ROBOTS.TXT ---
 @router.get("/robots.txt", response_class=PlainTextResponse)
@@ -242,8 +246,8 @@ SERVICE_DATA = {
         ]
     },
     "garment-production-planning": {
-        "title": "Garment Production Planning & Line Balancing | DigiGarment",
-        "description": "Digital production planning, pitch time computation, and sewing line balancing solutions for Tiruppur apparel manufacturers and garment export units.",
+        "title": "Garment Production Planning & Sewing Line Balancing (Linear Programming & SAM) | DigiGarment",
+        "description": "Digital garment production planning, pitch time computation, and linear programming for apparel sewing line balancing in Tiruppur garment export factories.",
         "h1": "Garment Production Planning & Sewing Line Balancing Solutions",
         "icon": "⚙",
         "problem": "Unbalanced sewing lines create severe bottlenecks where fast operations wait for slower operations, resulting in low overall line efficiency (often dropping below 50%) and high operator overtime costs.",
@@ -252,7 +256,8 @@ SERVICE_DATA = {
             "Automatic Pitch Time calculation and Theoretical Workstation sizing",
             "Operation Breakdown sequencing and Line Balancing matrix",
             "Hourly target adjustment based on operator efficiency curves",
-            "Real-time bottleneck identification across assembly lines"
+            "Real-time bottleneck identification across assembly lines",
+            "Linear programming and mathematical optimization for apparel sewing line balancing"
         ],
         "faq": [
             {
@@ -525,8 +530,8 @@ def get_service_detail_page(slug: str):
 # --- 5. BLOG POST PAGES ---
 BLOG_ARTICLES = {
     "what-is-sam-in-garment-manufacturing": {
-        "title": "SMV Calculation in Garments – Formula, Examples & Calculator | DigiGarment",
-        "description": "Learn SMV calculation in garment manufacturing with the formula, step-by-step examples, and a free SMV calculator. Calculate Standard Minute Value for sewing easily.",
+        "title": "What is SAM & SMV in Garment Industry? Standard Minute Value Formula & Examples",
+        "description": "Understand what SAM (Standard Allowed Minutes) and SMV (Standard Minute Value) mean in the garment industry, including allowance percentages, formulas, and sewing examples.",
         "h1": "What is SAM in Garment Manufacturing? Complete Guide to Standard Allowed Minutes",
         "date": "2026-09-01",
         "category": "Industrial Engineering",
@@ -895,8 +900,8 @@ def get_blog_detail_page(slug: str):
 SEO_LANDING_PAGES = {
     "tirupur-jobs": {
         "slug": "tirupur-jobs",
-        "title": "Tirupur Jobs | Latest Jobs in Tirupur | DigiGarment",
-        "description": "Explore verified job vacancies across Tirupur. Find opportunities in garment manufacturing, textile processing, production, merchandising, quality control, and industrial operations.",
+        "title": "Jobs in Tirupur (2026) | Today's Garment & Company Job Vacancies (Direct HR Contact)",
+        "description": "Apply to verified jobs in Tirupur today. Direct HR contact number & WhatsApp for cotton & knitwear export companies, Merchandiser, QC, Accounts, Driver, and Female vacancies.",
         "h1": "Tirupur Jobs",
         "intro": "Your central employment gateway for verified job vacancies across Tirupur's industrial manufacturing clusters, textile units, and garment export houses.",
         "location_filter": "Tiruppur",
@@ -964,8 +969,8 @@ SEO_LANDING_PAGES = {
     },
     "tirupur-garment-jobs": {
         "slug": "tirupur-garment-jobs",
-        "title": "Tirupur Garment Jobs | Garment Industry Jobs | DigiGarment",
-        "description": "Find active garment factory jobs in Tirupur export houses. Explore verified vacancies across merchandising, production, quality (QA/QC), cutting, sewing, and finishing.",
+        "title": "Tirupur Garment Job Vacancy 2026 | Cotton, Buying Office & Export Company Jobs (HR Contact)",
+        "description": "Browse active Tirupur garment job vacancies with direct HR contact numbers. Daily openings in cotton knitwear companies, international buying offices, Netaji Apparel Park, and female/fresher roles.",
         "h1": "Tirupur Garment Jobs",
         "intro": "The dedicated industry authority for garment manufacturing careers, knitwear export house vacancies, and apparel production jobs across Tirupur.",
         "location_filter": "Tiruppur",
@@ -1050,8 +1055,8 @@ SEO_LANDING_PAGES = {
     },
     "garment-jobs-in-tirupur": {
         "slug": "garment-jobs-in-tirupur",
-        "title": "Garment Jobs in Tirupur | Career & Hiring Guide | DigiGarment",
-        "description": "Practical career and hiring guide for garment jobs in Tirupur. Insights on fresher vs experienced roles, department qualifications, interview tips, and how to apply.",
+        "title": "Garment Jobs in Tirupur 2026 | Freshers, Female & Experienced Vacancies Guide",
+        "description": "Find verified garment jobs in Tirupur for freshers, females, and experienced professionals. Explore salary ranges, direct HR contact numbers, and export company openings.",
         "h1": "Garment Jobs in Tirupur",
         "intro": "Comprehensive career guidance, qualification standards, and verified vacancies for garment professionals and job seekers entering the Tirupur apparel sector.",
         "location_filter": "Tiruppur",
@@ -4127,8 +4132,15 @@ def get_job_or_category_page(slug: str, request: Request):
         })
 
         comp_part = f" at {job_comp}" if job_comp else ""
-        meta_page_title = f"{job_title}{comp_part} in Tiruppur | Garment Jobs"
-        meta_page_desc = f"Apply for {job_title}{comp_part} in {job_loc}. Openings: {openings_cnt}. Verified apparel industry vacancy on TirupurGarment.in."
+        exp_min_meta = job.get("experience_min")
+        exp_max_meta = job.get("experience_max")
+        if exp_min_meta is not None:
+            exp_meta_str = "Fresher Eligible" if exp_min_meta == 0 else f"{exp_min_meta}{'-' + str(exp_max_meta) if exp_max_meta else '+'} Yrs Exp"
+        else:
+            exp_meta_str = "All Experience Levels"
+        sal_meta_str = job.get("salary_text") or (f"₹{int(job['salary_min']):,}/mo" if job.get("salary_min") else "Attractive Salary")
+        meta_page_title = f"{job_title} Job Vacancy in Tirupur{comp_part} | Direct HR Contact"
+        meta_page_desc = f"Apply for {job_title} job vacancy{comp_part} in {job_loc} ({openings_cnt} {'Openings' if openings_cnt > 1 else 'Opening'}, {exp_meta_str}, {sal_meta_str}). Direct HR contact number & WhatsApp on TirupurGarment.in."
 
         # Read jobs.html to serve complete progressive frontend application
         with open(os.path.join(BASE_DIR, "jobs.html"), "r", encoding="utf-8") as f:
