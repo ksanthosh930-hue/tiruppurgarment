@@ -1378,6 +1378,42 @@
                         </div>
                     </div>
 
+                    <!-- Registered Job Seekers Directory Panel (Strictly Read-Only) -->
+                    <div class="card-panel" id="registeredJobSeekersPanel" style="margin-bottom: 24px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                            <div>
+                                <h2 class="card-panel-title" style="margin: 0 0 2px 0;">🎓 Registered Job Seekers Directory (<span id="registeredSeekersCountBadge">0</span>)</h2>
+                                <p style="margin: 0; font-size: 13px; color: #64748b;">Complete read-only list of all candidates registered on the portal with contact details, location, and job activity.</p>
+                            </div>
+                            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                <input type="text" id="registeredSeekersSearch" class="form-control" placeholder="🔍 Search name, mobile, email, role, location..." style="min-width: 260px;" oninput="filterRegisteredJobSeekers()">
+                                <button type="button" class="btn btn-secondary" onclick="exportRegisteredJobSeekersCSV()" style="display: flex; align-items: center; gap: 6px; white-space: nowrap;">
+                                    <span>📥</span> Export CSV / Excel
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table" id="registeredSeekersTable">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Candidate Name</th>
+                                        <th>Mobile &amp; WhatsApp</th>
+                                        <th>Email</th>
+                                        <th>Role &amp; Experience</th>
+                                        <th>Location</th>
+                                        <th>Jobs Viewed / Applied</th>
+                                        <th>Resume</th>
+                                        <th>Registered Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="registeredSeekersBody">
+                                    <tr><td colspan="9" style="text-align: center; color: #64748b; padding: 24px;">Loading registered job seekers...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                     <!-- Job Performance Table Panel -->
                     <div class="card-panel" style="margin-bottom: 24px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
@@ -2402,10 +2438,153 @@
                 renderAnalyticsJobsTable(data.top_jobs || []);
                 renderPopularSearches(data.popular_searches || []);
                 renderDailyTrends(data.daily_trends || []);
+                loadRegisteredJobSeekers();
             } catch (err) {
                 console.error("Error loading job seeker analytics:", err);
                 showToast("Failed to load analytics: " + err.message, false);
             }
+        }
+
+        let currentRegisteredSeekersList = [];
+
+        async function loadRegisteredJobSeekers() {
+            const tbody = document.getElementById("registeredSeekersBody");
+            try {
+                const res = await fetch("/api/admin/analytics/job-seekers?limit=500");
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                if (!data || !data.success) throw new Error("Invalid response");
+
+                currentRegisteredSeekersList = data.seekers || [];
+                const badgeEl = document.getElementById("registeredSeekersCountBadge");
+                if (badgeEl) badgeEl.textContent = (data.total ?? currentRegisteredSeekersList.length).toLocaleString();
+                renderRegisteredJobSeekersTable(currentRegisteredSeekersList);
+            } catch (err) {
+                console.error("Error loading registered job seekers:", err);
+                if (tbody) {
+                    tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #ef4444; padding: 20px;">Failed to load registered job seekers list.</td></tr>`;
+                }
+            }
+        }
+
+        function renderRegisteredJobSeekersTable(seekers) {
+            const tbody = document.getElementById("registeredSeekersBody");
+            if (!tbody) return;
+            tbody.innerHTML = "";
+
+            if (!seekers || seekers.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #64748b; padding: 24px;">No matching registered job seekers found.</td></tr>`;
+                return;
+            }
+
+            seekers.forEach((s, idx) => {
+                const tr = document.createElement("tr");
+                const fullName = s.full_name || "Job Seeker";
+                const mobile = (s.mobile || "").trim();
+                const cleanWa = (s.whatsapp || mobile).replace(/\D/g, "");
+                const waNumber = cleanWa.length === 10 ? `91${cleanWa}` : cleanWa;
+
+                const mobileHtml = mobile
+                    ? `<div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                           <a href="tel:+91${escapeHtml(mobile)}" style="font-weight: 700; color: #0f172a; text-decoration: none;">📞 ${escapeHtml(mobile)}</a>
+                           ${waNumber ? `<a href="https://wa.me/${waNumber}" target="_blank" rel="noopener noreferrer" style="background: #dcfce7; color: #15803d; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 4px; text-decoration: none;">💬 WhatsApp</a>` : ""}
+                       </div>`
+                    : `<span style="color: #94a3b8;">-</span>`;
+
+                const expNum = parseFloat(s.experience_years);
+                const expBadge = (!isNaN(expNum) && expNum > 0)
+                    ? `<span class="badge" style="background: #eff6ff; color: #1d4ed8; font-weight: 600; font-size: 11px; padding: 2px 6px; border-radius: 4px;">${expNum} Yrs Exp</span>`
+                    : `<span class="badge" style="background: #f1f5f9; color: #475569; font-weight: 500; font-size: 11px; padding: 2px 6px; border-radius: 4px;">Fresher</span>`;
+
+                const roleText = s.job_title
+                    ? `<div style="font-weight: 600; color: #0f172a;">${escapeHtml(s.job_title)}</div>`
+                    : `<div style="color: #64748b; font-size: 12.5px;">Not specified</div>`;
+
+                const resumeHtml = s.resume_url
+                    ? `<a href="${escapeHtml(s.resume_url)}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" style="padding: 3px 8px; font-size: 11.5px;">📄 View Resume</a>`
+                    : `<span style="color: #94a3b8; font-size: 12px;">No Resume</span>`;
+
+                const regDate = s.created_at
+                    ? new Date(s.created_at).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
+                    : "-";
+
+                tr.innerHTML = `
+                    <td style="color: #64748b; font-weight: 600;">${idx + 1}</td>
+                    <td>
+                        <div style="font-weight: 700; color: #0f172a; font-size: 14px;">${escapeHtml(fullName)}</div>
+                        ${s.skills ? `<small style="color: #64748b;">Skills: ${escapeHtml(s.skills)}</small>` : ""}
+                    </td>
+                    <td>${mobileHtml}</td>
+                    <td style="font-size: 13px; color: #334155;">${escapeHtml(s.email || "-")}</td>
+                    <td>
+                        ${roleText}
+                        <div style="margin-top: 3px;">${expBadge}</div>
+                    </td>
+                    <td style="font-weight: 500; color: #1e293b;">${escapeHtml(s.location || "-")}</td>
+                    <td>
+                        <span style="font-weight: 600; color: #0284c7;">👁️ ${s.jobs_viewed || 0} viewed</span>
+                        <span style="color: #cbd5e1; margin: 0 4px;">|</span>
+                        <span style="font-weight: 600; color: #059669;">📄 ${s.applications_count || 0} applied</span>
+                    </td>
+                    <td>${resumeHtml}</td>
+                    <td style="font-size: 12.5px; color: #475569; white-space: nowrap;">${regDate}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filterRegisteredJobSeekers() {
+            const q = (document.getElementById("registeredSeekersSearch")?.value || "").toLowerCase().trim();
+            if (!q) {
+                renderRegisteredJobSeekersTable(currentRegisteredSeekersList);
+                return;
+            }
+            const filtered = currentRegisteredSeekersList.filter(s =>
+                (s.full_name || "").toLowerCase().includes(q) ||
+                (s.mobile || "").toLowerCase().includes(q) ||
+                (s.email || "").toLowerCase().includes(q) ||
+                (s.job_title || "").toLowerCase().includes(q) ||
+                (s.location || "").toLowerCase().includes(q) ||
+                (s.skills || "").toLowerCase().includes(q)
+            );
+            renderRegisteredJobSeekersTable(filtered);
+        }
+
+        function exportRegisteredJobSeekersCSV() {
+            if (!currentRegisteredSeekersList || currentRegisteredSeekersList.length === 0) {
+                showToast("No registered job seekers available to export.", false);
+                return;
+            }
+            const headers = ["S.No", "Full Name", "Mobile", "Email", "Job Role", "Experience (Years)", "Location", "Skills", "Jobs Viewed", "Applications", "Registered At (IST)"];
+            const rows = currentRegisteredSeekersList.map((s, i) => {
+                const regDate = s.created_at
+                    ? new Date(s.created_at).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })
+                    : "";
+                const cols = [
+                    i + 1,
+                    s.full_name || "",
+                    s.mobile || "",
+                    s.email || "",
+                    s.job_title || "",
+                    s.experience_years ?? 0,
+                    s.location || "",
+                    s.skills || "",
+                    s.jobs_viewed || 0,
+                    s.applications_count || 0,
+                    regDate
+                ];
+                return cols.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",");
+            });
+            const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\r\n");
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `Registered_Job_Seekers_${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
 
         function renderAnalyticsKPIs(m) {

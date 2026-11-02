@@ -1189,3 +1189,83 @@ def get_job_viewers_history(
         logger.error(f"Error fetching viewers for job {job_id}: {e}")
         raise HTTPException(status_code=500, detail=f"Database error loading job viewers: {e}")
 
+
+@router.get("/analytics/job-seekers")
+def get_registered_job_seekers_list(
+    limit: int = Query(500, ge=1, le=2000),
+    offset: int = Query(0, ge=0),
+    admin: Dict[str, Any] = Depends(require_admin)
+):
+    """
+    Strictly READ-ONLY administrative endpoint returning all registered Job Seekers
+    (public_users where account_type = 'individual' joined with individual_profiles)
+    and their read-only activity counts. Does not modify or delete any user data.
+    """
+    if not db_helpers["db_enabled"] or not db_helpers["query_db"]:
+        return {"success": True, "seekers": [], "total": 0}
+
+    try:
+        query = """
+            SELECT
+                u.id AS user_id,
+                u.email,
+                u.is_active,
+                u.created_at,
+                COALESCE(p.full_name, '') AS full_name,
+                COALESCE(p.mobile, '') AS mobile,
+                COALESCE(p.mobile, '') AS whatsapp,
+                COALESCE(p.job_title, '') AS job_title,
+                COALESCE(p.department, '') AS department,
+                p.experience_years,
+                COALESCE(p.skills, '') AS skills,
+                COALESCE(p.location, '') AS location,
+                COALESCE(p.preferred_location, '') AS preferred_location,
+                COALESCE(p.expected_salary, '') AS expected_salary,
+                COALESCE(p.resume_url, '') AS resume_url,
+                COALESCE(ev.jobs_viewed, 0) AS jobs_viewed,
+                COALESCE(ev.whatsapp_clicks, 0) AS whatsapp_clicks,
+                COALESCE(ev.call_clicks, 0) AS call_clicks,
+                ev.last_active_at,
+                COALESCE(ap.applications_count, 0) AS applications_count
+            FROM public_users u
+            LEFT JOIN individual_profiles p ON u.id = p.user_id
+            LEFT JOIN (
+                SELECT
+                    user_id,
+                    COUNT(DISTINCT job_id) FILTER (WHERE event_type = 'job_view') AS jobs_viewed,
+                    COUNT(*) FILTER (WHERE event_type = 'whatsapp_click') AS whatsapp_clicks,
+                    COUNT(*) FILTER (WHERE event_type = 'call_click') AS call_clicks,
+                    MAX(created_at) AS last_active_at
+                FROM job_analytics_events
+                WHERE user_id IS NOT NULL
+                GROUP BY user_id
+            ) ev ON u.id = ev.user_id
+            LEFT JOIN (
+                SELECT
+                    candidate_user_id,
+                    COUNT(*) AS applications_count
+                FROM job_applications
+                WHERE candidate_user_id IS NOT NULL
+                GROUP BY candidate_user_id
+            ) ap ON u.id = ap.candidate_user_id
+            WHERE u.account_type = 'individual'
+            ORDER BY u.created_at DESC
+            LIMIT %s OFFSET %s;
+        """
+        rows = db_helpers["query_db"](query, (limit, offset)) or []
+
+        count_rows = db_helpers["query_db"](
+            "SELECT COUNT(*) AS total FROM public_users WHERE account_type = 'individual';"
+        )
+        total = count_rows[0]["total"] if count_rows else len(rows)
+
+        return {
+            "success": True,
+            "seekers": rows,
+            "total": total
+        }
+    except Exception as e:
+        logger.error(f"Error fetching registered job seekers list: {e}")
+        raise HTTPException(status_code=500, detail=f"Database error loading job seekers: {e}")
+
+
