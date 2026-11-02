@@ -121,6 +121,12 @@ def get_sitemap_xml():
         {"loc": f"{CANONICAL_DOMAIN}/jobs/finishing-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
         {"loc": f"{CANONICAL_DOMAIN}/jobs/accounts-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
         {"loc": f"{CANONICAL_DOMAIN}/jobs/hr-admin-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
+        {"loc": f"{CANONICAL_DOMAIN}/jobs/female-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
+        {"loc": f"{CANONICAL_DOMAIN}/jobs/driver-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
+        {"loc": f"{CANONICAL_DOMAIN}/jobs/designer-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
+        {"loc": f"{CANONICAL_DOMAIN}/jobs/fresher-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
+        {"loc": f"{CANONICAL_DOMAIN}/jobs/buying-office-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
+        {"loc": f"{CANONICAL_DOMAIN}/jobs/ie-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
     ]
 
     job_urls = []
@@ -568,8 +574,8 @@ BLOG_ARTICLES = {
         """
     },
     "how-to-calculate-garment-production-target-and-efficiency": {
-        "title": "How to Calculate Garment Production Target & Line Efficiency | DigiGarment",
-        "description": "Step-by-step practical formulas for calculating operator hourly targets, shift production quotas, pitch time, and line efficiency in apparel factories.",
+        "title": "How to Calculate Garment Production Target, Pitch Time & Line Efficiency (Formula + Examples)",
+        "description": "Step-by-step garment production target and sewing line efficiency formulas using SAM/SMV, pitch time, workstation allocation, and 8-hour shift calculation examples.",
         "h1": "How to Calculate Garment Production Target and Sewing Line Efficiency",
         "date": "2026-09-05",
         "category": "Production Planning",
@@ -604,7 +610,20 @@ BLOG_ARTICLES = {
         </div>
 
         <h2>Summary Takeaways</h2>
-        <p>Regular daily monitoring of these calculations prevents surprise delays, ensures fair operator incentive allocation, and maintains continuous garment floor productivity.</p>
+        <p>Regular daily monitoring of these calculations prevents surprise delays, ensures fair operator incentive allocation, and maintains continuous garment floor productivity. For automated line balancing, explore our <a href="/services/garment-production-planning">Garment Production Planning &amp; Line Balancing Service</a>.</p>
+        <h2>Frequently Asked Questions</h2>
+        <details style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 16px; margin-bottom: 12px; cursor: pointer;">
+            <summary style="font-weight: 700; color: #081226;">How do you calculate hourly garment production target from SAM or SMV?</summary>
+            <p style="margin: 10px 0 0 0; color: #64748B;">At 100% efficiency, a single workstation hourly target is 60 divided by the Operation SAM (Target = 60 / SAM). For an entire sewing line, multiply total operators by 60, divide by Total Style SAM, and multiply by expected line efficiency percentage.</p>
+        </details>
+        <details style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 16px; margin-bottom: 12px; cursor: pointer;">
+            <summary style="font-weight: 700; color: #081226;">What is the formula for sewing line efficiency in garment manufacturing?</summary>
+            <p style="margin: 10px 0 0 0; color: #64748B;">Line Efficiency (%) = [(Total Garment Pieces Produced × Style SAM) / (Total Number of Operators × Shift Working Minutes)] × 100.</p>
+        </details>
+        <details style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 16px; margin-bottom: 12px; cursor: pointer;">
+            <summary style="font-weight: 700; color: #081226;">How is Pitch Time calculated for garment sewing line balancing?</summary>
+            <p style="margin: 10px 0 0 0; color: #64748B;">Pitch Time = Total Style SAM / Number of Operators on the line. Theoretical Workstations for each operation = Operation SAM / Pitch Time.</p>
+        </details>
         """
     },
     "tiruppur-garment-industry-jobs-and-hiring-guide": {
@@ -631,7 +650,7 @@ BLOG_ARTICLES = {
         <p>Floor supervisors manage operator machine allocations, monitor daily production targets, and ensure bundle flow through the assembly line.</p>
 
         <div style="background: #FFFBFB; border-left: 4px solid #9E1B32; padding: 16px; margin: 32px 0;">
-            <strong>Looking for openings in Tiruppur?</strong> Browse verified vacancies on our <a href="/jobs" style="color: #9E1B32; font-weight: 700;">Tiruppur Garment Jobs Portal</a> or submit your profile for direct factory matching.
+            <strong>Looking for openings in Tiruppur?</strong> Browse verified vacancies on our <a href="/jobs" style="color: #9E1B32; font-weight: 700;">Tiruppur Garment Jobs Portal</a>, <a href="/jobs/merchandiser-jobs-tiruppur" style="color: #9E1B32; font-weight: 700;">Merchandiser Jobs</a>, <a href="/jobs/female-jobs-tiruppur" style="color: #9E1B32; font-weight: 700;">Female Jobs</a>, or <a href="/jobs/fresher-jobs-tiruppur" style="color: #9E1B32; font-weight: 700;">Fresher Vacancies</a>.
         </div>
         """
     },
@@ -723,6 +742,26 @@ def get_blog_detail_page(slug: str):
                     {"@type": "ListItem", "position": 1, "name": "Home", "item": f"{CANONICAL_DOMAIN}/"},
                     {"@type": "ListItem", "position": 2, "name": "Blog", "item": f"{CANONICAL_DOMAIN}/blog"},
                     {"@type": "ListItem", "position": 3, "name": article["h1"], "item": canonical_url}
+                ]
+            },
+            {
+                "@type": "FAQPage",
+                "mainEntity": [
+                    {
+                        "@type": "Question",
+                        "name": "How do you calculate hourly garment production target from SAM or SMV?",
+                        "acceptedAnswer": {"@type": "Answer", "text": "At 100% efficiency, workstation target per hour = 60 / Operation SAM. For a full sewing line, Line Target/Hour = [(Operators × 60) / Total Style SAM] × (Target Efficiency % / 100)."}
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "What is the formula for sewing line efficiency in garment manufacturing?",
+                        "acceptedAnswer": {"@type": "Answer", "text": "Line Efficiency (%) = [(Total Garment Pieces Produced × Style SAM) / (Total Number of Operators × Shift Working Minutes)] × 100."}
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "How is Pitch Time calculated for garment sewing line balancing?",
+                        "acceptedAnswer": {"@type": "Answer", "text": "Pitch Time = Total Style SAM / Number of Operators on the line. Theoretical Workstations = Operation SAM / Pitch Time."}
+                    }
                 ]
             }
         ]
@@ -927,6 +966,10 @@ SEO_LANDING_PAGES = {
                     <strong style="color: #081226; font-size: 14px; display: block; margin-bottom: 6px;">📍 Mangalam &amp; Dharapuram Road</strong>
                     <span style="color: #64748B; font-size: 13px; line-height: 1.5;">Home to hundreds of medium and boutique apparel manufacturers, domestic garment units, and packaging suppliers.</span>
                 </div>
+                <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 16px;">
+                    <strong style="color: #081226; font-size: 14px; display: block; margin-bottom: 6px;">📍 Avinashi Road, Kangayam Road &amp; Netaji Apparel Park (NAP)</strong>
+                    <span style="color: #64748B; font-size: 13px; line-height: 1.5;">High-demand employment corridor for Netaji Apparel Park export units, Avinashi garment factories, and Kangayam Road female &amp; fresher day-shift openings.</span>
+                </div>
             </div>
         </div>
         """,
@@ -938,7 +981,13 @@ SEO_LANDING_PAGES = {
             {"title": "Sewing Technician", "url": "/jobs/sewing-jobs-tiruppur"},
             {"title": "Industrial Engineer (IE)", "url": "/jobs?department=Industrial%20Engineering"},
             {"title": "Stores & Trim Auditor", "url": "/jobs?department=Stores"},
-            {"title": "Packaging & Dispatch In-charge", "url": "/jobs?department=Packing"}
+            {"title": "Packaging & Dispatch In-charge", "url": "/jobs/finishing-jobs-tiruppur"},
+            {"title": "Female Job Vacancies in Tirupur", "url": "/jobs/female-jobs-tiruppur"},
+            {"title": "Driver Jobs in Tirupur", "url": "/jobs/driver-jobs-tiruppur"},
+            {"title": "Graphic & Apparel Designer", "url": "/jobs/designer-jobs-tiruppur"},
+            {"title": "Fresher Job Vacancies", "url": "/jobs/fresher-jobs-tiruppur"},
+            {"title": "Buying Office & Export Docs", "url": "/jobs/buying-office-jobs-tiruppur"},
+            {"title": "Accounts & Tally Jobs", "url": "/jobs/accounts-jobs-tiruppur"}
         ],
         "related_searches": [
             {"title": "Tirupur Garment Industry Hub", "url": "/tirupur-garment-jobs"},
@@ -1024,7 +1073,12 @@ SEO_LANDING_PAGES = {
             {"title": "Sewing Machine Mechanic", "url": "/jobs/sewing-jobs-tiruppur"},
             {"title": "Sampling Coordinator", "url": "/jobs/merchandiser-jobs-tiruppur"},
             {"title": "Production Line In-charge", "url": "/jobs/production-jobs-tiruppur"},
-            {"title": "Finishing & Packing Supervisor", "url": "/jobs?department=Finishing"}
+            {"title": "Finishing & Packing Supervisor", "url": "/jobs/finishing-jobs-tiruppur"},
+            {"title": "Cotton & Buying Office Jobs", "url": "/jobs/buying-office-jobs-tiruppur"},
+            {"title": "Female Operators & Staff", "url": "/jobs/female-jobs-tiruppur"},
+            {"title": "Fresher Garment Vacancies", "url": "/jobs/fresher-jobs-tiruppur"},
+            {"title": "Industrial Engineer (IE & SAM)", "url": "/jobs/ie-jobs-tiruppur"},
+            {"title": "Graphic & Fashion Designer", "url": "/jobs/designer-jobs-tiruppur"}
         ],
         "related_searches": [
             {"title": "Broad Tirupur Jobs Hub", "url": "/tirupur-jobs"},
@@ -2733,8 +2787,8 @@ def redirect_apparel_jobs_in_tiruppur(request: Request):
 CATEGORY_MAPPINGS = {
     "merchandiser-jobs-tiruppur": {
         "h1": "Garment Merchandiser Jobs in Tiruppur",
-        "title": "Garment Merchandiser Jobs in Tiruppur | Sampling & Production Vacancies",
-        "description": "Find active garment merchandiser, junior merchandiser, and sampling coordinator jobs in Tiruppur knitwear export houses.",
+        "title": "Merchandiser & Junior Merchandiser Jobs in Tirupur (2026) | Export & Buying Office Vacancies",
+        "description": "Apply for Senior & Junior Merchandiser jobs in Tirupur and Tiruppur knitwear export houses & international buying offices. Direct HR contact & WhatsApp apply.",
         "department_keyword": "Merchandis",
         "intro": "Garment Merchandisers coordinate buyer communications, costing, sample follow-ups, and production schedules across Tiruppur knitwear export facilities.",
         "skills": ["Sampling & TNA", "Garment Costing", "Buyer Communication", "Fabric & Trim Sourcing", "ERP & Excel Workflows"],
@@ -2779,8 +2833,8 @@ CATEGORY_MAPPINGS = {
     },
     "cutting-jobs-tiruppur": {
         "h1": "Garment Cutting Master & Pattern Master Jobs in Tiruppur",
-        "title": "Pattern Master & Cutting Jobs in Tiruppur | CAD & Spreading Vacancies",
-        "description": "Find pattern maker, CAD marker planner, and cutting master jobs in Tiruppur apparel and knitting factories.",
+        "title": "Pattern Master & Cutting Master Jobs in Tirupur (2026) | CAD & Spreading Vacancies",
+        "description": "Find Pattern Master, CAD marker planner, and Cutting Master jobs in Tirupur & Tiruppur garment export factories with direct HR contact numbers.",
         "department_keyword": "Cutting",
         "intro": "Pattern masters and cutting section specialists calculate knitwear shrinkage, engineer master patterns, and optimize fabric consumption.",
         "skills": ["Manual Pattern Grading", "Optitex / Gerber CAD", "Marker Efficiency Planning", "Fabric Shrinkage Testing", "Spreading & Lay Cutting"],
@@ -2860,8 +2914,8 @@ CATEGORY_MAPPINGS = {
     },
     "fabric-jobs-tiruppur": {
         "h1": "Fabric & Yarn Follow-up Jobs in Tiruppur",
-        "title": "Fabric Follow-up Jobs in Tiruppur | Sourcing & Quality Vacancies",
-        "description": "Find verified fabric follow-up, yarn sourcing, knitting, and fabric quality controller jobs in Tiruppur textile units.",
+        "title": "Fabric Manager & Fabric Follow-up Jobs in Tirupur | Sourcing & Quality Vacancies",
+        "description": "Find verified Fabric Manager, fabric follow-up, yarn sourcing, knitting, and fabric quality controller jobs in Tirupur & Tiruppur textile units.",
         "sql_condition": "(j.department ILIKE %s OR j.job_role ILIKE %s OR j.title ILIKE %s)",
         "sql_params": ["%Fabric%", "%Fabric%", "%Fabric%"],
         "intro": "Fabric follow-up executives coordinate yarn procurement, knitting, dyeing, compacting, shrinkage testing, and on-time mill deliveries.",
@@ -2890,8 +2944,8 @@ CATEGORY_MAPPINGS = {
     },
     "finishing-jobs-tiruppur": {
         "h1": "Garment Finishing & Packing Jobs in Tiruppur",
-        "title": "Finishing Incharge & Packing Jobs in Tiruppur | Apparel Logistics Vacancies",
-        "description": "Browse verified finishing incharge, packing supervisor, and dispatch jobs in Tiruppur export garment units.",
+        "title": "Garment Packing & Finishing Incharge Jobs in Tirupur (Direct HR Contact Number)",
+        "description": "Browse verified garment packing jobs, ironing & finishing incharge, and export dispatch vacancies in Tirupur with direct HR contact numbers.",
         "sql_condition": "(j.department ILIKE %s OR j.department ILIKE %s OR j.job_role ILIKE %s OR j.job_role ILIKE %s OR j.title ILIKE %s OR j.title ILIKE %s)",
         "sql_params": ["%Finish%", "%Packing%", "%Finish%", "%Packing%", "%Finish%", "%Packing%"],
         "intro": "Finishing in-charges oversee steam pressing, tag attachment, folding, polybag packing, carton barcode verification, and container dispatch.",
@@ -2905,8 +2959,8 @@ CATEGORY_MAPPINGS = {
     },
     "accounts-jobs-tiruppur": {
         "h1": "Garment Accounts & Finance Jobs in Tiruppur",
-        "title": "Garment Accountant Jobs in Tiruppur | Tally & Finance Vacancies",
-        "description": "Find verified accountant, senior accountant, and billing executive vacancies in Tiruppur garment and textile companies.",
+        "title": "Accounts Jobs in Tirupur (2026) | Garment Accountant, Tally & Female Office Vacancies",
+        "description": "Apply for accounts jobs in Tirupur garment companies. Verified Senior & Junior Accountant, Tally Prime, billing, and female office vacancies with direct HR contact.",
         "sql_condition": "(j.department ILIKE %s OR j.job_role ILIKE %s OR j.title ILIKE %s)",
         "sql_params": ["%Account%", "%Account%", "%Account%"],
         "intro": "Garment accountants handle vendor ledger reconciliation, GST filings, worker payroll, jobwork billing, and banking transactions in apparel units.",
@@ -2930,6 +2984,100 @@ CATEGORY_MAPPINGS = {
             {
                 "q": "What compliance standards do Garment HR managers handle in Tiruppur?",
                 "a": "Factory safety audits, statutory labor compliance (PF, ESI, Minimum Wages), and buyer social codes of conduct (BSCI, Sedex, WRAP)."
+            }
+        ]
+    },
+    "female-jobs-tiruppur": {
+        "h1": "Job Vacancy in Tirupur for Female (Day Shift & Office Jobs)",
+        "title": "Job Vacancy in Tirupur for Female (2026) | Today's Day Shift, Accounts & Garment Jobs",
+        "description": "Apply for verified job vacancies in Tirupur and Kangayam for female candidates. Today's day-shift garment operators, accounts, merchandising, and office jobs with direct HR contact.",
+        "sql_condition": "(j.gender ILIKE %s OR j.title ILIKE %s OR j.title ILIKE %s OR j.title ILIKE %s OR j.requirements ILIKE %s OR j.job_role ILIKE %s)",
+        "sql_params": ["%female%", "%female%", "%girl%", "%ladies%", "%female%", "%female%"],
+        "intro": "Dedicated employment hub for female job seekers in Tirupur, Avinashi, and Kangayam—featuring verified day-shift garment operator, checking, accounts, merchandising, and office administration vacancies.",
+        "skills": ["Day-Shift Garment Operations", "Accounts & Tally Office Work", "Junior Merchandising & Follow-up", "Quality Checking & Packing", "Safe Factory Transport & Hostel Facilities"],
+        "faq": [
+            {
+                "q": "What types of job vacancies in Tirupur for female candidates are available today?",
+                "a": "Tirupur garment export companies regularly hire female candidates for day-shift sewing & checking operations, accounts & Tally billing, junior merchandising, receptionist/admin roles, and CAD design across Tirupur, Avinashi, and Kangayam."
+            },
+            {
+                "q": "Do Tirupur garment factories provide day-shift timing and transport for female staff?",
+                "a": "Yes, most export houses in Tirupur, Angeripalayam, Kangayam Road, and Netaji Apparel Park provide fixed day-shift timings, company bus/van transport, and ESI/PF benefits for female employees."
+            }
+        ]
+    },
+    "driver-jobs-tiruppur": {
+        "h1": "Driver Job Vacancy in Tirupur (Company Car, Van & Heavy License)",
+        "title": "Driver Job Vacancy in Tirupur (2026) | Heavy Vehicle, Company Car & Van Driver Jobs",
+        "description": "Find today's driver job vacancies in Tirupur garment companies. Heavy vehicle license, company car, staff bus, and delivery van driver jobs with direct HR phone numbers.",
+        "sql_condition": "(j.title ILIKE %s OR j.job_role ILIKE %s OR j.department ILIKE %s)",
+        "sql_params": ["%driver%", "%driver%", "%driver%"],
+        "intro": "Verified driver vacancies across Tirupur garment export houses, textile mills, and logistics units—covering company car drivers, staff bus drivers, and heavy commercial vehicle (LMV/HMV) operators.",
+        "skills": ["Valid LMV / HMV Driving License", "Tirupur–Coimbatore–Chennai Route Knowledge", "Export Container & Van Logistics", "Company Staff Bus Operation", "Clean Driving Track Record"],
+        "faq": [
+            {
+                "q": "What license is required for garment company driver jobs in Tirupur?",
+                "a": "Company car and pickup van openings require a valid LMV / Badge license, while staff bus and fabric container truck vacancies require a valid Heavy Motor Vehicle (HMV) license with 2+ years of experience."
+            }
+        ]
+    },
+    "designer-jobs-tiruppur": {
+        "h1": "Graphic Designer & Fashion Designer Jobs in Tirupur",
+        "title": "Graphic Designer & Fashion Designer Jobs in Tirupur (2026) | CAD & Print Vacancies",
+        "description": "Apply for Graphic Designer, Executive Apparel Designer, chest print designer, and CAD rotary design jobs in Tirupur export garment companies.",
+        "sql_condition": "(j.title ILIKE %s OR j.job_role ILIKE %s OR j.title ILIKE %s OR j.job_role ILIKE %s)",
+        "sql_params": ["%designer%", "%designer%", "%graphic%", "%graphic%"],
+        "intro": "Creative and technical design vacancies in Tirupur knitwear export houses—including Graphic Designers (chest placement prints, all-over rotary prints, CorelDRAW/Illustrator) and Fashion/Apparel Designers.",
+        "skills": ["Adobe Illustrator & Photoshop", "CorelDRAW Placement & Rotary Prints", "Knitwear Tech Pack Creation", "Color Separation for Screen Printing", "3D Apparel & Trend Forecasting"],
+        "faq": [
+            {
+                "q": "What software skills are required for graphic designer jobs in Tirupur garment units?",
+                "a": "Proficiency in CorelDRAW, Adobe Illustrator, and Adobe Photoshop for garment chest prints, all-over repeat patterns, and screen-printing color separations is highly valued."
+            }
+        ]
+    },
+    "fresher-jobs-tiruppur": {
+        "h1": "Fresher Job Vacancy in Tirupur Garment Companies (2026)",
+        "title": "Tirupur Job Vacancy for Freshers (2026) | Trainee Merchandiser, QC, IE & Office Jobs",
+        "description": "Browse verified fresher job vacancies in Tirupur and Kangayam garment export houses. Entry-level openings for Trainee Merchandisers, IE Assistants, QC, Accounts, and Graduates.",
+        "sql_condition": "(j.experience_min = 0 OR j.title ILIKE %s OR j.requirements ILIKE %s OR j.title ILIKE %s OR j.title ILIKE %s)",
+        "sql_params": ["%fresher%", "%fresher%", "%trainee%", "%junior%"],
+        "intro": "Entry-level and fresher job opportunities in Tirupur's garment export industry for diploma/degree graduates and newcomers across Merchandising, Industrial Engineering (IE), Quality, Accounts, and Documentation.",
+        "skills": ["Basic Garment & Textile Knowledge", "MS Excel & Computer Skills", "Trainee Merchandising & Follow-up", "Export Documentation & Office Support", "Willingness to Learn Shopfloor Operations"],
+        "faq": [
+            {
+                "q": "Can freshers apply directly for garment company jobs in Tirupur?",
+                "a": "Yes. Many export companies in Tirupur and Kangayam hire fresh college graduates and diploma holders as Trainee Merchandisers, Junior IE Assistants, Export Documentation Executives, and Junior Accountants."
+            }
+        ]
+    },
+    "buying-office-jobs-tiruppur": {
+        "h1": "International Buying Office & Export Documentation Jobs in Tirupur",
+        "title": "Buying Office Vacancy in Tirupur (2026) | International Liaison & Export Docs Jobs",
+        "description": "Find verified jobs in international garment buying offices and export houses in Tirupur. Openings for Buying House Merchandisers, Nominated QA, and Export Documentation.",
+        "sql_condition": "(j.title ILIKE %s OR j.description ILIKE %s OR j.title ILIKE %s OR j.title ILIKE %s OR j.job_role ILIKE %s)",
+        "sql_params": ["%buying%", "%buying%", "%export%", "%nominated%", "%merchandis%"],
+        "intro": "Career opportunities in international apparel buying offices, liaison houses, and export documentation departments across Tirupur—connecting global retail buyers with cotton knitwear factories.",
+        "skills": ["International Buyer Communication", "Nominated QA / AQL 1.5 & 2.5", "Export Documentation & Shipping Bills", "Critical Path (T&A) Management", "Product Development & Costing"],
+        "faq": [
+            {
+                "q": "What roles are available in international buying offices in Tirupur?",
+                "a": "Buying offices in Tirupur recruit Merchandisers, Nominated Quality Assurance (QA) Inspectors, Fabric Technologists, Social Compliance Auditors, and Export Logistics Coordinators."
+            }
+        ]
+    },
+    "ie-jobs-tiruppur": {
+        "h1": "Industrial Engineer (IE) & SAM/SMV Time Study Jobs in Tirupur",
+        "title": "Industrial Engineer (IE) Jobs in Tirupur | Garment Line Balancing & SAM/SMV Vacancies",
+        "description": "Explore Industrial Engineer (IE), IE Assistant, Work Study, and Sewing Line Balancing job vacancies in Tirupur garment export factories.",
+        "sql_condition": "(j.department ILIKE %s OR j.title ILIKE %s OR j.job_role ILIKE %s OR j.title ILIKE %s)",
+        "sql_params": ["%Industrial%", "%IE %", "%Industrial Engineer%", "%Work Study%"],
+        "intro": "Industrial Engineering (IE) professionals in Tirupur garment factories conduct time studies, compute operation SAM/SMV values, balance sewing lines, and optimize shopfloor efficiency.",
+        "skills": ["SAM / SMV Calculation & Time Study", "Sewing Line Balancing & Pitch Time", "Operation Breakdown (OB) Preparation", "Method Improvement & Folder Setup", "Daily Line Efficiency Tracking"],
+        "faq": [
+            {
+                "q": "What does an Industrial Engineer (IE) do in a Tirupur garment factory?",
+                "a": "An IE prepares Operation Bulletins (OB), calculates Standard Allowed Minutes (SAM/SMV), balances sewing workstations to eliminate bottlenecks, and monitors operator efficiency."
             }
         ]
     }
@@ -3159,6 +3307,12 @@ def get_job_or_category_page(slug: str, request: Request):
             ("/jobs/finishing-jobs-tiruppur", "Finishing & Packing"),
             ("/jobs/accounts-jobs-tiruppur", "Accounts & Finance"),
             ("/jobs/hr-admin-jobs-tiruppur", "HR & Factory Admin"),
+            ("/jobs/female-jobs-tiruppur", "Female Jobs in Tirupur"),
+            ("/jobs/driver-jobs-tiruppur", "Driver Jobs in Tirupur"),
+            ("/jobs/designer-jobs-tiruppur", "Graphic & Apparel Designer"),
+            ("/jobs/fresher-jobs-tiruppur", "Fresher Garment Jobs"),
+            ("/jobs/buying-office-jobs-tiruppur", "Buying Office & Export"),
+            ("/jobs/ie-jobs-tiruppur", "Industrial Engineer (IE)"),
             ("/tirupur-jobs", "Tirupur Jobs Portal"),
             ("/garment-jobs-in-tirupur", "Garment Jobs in Tirupur"),
             ("/tirupur-garment-jobs", "Tirupur Garment Industry"),
