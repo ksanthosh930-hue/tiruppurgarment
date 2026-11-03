@@ -614,6 +614,41 @@
 
                 <!-- Companies Management Tab -->
                 <div id="tab-companies" class="tab-content">
+                    <!-- Direct Registered Employers (Portal Accounts) Panel -->
+                    <div class="card-panel" style="margin-bottom: 24px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                            <div>
+                                <h2 class="card-panel-title" style="margin: 0 0 2px 0;">🏢 Direct Registered Employers / Companies (<span class="registered-employers-count-badge">0</span>)</h2>
+                                <p style="margin: 0; font-size: 13px; color: #64748b;">Read-only list of garment companies &amp; HR recruiters who registered directly on the website (<code style="font-size: 12px;">/employer/register</code>).</p>
+                            </div>
+                            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                <input type="text" id="registeredEmployersSearchTab" class="form-control" placeholder="🔍 Search company, HR name, mobile, email..." style="min-width: 260px;" oninput="filterRegisteredEmployers(this.value)">
+                                <button type="button" class="btn btn-secondary" onclick="exportRegisteredEmployersCSV()" style="display: flex; align-items: center; gap: 6px; white-space: nowrap;">
+                                    <span>📥</span> Export CSV / Excel
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Company Name</th>
+                                        <th>HR / Contact Person</th>
+                                        <th>Mobile &amp; WhatsApp</th>
+                                        <th>Email</th>
+                                        <th>Location / Area</th>
+                                        <th>Jobs Posted &amp; Applications</th>
+                                        <th>Status</th>
+                                        <th>Registered Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="registered-employers-tbody">
+                                    <tr><td colspan="9" style="text-align: center; color: #64748b; padding: 24px;">Loading registered employers...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                     <div class="card-panel">
                         <div class="card-panel-title">
                             <h2>Registered Companies &amp; Manufacturers</h2>
@@ -1409,6 +1444,42 @@
                                 </thead>
                                 <tbody id="registeredSeekersBody">
                                     <tr><td colspan="9" style="text-align: center; color: #64748b; padding: 24px;">Loading registered job seekers...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Registered Employers (Companies) Directory Panel (Strictly Read-Only) -->
+                    <div class="card-panel" id="registeredEmployersPanel" style="margin-bottom: 24px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                            <div>
+                                <h2 class="card-panel-title" style="margin: 0 0 2px 0;">🏢 Direct Registered Employers Directory (<span class="registered-employers-count-badge">0</span>)</h2>
+                                <p style="margin: 0; font-size: 13px; color: #64748b;">Complete read-only list of all Employers (Garment Companies &amp; HR) registered on the portal with contact details and posted vacancies.</p>
+                            </div>
+                            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                <input type="text" id="registeredEmployersSearchAnalytics" class="form-control" placeholder="🔍 Search company, HR name, mobile, email..." style="min-width: 260px;" oninput="filterRegisteredEmployers(this.value)">
+                                <button type="button" class="btn btn-secondary" onclick="exportRegisteredEmployersCSV()" style="display: flex; align-items: center; gap: 6px; white-space: nowrap;">
+                                    <span>📥</span> Export CSV / Excel
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Company Name</th>
+                                        <th>HR / Contact Person</th>
+                                        <th>Mobile &amp; WhatsApp</th>
+                                        <th>Email</th>
+                                        <th>Location / Area</th>
+                                        <th>Jobs Posted &amp; Applications</th>
+                                        <th>Status</th>
+                                        <th>Registered Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="registered-employers-tbody">
+                                    <tr><td colspan="9" style="text-align: center; color: #64748b; padding: 24px;">Loading registered employers...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -2404,7 +2475,7 @@
                 case "jobs": loadAdminJobs(); loadAdminJobsStats(); break;
                 case "ingestion": loadIngestionQueue(); loadIngestionStats(); break;
                 case "sources": loadJobSources(); loadSourceLogs(); break;
-                case "companies": loadAdminCompanies(); break;
+                case "companies": loadAdminCompanies(); loadRegisteredEmployers(); break;
                 case "job-analytics": loadJobSeekerAnalytics(); break;
                 case "comingsoon": loadComingSoon(); break;
                 case "media": loadMedia(); break;
@@ -2439,6 +2510,7 @@
                 renderPopularSearches(data.popular_searches || []);
                 renderDailyTrends(data.daily_trends || []);
                 loadRegisteredJobSeekers();
+                loadRegisteredEmployers();
             } catch (err) {
                 console.error("Error loading job seeker analytics:", err);
                 showToast("Failed to load analytics: " + err.message, false);
@@ -2581,6 +2653,147 @@
             const a = document.createElement("a");
             a.href = url;
             a.download = `Registered_Job_Seekers_${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        let currentRegisteredEmployersList = [];
+
+        async function loadRegisteredEmployers() {
+            const tbodies = document.querySelectorAll(".registered-employers-tbody");
+            try {
+                const res = await fetch("/api/admin/analytics/employers?limit=500");
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                if (!data || !data.success) throw new Error("Invalid response");
+
+                currentRegisteredEmployersList = data.employers || [];
+                const totalStr = (data.total ?? currentRegisteredEmployersList.length).toLocaleString();
+                document.querySelectorAll(".registered-employers-count-badge").forEach(el => {
+                    el.textContent = totalStr;
+                });
+                renderRegisteredEmployersTable(currentRegisteredEmployersList);
+            } catch (err) {
+                console.error("Error loading registered employers:", err);
+                tbodies.forEach(tbody => {
+                    tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #ef4444; padding: 20px;">Failed to load registered employers list.</td></tr>`;
+                });
+            }
+        }
+
+        function renderRegisteredEmployersTable(employers) {
+            const tbodies = document.querySelectorAll(".registered-employers-tbody");
+            if (!tbodies.length) return;
+
+            if (!employers || employers.length === 0) {
+                tbodies.forEach(tbody => {
+                    tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #64748b; padding: 24px;">No matching registered employers found.</td></tr>`;
+                });
+                return;
+            }
+
+            const rowsHtml = employers.map((emp, idx) => {
+                const compName = emp.company_name || "Registered Company";
+                const hrName = emp.contact_person || "-";
+                const mobile = (emp.mobile || "").trim();
+                const cleanWa = (emp.whatsapp || mobile).replace(/\D/g, "");
+                const waNumber = cleanWa.length === 10 ? `91${cleanWa}` : cleanWa;
+
+                const mobileHtml = mobile
+                    ? `<div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                           <a href="tel:+91${escapeHtml(mobile)}" style="font-weight: 700; color: #0f172a; text-decoration: none;">📞 ${escapeHtml(mobile)}</a>
+                           ${waNumber ? `<a href="https://wa.me/${waNumber}" target="_blank" rel="noopener noreferrer" style="background: #dcfce7; color: #15803d; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 4px; text-decoration: none;">💬 WhatsApp</a>` : ""}
+                       </div>`
+                    : `<span style="color: #94a3b8;">-</span>`;
+
+                const verifStatus = (emp.verification_status || "pending").toLowerCase();
+                const statusBadge = verifStatus === "verified"
+                    ? `<span class="badge" style="background: #dcfce7; color: #15803d; font-weight: 700; font-size: 11px; padding: 3px 8px; border-radius: 4px;">✓ Verified</span>`
+                    : `<span class="badge" style="background: #fef3c7; color: #b45309; font-weight: 600; font-size: 11px; padding: 3px 8px; border-radius: 4px;">Active (${escapeHtml(verifStatus.toUpperCase())})</span>`;
+
+                const regDate = emp.created_at
+                    ? new Date(emp.created_at).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
+                    : "-";
+
+                return `
+                    <tr>
+                        <td style="color: #64748b; font-weight: 600;">${idx + 1}</td>
+                        <td>
+                            <div style="font-weight: 700; color: #0f172a; font-size: 14px;">🏢 ${escapeHtml(compName)}</div>
+                            ${emp.job_titles_summary ? `<small style="color: #0284c7; font-weight: 500;">Posted: ${escapeHtml(emp.job_titles_summary)}</small>` : ""}
+                        </td>
+                        <td style="font-weight: 600; color: #1e293b;">👔 ${escapeHtml(hrName)}</td>
+                        <td>${mobileHtml}</td>
+                        <td style="font-size: 13px; color: #334155;">${escapeHtml(emp.email || "-")}</td>
+                        <td style="font-weight: 500; color: #1e293b;">${escapeHtml(emp.location || emp.area || "-")}</td>
+                        <td>
+                            <span style="font-weight: 700; color: #2563eb;">💼 ${emp.total_jobs_posted || 0} Jobs</span>
+                            <span style="color: #cbd5e1; margin: 0 4px;">|</span>
+                            <span style="font-weight: 700; color: #059669;">📄 ${emp.applications_received || 0} Applications</span>
+                        </td>
+                        <td>${statusBadge}</td>
+                        <td style="font-size: 12.5px; color: #475569; white-space: nowrap;">${regDate}</td>
+                    </tr>
+                `;
+            }).join("");
+
+            tbodies.forEach(tbody => {
+                tbody.innerHTML = rowsHtml;
+            });
+        }
+
+        function filterRegisteredEmployers(queryVal) {
+            const q = (queryVal || "").toLowerCase().trim();
+            if (!q) {
+                renderRegisteredEmployersTable(currentRegisteredEmployersList);
+                return;
+            }
+            const filtered = currentRegisteredEmployersList.filter(emp =>
+                (emp.company_name || "").toLowerCase().includes(q) ||
+                (emp.contact_person || "").toLowerCase().includes(q) ||
+                (emp.mobile || "").toLowerCase().includes(q) ||
+                (emp.email || "").toLowerCase().includes(q) ||
+                (emp.location || "").toLowerCase().includes(q) ||
+                (emp.area || "").toLowerCase().includes(q) ||
+                (emp.job_titles_summary || "").toLowerCase().includes(q)
+            );
+            renderRegisteredEmployersTable(filtered);
+        }
+
+        function exportRegisteredEmployersCSV() {
+            if (!currentRegisteredEmployersList || currentRegisteredEmployersList.length === 0) {
+                showToast("No registered employers available to export.", false);
+                return;
+            }
+            const headers = ["S.No", "Company Name", "HR / Contact Person", "Mobile", "WhatsApp", "Email", "Location / Area", "Jobs Posted", "Applications Received", "Posted Job Titles", "Status", "Registered At (IST)"];
+            const rows = currentRegisteredEmployersList.map((emp, i) => {
+                const regDate = emp.created_at
+                    ? new Date(emp.created_at).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })
+                    : "";
+                const cols = [
+                    i + 1,
+                    emp.company_name || "",
+                    emp.contact_person || "",
+                    emp.mobile || "",
+                    emp.whatsapp || "",
+                    emp.email || "",
+                    emp.location || emp.area || "",
+                    emp.total_jobs_posted || 0,
+                    emp.applications_received || 0,
+                    emp.job_titles_summary || "",
+                    emp.verification_status || "pending",
+                    regDate
+                ];
+                return cols.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",");
+            });
+            const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\r\n");
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `Registered_Employers_${new Date().toISOString().slice(0, 10)}.csv`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);

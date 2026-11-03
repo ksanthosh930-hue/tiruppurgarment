@@ -1269,3 +1269,76 @@ def get_registered_job_seekers_list(
         raise HTTPException(status_code=500, detail=f"Database error loading job seekers: {e}")
 
 
+@router.get("/analytics/employers")
+def get_registered_employers_list(
+    limit: int = Query(500, ge=1, le=2000),
+    offset: int = Query(0, ge=0),
+    admin: Dict[str, Any] = Depends(require_admin)
+):
+    """
+    Strictly READ-ONLY administrative endpoint returning all Direct Registered Employers
+    (public_users where account_type = 'company' joined with company_profiles)
+    along with read-only counts of jobs posted and applications received.
+    Does not modify or delete any database records.
+    """
+    if not db_helpers["db_enabled"] or not db_helpers["query_db"]:
+        return {"success": True, "employers": [], "total": 0}
+
+    try:
+        query = """
+            SELECT
+                u.id AS user_id,
+                u.email,
+                u.is_active,
+                u.created_at,
+                cp.id AS company_profile_id,
+                COALESCE(cp.company_name, '') AS company_name,
+                COALESCE(cp.contact_person, '') AS contact_person,
+                COALESCE(cp.mobile, '') AS mobile,
+                COALESCE(cp.whatsapp, cp.mobile, '') AS whatsapp,
+                COALESCE(cp.area, '') AS area,
+                COALESCE(cp.location, cp.area, '') AS location,
+                COALESCE(cp.address, '') AS address,
+                COALESCE(cp.website, '') AS website,
+                COALESCE(cp.business_type, '') AS business_type,
+                COALESCE(cp.verification_status, 'pending') AS verification_status,
+                COALESCE(jb.total_jobs_posted, 0) AS total_jobs_posted,
+                COALESCE(jb.published_jobs, 0) AS published_jobs,
+                COALESCE(jb.applications_received, 0) AS applications_received,
+                COALESCE(jb.job_titles_summary, '') AS job_titles_summary
+            FROM public_users u
+            LEFT JOIN company_profiles cp ON u.id = cp.user_id
+            LEFT JOIN (
+                SELECT
+                    j.employer_user_id,
+                    COUNT(DISTINCT j.id) AS total_jobs_posted,
+                    COUNT(DISTINCT j.id) FILTER (WHERE LOWER(j.status) = 'published' AND COALESCE(j.is_archived, FALSE) = FALSE) AS published_jobs,
+                    COUNT(a.id) AS applications_received,
+                    STRING_AGG(DISTINCT j.title, ', ') AS job_titles_summary
+                FROM jobs j
+                LEFT JOIN job_applications a ON j.id = a.job_id
+                WHERE j.employer_user_id IS NOT NULL
+                GROUP BY j.employer_user_id
+            ) jb ON u.id = jb.employer_user_id
+            WHERE u.account_type = 'company'
+            ORDER BY u.created_at DESC
+            LIMIT %s OFFSET %s;
+        """
+        rows = db_helpers["query_db"](query, (limit, offset)) or []
+
+        count_rows = db_helpers["query_db"](
+            "SELECT COUNT(*) AS total FROM public_users WHERE account_type = 'company';"
+        )
+        total = count_rows[0]["total"] if count_rows else len(rows)
+
+        return {
+            "success": True,
+            "employers": rows,
+            "total": total
+        }
+    except Exception as e:
+        logger.error(f"Error fetching registered employers list: {e}")
+        raise HTTPException(status_code=500, detail=f"Database error loading registered employers: {e}")
+
+
+
