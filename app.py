@@ -1048,6 +1048,7 @@ def get_individual_dashboard():
 @app.get("/employer/profile")
 @app.get("/employer/post-job")
 @app.get("/employer/jobs")
+@app.get("/employer/applications")
 @app.get("/post-a-job")
 def get_company_dashboard():
     return FileResponse(os.path.join(BASE_DIR, "dashboard_company.html"))
@@ -1099,7 +1100,7 @@ routers.admin_jobs.init_admin_helpers(db_enabled, query_db, execute_db, execute_
 routers.admin_ingestion.init_ingestion_router(query_db, execute_db, execute_db_returning, db_enabled, FALLBACK_ADMIN_SESSIONS, BASE_DIR)
 routers.seo.init_seo_db_helpers(db_enabled, query_db)
 routers.public_auth.init_public_auth_helpers(db_enabled, query_db, execute_db, execute_db_returning)
-routers.employer_jobs.init_employer_jobs_helpers(db_enabled, query_db, execute_db, execute_db_returning, BASE_DIR)
+routers.employer_jobs.init_employer_jobs_helpers(db_enabled, query_db, execute_db, execute_db_returning, BASE_DIR, db_pool)
 
 app.include_router(routers.jobs.router)
 app.include_router(routers.admin_jobs.router)

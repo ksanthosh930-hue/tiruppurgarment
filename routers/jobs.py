@@ -851,7 +851,7 @@ async def submit_job_application(
     try:
         # 2. Check Job Eligibility
         job_rows = db_helpers["query_db"]("""
-            SELECT id, status, is_archived, expires_at, source_type, employer_user_id 
+            SELECT id, title, status, is_archived, expires_at, source_type, employer_user_id, company_profile_id 
             FROM jobs 
             WHERE id = %s;
         """, (job_id,))
@@ -915,6 +915,50 @@ async def submit_job_application(
             """, (job_id, user_id, session_cookie, json.dumps({"application_id": app_id})))
         except Exception as ae:
             logger.warning(f"Could not track application_submit event: {ae}")
+
+        # Failure-isolated employer notification hook (never blocks candidate application)
+        try:
+            from routers.employer_jobs import create_employer_notification_safe
+            emp_uid = job.get("employer_user_id")
+            if not emp_uid and job.get("company_profile_id"):
+                cp_rows = db_helpers["query_db"](
+                    "SELECT user_id FROM company_profiles WHERE id = %s LIMIT 1;",
+                    (job["company_profile_id"],)
+                )
+                if cp_rows:
+                    emp_uid = cp_rows[0].get("user_id")
+
+            if emp_uid:
+                j_title = (job.get("title") or f"Job #{job_id}").strip()
+                cand_label = (c_name or "A candidate").strip()
+                create_employer_notification_safe(
+                    user_id=int(emp_uid),
+                    event_type="candidate_applied",
+                    event_key=f"candidate_applied:{app_id}",
+                    title="New Application Received",
+                    message=f"{cand_label} has applied for your job '{j_title}'.",
+                    target_url=f"/dashboard/company?job_id={job_id}#applications",
+                    job_id=job_id,
+                    application_id=app_id
+                )
+
+                cnt_rows = db_helpers["query_db"](
+                    "SELECT COUNT(*) AS cnt FROM job_applications WHERE job_id = %s;",
+                    (job_id,)
+                )
+                total_job_apps = int(cnt_rows[0]["cnt"]) if cnt_rows else 1
+                if total_job_apps >= 5:
+                    create_employer_notification_safe(
+                        user_id=int(emp_uid),
+                        event_type="application_milestone",
+                        event_key=f"app_milestone_5:{job_id}",
+                        title="Application Milestone Reached",
+                        message=f"Your job posting '{j_title}' has received {total_job_apps} applications.",
+                        target_url=f"/dashboard/company?job_id={job_id}#applications",
+                        job_id=job_id
+                    )
+        except Exception as ne:
+            logger.warning(f"Non-blocking employer notification hook skipped for app {app_id}: {ne}")
 
         return {
             "success": True,

@@ -1,0 +1,366 @@
+/* ==========================================================================
+   DigiGarment - Global Notification Bell & User Profile Dropdown Styles
+   Supports both dark public header (.header) and light dashboard header (.dash-header)
+   ========================================================================== */
+
+.dg-auth-nav-cluster {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    z-index: 110;
+}
+
+/* --- Notification Bell Button --- */
+.dg-notif-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.dg-notif-bell-btn {
+    position: relative;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.dg-notif-bell-btn:hover,
+.dg-notif-wrap.active .dg-notif-bell-btn {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: rgba(255, 255, 255, 0.32);
+    transform: translateY(-1px);
+}
+
+.dg-notif-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 9999px;
+    background: #e11d48;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 18px;
+    text-align: center;
+    border: 2px solid #0d172e;
+    box-shadow: 0 2px 6px rgba(225, 29, 72, 0.45);
+    pointer-events: none;
+}
+
+/* --- Light Header Support (Employer Dashboard Header) --- */
+.dash-header .dg-notif-bell-btn,
+.dg-light-nav .dg-notif-bell-btn {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #1e293b;
+}
+
+.dash-header .dg-notif-bell-btn:hover,
+.dash-header .dg-notif-wrap.active .dg-notif-bell-btn,
+.dg-light-nav .dg-notif-bell-btn:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #9e1b32;
+}
+
+.dash-header .dg-notif-badge,
+.dg-light-nav .dg-notif-badge {
+    border-color: #ffffff;
+}
+
+.dash-header .dg-user-pill-btn,
+.dg-light-nav .dg-user-pill-btn {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #0f172a;
+}
+
+.dash-header .dg-user-pill-btn:hover,
+.dash-header .dg-user-dropdown-wrap.active .dg-user-pill-btn,
+.dg-light-nav .dg-user-pill-btn:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+/* --- Notification Dropdown Panel --- */
+.dg-notif-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 360px;
+    max-width: calc(100vw - 24px);
+    background: #ffffff;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.22), 0 4px 12px rgba(15, 23, 42, 0.08);
+    z-index: 1100;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-8px) scale(0.98);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+}
+
+.dg-notif-wrap.active .dg-notif-menu {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+}
+
+.dg-notif-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 16px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.dg-notif-header-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dg-notif-header-count {
+    font-size: 11px;
+    font-weight: 700;
+    background: #ffe4e6;
+    color: #be123c;
+    padding: 2px 7px;
+    border-radius: 999px;
+}
+
+.dg-notif-mark-all-btn {
+    background: none;
+    border: none;
+    font-size: 12px;
+    font-weight: 600;
+    color: #9e1b32;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+    transition: background 0.15s ease;
+}
+
+.dg-notif-mark-all-btn:hover {
+    background: #ffe4e6;
+}
+
+.dg-notif-list {
+    max-height: 340px;
+    overflow-y: auto;
+    divide-y: 1px solid #f1f5f9;
+}
+
+.dg-notif-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    text-decoration: none;
+    color: inherit;
+}
+
+.dg-notif-item:hover {
+    background: #f8fafc;
+}
+
+.dg-notif-item.unread {
+    background: #fff9fa;
+}
+
+.dg-notif-item.unread:hover {
+    background: #fff1f3;
+}
+
+.dg-notif-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.dg-notif-item.unread .dg-notif-icon {
+    background: #ffe4e6;
+}
+
+.dg-notif-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.dg-notif-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.35;
+    margin-bottom: 3px;
+}
+
+.dg-notif-msg {
+    font-size: 12px;
+    color: #475569;
+    line-height: 1.45;
+    word-break: break-word;
+}
+
+.dg-notif-time {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 5px;
+    font-weight: 500;
+}
+
+.dg-notif-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #e11d48;
+    flex-shrink: 0;
+    margin-top: 6px;
+}
+
+.dg-notif-empty {
+    padding: 32px 20px;
+    text-align: center;
+    color: #64748b;
+    font-size: 13px;
+}
+
+.dg-notif-empty-icon {
+    font-size: 26px;
+    margin-bottom: 8px;
+    opacity: 0.7;
+}
+
+.dg-notif-footer {
+    padding: 10px 16px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    text-align: center;
+}
+
+.dg-notif-view-all-btn {
+    width: 100%;
+    background: none;
+    border: none;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #9e1b32;
+    cursor: pointer;
+    padding: 4px 0;
+}
+
+.dg-notif-view-all-btn:hover {
+    text-decoration: underline;
+}
+
+/* --- View All Notifications Modal --- */
+.dg-notif-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(3px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 16px;
+}
+
+.dg-notif-modal-backdrop.open {
+    display: flex;
+}
+
+.dg-notif-modal {
+    background: #ffffff;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 560px;
+    max-height: 82vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 48px rgba(15, 23, 42, 0.28);
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+}
+
+.dg-notif-modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.dg-notif-modal-head h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.dg-notif-modal-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    line-height: 1;
+    color: #64748b;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.dg-notif-modal-close:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+.dg-notif-modal-body {
+    overflow-y: auto;
+    flex: 1;
+}
+
+@media (max-width: 800px) {
+    .dg-auth-nav-cluster {
+        width: 100%;
+        justify-content: space-between;
+        margin-top: 8px;
+    }
+    .dg-notif-menu {
+        right: 0;
+        left: 0;
+        width: 100%;
+    }
+}
+
