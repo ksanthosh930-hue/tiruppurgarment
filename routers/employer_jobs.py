@@ -74,7 +74,7 @@ class EmployerJobCreateRequest(BaseModel):
     contact_whatsapp: Optional[str] = None
     contact_email: Optional[str] = None
     poster_image_url: Optional[str] = None
-    status: Optional[str] = "pending_review"  # 'draft' or 'pending_review'
+    status: Optional[str] = "published"  # 'draft' or direct 'published'
 
 class EmployerJobUpdateRequest(BaseModel):
     title: str
@@ -188,10 +188,10 @@ def create_employer_job(
     if not desc_clean:
         raise HTTPException(status_code=400, detail="Job Description is required.")
 
-    # Status: only 'draft' or 'pending_review' allowed on creation
+    # Status: 'draft' saves as draft; any non-draft submission publishes directly
     target_status = (req.status or "").strip().lower()
-    if target_status not in ("draft", "pending_review"):
-        target_status = "pending_review"
+    if target_status != "draft":
+        target_status = "published"
 
     # Default contact info to company profile if empty
     phone_clean = _clean_str(req.contact_phone) or profile.get("mobile")
@@ -215,7 +215,7 @@ def create_employer_job(
                 skills, qualification, gender, contact_phone, contact_whatsapp,
                 contact_email, poster_image_url, source_type, source_name,
                 status, is_featured, is_archived, verification_status,
-                created_at, updated_at
+                published_at, created_at, updated_at
             ) VALUES (
                 %s, %s, %s, %s, %s, %s,
                 %s, %s, %s, %s, %s,
@@ -223,7 +223,7 @@ def create_employer_job(
                 %s, %s, %s, %s, %s,
                 %s, %s, 'employer', 'Employer Direct Posting',
                 %s, FALSE, FALSE, %s,
-                CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+                CASE WHEN %s = 'published' THEN CURRENT_TIMESTAMP ELSE NULL END, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
             ) RETURNING id;
         """
         verif_status = profile.get("verification_status", "pending")
@@ -235,13 +235,13 @@ def create_employer_job(
             desc_clean, _clean_str(req.requirements),
             skills_str, _clean_str(req.qualification), _clean_str(req.gender) or "Any",
             phone_clean, wa_clean, email_clean, _clean_str(req.poster_image_url),
-            target_status, verif_status
+            target_status, verif_status, target_status
         ))
 
         job_id = rows[0]["id"]
         msg = (
             "Job saved as draft." if target_status == "draft"
-            else "Job submitted successfully. Your job is now pending DigiGarment review."
+            else "Job published successfully! Your vacancy is now live on Tiruppur Jobs."
         )
         return {
             "success": True,
@@ -356,13 +356,13 @@ def update_employer_job(
         if not t_clean or not d_clean or not desc_clean:
             raise HTTPException(status_code=400, detail="Title, Department, and Description are required.")
 
-        # Determine target status
+        # Determine target status: 'draft' or direct 'published'
         target_status = (req.status or "").strip().lower()
-        if target_status not in ("draft", "pending_review"):
-            target_status = "pending_review" if current_status == "rejected" else current_status
+        if target_status != "draft":
+            target_status = "published"
 
-        # Clear rejection reason if resubmitting for review
-        clear_rejection = (target_status == "pending_review")
+        # Clear rejection reason if publishing
+        clear_rejection = (target_status == "published")
 
         query = """
             UPDATE jobs
@@ -372,6 +372,7 @@ def update_employer_job(
                 requirements = %s, skills = %s, qualification = %s, gender = %s,
                 contact_phone = %s, contact_whatsapp = %s, contact_email = %s,
                 poster_image_url = %s, status = %s,
+                published_at = CASE WHEN %s = 'published' AND published_at IS NULL THEN CURRENT_TIMESTAMP ELSE published_at END,
                 rejection_reason = CASE WHEN %s = TRUE THEN NULL ELSE rejection_reason END,
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = %s;
@@ -387,11 +388,11 @@ def update_employer_job(
             _clean_str(req.contact_whatsapp) or profile.get("whatsapp"),
             _clean_str(req.contact_email) or profile.get("email"),
             _clean_str(req.poster_image_url), target_status,
-            clear_rejection, job_id
+            target_status, clear_rejection, job_id
         ))
 
         msg = (
-            "Job submitted for review." if target_status == "pending_review"
+            "Job published successfully!" if target_status == "published"
             else "Job draft updated successfully."
         )
         return {
@@ -410,7 +411,7 @@ def update_employer_job(
         raise HTTPException(status_code=500, detail="Something went wrong. Please try again.")
 
 
-# --- 5. Submit Draft/Rejected Job for Admin Review ---
+# --- 5. Publish Draft/Rejected Job Directly ---
 @router.post("/jobs/{job_id}/submit")
 def submit_employer_job_for_review(
     job_id: int,
@@ -433,23 +434,26 @@ def submit_employer_job_for_review(
             raise HTTPException(status_code=403, detail="Access denied. You do not own this job.")
 
         current_status = (job.get("status") or "").lower()
-        if current_status not in ("draft", "rejected"):
+        if current_status not in ("draft", "rejected", "pending_review"):
             raise HTTPException(status_code=400, detail=f"Job is already in '{current_status}' status.")
 
         _execute_db("""
             UPDATE jobs
-            SET status = 'pending_review', rejection_reason = NULL, updated_at = CURRENT_TIMESTAMP
+            SET status = 'published',
+                published_at = COALESCE(published_at, CURRENT_TIMESTAMP),
+                rejection_reason = NULL,
+                updated_at = CURRENT_TIMESTAMP
             WHERE id = %s;
         """, (job_id,))
 
         return {
             "success": True,
-            "status": "pending_review",
+            "status": "published",
             "job": {
                 "id": job_id,
-                "status": "pending_review"
+                "status": "published"
             },
-            "message": "Job submitted successfully. Your job is now pending DigiGarment review."
+            "message": "Job published successfully! Your vacancy is now live on Tiruppur Jobs."
         }
     except HTTPException:
         raise

@@ -760,7 +760,7 @@
                     <div style="display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap;">
                         <button type="button" class="btn-secondary" onclick="openJobPreviewModal()">👁️ Preview Job</button>
                         <button type="button" class="btn-secondary" id="btnSaveDraft" onclick="handleSaveJob('draft')">💾 Save as Draft</button>
-                        <button type="button" class="btn-action" id="btnSubmitReview" onclick="handleSaveJob('pending_review')">🚀 Submit for Admin Review</button>
+                        <button type="button" class="btn-action" id="btnSubmitReview" onclick="handleSaveJob('published')">🚀 Post Job Now</button>
                         <button type="button" class="btn-secondary" id="btnCancelEdit" onclick="cancelJobEdit()" style="display: none;">Cancel Edit</button>
                     </div>
                 </form>
@@ -1144,7 +1144,7 @@
                     throw new Error(data.detail || "Failed to save job opening.");
                 }
 
-                showAlert(targetStatus === "pending_review" ? "🚀 Job submitted for admin review successfully!" : "💾 Job saved as draft successfully!", true);
+                showAlert(targetStatus !== "draft" ? "🚀 Job published! Your vacancy is now live on the website." : "💾 Job saved as draft successfully!", true);
                 cancelJobEdit();
                 showTab("my-jobs");
             } catch (err) {
