@@ -1,8 +1,13 @@
 # Environment & Secrets (NEVER push to GitHub)
 .env
 .env.local
+.env.production
+.env.development
+.env.staging
 .env.*.local
+.env.*
 *.env
+!.env.example
 
 # Python Bytecode & Cache
 __pycache__/
@@ -41,3 +46,14 @@ assets/uploads/source_vault/*
 # Agent Framework
 .agents/
 skills-lock.json
+
+# Database Backups, Snapshots & Sensitive Audit Reports (NEVER push to GitHub)
+backups/
+reports/
+*.dump
+*.bak
+*.sql.gz
+*snapshot*.json
+*audit_report*.md
+*audit_report*.json
+legacy_profile_audit*
