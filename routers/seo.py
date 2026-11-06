@@ -2064,36 +2064,73 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
             to {{ transform: translateY(0); opacity: 1; }}
         }}
         .modal-header {{
-            padding: 22px 26px;
+            padding: 20px 24px;
             border-bottom: 1px solid #E2E8F0;
             display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 16px;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0;
             position: sticky;
             top: 0;
             background: #ffffff;
             z-index: 10;
+            box-sizing: border-box;
+        }}
+        .modal-top-bar {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            width: 100%;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #F1F5F9;
+            box-sizing: border-box;
+        }}
+        .btn-find-related {{
+            background: #FEF2F2;
+            border: 1px solid #FCA5A5;
+            color: var(--dg-red);
+            border-radius: 8px;
+            padding: 7px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            text-decoration: none;
+            line-height: 1.2;
+        }}
+        .btn-find-related:hover {{
+            background: var(--dg-red);
+            border-color: var(--dg-red);
+            color: #ffffff;
         }}
         .modal-close {{
             background: #F1F5F9;
-            border: none;
-            font-size: 24px;
-            color: var(--dg-slate);
+            border: 1px solid #CBD5E1;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--dg-navy);
             cursor: pointer;
             line-height: 1;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
             transition: all 0.15s ease;
             flex-shrink: 0;
+            padding: 0;
         }}
         .modal-close:hover {{
-            background: #E2E8F0;
-            color: #0F172A;
+            background: #FEE2E2;
+            border-color: #FCA5A5;
+            color: var(--dg-red);
         }}
         .modal-body {{
             padding: 24px 26px 28px 26px;
@@ -2110,9 +2147,14 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
         }}
         @media (max-width: 600px) {{
             .specs-grid {{ grid-template-columns: repeat(2, 1fr); }}
-            .modal-header {{ padding: 18px 20px; }}
-            .modal-body {{ padding: 18px 20px 24px 20px; }}
+            .modal {{ padding: 10px; }}
+            .modal-header {{ padding: 12px 12px; }}
+            .modal-body {{ padding: 16px 14px 22px 14px; }}
             .modal-dialog {{ max-height: 94vh; }}
+            .modal-top-bar {{ gap: 6px; padding-bottom: 10px; margin-bottom: 10px; }}
+            .modal-top-bar .btn-find-related {{ padding: 5px 8px; font-size: 11px; gap: 4px; }}
+            .modal-top-bar .btn-modal-util {{ padding: 5px 7px; font-size: 11px; gap: 3px; }}
+            .modal-top-bar .modal-close {{ width: 29px; height: 29px; font-size: 17px; }}
         }}
         .spec-item small {{
             display: block;
@@ -2382,19 +2424,24 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
     <div class="modal" id="categoryJobModal" onclick="handleCategoryModalBackdrop(event)">
         <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="catModalTitle" onclick="event.stopPropagation()">
             <div class="modal-header">
-                <div>
-                    <span id="catModalDept" class="tag-dept" style="display: inline-block; margin-bottom: 6px;"></span>
-                    <h2 id="catModalTitle" style="font-size: 22px; font-weight: 800; color: #081226; margin: 0 0 6px 0;">Job Title</h2>
-                    <div id="catModalCompany" style="font-size: 14px; font-weight: 600; color: #64748B;"></div>
+                <div class="modal-top-bar">
+                    <button type="button" class="btn-find-related" id="catModalFindRelatedBtn" onclick="handleCategoryFindRelatedJobs()">
+                        <span>🔍</span> <span>Find Related Jobs</span>
+                    </button>
+                    <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                        <button type="button" class="btn-modal-util" id="catModalShareBtn" onclick="handleCategoryShareClick()" aria-label="Share Job">
+                            <span>↗</span> <span>Share</span>
+                        </button>
+                        <button type="button" class="btn-modal-util" id="catModalSaveBtn" onclick="handleCategorySaveClick()" aria-label="Save Job">
+                            <span id="catModalSaveIcon">♡</span> <span id="catModalSaveText">Save</span>
+                        </button>
+                        <button type="button" class="modal-close" id="catModalCloseBtn" aria-label="Close dialog" onclick="closeCategoryJobModal()">&times;</button>
+                    </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <button type="button" class="btn-modal-util" id="catModalShareBtn" onclick="handleCategoryShareClick()" aria-label="Share Job">
-                        <span>↗</span> <span>Share</span>
-                    </button>
-                    <button type="button" class="btn-modal-util" id="catModalSaveBtn" onclick="handleCategorySaveClick()" aria-label="Save Job">
-                        <span id="catModalSaveIcon">♡</span> <span id="catModalSaveText">Save Job</span>
-                    </button>
-                    <button type="button" class="modal-close" aria-label="Close dialog" onclick="closeCategoryJobModal()">&times;</button>
+                <div style="width: 100%; min-width: 0;">
+                    <span id="catModalDept" class="tag-dept" style="display: inline-block; margin-bottom: 6px;"></span>
+                    <h2 id="catModalTitle" style="font-size: 22px; font-weight: 800; color: #081226; margin: 0 0 6px 0; word-break: break-word;">Job Title</h2>
+                    <div id="catModalCompany" style="font-size: 14px; font-weight: 600; color: #64748B;"></div>
                 </div>
             </div>
             <div class="modal-body">
@@ -2788,6 +2835,17 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
             modal.style.display = 'none';
             document.body.style.overflow = '';
             currentActiveJob = null;
+        }};
+
+        window.handleCategoryFindRelatedJobs = function() {{
+            var jobId = currentActiveJob ? currentActiveJob.id : null;
+            var dept = (currentActiveJob && currentActiveJob.department) ? String(currentActiveJob.department).trim() : '';
+            window.dgTrackEvent('related_jobs_click', jobId, {{ department: dept || 'all', source: 'category_modal_top_bar' }});
+            closeCategoryJobModal();
+            var listEl = document.querySelector('.landing-job-card, .job-card, main');
+            if (listEl && listEl.scrollIntoView) {{
+                listEl.scrollIntoView({{ behavior: 'smooth', block: 'start' }});
+            }}
         }};
 
         window.handleCategoryModalBackdrop = function(e) {{
@@ -3612,36 +3670,73 @@ def get_job_or_category_page(slug: str, request: Request):
             to {{ transform: translateY(0); opacity: 1; }}
         }}
         .modal-header {{
-            padding: 22px 26px;
+            padding: 20px 24px;
             border-bottom: 1px solid #E2E8F0;
             display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 16px;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0;
             position: sticky;
             top: 0;
             background: #ffffff;
             z-index: 10;
+            box-sizing: border-box;
+        }}
+        .modal-top-bar {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            width: 100%;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #F1F5F9;
+            box-sizing: border-box;
+        }}
+        .btn-find-related {{
+            background: #FEF2F2;
+            border: 1px solid #FCA5A5;
+            color: var(--dg-red);
+            border-radius: 8px;
+            padding: 7px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            text-decoration: none;
+            line-height: 1.2;
+        }}
+        .btn-find-related:hover {{
+            background: var(--dg-red);
+            border-color: var(--dg-red);
+            color: #ffffff;
         }}
         .modal-close {{
             background: #F1F5F9;
-            border: none;
-            font-size: 24px;
-            color: var(--dg-slate);
+            border: 1px solid #CBD5E1;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--dg-navy);
             cursor: pointer;
             line-height: 1;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
             transition: all 0.15s ease;
             flex-shrink: 0;
+            padding: 0;
         }}
         .modal-close:hover {{
-            background: #E2E8F0;
-            color: #0F172A;
+            background: #FEE2E2;
+            border-color: #FCA5A5;
+            color: var(--dg-red);
         }}
         .modal-body {{
             padding: 24px 26px 28px 26px;
@@ -3658,9 +3753,14 @@ def get_job_or_category_page(slug: str, request: Request):
         }}
         @media (max-width: 600px) {{
             .specs-grid {{ grid-template-columns: repeat(2, 1fr); }}
-            .modal-header {{ padding: 18px 20px; }}
-            .modal-body {{ padding: 18px 20px 24px 20px; }}
+            .modal {{ padding: 10px; }}
+            .modal-header {{ padding: 12px 12px; }}
+            .modal-body {{ padding: 16px 14px 22px 14px; }}
             .modal-dialog {{ max-height: 94vh; }}
+            .modal-top-bar {{ gap: 6px; padding-bottom: 10px; margin-bottom: 10px; }}
+            .modal-top-bar .btn-find-related {{ padding: 5px 8px; font-size: 11px; gap: 4px; }}
+            .modal-top-bar .btn-modal-util {{ padding: 5px 7px; font-size: 11px; gap: 3px; }}
+            .modal-top-bar .modal-close {{ width: 29px; height: 29px; font-size: 17px; }}
         }}
         .spec-item small {{
             display: block;
@@ -3884,19 +3984,24 @@ def get_job_or_category_page(slug: str, request: Request):
     <div class="modal" id="categoryJobModal" onclick="handleCategoryModalBackdrop(event)">
         <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="catModalTitle" onclick="event.stopPropagation()">
             <div class="modal-header">
-                <div>
-                    <span id="catModalDept" class="tag-dept" style="display: inline-block; margin-bottom: 6px;"></span>
-                    <h2 id="catModalTitle" style="font-size: 22px; font-weight: 800; color: #081226; margin: 0 0 6px 0;">Job Title</h2>
-                    <div id="catModalCompany" style="font-size: 14px; font-weight: 600; color: #64748B;"></div>
+                <div class="modal-top-bar">
+                    <button type="button" class="btn-find-related" id="catModalFindRelatedBtn" onclick="handleCategoryFindRelatedJobs()">
+                        <span>🔍</span> <span>Find Related Jobs</span>
+                    </button>
+                    <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                        <button type="button" class="btn-modal-util" id="catModalShareBtn" onclick="handleCategoryShareClick()" aria-label="Share Job">
+                            <span>↗</span> <span>Share</span>
+                        </button>
+                        <button type="button" class="btn-modal-util" id="catModalSaveBtn" onclick="handleCategorySaveClick()" aria-label="Save Job">
+                            <span id="catModalSaveIcon">♡</span> <span id="catModalSaveText">Save</span>
+                        </button>
+                        <button type="button" class="modal-close" id="catModalCloseBtn" aria-label="Close dialog" onclick="closeCategoryJobModal()">&times;</button>
+                    </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <button type="button" class="btn-modal-util" id="catModalShareBtn" onclick="handleCategoryShareClick()" aria-label="Share Job">
-                        <span>↗</span> <span>Share</span>
-                    </button>
-                    <button type="button" class="btn-modal-util" id="catModalSaveBtn" onclick="handleCategorySaveClick()" aria-label="Save Job">
-                        <span id="catModalSaveIcon">♡</span> <span id="catModalSaveText">Save Job</span>
-                    </button>
-                    <button type="button" class="modal-close" aria-label="Close dialog" onclick="closeCategoryJobModal()">&times;</button>
+                <div style="width: 100%; min-width: 0;">
+                    <span id="catModalDept" class="tag-dept" style="display: inline-block; margin-bottom: 6px;"></span>
+                    <h2 id="catModalTitle" style="font-size: 22px; font-weight: 800; color: #081226; margin: 0 0 6px 0; word-break: break-word;">Job Title</h2>
+                    <div id="catModalCompany" style="font-size: 14px; font-weight: 600; color: #64748B;"></div>
                 </div>
             </div>
             <div class="modal-body">
@@ -4291,6 +4396,17 @@ def get_job_or_category_page(slug: str, request: Request):
             currentActiveJob = null;
         }};
 
+        window.handleCategoryFindRelatedJobs = function() {{
+            var jobId = currentActiveJob ? currentActiveJob.id : null;
+            var dept = (currentActiveJob && currentActiveJob.department) ? String(currentActiveJob.department).trim() : '';
+            window.dgTrackEvent('related_jobs_click', jobId, {{ department: dept || 'all', source: 'category_modal_top_bar' }});
+            closeCategoryJobModal();
+            var listEl = document.querySelector('.landing-job-card, .job-card, main');
+            if (listEl && listEl.scrollIntoView) {{
+                listEl.scrollIntoView({{ behavior: 'smooth', block: 'start' }});
+            }}
+        }};
+
         window.handleCategoryModalBackdrop = function(e) {{
             if (e.target && e.target.id === 'categoryJobModal') {{
                 closeCategoryJobModal();
@@ -4572,8 +4688,8 @@ def get_job_or_category_page(slug: str, request: Request):
 
         # Pre-render job detail into modal DOM elements for 100% crawlability & instant display
         custom_html = custom_html.replace(
-            '<div class="modal" id="jobDetailModal">',
-            '<div class="modal" id="jobDetailModal" style="display: flex;">',
+            '<div class="modal" id="jobDetailModal" onclick="if(event.target === this) closeJobDetailModal()">',
+            '<div class="modal" id="jobDetailModal" onclick="if(event.target === this) closeJobDetailModal()" style="display: flex;">',
             1
         )
         custom_html = custom_html.replace(

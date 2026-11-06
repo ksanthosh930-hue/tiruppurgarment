@@ -992,7 +992,7 @@
         }
 
         .modal-header {
-            padding: 24px 28px;
+            padding: 20px 24px;
             border-bottom: 1px solid var(--dg-border);
             display: flex;
             align-items: flex-start;
@@ -1002,23 +1002,83 @@
             top: 0;
             background: #ffffff;
             z-index: 10;
+            box-sizing: border-box;
         }
 
-        .modal-header h2 {
+        #jobDetailModal .modal-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0;
+        }
+
+        .modal-top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            width: 100%;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #F1F5F9;
+            box-sizing: border-box;
+        }
+
+        .btn-find-related {
+            background: #FEF2F2;
+            border: 1px solid #FCA5A5;
+            color: var(--dg-red);
+            border-radius: 8px;
+            padding: 7px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            text-decoration: none;
+            line-height: 1.2;
+        }
+
+        .btn-find-related:hover {
+            background: var(--dg-red);
+            border-color: var(--dg-red);
+            color: #ffffff;
+        }
+
+        .modal-header h2,
+        .modal-header h1 {
             font-size: 22px;
             font-weight: 800;
             color: var(--dg-navy);
             margin: 0 0 6px 0;
+            word-break: break-word;
         }
 
         .modal-close {
-            background: none;
-            border: none;
-            font-size: 24px;
-            color: var(--dg-slate);
+            background: #F1F5F9;
+            border: 1px solid #CBD5E1;
+            border-radius: 8px;
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--dg-navy);
             cursor: pointer;
             line-height: 1;
-            padding: 4px;
+            padding: 0;
+            flex-shrink: 0;
+            transition: all 0.15s ease;
+        }
+
+        .modal-close:hover {
+            background: #FEE2E2;
+            border-color: #FCA5A5;
+            color: var(--dg-red);
         }
 
         .modal-body {
@@ -1262,6 +1322,44 @@
 
             .btn-action {
                 width: 100%;
+            }
+
+            .modal {
+                padding: 10px;
+            }
+
+            .modal-header,
+            #jobDetailModal .modal-header {
+                padding: 12px 12px;
+            }
+
+            .modal-body {
+                padding: 16px 14px 22px 14px;
+            }
+
+            .modal-top-bar {
+                gap: 6px;
+                padding-bottom: 10px;
+                margin-bottom: 10px;
+            }
+
+            .btn-find-related {
+                padding: 5px 8px;
+                font-size: 11px;
+                gap: 4px;
+            }
+
+            .btn-share-modal,
+            .btn-save-modal {
+                padding: 5px 7px;
+                font-size: 11px;
+                gap: 3px;
+            }
+
+            .modal-close {
+                width: 29px;
+                height: 29px;
+                font-size: 17px;
             }
         }
     </style>
@@ -1553,29 +1651,35 @@
     </div>
 
     <!-- Job Detail Modal -->
-    <div class="modal" id="jobDetailModal">
-        <div class="modal-dialog">
+    <div class="modal" id="jobDetailModal" onclick="if(event.target === this) closeJobDetailModal()">
+        <div class="modal-dialog" onclick="event.stopPropagation()">
             <div class="modal-header">
-                <div>
+                <div class="modal-top-bar">
+                    <button type="button" class="btn-find-related" id="modalFindRelatedBtn" onclick="handleFindRelatedJobs()">
+                        <span>🔍</span>
+                        <span id="modalFindRelatedText">Find Related Jobs</span>
+                    </button>
+                    <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                        <button type="button" class="btn-share-modal" id="modalShareBtn" aria-label="Share job"
+                            onclick="openShareModal(currentDetailJobId)">
+                            <span class="share-icon">↗</span>
+                            <span class="share-text">Share</span>
+                        </button>
+                        <button type="button" class="btn-save-modal" id="modalSaveBtn" aria-label="Save job"
+                            onclick="handleToggleSaveJob(currentDetailJobId)">
+                            <span class="save-icon" id="modalSaveIcon">♡</span>
+                            <span class="save-text" id="modalSaveText">Save</span>
+                        </button>
+                        <button type="button" class="modal-close" id="modalCloseBtn" aria-label="Close dialog"
+                            onclick="closeJobDetailModal()">&times;</button>
+                    </div>
+                </div>
+                <div style="width: 100%; min-width: 0;">
                     <span id="modalDeptBadge" class="tag-badge tag-dept"
                         style="display: inline-block; margin-bottom: 6px;"></span>
                     <h2 id="modalJobTitle">Job Title</h2>
                     <div id="modalCompanyName" class="company-name"
                         style="font-size: 14px; font-weight: 600; color: var(--dg-slate);"></div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <button type="button" class="btn-share-modal" id="modalShareBtn" aria-label="Share job"
-                        onclick="openShareModal(currentDetailJobId)">
-                        <span class="share-icon">↗</span>
-                        <span class="share-text">Share</span>
-                    </button>
-                    <button type="button" class="btn-save-modal" id="modalSaveBtn" aria-label="Save job"
-                        onclick="handleToggleSaveJob(currentDetailJobId)">
-                        <span class="save-icon" id="modalSaveIcon">♡</span>
-                        <span class="save-text" id="modalSaveText">Save Job</span>
-                    </button>
-                    <button type="button" class="modal-close" aria-label="Close dialog"
-                        onclick="closeJobDetailModal()">&times;</button>
                 </div>
             </div>
             <div class="modal-body">
@@ -2170,7 +2274,7 @@
                     modalBtn.classList.remove("saved");
                     modalBtn.setAttribute("aria-label", "Save job");
                     if (modalIcon) modalIcon.textContent = "♡";
-                    if (modalText) modalText.textContent = "Save Job";
+                    if (modalText) modalText.textContent = "Save";
                 }
             }
 
@@ -3344,6 +3448,29 @@
                     if (window.scrollY !== modalSavedScrollY) window.scrollTo(0, modalSavedScrollY);
                     modalSavedScrollY = null;
                 }
+            }
+        }
+
+        function handleFindRelatedJobs() {
+            const jobId = currentDetailJobId || (window.SERVER_RENDERED_JOB ? window.SERVER_RENDERED_JOB.id : null);
+            const job = activeJobsCache.find(j => j.id === jobId) || window.SERVER_RENDERED_JOB || null;
+            const deptRaw = (job && job.department) ? String(job.department).trim() : (document.getElementById("modalDeptBadge")?.textContent || "").trim();
+            if (typeof trackEvent === "function") {
+                trackEvent("related_jobs_click", jobId, { department: deptRaw || "all", source: "modal_top_bar" });
+            }
+            closeJobDetailModal();
+            if (deptRaw && !["garments", "general", "all", "-"].includes(deptRaw.toLowerCase())) {
+                const deptSelect = document.getElementById("filterDept");
+                if (deptSelect && !Array.from(deptSelect.options).some(o => o.value === deptRaw)) {
+                    const opt = document.createElement("option");
+                    opt.value = deptRaw;
+                    opt.textContent = deptRaw;
+                    deptSelect.appendChild(opt);
+                }
+                filterByDept(deptRaw);
+            } else {
+                const target = document.querySelector(".jobs-container");
+                if (target) target.scrollIntoView({ behavior: "smooth" });
             }
         }
 
