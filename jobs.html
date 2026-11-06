@@ -3192,68 +3192,79 @@
                 checkApplicationStatusForModal(job.id, job.title);
             }
 
-            // 2. WhatsApp Button (direct access without registration)
-            if ((job.contact_whatsapp && job.contact_whatsapp.trim()) || job.has_whatsapp) {
-                const waLink = document.createElement("a");
-                waLink.className = "btn-action btn-whatsapp";
-                if (job.contact_whatsapp && job.contact_whatsapp.trim()) {
-                    const cleanWA = job.contact_whatsapp.replace(/[^0-9]/g, '');
-                    const waText = encodeURIComponent(`Hello, I saw your job vacancy "${job.title}" on DigiGarment Tiruppur Jobs. I would like to apply.`);
-                    waLink.href = `https://wa.me/${cleanWA}?text=${waText}`;
-                } else {
-                    waLink.href = `/api/public/jobs/${job.id}/contact/whatsapp?visitor_id=${encodeURIComponent(getVisitorId())}`;
-                }
-                waLink.target = "_blank";
-                waLink.rel = "noopener noreferrer";
-                waLink.onclick = () => trackEvent("whatsapp_click", job.id, { source: "job_detail_modal" });
-                waLink.innerHTML = "💬 WhatsApp HR";
-                actionsBar.appendChild(waLink);
-            }
-
-            // 3. Call Button (direct access without registration)
-            if ((job.contact_phone && job.contact_phone.trim()) || job.has_phone) {
-                const callLink = document.createElement("a");
-                callLink.className = "btn-action btn-call";
-                if (job.contact_phone && job.contact_phone.trim()) {
-                    const cleanPhone = job.contact_phone.replace(/[^0-9+]/g, '');
-                    callLink.href = `tel:${cleanPhone}`;
-                    callLink.innerHTML = `📞 Call (${escapeHtml(job.contact_phone)})`;
-                } else {
-                    callLink.href = `/api/public/jobs/${job.id}/contact/call?visitor_id=${encodeURIComponent(getVisitorId())}`;
-                    callLink.innerHTML = "📞 Call HR";
-                }
-                callLink.onclick = () => trackEvent("call_click", job.id, { source: "job_detail_modal" });
-                actionsBar.appendChild(callLink);
-            }
-
-            // 4. Email Button (direct access without registration)
-            if ((job.contact_email && job.contact_email.trim()) || job.has_email) {
-                const emailLink = document.createElement("a");
-                emailLink.className = "btn-action btn-email";
-                if (job.contact_email && job.contact_email.trim()) {
-                    const emailSubject = encodeURIComponent(`Application for ${job.title} - DigiGarment`);
-                    emailLink.href = `mailto:${job.contact_email}?subject=${emailSubject}`;
-                } else {
-                    emailLink.href = `/api/public/jobs/${job.id}/contact/email?visitor_id=${encodeURIComponent(getVisitorId())}`;
-                }
-                emailLink.onclick = () => trackEvent("email_click", job.id, { source: "job_detail_modal" });
-                emailLink.innerHTML = "✉️ Email Resume";
-                actionsBar.appendChild(emailLink);
-            }
-
-            // 5. Guest Registration CTA & Value Proposition Banner ( preserves original job URL )
             const jobSlugForRedirect = job.slug || job.id;
             const redirectJobPath = `/jobs/${encodeURIComponent(jobSlugForRedirect)}`;
             const encodedRedirect = encodeURIComponent(redirectJobPath);
+            const hasHrContact = Boolean(
+                (job.contact_whatsapp && job.contact_whatsapp.trim()) || job.has_whatsapp ||
+                (job.contact_phone && job.contact_phone.trim()) || job.has_phone ||
+                (job.contact_email && job.contact_email.trim()) || job.has_email
+            );
 
-            let guestConvWrap = document.getElementById("modalGuestConversionWrap");
-            if (!guestConvWrap) {
-                guestConvWrap = document.createElement("div");
-                guestConvWrap.id = "modalGuestConversionWrap";
-                actionsBar.parentNode.appendChild(guestConvWrap);
-            }
+            if (user) {
+                // 2. WhatsApp Button (for registered users)
+                if ((job.contact_whatsapp && job.contact_whatsapp.trim()) || job.has_whatsapp) {
+                    const waLink = document.createElement("a");
+                    waLink.className = "btn-action btn-whatsapp";
+                    if (job.contact_whatsapp && job.contact_whatsapp.trim()) {
+                        const cleanWA = job.contact_whatsapp.replace(/[^0-9]/g, '');
+                        const waText = encodeURIComponent(`Hello, I saw your job vacancy "${job.title}" on DigiGarment Tiruppur Jobs. I would like to apply.`);
+                        waLink.href = `https://wa.me/${cleanWA}?text=${waText}`;
+                    } else {
+                        waLink.href = `/api/public/jobs/${job.id}/contact/whatsapp?visitor_id=${encodeURIComponent(getVisitorId())}`;
+                    }
+                    waLink.target = "_blank";
+                    waLink.rel = "noopener noreferrer";
+                    waLink.onclick = () => trackEvent("whatsapp_click", job.id, { source: "job_detail_modal" });
+                    waLink.innerHTML = "💬 WhatsApp HR";
+                    actionsBar.appendChild(waLink);
+                }
 
-            if (!user) {
+                // 3. Call Button (for registered users)
+                if ((job.contact_phone && job.contact_phone.trim()) || job.has_phone) {
+                    const callLink = document.createElement("a");
+                    callLink.className = "btn-action btn-call";
+                    if (job.contact_phone && job.contact_phone.trim()) {
+                        const cleanPhone = job.contact_phone.replace(/[^0-9+]/g, '');
+                        callLink.href = `tel:${cleanPhone}`;
+                        callLink.innerHTML = `📞 Call (${escapeHtml(job.contact_phone)})`;
+                    } else {
+                        callLink.href = `/api/public/jobs/${job.id}/contact/call?visitor_id=${encodeURIComponent(getVisitorId())}`;
+                        callLink.innerHTML = "📞 Call HR";
+                    }
+                    callLink.onclick = () => trackEvent("call_click", job.id, { source: "job_detail_modal" });
+                    actionsBar.appendChild(callLink);
+                }
+
+                // 4. Email Button (for registered users)
+                if ((job.contact_email && job.contact_email.trim()) || job.has_email) {
+                    const emailLink = document.createElement("a");
+                    emailLink.className = "btn-action btn-email";
+                    if (job.contact_email && job.contact_email.trim()) {
+                        const emailSubject = encodeURIComponent(`Application for ${job.title} - DigiGarment`);
+                        emailLink.href = `mailto:${job.contact_email}?subject=${emailSubject}`;
+                    } else {
+                        emailLink.href = `/api/public/jobs/${job.id}/contact/email?visitor_id=${encodeURIComponent(getVisitorId())}`;
+                    }
+                    emailLink.onclick = () => trackEvent("email_click", job.id, { source: "job_detail_modal" });
+                    emailLink.innerHTML = "✉️ Email Resume";
+                    actionsBar.appendChild(emailLink);
+                }
+            } else if (hasHrContact) {
+                // Non-registered user: show "Get HR Contact Details" redirecting to registration page
+                const getContactBtn = document.createElement("a");
+                getContactBtn.className = "btn-action btn-call";
+                getContactBtn.id = "modalActionRegisterBtn";
+                getContactBtn.href = `/signup?redirect=${encodedRedirect}`;
+                getContactBtn.style.cssText = "background: #0284C7; color: #ffffff; text-decoration: none; font-weight: 700;";
+                getContactBtn.innerHTML = "📞 Get HR Contact Details";
+                getContactBtn.onclick = () => {
+                    localStorage.setItem("dg_intended_job_id", String(job.id));
+                    trackEvent("registration_cta_click", job.id, { cta: "get_hr_contact_details", source: "job_detail_actions" });
+                    trackEvent("reg_cta_click", job.id, { cta: "get_hr_contact_details", source: "job_detail_actions" });
+                };
+                actionsBar.appendChild(getContactBtn);
+            } else {
                 const regActionBtn = document.createElement("a");
                 regActionBtn.className = "btn-action";
                 regActionBtn.id = "modalActionRegisterBtn";
@@ -3266,7 +3277,17 @@
                     trackEvent("reg_cta_click", job.id, { cta: "register_free", source: "job_detail_actions" });
                 };
                 actionsBar.appendChild(regActionBtn);
+            }
 
+            // 5. Guest Value Proposition Banner ( preserves original job URL )
+            let guestConvWrap = document.getElementById("modalGuestConversionWrap");
+            if (!guestConvWrap) {
+                guestConvWrap = document.createElement("div");
+                guestConvWrap.id = "modalGuestConversionWrap";
+                actionsBar.parentNode.appendChild(guestConvWrap);
+            }
+
+            if (!user) {
                 guestConvWrap.style.display = "block";
                 guestConvWrap.style.marginTop = "20px";
                 guestConvWrap.innerHTML = `

@@ -2551,6 +2551,14 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
         }}
 
         var currentActiveJob = null;
+        var isCategoryUserLoggedIn = false;
+        fetch('/api/auth/me')
+            .then(function(r) {{ return r.ok ? r.json() : null; }})
+            .then(function(d) {{
+                if (d && d.logged_in && d.user) {{
+                    isCategoryUserLoggedIn = true;
+                }}
+            }}).catch(function() {{}});
         var savedJobs = [];
         try {{
             savedJobs = JSON.parse(localStorage.getItem('tirupur_saved_jobs') || '[]');
@@ -2738,64 +2746,81 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
                 actionsBar.appendChild(applyBtn);
             }}
 
-            // 4. WhatsApp HR action (Direct access without registration)
-            if (job.has_whatsapp) {{
-                var waLink = document.createElement('a');
-                waLink.className = 'btn-action btn-whatsapp';
-                waLink.href = '/api/public/jobs/' + encodeURIComponent(job.id) + '/contact/whatsapp';
-                waLink.target = '_blank';
-                waLink.rel = 'noopener noreferrer';
-                waLink.innerHTML = '💬 WhatsApp HR';
-                waLink.onclick = function() {{
-                    window.dgTrackEvent('whatsapp_click', job.id, {{ source: 'category_modal' }});
-                }};
-                actionsBar.appendChild(waLink);
-            }}
+            if (isCategoryUserLoggedIn) {{
+                // 4. WhatsApp HR action (Registered users only)
+                if (job.has_whatsapp) {{
+                    var waLink = document.createElement('a');
+                    waLink.className = 'btn-action btn-whatsapp';
+                    waLink.href = '/api/public/jobs/' + encodeURIComponent(job.id) + '/contact/whatsapp';
+                    waLink.target = '_blank';
+                    waLink.rel = 'noopener noreferrer';
+                    waLink.innerHTML = '💬 WhatsApp HR';
+                    waLink.onclick = function() {{
+                        window.dgTrackEvent('whatsapp_click', job.id, {{ source: 'category_modal' }});
+                    }};
+                    actionsBar.appendChild(waLink);
+                }}
 
-            // 5. Call action (Direct access without registration)
-            if (job.has_phone) {{
-                var callLink = document.createElement('a');
-                callLink.className = 'btn-action btn-call';
-                callLink.href = '/api/public/jobs/' + encodeURIComponent(job.id) + '/contact/call';
-                callLink.innerHTML = '📞 Call HR';
-                callLink.onclick = function() {{
-                    window.dgTrackEvent('call_click', job.id, {{ source: 'category_modal' }});
-                }};
-                actionsBar.appendChild(callLink);
-                // Populate display phone number asynchronously
-                fetch('/api/public/jobs/' + encodeURIComponent(job.id) + '/contact/call?format=json')
-                    .then(function(r) {{ return r.ok ? r.json() : null; }})
-                    .then(function(d) {{
-                        if (d && d.phone) {{
-                            callLink.href = d.target_url || ('tel:' + d.phone.replace(/[^0-9+]/g, ''));
-                            callLink.innerHTML = '📞 Call (' + escapeHtml(d.phone) + ')';
-                        }}
-                    }}).catch(function() {{}});
-            }}
+                // 5. Call action (Registered users only)
+                if (job.has_phone) {{
+                    var callLink = document.createElement('a');
+                    callLink.className = 'btn-action btn-call';
+                    callLink.href = '/api/public/jobs/' + encodeURIComponent(job.id) + '/contact/call';
+                    callLink.innerHTML = '📞 Call HR';
+                    callLink.onclick = function() {{
+                        window.dgTrackEvent('call_click', job.id, {{ source: 'category_modal' }});
+                    }};
+                    actionsBar.appendChild(callLink);
+                    // Populate display phone number asynchronously
+                    fetch('/api/public/jobs/' + encodeURIComponent(job.id) + '/contact/call?format=json')
+                        .then(function(r) {{ return r.ok ? r.json() : null; }})
+                        .then(function(d) {{
+                            if (d && (d.phone || d.contact)) {{
+                                var ph = d.phone || d.contact;
+                                callLink.href = d.target_url || ('tel:' + ph.replace(/[^0-9+]/g, ''));
+                                callLink.innerHTML = '📞 Call (' + escapeHtml(ph) + ')';
+                            }}
+                        }}).catch(function() {{}});
+                }}
 
-            // 6. Email action (Direct access without registration)
-            if (job.has_email) {{
-                var emailLink = document.createElement('a');
-                emailLink.className = 'btn-action btn-email';
-                emailLink.href = '/api/public/jobs/' + encodeURIComponent(job.id) + '/contact/email';
-                emailLink.innerHTML = '✉️ Email Resume';
-                emailLink.onclick = function() {{
-                    window.dgTrackEvent('email_click', job.id, {{ source: 'category_modal' }});
+                // 6. Email action (Registered users only)
+                if (job.has_email) {{
+                    var emailLink = document.createElement('a');
+                    emailLink.className = 'btn-action btn-email';
+                    emailLink.href = '/api/public/jobs/' + encodeURIComponent(job.id) + '/contact/email';
+                    emailLink.innerHTML = '✉️ Email Resume';
+                    emailLink.onclick = function() {{
+                        window.dgTrackEvent('email_click', job.id, {{ source: 'category_modal' }});
+                    }};
+                    actionsBar.appendChild(emailLink);
+                }}
+            }} else if (job.has_whatsapp || job.has_phone || job.has_email) {{
+                // Non-registered user: show "Get HR Contact Details" redirecting to registration page
+                var getContactBtn = document.createElement('a');
+                getContactBtn.className = 'btn-action btn-call';
+                getContactBtn.style.background = '#0284C7';
+                getContactBtn.style.color = '#ffffff';
+                getContactBtn.style.fontWeight = '700';
+                getContactBtn.href = '/signup?redirect=' + encodeURIComponent(jobPath);
+                getContactBtn.innerHTML = '📞 Get HR Contact Details';
+                getContactBtn.onclick = function() {{
+                    window.dgTrackEvent('registration_cta_click', job.id, {{ cta: 'get_hr_contact_details', source: 'category_modal' }});
+                    window.dgTrackEvent('reg_cta_click', job.id, {{ cta: 'get_hr_contact_details', source: 'category_modal' }});
                 }};
-                actionsBar.appendChild(emailLink);
+                actionsBar.appendChild(getContactBtn);
+            }} else {{
+                // 7. Prominent Register Free CTA fallback
+                var regBtn = document.createElement('a');
+                regBtn.className = 'btn-action btn-apply-primary';
+                regBtn.style.background = '#9E1B32';
+                regBtn.href = '/signup?redirect=' + encodeURIComponent(jobPath);
+                regBtn.innerHTML = '✨ Register Free';
+                regBtn.onclick = function() {{
+                    window.dgTrackEvent('registration_cta_click', job.id, {{ cta: 'modal_register_free', source: 'category_modal' }});
+                    window.dgTrackEvent('reg_cta_click', job.id, {{ cta: 'modal_register_free', source: 'category_modal' }});
+                }};
+                actionsBar.appendChild(regBtn);
             }}
-
-            // 7. Prominent Register Free CTA
-            var regBtn = document.createElement('a');
-            regBtn.className = 'btn-action btn-apply-primary';
-            regBtn.style.background = '#9E1B32';
-            regBtn.href = '/signup?redirect=' + encodeURIComponent(jobPath);
-            regBtn.innerHTML = '✨ Register Free';
-            regBtn.onclick = function() {{
-                window.dgTrackEvent('registration_cta_click', job.id, {{ cta: 'modal_register_free', source: 'category_modal' }});
-                window.dgTrackEvent('reg_cta_click', job.id, {{ cta: 'modal_register_free', source: 'category_modal' }});
-            }};
-            actionsBar.appendChild(regBtn);
 
             // 8. Direct Job Page Link
             var directLink = document.createElement('a');
@@ -4111,6 +4136,14 @@ def get_job_or_category_page(slug: str, request: Request):
         }}
 
         var currentActiveJob = null;
+        var isCategoryUserLoggedIn = false;
+        fetch('/api/auth/me')
+            .then(function(r) {{ return r.ok ? r.json() : null; }})
+            .then(function(d) {{
+                if (d && d.logged_in && d.user) {{
+                    isCategoryUserLoggedIn = true;
+                }}
+            }}).catch(function() {{}});
         var savedJobs = [];
         try {{
             savedJobs = JSON.parse(localStorage.getItem('tirupur_saved_jobs') || '[]');
@@ -4298,63 +4331,80 @@ def get_job_or_category_page(slug: str, request: Request):
                 actionsBar.appendChild(applyBtn);
             }}
 
-            // 4. WhatsApp HR action (Direct access without registration)
-            if (job.has_whatsapp) {{
-                var waLink = document.createElement('a');
-                waLink.className = 'btn-action btn-whatsapp';
-                waLink.href = '/api/public/jobs/' + encodeURIComponent(job.id) + '/contact/whatsapp';
-                waLink.target = '_blank';
-                waLink.rel = 'noopener noreferrer';
-                waLink.innerHTML = '💬 WhatsApp HR';
-                waLink.onclick = function() {{
-                    window.dgTrackEvent('whatsapp_click', job.id, {{ source: 'category_modal' }});
-                }};
-                actionsBar.appendChild(waLink);
-            }}
+            if (isCategoryUserLoggedIn) {{
+                // 4. WhatsApp HR action (Registered users only)
+                if (job.has_whatsapp) {{
+                    var waLink = document.createElement('a');
+                    waLink.className = 'btn-action btn-whatsapp';
+                    waLink.href = '/api/public/jobs/' + encodeURIComponent(job.id) + '/contact/whatsapp';
+                    waLink.target = '_blank';
+                    waLink.rel = 'noopener noreferrer';
+                    waLink.innerHTML = '💬 WhatsApp HR';
+                    waLink.onclick = function() {{
+                        window.dgTrackEvent('whatsapp_click', job.id, {{ source: 'category_modal' }});
+                    }};
+                    actionsBar.appendChild(waLink);
+                }}
 
-            // 5. Call action (Direct access without registration)
-            if (job.has_phone) {{
-                var callLink = document.createElement('a');
-                callLink.className = 'btn-action btn-call';
-                callLink.href = '/api/public/jobs/' + encodeURIComponent(job.id) + '/contact/call';
-                callLink.innerHTML = '📞 Call HR';
-                callLink.onclick = function() {{
-                    window.dgTrackEvent('call_click', job.id, {{ source: 'category_modal' }});
-                }};
-                actionsBar.appendChild(callLink);
-                fetch('/api/public/jobs/' + encodeURIComponent(job.id) + '/contact/call?format=json')
-                    .then(function(r) {{ return r.ok ? r.json() : null; }})
-                    .then(function(d) {{
-                        if (d && d.phone) {{
-                            callLink.href = d.target_url || ('tel:' + d.phone.replace(/[^0-9+]/g, ''));
-                            callLink.innerHTML = '📞 Call (' + escapeHtml(d.phone) + ')';
-                        }}
-                    }}).catch(function() {{}});
-            }}
+                // 5. Call action (Registered users only)
+                if (job.has_phone) {{
+                    var callLink = document.createElement('a');
+                    callLink.className = 'btn-action btn-call';
+                    callLink.href = '/api/public/jobs/' + encodeURIComponent(job.id) + '/contact/call';
+                    callLink.innerHTML = '📞 Call HR';
+                    callLink.onclick = function() {{
+                        window.dgTrackEvent('call_click', job.id, {{ source: 'category_modal' }});
+                    }};
+                    actionsBar.appendChild(callLink);
+                    fetch('/api/public/jobs/' + encodeURIComponent(job.id) + '/contact/call?format=json')
+                        .then(function(r) {{ return r.ok ? r.json() : null; }})
+                        .then(function(d) {{
+                            if (d && (d.phone || d.contact)) {{
+                                var ph = d.phone || d.contact;
+                                callLink.href = d.target_url || ('tel:' + ph.replace(/[^0-9+]/g, ''));
+                                callLink.innerHTML = '📞 Call (' + escapeHtml(ph) + ')';
+                            }}
+                        }}).catch(function() {{}});
+                }}
 
-            // 6. Email action (Direct access without registration)
-            if (job.has_email) {{
-                var emailLink = document.createElement('a');
-                emailLink.className = 'btn-action btn-email';
-                emailLink.href = '/api/public/jobs/' + encodeURIComponent(job.id) + '/contact/email';
-                emailLink.innerHTML = '✉️ Email Resume';
-                emailLink.onclick = function() {{
-                    window.dgTrackEvent('email_click', job.id, {{ source: 'category_modal' }});
+                // 6. Email action (Registered users only)
+                if (job.has_email) {{
+                    var emailLink = document.createElement('a');
+                    emailLink.className = 'btn-action btn-email';
+                    emailLink.href = '/api/public/jobs/' + encodeURIComponent(job.id) + '/contact/email';
+                    emailLink.innerHTML = '✉️ Email Resume';
+                    emailLink.onclick = function() {{
+                        window.dgTrackEvent('email_click', job.id, {{ source: 'category_modal' }});
+                    }};
+                    actionsBar.appendChild(emailLink);
+                }}
+            }} else if (job.has_whatsapp || job.has_phone || job.has_email) {{
+                // Non-registered user: show "Get HR Contact Details" redirecting to registration page
+                var getContactBtn = document.createElement('a');
+                getContactBtn.className = 'btn-action btn-call';
+                getContactBtn.style.background = '#0284C7';
+                getContactBtn.style.color = '#ffffff';
+                getContactBtn.style.fontWeight = '700';
+                getContactBtn.href = '/signup?redirect=' + encodeURIComponent(jobPath);
+                getContactBtn.innerHTML = '📞 Get HR Contact Details';
+                getContactBtn.onclick = function() {{
+                    window.dgTrackEvent('registration_cta_click', job.id, {{ cta: 'get_hr_contact_details', source: 'category_modal' }});
+                    window.dgTrackEvent('reg_cta_click', job.id, {{ cta: 'get_hr_contact_details', source: 'category_modal' }});
                 }};
-                actionsBar.appendChild(emailLink);
+                actionsBar.appendChild(getContactBtn);
+            }} else {{
+                // 7. Prominent Register Free CTA fallback
+                var regBtn = document.createElement('a');
+                regBtn.className = 'btn-action btn-apply-primary';
+                regBtn.style.background = '#9E1B32';
+                regBtn.href = '/signup?redirect=' + encodeURIComponent(jobPath);
+                regBtn.innerHTML = '✨ Register Free';
+                regBtn.onclick = function() {{
+                    window.dgTrackEvent('registration_cta_click', job.id, {{ cta: 'modal_register_free', source: 'category_modal' }});
+                    window.dgTrackEvent('reg_cta_click', job.id, {{ cta: 'modal_register_free', source: 'category_modal' }});
+                }};
+                actionsBar.appendChild(regBtn);
             }}
-
-            // 7. Prominent Register Free CTA
-            var regBtn = document.createElement('a');
-            regBtn.className = 'btn-action btn-apply-primary';
-            regBtn.style.background = '#9E1B32';
-            regBtn.href = '/signup?redirect=' + encodeURIComponent(jobPath);
-            regBtn.innerHTML = '✨ Register Free';
-            regBtn.onclick = function() {{
-                window.dgTrackEvent('registration_cta_click', job.id, {{ cta: 'modal_register_free', source: 'category_modal' }});
-                window.dgTrackEvent('reg_cta_click', job.id, {{ cta: 'modal_register_free', source: 'category_modal' }});
-            }};
-            actionsBar.appendChild(regBtn);
 
             // 8. Direct Job Page Link
             var directLink = document.createElement('a');
@@ -4752,23 +4802,28 @@ def get_job_or_category_page(slug: str, request: Request):
             </div>
             """
 
-        # WhatsApp HR rendered directly for both guest and registered users when contact exists
-        if has_whatsapp and job.get("contact_whatsapp"):
-            clean_wa = re.sub(r'[^0-9]', '', job["contact_whatsapp"])
-            wa_text = urllib.parse.quote(f'Hello, I saw your job vacancy "{job_title}" on DigiGarment Tiruppur Jobs. I would like to apply.')
-            actions_html += f'<a class="btn-action btn-whatsapp" href="https://wa.me/{clean_wa}?text={wa_text}" target="_blank" rel="noopener noreferrer" onclick="if(window.dgTrackEvent) window.dgTrackEvent(\'whatsapp_click\', {job["id"]}, {{source: \'seo_job_page\'}})">💬 WhatsApp HR</a>'
+        if is_authenticated:
+            # WhatsApp HR rendered only for registered users
+            if has_whatsapp and job.get("contact_whatsapp"):
+                clean_wa = re.sub(r'[^0-9]', '', job["contact_whatsapp"])
+                wa_text = urllib.parse.quote(f'Hello, I saw your job vacancy "{job_title}" on DigiGarment Tiruppur Jobs. I would like to apply.')
+                actions_html += f'<a class="btn-action btn-whatsapp" href="https://wa.me/{clean_wa}?text={wa_text}" target="_blank" rel="noopener noreferrer" onclick="if(window.dgTrackEvent) window.dgTrackEvent(\'whatsapp_click\', {job["id"]}, {{source: \'seo_job_page\'}})">💬 WhatsApp HR</a>'
 
-        # Call HR rendered directly for both guest and registered users when contact exists
-        if has_phone and job.get("contact_phone"):
-            clean_phone = re.sub(r'[^0-9+]', '', job["contact_phone"])
-            actions_html += f'<a class="btn-action btn-call" href="tel:{clean_phone}" onclick="if(window.dgTrackEvent) window.dgTrackEvent(\'call_click\', {job["id"]}, {{source: \'seo_job_page\'}})">📞 Call ({html.escape(job["contact_phone"])})</a>'
+            # Call HR rendered only for registered users
+            if has_phone and job.get("contact_phone"):
+                clean_phone = re.sub(r'[^0-9+]', '', job["contact_phone"])
+                actions_html += f'<a class="btn-action btn-call" href="tel:{clean_phone}" onclick="if(window.dgTrackEvent) window.dgTrackEvent(\'call_click\', {job["id"]}, {{source: \'seo_job_page\'}})">📞 Call ({html.escape(job["contact_phone"])})</a>'
 
-        # Email HR rendered directly for both guest and registered users when contact exists
-        if has_email and job.get("contact_email"):
-            subj = urllib.parse.quote(f'Application for {job_title} - DigiGarment')
-            actions_html += f'<a class="btn-action btn-email" href="mailto:{html.escape(job["contact_email"])}?subject={subj}" onclick="if(window.dgTrackEvent) window.dgTrackEvent(\'email_click\', {job["id"]}, {{source: \'seo_job_page\'}})">✉️ Email Resume</a>'
-
-        if not is_authenticated:
+            # Email HR rendered only for registered users
+            if has_email and job.get("contact_email"):
+                subj = urllib.parse.quote(f'Application for {job_title} - DigiGarment')
+                actions_html += f'<a class="btn-action btn-email" href="mailto:{html.escape(job["contact_email"])}?subject={subj}" onclick="if(window.dgTrackEvent) window.dgTrackEvent(\'email_click\', {job["id"]}, {{source: \'seo_job_page\'}})">✉️ Email Resume</a>'
+        elif has_whatsapp or has_phone or has_email:
+            # Non-registered user: show "Get HR Contact Details" redirecting to registration page
+            actions_html += f"""
+            <a class="btn-action btn-call" id="modalActionRegisterBtn" href="/signup?redirect={encoded_redirect}" onclick="localStorage.setItem('dg_intended_job_id', '{job['id']}'); if(window.dgTrackEvent) {{ window.dgTrackEvent('registration_cta_click', {job['id']}, {{cta: 'get_hr_contact_details', source: 'seo_job_actions'}}); window.dgTrackEvent('reg_cta_click', {job['id']}, {{cta: 'get_hr_contact_details', source: 'seo_job_actions'}}); }}" style="background: #0284C7; color: #ffffff; text-decoration: none; font-weight: 700;">📞 Get HR Contact Details</a>
+            """
+        else:
             actions_html += f"""
             <a class="btn-action" id="modalActionRegisterBtn" href="/signup?redirect={encoded_redirect}" onclick="localStorage.setItem('dg_intended_job_id', '{job['id']}'); if(window.dgTrackEvent) {{ window.dgTrackEvent('registration_cta_click', {job['id']}, {{cta: 'register_free', source: 'seo_job_actions'}}); window.dgTrackEvent('reg_cta_click', {job['id']}, {{cta: 'register_free', source: 'seo_job_actions'}}); }}" style="background: var(--dg-red); color: #ffffff; text-decoration: none; font-weight: 700;">✨ Register Free</a>
             """
@@ -4810,13 +4865,17 @@ def get_job_or_category_page(slug: str, request: Request):
 
         # JSON representation of the job for client JS cache
         client_job = dict(job)
+        if not is_authenticated:
+            client_job["contact_phone"] = None
+            client_job["contact_whatsapp"] = None
+            client_job["contact_email"] = None
         client_job["is_direct_job"] = is_direct_job
         client_job["allow_direct_apply"] = is_direct_job
         client_job["has_whatsapp"] = has_whatsapp
         client_job["has_phone"] = has_phone
         client_job["has_email"] = has_email
         client_job["is_authenticated"] = is_authenticated
-        client_job["login_required"] = bool(is_direct_job and not is_authenticated)
+        client_job["login_required"] = not is_authenticated
         for k, v in list(client_job.items()):
             if isinstance(v, (datetime.datetime, datetime.date)):
                 client_job[k] = v.isoformat()

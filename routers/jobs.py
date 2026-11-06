@@ -254,10 +254,15 @@ def _enrich_and_filter_job(job: dict, is_authenticated: bool) -> dict:
     # Never expose external employer portal URLs
     job["application_url"] = None
     
-    # Direct access to WhatsApp HR, Call HR, and Email HR is preserved without registration gating.
-    # Formal application submission on Direct Jobs requires authentication.
+    # HR Contact details (WhatsApp, Call, Email) are visible only to registered users.
+    # Availability flags (has_whatsapp, has_phone, has_email) remain true so guests see "Get HR Contact Details".
+    if not is_authenticated:
+        job["contact_phone"] = None
+        job["contact_whatsapp"] = None
+        job["contact_email"] = None
+
     job["is_authenticated"] = is_authenticated
-    job["login_required"] = bool(is_direct and not is_authenticated)
+    job["login_required"] = not is_authenticated
         
     return job
 
@@ -577,7 +582,7 @@ def resolve_job_contact_channel(
     else:
         rows = db_helpers["query_db"](
             """
-            SELECT id, title, contact_phone, contact_whatsapp, contact_email, status, is_archived
+            SELECT id, slug, title, contact_phone, contact_whatsapp, contact_email, status, is_archived
             FROM jobs
             WHERE id = %s AND LOWER(status) = 'published' AND COALESCE(is_archived, FALSE) = FALSE
             LIMIT 1;
@@ -589,6 +594,15 @@ def resolve_job_contact_channel(
 
     if not job:
         raise HTTPException(status_code=404, detail="Job vacancy not found or inactive.")
+
+    # Require authentication to resolve HR contact details
+    is_auth = _check_public_auth(request)
+    if not is_auth:
+        if (format or "").lower() == "json":
+            raise HTTPException(status_code=401, detail="Please register or login to view HR contact details.")
+        job_slug = (job.get("slug") or str(job.get("id") or job_id)).strip()
+        redirect_target = f"/jobs/{urllib.parse.quote(job_slug)}"
+        return RedirectResponse(url=f"/signup?redirect={urllib.parse.quote(redirect_target, safe='')}", status_code=302)
 
     job_title = (job.get("title") or "Garment Job Vacancy").strip()
 
