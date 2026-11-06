@@ -4,7 +4,7 @@ import uuid
 import json
 import logging
 import datetime
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Tuple
 import re
 from fastapi import APIRouter, HTTPException, Cookie, Depends, Response, Form, Request, UploadFile, File
 from pydantic import BaseModel, Field
@@ -53,10 +53,13 @@ def _validate_email_format(email: str) -> str:
     return cleaned
 
 def _validate_indian_mobile(mobile: str) -> str:
-    cleaned = (mobile or "").strip()
-    # Remove leading +91, 91, or 0 if present
-    cleaned = re.sub(r"^(?:\+91|91|0)", "", cleaned)
-    cleaned = re.sub(r"[\s\-\(\)]", "", cleaned)
+    cleaned = re.sub(r"[\s\-\(\)]", "", (mobile or "").strip())
+    if cleaned.startswith("+91"):
+        cleaned = cleaned[3:]
+    elif len(cleaned) == 12 and cleaned.startswith("91"):
+        cleaned = cleaned[2:]
+    elif len(cleaned) == 11 and cleaned.startswith("0"):
+        cleaned = cleaned[1:]
     if not cleaned or not re.match(r"^[6-9]\d{9}$", cleaned):
         raise HTTPException(status_code=400, detail="Please enter a valid 10-digit Indian mobile number.")
     return cleaned
@@ -142,18 +145,94 @@ async def require_employer_user(user: Dict[str, Any] = Depends(get_current_publi
     return user
 
 
+PENDING_REG_COOKIE_NAME = "dg_reg_verify"
+PENDING_REG_MAX_AGE = 600  # 10 minutes (matches TEMP_TOKEN_EXPIRY_MINUTES)
+
+
+def _is_secure_request(request: Optional[Request] = None) -> bool:
+    if os.getenv("ENVIRONMENT", "").strip().lower() == "production":
+        return True
+    if request:
+        if request.url.scheme == "https":
+            return True
+        if request.headers.get("x-forwarded-proto", "").strip().lower() == "https":
+            return True
+    return False
+
+
+def _verify_registration_otp_token_or_400(
+    expected_email: Optional[str],
+    cookie_token: Optional[str] = None
+) -> Tuple[int, str]:
+    """
+    Enforces that any endpoint creating a verified account (email_verified = TRUE)
+    presents a valid, unconsumed, non-expired Email OTP verification credential exclusively
+    via the HttpOnly cookie `dg_reg_verify` bound to `purpose='registration'` and `expected_email`.
+    Request-body bearer tokens are never accepted.
+    Returns (email_otp_verifications.id, verified_email).
+    """
+    raw_token = (cookie_token or "").strip()
+    if not raw_token:
+        raise HTTPException(
+            status_code=400,
+            detail="Email OTP verification is required before completing registration. Please verify your email code first."
+        )
+    is_valid, token_payload, err_msg = verify_signed_temp_token(raw_token, expected_purpose="registration")
+    if not is_valid or not token_payload:
+        raise HTTPException(status_code=400, detail=err_msg or "Invalid or expired verification token.")
+    token_email = (token_payload.get("email") or "").strip().lower()
+    if expected_email and expected_email.strip():
+        if token_email != expected_email.strip().lower():
+            raise HTTPException(status_code=400, detail="Verification token does not match the provided email address.")
+    nonce = token_payload.get("nonce")
+    otp_records = _query_db("""
+        SELECT id, is_consumed, verified_at,
+               (verified_at IS NULL OR verified_at < (CURRENT_TIMESTAMP - INTERVAL '10 minutes')) AS is_token_expired
+        FROM email_otp_verifications
+        WHERE email = %s AND purpose = 'registration' AND token_nonce = %s;
+    """, (token_email, nonce))
+    if not otp_records or otp_records[0]["is_consumed"] or not otp_records[0]["verified_at"]:
+        raise HTTPException(status_code=400, detail="Verification token is invalid or has already been used.")
+    if otp_records[0].get("is_token_expired"):
+        raise HTTPException(status_code=400, detail="Verification token has expired (valid for 10 minutes). Please verify your email again.")
+    return otp_records[0]["id"], token_email
+
+
+def _consume_registration_otp_or_400(otp_rec_id: int, response: Optional[Response] = None) -> None:
+    """
+    Atomically marks the verified OTP record consumed and clears token_nonce so it is strictly single-use,
+    and deletes the pending registration HttpOnly cookie.
+    """
+    updated = _execute_db_returning("""
+        UPDATE email_otp_verifications
+        SET is_consumed = TRUE, token_nonce = NULL
+        WHERE id = %s AND is_consumed = FALSE
+        RETURNING id;
+    """, (otp_rec_id,))
+    if not updated:
+        raise HTTPException(status_code=400, detail="Verification token has already been used.")
+    if response is not None:
+        response.delete_cookie(key=PENDING_REG_COOKIE_NAME, path="/", samesite="lax")
+
+
 # --- 1. Direct Employee (Job Seeker) Registration ---
 class EmployeeRegisterRequest(BaseModel):
     full_name: str
     mobile: str
     email: str
     password: str
-    confirm_password: str
+    confirm_password: Optional[str] = None
     location: Optional[str] = None
+    visitor_id: Optional[str] = None
 
 @router.post("/register/employee")
 @router.post("/register/individual")
-def register_employee(req_data: EmployeeRegisterRequest, response: Response, request: Request):
+def register_employee(
+    req_data: EmployeeRegisterRequest,
+    response: Response,
+    request: Request,
+    dg_reg_verify: Optional[str] = Cookie(None)
+):
     ip = _get_client_ip(request)
     if not check_rate_limit(f"reg_emp_ip:{ip}", max_requests=8, window_seconds=300):
         raise HTTPException(status_code=429, detail="Too many registration attempts. Please wait a few minutes.")
@@ -171,6 +250,9 @@ def register_employee(req_data: EmployeeRegisterRequest, response: Response, req
         raise HTTPException(status_code=503, detail="Database service temporarily unavailable.")
         
     try:
+        # Enforce mandatory Email OTP verification exclusively via HttpOnly cookie `dg_reg_verify`
+        otp_rec_id, _ = _verify_registration_otp_token_or_400(email, dg_reg_verify)
+
         # Check duplicate email
         existing_email = _query_db("SELECT id FROM public_users WHERE email = %s;", (email,))
         if existing_email:
@@ -180,6 +262,9 @@ def register_employee(req_data: EmployeeRegisterRequest, response: Response, req
         existing_mobile = _query_db("SELECT id FROM individual_profiles WHERE mobile = %s;", (mobile,))
         if existing_mobile:
             raise HTTPException(status_code=400, detail="This mobile number is already registered with another account.")
+
+        # Atomically consume OTP token before account creation (single-use)
+        _consume_registration_otp_or_400(otp_rec_id, response)
             
         password_hash = generate_password_hash(password, method="scrypt")
         
@@ -212,6 +297,15 @@ def register_employee(req_data: EmployeeRegisterRequest, response: Response, req
             expires=30 * 24 * 3600,
             samesite="lax"
         )
+
+        try:
+            vid = (req_data.visitor_id or "").strip()[:64] or None
+            _execute_db("""
+                INSERT INTO job_analytics_events (event_type, visitor_id, user_id, session_id, metadata)
+                VALUES ('registration_complete', %s, %s, %s, %s);
+            """, (vid, new_user_id, session_token, json.dumps({"account_type": "individual", "source": "register_employee"})))
+        except Exception as ae:
+            logger.warning(f"Could not track registration_complete event: {ae}")
         
         return {
             "success": True,
@@ -234,14 +328,20 @@ class EmployerRegisterRequest(BaseModel):
     mobile: str
     email: str
     password: str
-    confirm_password: str
+    confirm_password: Optional[str] = None
     whatsapp: Optional[str] = None
     area: Optional[str] = None
     location: Optional[str] = None
+    visitor_id: Optional[str] = None
 
 @router.post("/register/employer")
 @router.post("/register/company")
-def register_employer(req_data: EmployerRegisterRequest, response: Response, request: Request):
+def register_employer(
+    req_data: EmployerRegisterRequest,
+    response: Response,
+    request: Request,
+    dg_reg_verify: Optional[str] = Cookie(None)
+):
     ip = _get_client_ip(request)
     if not check_rate_limit(f"reg_empr_ip:{ip}", max_requests=8, window_seconds=300):
         raise HTTPException(status_code=429, detail="Too many registration attempts. Please wait a few minutes.")
@@ -265,6 +365,9 @@ def register_employer(req_data: EmployerRegisterRequest, response: Response, req
         raise HTTPException(status_code=503, detail="Database service temporarily unavailable.")
         
     try:
+        # Enforce mandatory Email OTP verification exclusively via HttpOnly cookie `dg_reg_verify`
+        otp_rec_id, _ = _verify_registration_otp_token_or_400(email, dg_reg_verify)
+
         # Check duplicate email
         existing_email = _query_db("SELECT id FROM public_users WHERE email = %s;", (email,))
         if existing_email:
@@ -274,6 +377,9 @@ def register_employer(req_data: EmployerRegisterRequest, response: Response, req
         existing_mobile = _query_db("SELECT id FROM company_profiles WHERE mobile = %s;", (mobile,))
         if existing_mobile:
             raise HTTPException(status_code=400, detail="This mobile number is already registered with another company account.")
+
+        # Atomically consume OTP token before account creation (single-use)
+        _consume_registration_otp_or_400(otp_rec_id, response)
             
         password_hash = generate_password_hash(password, method="scrypt")
         
@@ -308,6 +414,15 @@ def register_employer(req_data: EmployerRegisterRequest, response: Response, req
             expires=30 * 24 * 3600,
             samesite="lax"
         )
+
+        try:
+            vid = (req_data.visitor_id or "").strip()[:64] or None
+            _execute_db("""
+                INSERT INTO job_analytics_events (event_type, visitor_id, user_id, session_id, metadata)
+                VALUES ('registration_complete', %s, %s, %s, %s);
+            """, (vid, new_user_id, session_token, json.dumps({"account_type": "company", "source": "register_employer"})))
+        except Exception as ae:
+            logger.warning(f"Could not track registration_complete event: {ae}")
         
         return {
             "success": True,
@@ -328,6 +443,7 @@ def register_employer(req_data: EmployerRegisterRequest, response: Response, req
 class LoginRequest(BaseModel):
     email: str  # Can be email or 10-digit mobile
     password: str
+    visitor_id: Optional[str] = None
 
 @router.post("/login")
 def public_login(req_data: LoginRequest, response: Response, request: Request):
@@ -348,8 +464,13 @@ def public_login(req_data: LoginRequest, response: Response, request: Request):
         target_email = None
         
         # Check if input is a mobile number (10 digits)
-        cleaned_mobile = re.sub(r"^(?:\+91|91|0)", "", raw_ident)
-        cleaned_mobile = re.sub(r"[\s\-\(\)]", "", cleaned_mobile)
+        cleaned_mobile = re.sub(r"[\s\-\(\)]", "", raw_ident)
+        if cleaned_mobile.startswith("+91"):
+            cleaned_mobile = cleaned_mobile[3:]
+        elif len(cleaned_mobile) == 12 and cleaned_mobile.startswith("91"):
+            cleaned_mobile = cleaned_mobile[2:]
+        elif len(cleaned_mobile) == 11 and cleaned_mobile.startswith("0"):
+            cleaned_mobile = cleaned_mobile[1:]
         if re.match(r"^[6-9]\d{9}$", cleaned_mobile):
             # Look up by mobile in individual_profiles or company_profiles
             m_rows = _query_db("SELECT email FROM individual_profiles WHERE mobile = %s LIMIT 1;", (cleaned_mobile,))
@@ -401,10 +522,11 @@ def public_login(req_data: LoginRequest, response: Response, request: Request):
 
         # Track login analytics event
         try:
+            vid = (req_data.visitor_id or "").strip()[:64] or None
             _execute_db("""
-                INSERT INTO job_analytics_events (event_type, user_id, session_id, metadata)
-                VALUES ('login', %s, %s, %s);
-            """, (user["id"], session_token, json.dumps({"account_type": account_type, "role": role})))
+                INSERT INTO job_analytics_events (event_type, visitor_id, user_id, session_id, metadata)
+                VALUES ('login', %s, %s, %s, %s);
+            """, (vid, user["id"], session_token, json.dumps({"account_type": account_type, "role": role})))
         except Exception as ae:
             logger.warning(f"Could not track login event: {ae}")
         
@@ -732,9 +854,11 @@ def public_logout(response: Response, public_session_id: Optional[str] = Cookie(
 
 class SendOtpRequest(BaseModel):
     email: str
+    visitor_id: Optional[str] = None
+    account_type: Optional[str] = None
 
 @router.post("/register/send-otp")
-def register_send_otp(req_data: SendOtpRequest, request: Request):
+def register_send_otp(req_data: SendOtpRequest, request: Request, response: Response):
     ip = _get_client_ip(request)
     email = _validate_email_format(req_data.email)
     
@@ -752,24 +876,52 @@ def register_send_otp(req_data: SendOtpRequest, request: Request):
             raise HTTPException(status_code=400, detail="This email is already registered. Please sign in instead.")
             
         recent_otp = _query_db("""
-            SELECT created_at FROM email_otp_verifications 
+            SELECT created_at, GREATEST(1, 60 - EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - created_at))::int) AS remaining_seconds
+            FROM email_otp_verifications 
             WHERE email = %s AND purpose = 'registration' AND created_at > (CURRENT_TIMESTAMP - INTERVAL '60 seconds')
             ORDER BY created_at DESC LIMIT 1;
         """, (email,))
         if recent_otp:
-            raise HTTPException(status_code=429, detail="Please wait 60 seconds before requesting another verification code.")
+            rem_sec = int(recent_otp[0].get("remaining_seconds") or 60)
+            raise HTTPException(status_code=429, detail=f"Please wait {rem_sec} seconds before requesting another verification code.")
             
         _execute_db("DELETE FROM email_otp_verifications WHERE email = %s AND purpose = 'registration';", (email,))
         
         otp = generate_6digit_otp()
         otp_hashed = hash_otp(otp)
+        pending_nonce = uuid.uuid4().hex
         
         _execute_db("""
-            INSERT INTO email_otp_verifications (email, otp_hash, purpose, expires_at, attempts, created_at)
-            VALUES (%s, %s, 'registration', CURRENT_TIMESTAMP + INTERVAL '5 minutes', 0, CURRENT_TIMESTAMP);
-        """, (email, otp_hashed))
+            INSERT INTO email_otp_verifications (email, otp_hash, purpose, expires_at, attempts, token_nonce, is_consumed, created_at)
+            VALUES (%s, %s, 'registration', CURRENT_TIMESTAMP + INTERVAL '5 minutes', 0, %s, FALSE, CURRENT_TIMESTAMP);
+        """, (email, otp_hashed, pending_nonce))
         
         send_otp_email(to_email=email, otp_code=otp, purpose="registration")
+
+        # Bind Step 2 pending OTP countdown to an HttpOnly cookie (purpose='registration_pending')
+        pending_token = generate_signed_temp_token(email=email, purpose="registration_pending", nonce=pending_nonce)
+        response.set_cookie(
+            key=PENDING_REG_COOKIE_NAME,
+            value=pending_token,
+            httponly=True,
+            max_age=300,
+            expires=300,
+            samesite="lax",
+            secure=_is_secure_request(request),
+            path="/"
+        )
+
+        try:
+            vid = (req_data.visitor_id or "").strip()[:64] or None
+            acct_type = (req_data.account_type or "individual").strip().lower()
+            if acct_type not in ("individual", "company"):
+                acct_type = "individual"
+            _execute_db("""
+                INSERT INTO job_analytics_events (event_type, visitor_id, metadata)
+                VALUES ('registration_start', %s, %s);
+            """, (vid, json.dumps({"account_type": acct_type, "source": "send_otp"})))
+        except Exception as ae:
+            logger.warning(f"Could not track registration_start event: {ae}")
         
         return {
             "success": True,
@@ -788,7 +940,7 @@ class VerifyOtpRequest(BaseModel):
     otp: str
 
 @router.post("/register/verify-otp")
-def register_verify_otp(req_data: VerifyOtpRequest, request: Request):
+def register_verify_otp(req_data: VerifyOtpRequest, request: Request, response: Response):
     ip = _get_client_ip(request)
     email = _validate_email_format(req_data.email)
     otp = req_data.otp.strip()
@@ -837,12 +989,24 @@ def register_verify_otp(req_data: VerifyOtpRequest, request: Request):
         """, (token_nonce, otp_rec["id"]))
         
         temp_token = generate_signed_temp_token(email=email, purpose="registration", nonce=token_nonce)
+
+        # Deliver verification credential in an HttpOnly cookie (never persisted in sessionStorage/localStorage)
+        response.set_cookie(
+            key=PENDING_REG_COOKIE_NAME,
+            value=temp_token,
+            httponly=True,
+            max_age=PENDING_REG_MAX_AGE,
+            expires=PENDING_REG_MAX_AGE,
+            samesite="lax",
+            secure=_is_secure_request(request),
+            path="/"
+        )
         
         return {
             "success": True,
             "message": "Email verified successfully.",
-            "verification_token": temp_token,
-            "email": email
+            "email": email,
+            "expires_in_seconds": PENDING_REG_MAX_AGE
         }
     except HTTPException:
         raise
@@ -850,8 +1014,81 @@ def register_verify_otp(req_data: VerifyOtpRequest, request: Request):
         logger.error(f"Error during register verify OTP: {e}")
         raise HTTPException(status_code=500, detail="Something went wrong. Please try again.")
 
+
+@router.get("/register/pending-status")
+def register_pending_status(
+    request: Request,
+    email: Optional[str] = None,
+    dg_reg_verify: Optional[str] = Cookie(None)
+):
+    """
+    Checks whether the caller has an active, valid, unconsumed HttpOnly pending registration
+    session (`dg_reg_verify` cookie) for Step 3 (`purpose='registration'`) or Step 2 (`purpose='registration_pending'`).
+    Strictly requires the caller's signed HttpOnly cookie matching the server-side `token_nonce` to prevent
+    email enumeration and unauthorized registration status disclosure.
+    """
+    ip = _get_client_ip(request)
+    if not check_rate_limit(f"reg_pending_ip:{ip}", max_requests=30, window_seconds=60):
+        raise HTTPException(status_code=429, detail="Too many requests. Please wait a moment.")
+
+    if not dg_reg_verify or not _db_enabled:
+        return {"verified": False, "otp_pending": False, "email": None}
+
+    raw_cookie = dg_reg_verify.strip()
+    target_email = (email or "").strip().lower()
+
+    # 1. Check for verified Step 3 session cookie (purpose='registration')
+    is_valid_ver, payload_ver, _ = verify_signed_temp_token(raw_cookie, expected_purpose="registration")
+    if is_valid_ver and payload_ver:
+        token_email = (payload_ver.get("email") or "").strip().lower()
+        nonce = payload_ver.get("nonce")
+        if token_email and nonce and (not target_email or token_email == target_email):
+            rows = _query_db("""
+                SELECT id, is_consumed, verified_at,
+                       GREATEST(0, 600 - EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - verified_at))::int) AS rem_sec
+                FROM email_otp_verifications
+                WHERE email = %s AND purpose = 'registration' AND token_nonce = %s
+                  AND is_consumed = FALSE AND verified_at IS NOT NULL
+                  AND verified_at >= (CURRENT_TIMESTAMP - INTERVAL '10 minutes')
+                LIMIT 1;
+            """, (token_email, nonce))
+            if rows:
+                return {
+                    "verified": True,
+                    "otp_pending": False,
+                    "email": token_email,
+                    "expires_in_seconds": int(rows[0].get("rem_sec") or 600)
+                }
+
+    # 2. Check for unverified Step 2 OTP countdown cookie (purpose='registration_pending')
+    is_valid_pend, payload_pend, _ = verify_signed_temp_token(raw_cookie, expected_purpose="registration_pending")
+    if is_valid_pend and payload_pend:
+        token_email = (payload_pend.get("email") or "").strip().lower()
+        nonce = payload_pend.get("nonce")
+        if token_email and nonce and (not target_email or token_email == target_email):
+            otp_rows = _query_db("""
+                SELECT id, is_consumed, verified_at,
+                       GREATEST(0, 60 - EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - created_at))::int) AS cooldown_sec,
+                       GREATEST(0, EXTRACT(EPOCH FROM (expires_at - CURRENT_TIMESTAMP))::int) AS exp_sec
+                FROM email_otp_verifications
+                WHERE email = %s AND purpose = 'registration' AND token_nonce = %s
+                  AND is_consumed = FALSE AND verified_at IS NULL AND expires_at > CURRENT_TIMESTAMP
+                ORDER BY created_at DESC LIMIT 1;
+            """, (token_email, nonce))
+            if otp_rows and not otp_rows[0].get("verified_at"):
+                return {
+                    "verified": False,
+                    "otp_pending": True,
+                    "email": token_email,
+                    "cooldown_seconds": int(otp_rows[0].get("cooldown_sec") or 0),
+                    "expires_in_seconds": int(otp_rows[0].get("exp_sec") or 0)
+                }
+
+    return {"verified": False, "otp_pending": False, "email": None}
+
+
 class CompleteRegistrationRequest(BaseModel):
-    verification_token: str
+    email: Optional[str] = None
     account_type: str
     password: str
     confirm_password: Optional[str] = None
@@ -862,15 +1099,14 @@ class CompleteRegistrationRequest(BaseModel):
     contact_person: Optional[str] = None
     whatsapp: Optional[str] = None
     area: Optional[str] = None
+    visitor_id: Optional[str] = None
 
 @router.post("/register/complete")
-def register_complete(req_data: CompleteRegistrationRequest, response: Response):
-    is_valid, token_payload, err_msg = verify_signed_temp_token(req_data.verification_token, expected_purpose="registration")
-    if not is_valid or not token_payload:
-        raise HTTPException(status_code=400, detail=err_msg or "Invalid or expired verification token.")
-        
-    email = token_payload["email"].strip().lower()
-    nonce = token_payload["nonce"]
+def register_complete(
+    req_data: CompleteRegistrationRequest,
+    response: Response,
+    dg_reg_verify: Optional[str] = Cookie(None)
+):
     account_type = req_data.account_type.strip().lower()
     if account_type not in ("individual", "company"):
         raise HTTPException(status_code=400, detail="Invalid account type.")
@@ -880,18 +1116,21 @@ def register_complete(req_data: CompleteRegistrationRequest, response: Response)
     mobile_clean = _validate_optional_mobile(req_data.mobile)
     whatsapp_clean = _validate_optional_mobile(req_data.whatsapp)
 
+    full_name_clean = (req_data.full_name or "").strip()
+    location_clean = (req_data.location or "").strip() or None
+    company_name_clean = (req_data.company_name or "").strip()
+    contact_person_clean = (req_data.contact_person or "").strip()
+    area_clean = (req_data.area or "").strip() or None
+
     if account_type == "individual":
-        full_name = (req_data.full_name or "").strip()
-        if not full_name:
+        if not full_name_clean:
             raise HTTPException(status_code=400, detail="Full name is required.")
         if not mobile_clean:
             raise HTTPException(status_code=400, detail="Please enter a valid 10-digit mobile number.")
     else:
-        company_name = (req_data.company_name or "").strip()
-        contact_person = (req_data.contact_person or "").strip()
-        if not company_name:
+        if not company_name_clean:
             raise HTTPException(status_code=400, detail="Company name is required.")
-        if not contact_person:
+        if not contact_person_clean:
             raise HTTPException(status_code=400, detail="HR / Recruiter name is required.")
         if not mobile_clean:
             raise HTTPException(status_code=400, detail="Please enter a valid 10-digit official mobile number.")
@@ -900,20 +1139,26 @@ def register_complete(req_data: CompleteRegistrationRequest, response: Response)
         raise HTTPException(status_code=503, detail="Database service temporarily unavailable.")
         
     try:
-        otp_records = _query_db("""
-            SELECT id, is_consumed, verified_at 
-            FROM email_otp_verifications 
-            WHERE email = %s AND purpose = 'registration' AND token_nonce = %s;
-        """, (email, nonce))
-        
-        if not otp_records or otp_records[0]["is_consumed"] or not otp_records[0]["verified_at"]:
-            raise HTTPException(status_code=400, detail="Verification token is invalid or has already been used.")
-            
-        otp_rec_id = otp_records[0]["id"]
+        otp_rec_id, email = _verify_registration_otp_token_or_400(
+            req_data.email,
+            dg_reg_verify
+        )
         
         existing_user = _query_db("SELECT id FROM public_users WHERE email = %s;", (email,))
         if existing_user:
             raise HTTPException(status_code=400, detail="This email is already registered. Please sign in.")
+
+        if account_type == "individual":
+            existing_mobile = _query_db("SELECT id FROM individual_profiles WHERE mobile = %s;", (mobile_clean,))
+            if existing_mobile:
+                raise HTTPException(status_code=400, detail="This mobile number is already registered with another account. Please sign in.")
+        else:
+            existing_mobile = _query_db("SELECT id FROM company_profiles WHERE mobile = %s;", (mobile_clean,))
+            if existing_mobile:
+                raise HTTPException(status_code=400, detail="This mobile number is already registered with another company account. Please sign in.")
+
+        # Atomically consume OTP token before account creation (single-use) and clear dg_reg_verify cookie
+        _consume_registration_otp_or_400(otp_rec_id, response)
             
         password_hash = generate_password_hash(password, method="scrypt")
         
@@ -929,14 +1174,12 @@ def register_complete(req_data: CompleteRegistrationRequest, response: Response)
             _execute_db("""
                 INSERT INTO individual_profiles (user_id, full_name, email, mobile, location, created_at, updated_at)
                 VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-            """, (new_user_id, req_data.full_name, email, req_data.mobile, req_data.location))
+            """, (new_user_id, full_name_clean, email, mobile_clean, location_clean))
         else:
             _execute_db("""
                 INSERT INTO company_profiles (user_id, company_name, contact_person, email, mobile, whatsapp, area, verification_status, created_at, updated_at)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, 'pending', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-            """, (new_user_id, req_data.company_name, req_data.contact_person, email, req_data.mobile, req_data.whatsapp, req_data.area))
-            
-        _execute_db("UPDATE email_otp_verifications SET is_consumed = TRUE WHERE id = %s;", (otp_rec_id,))
+            """, (new_user_id, company_name_clean, contact_person_clean, email, mobile_clean, whatsapp_clean, area_clean))
         
         session_token = str(uuid.uuid4())
         _execute_db("""
@@ -956,10 +1199,11 @@ def register_complete(req_data: CompleteRegistrationRequest, response: Response)
 
         # Track registration_complete analytics event
         try:
+            vid = (req_data.visitor_id or "").strip()[:64] or None
             _execute_db("""
-                INSERT INTO job_analytics_events (event_type, user_id, session_id, metadata)
-                VALUES ('registration_complete', %s, %s, %s);
-            """, (new_user_id, session_token, json.dumps({"account_type": account_type})))
+                INSERT INTO job_analytics_events (event_type, visitor_id, user_id, session_id, metadata)
+                VALUES ('registration_complete', %s, %s, %s, %s);
+            """, (vid, new_user_id, session_token, json.dumps({"account_type": account_type, "source": "register_complete"})))
         except Exception as ae:
             logger.warning(f"Could not track registration_complete event: {ae}")
 

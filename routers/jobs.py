@@ -6,7 +6,7 @@ import shutil
 import mimetypes
 import logging
 from typing import List, Dict, Any, Optional
-from fastapi import APIRouter, HTTPException, Form, UploadFile, File, Query, Request, Body
+from fastapi import APIRouter, HTTPException, Form, UploadFile, File, Query, Request, Response, Body
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
@@ -186,8 +186,27 @@ class AnalyticsTrackRequest(BaseModel):
 
 ALLOWED_EVENT_TYPES = {
     "page_view", "job_view", "job_save", "job_unsave",
-    "apply_click", "whatsapp_click", "call_click", "search", "registration_complete"
+    "apply_click", "whatsapp_click", "call_click", "search", "registration_complete",
+    "job_detail_view", "job_view_prompt", "registration_cta_click", "reg_cta_click",
+    "registration_start", "login", "application_submit", "email_click", "share_click"
 }
+
+PII_FORBIDDEN_METADATA_KEYS = {
+    "password", "confirm_password", "otp", "otp_code", "code",
+    "email", "applicant_email", "contact_email",
+    "phone", "mobile", "whatsapp", "whatsapp_number", "applicant_phone", "contact_phone",
+    "verification_token", "token"
+}
+
+def _sanitize_analytics_metadata(meta: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    if not meta or not isinstance(meta, dict):
+        return {}
+    cleaned: Dict[str, Any] = {}
+    for k, v in meta.items():
+        if str(k).lower().strip() in PII_FORBIDDEN_METADATA_KEYS:
+            continue
+        cleaned[str(k)] = v
+    return cleaned
 
 def _check_public_auth(request: Optional[Request]) -> bool:
     if not request:
@@ -205,29 +224,40 @@ def _check_public_auth(request: Optional[Request]) -> bool:
         logger.warning(f"Error validating public session cookie: {e}")
         return False
 
+def _is_direct_job(job: dict) -> bool:
+    if not job:
+        return False
+    emp_user_id = job.get("employer_user_id")
+    comp_prof_id = job.get("company_profile_id")
+    src_type = (job.get("source_type") or "").lower().strip()
+    return (emp_user_id is not None) or (comp_prof_id is not None) or (src_type in ("employer", "manual", "direct company", "direct", "company"))
+
 def _enrich_and_filter_job(job: dict, is_authenticated: bool) -> dict:
     if not job:
         return job
-    emp_user_id = job.get("employer_user_id")
-    src_type = (job.get("source_type") or "").lower().strip()
     
     # Classification: Direct jobs are employer direct postings or manual admin entries
-    is_direct = (emp_user_id is not None) or (src_type in ("employer", "manual", "direct company", "direct"))
+    is_direct = _is_direct_job(job)
     allow_apply = is_direct and (job.get("status") or "").lower() == "published"
+    
+    # Preserve contact availability flags before any normalization/masking
+    has_whatsapp = bool((job.get("contact_whatsapp") or "").strip())
+    has_phone = bool((job.get("contact_phone") or "").strip())
+    has_email = bool((job.get("contact_email") or "").strip())
     
     job["is_direct_job"] = is_direct
     job["allow_direct_apply"] = allow_apply
+    job["has_whatsapp"] = has_whatsapp
+    job["has_phone"] = has_phone
+    job["has_email"] = has_email
     
-    # Protection: If visitor is NOT authenticated, mask sensitive employer direct contact details
+    # Never expose external employer portal URLs
+    job["application_url"] = None
+    
+    # Direct access to WhatsApp HR, Call HR, and Email HR is preserved without registration gating.
+    # Formal application submission on Direct Jobs requires authentication.
     job["is_authenticated"] = is_authenticated
-    if not is_authenticated:
-        job["contact_phone"] = None
-        job["contact_whatsapp"] = None
-        job["contact_email"] = None
-        job["application_url"] = None
-        job["login_required"] = True
-    else:
-        job["login_required"] = False
+    job["login_required"] = bool(is_direct and not is_authenticated)
         
     return job
 
@@ -237,7 +267,7 @@ def _enrich_and_filter_job(job: dict, is_authenticated: bool) -> dict:
 async def track_analytics_event(payload: AnalyticsTrackRequest, request: Request):
     """
     Ingests job portal analytics events (page_view, job_view, apply_click, whatsapp_click, call_click, etc.).
-    Derives authenticated user identity securely from server-side session.
+    Derives authenticated user identity securely from server-side session and strips any PII from metadata.
     """
     if payload.event_type not in ALLOWED_EVENT_TYPES:
         raise HTTPException(status_code=400, detail="Invalid event type.")
@@ -262,7 +292,7 @@ async def track_analytics_event(payload: AnalyticsTrackRequest, request: Request
     if db_helpers["db_enabled"] and db_helpers["execute_db"]:
         try:
             import json
-            meta_json = json.dumps(payload.metadata or {})
+            meta_json = json.dumps(_sanitize_analytics_metadata(payload.metadata))
             db_helpers["execute_db"](
                 """
                 INSERT INTO job_analytics_events (event_type, job_id, visitor_id, user_id, session_id, metadata, created_at)
@@ -519,6 +549,113 @@ def get_public_job_detail(slug: str, request: Request = None):
         logger.error(f"Error fetching job {slug}: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to load job details: {e}")
 
+@router.get("/jobs/{job_id}/contact/{channel}")
+def resolve_job_contact_channel(
+    job_id: int,
+    channel: str,
+    visitor_id: Optional[str] = Query(None),
+    format: Optional[str] = Query(None),
+    request: Request = None
+):
+    """
+    Resolves WhatsApp HR, Call HR, or Email HR for a published job
+    without requiring registration, while preventing bulk scraping on category pages.
+    """
+    import html as html_lib
+    import urllib.parse
+    from fastapi.responses import RedirectResponse, HTMLResponse
+
+    ch = (channel or "").strip().lower()
+    if ch not in ("whatsapp", "call", "email"):
+        raise HTTPException(status_code=400, detail="Invalid contact channel.")
+
+    job = None
+    if not db_helpers["db_enabled"] or not db_helpers["query_db"]:
+        matches = [j for j in FALLBACK_JOBS if j.get("id") == job_id and (j.get("status") or "").lower() == "published" and not j.get("is_archived")]
+        if matches:
+            job = dict(matches[0])
+    else:
+        rows = db_helpers["query_db"](
+            """
+            SELECT id, title, contact_phone, contact_whatsapp, contact_email, status, is_archived
+            FROM jobs
+            WHERE id = %s AND LOWER(status) = 'published' AND COALESCE(is_archived, FALSE) = FALSE
+            LIMIT 1;
+            """,
+            (job_id,)
+        )
+        if rows:
+            job = dict(rows[0])
+
+    if not job:
+        raise HTTPException(status_code=404, detail="Job vacancy not found or inactive.")
+
+    job_title = (job.get("title") or "Garment Job Vacancy").strip()
+
+    # Optional server-side analytics tracking if visitor_id provided
+    vid = (visitor_id or "").strip()[:64]
+    if vid and db_helpers["db_enabled"] and db_helpers["execute_db"]:
+        evt_map = {"whatsapp": "whatsapp_click", "call": "call_click", "email": "email_click"}
+        evt_type = evt_map.get(ch)
+        if evt_type:
+            user_id = None
+            session_cookie = request.cookies.get("public_session_id") if request else None
+            if session_cookie and db_helpers["query_db"]:
+                try:
+                    u_rows = db_helpers["query_db"](
+                        "SELECT user_id FROM public_user_sessions WHERE token = %s AND expires_at > CURRENT_TIMESTAMP LIMIT 1;",
+                        (session_cookie,)
+                    )
+                    if u_rows:
+                        user_id = u_rows[0]["user_id"]
+                except Exception:
+                    pass
+            try:
+                db_helpers["execute_db"](
+                    """
+                    INSERT INTO job_analytics_events (event_type, job_id, visitor_id, user_id, metadata, created_at)
+                    VALUES (%s, %s, %s, %s, %s::jsonb, CURRENT_TIMESTAMP);
+                    """,
+                    (evt_type, job_id, vid, user_id, json.dumps({"source": "contact_redirect", "channel": ch}))
+                )
+            except Exception:
+                pass
+
+    if ch == "whatsapp":
+        raw_wa = (job.get("contact_whatsapp") or "").strip()
+        if not raw_wa:
+            raise HTTPException(status_code=404, detail="WhatsApp contact not available for this job.")
+        clean_wa = re.sub(r"[^0-9]", "", raw_wa)
+        wa_text = urllib.parse.quote(f'Hello, I saw your job vacancy "{job_title}" on DigiGarment Tiruppur Jobs. I would like to apply.')
+        target_url = f"https://wa.me/{clean_wa}?text={wa_text}"
+        if (format or "").lower() == "json":
+            return {"success": True, "channel": ch, "target_url": target_url, "contact": raw_wa}
+        return RedirectResponse(url=target_url, status_code=302)
+    elif ch == "call":
+        raw_phone = (job.get("contact_phone") or "").strip()
+        if not raw_phone:
+            raise HTTPException(status_code=404, detail="Phone contact not available for this job.")
+        clean_phone = re.sub(r"[^0-9+]", "", raw_phone)
+        target_url = f"tel:{clean_phone}"
+        if (format or "").lower() == "json":
+            return {"success": True, "channel": ch, "target_url": target_url, "contact": raw_phone}
+        return HTMLResponse(
+            content=f'<!DOCTYPE html><html><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url={html_lib.escape(target_url)}"></head><body><script>window.location.href={json.dumps(target_url)};</script><a href="{html_lib.escape(target_url)}">Call {html_lib.escape(raw_phone)}</a></body></html>',
+            status_code=200
+        )
+    else:
+        raw_email = (job.get("contact_email") or "").strip()
+        if not raw_email:
+            raise HTTPException(status_code=404, detail="Email contact not available for this job.")
+        subj = urllib.parse.quote(f"Application for {job_title} - DigiGarment")
+        target_url = f"mailto:{raw_email}?subject={subj}"
+        if (format or "").lower() == "json":
+            return {"success": True, "channel": ch, "target_url": target_url, "contact": raw_email}
+        return HTMLResponse(
+            content=f'<!DOCTYPE html><html><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url={html_lib.escape(target_url)}"></head><body><script>window.location.href={json.dumps(target_url)};</script><a href="{html_lib.escape(target_url)}">Email {html_lib.escape(raw_email)}</a></body></html>',
+            status_code=200
+        )
+
 @router.get("/jobs-filters-meta")
 def get_filters_meta():
     """
@@ -572,9 +709,14 @@ def _clean_num(val, default=None):
     return default
 
 @router.post("/candidates/register")
-def register_candidate(
+async def register_candidate(
+    response: Response,
+    request: Request,
     full_name: str = Form(...),
     mobile: str = Form(...),
+    email: Optional[str] = Form(None),
+    password: Optional[str] = Form(None),
+    visitor_id: Optional[str] = Form(None),
     whatsapp_number: Optional[str] = Form(None),
     location: Optional[str] = Form(None),
     department: Optional[str] = Form(None),
@@ -587,18 +729,33 @@ def register_candidate(
     resume_url: Optional[str] = Form(None)
 ):
     """
-    Registers a job seeker candidate.
-    DUPLICATE PREVENTION: Checks existing user by mobile number.
-    If mobile exists -> updates profile and reuses existing user record.
-    If new -> creates user and creates profile.
+    Canonical Job Seeker Candidate Quick Registration & Profile Update.
+    - If the caller is already authenticated as an `individual` user via `public_session_id`,
+      updates their canonical `individual_profiles` record (and updates any pre-existing legacy
+      `job_seeker_profiles` record with matching mobile in-place without creating duplicates).
+    - If the caller is unauthenticated, requires valid Email OTP verification (`email`, HttpOnly `dg_reg_verify` cookie)
+      and `password`, creates canonical `public_users` (`email_verified = TRUE`) + `individual_profiles`
+      + `public_user_sessions`, sets the `public_session_id` cookie so chained job applications succeed,
+      and records `registration_complete` in `job_analytics_events`.
     """
-    name_clean = str(full_name).strip() if full_name else ""
-    raw_mobile = str(mobile).strip() if mobile else ""
-    clean_mobile = re.sub(r'[^0-9+]', '', raw_mobile)
-    if not clean_mobile or len(clean_mobile) < 10:
-        raise HTTPException(status_code=400, detail="Please provide a valid 10-digit mobile phone number.")
+    from werkzeug.security import generate_password_hash
+    from routers.public_auth import (
+        PENDING_REG_COOKIE_NAME,
+        _validate_indian_mobile,
+        _validate_optional_mobile,
+        _validate_email_format,
+        _validate_password_strength,
+        _verify_registration_otp_token_or_400,
+        _consume_registration_otp_or_400,
+        get_current_public_user
+    )
 
-    wa_clean = _clean_str(whatsapp_number) or clean_mobile
+    name_clean = str(full_name).strip() if full_name else ""
+    if not name_clean:
+        raise HTTPException(status_code=400, detail="Full Name is required.")
+
+    clean_mobile = _validate_indian_mobile(mobile)
+    wa_clean = _validate_optional_mobile(whatsapp_number) or clean_mobile
     loc_clean = _clean_str(location)
     dept_clean = _clean_str(department)
     role_clean = _clean_str(job_role)
@@ -606,11 +763,10 @@ def register_candidate(
     skills_clean = _clean_str(skills)
     comp_clean = _clean_str(current_company)
     sal_clean = _clean_str(expected_salary)
-    pref_loc_clean = _clean_str(preferred_location)
+    pref_loc_clean = _clean_str(preferred_location) or loc_clean
     resume_clean = _clean_str(resume_url)
 
     if not db_helpers["db_enabled"] or not db_helpers["execute_db"]:
-        # Offline mock
         existing = next((c for c in FALLBACK_CANDIDATES if c["mobile"] == clean_mobile), None)
         if existing:
             existing.update({
@@ -646,75 +802,211 @@ def register_candidate(
             return {"success": True, "is_existing": False, "message": "Candidate profile registered successfully."}
 
     try:
-        # Check if profile with this mobile already exists
-        profile_rows = db_helpers["query_db"]("SELECT id, user_id FROM job_seeker_profiles WHERE mobile = %s;", (clean_mobile,))
-        
-        if profile_rows:
-            profile_id = profile_rows[0]["id"]
-            user_id = profile_rows[0]["user_id"]
-            # Update existing profile
-            update_sql = """
+        # Check if caller has an active authenticated Job Seeker session
+        session_cookie = request.cookies.get("public_session_id") if request else None
+        current_user = await get_current_public_user(public_session_id=session_cookie) if session_cookie else None
+
+        if current_user and current_user.get("account_type") == "individual":
+            pub_user_id = current_user["id"]
+            user_email = current_user.get("email")
+
+            # Prevent mobile collision with another canonical account
+            dup_mob = db_helpers["query_db"](
+                "SELECT id FROM individual_profiles WHERE mobile = %s AND user_id != %s;",
+                (clean_mobile, pub_user_id)
+            )
+            if dup_mob:
+                raise HTTPException(
+                    status_code=400,
+                    detail="This mobile number is already registered with another account."
+                )
+
+            ind_rows = db_helpers["query_db"](
+                "SELECT id FROM individual_profiles WHERE user_id = %s;",
+                (pub_user_id,)
+            )
+            if ind_rows:
+                ind_profile_id = ind_rows[0]["id"]
+                db_helpers["execute_db"]("""
+                    UPDATE individual_profiles
+                    SET full_name = %s,
+                        mobile = %s,
+                        location = COALESCE(%s, location),
+                        department = COALESCE(%s, department),
+                        job_title = COALESCE(%s, job_title),
+                        preferred_job_role = COALESCE(%s, preferred_job_role),
+                        preferred_department = COALESCE(%s, preferred_department),
+                        experience_years = COALESCE(%s, experience_years),
+                        skills = COALESCE(%s, skills),
+                        expected_salary = COALESCE(%s, expected_salary),
+                        preferred_location = COALESCE(%s, preferred_location),
+                        resume_url = COALESCE(%s, resume_url),
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s;
+                """, (
+                    name_clean, clean_mobile, loc_clean, dept_clean,
+                    role_clean, role_clean, dept_clean, exp_clean,
+                    skills_clean, sal_clean, pref_loc_clean, resume_clean,
+                    ind_profile_id
+                ))
+            else:
+                ins_rows = db_helpers["execute_db_returning"]("""
+                    INSERT INTO individual_profiles (
+                        user_id, full_name, email, mobile, location, department,
+                        job_title, preferred_job_role, preferred_department,
+                        experience_years, skills, expected_salary, preferred_location,
+                        resume_url, created_at, updated_at
+                    ) VALUES (
+                        %s, %s, %s, %s, %s, %s,
+                        %s, %s, %s,
+                        %s, %s, %s, %s,
+                        %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+                    ) RETURNING id;
+                """, (
+                    pub_user_id, name_clean, user_email, clean_mobile, loc_clean, dept_clean,
+                    role_clean, role_clean, dept_clean,
+                    exp_clean, skills_clean, sal_clean, pref_loc_clean,
+                    resume_clean
+                ))
+                ind_profile_id = ins_rows[0]["id"]
+
+            # Sync pre-existing legacy job_seeker_profiles row in-place if one exists (never create unlinked duplicates)
+            legacy_rows = db_helpers["query_db"](
+                "SELECT id FROM job_seeker_profiles WHERE mobile = %s;",
+                (clean_mobile,)
+            )
+            if legacy_rows:
+                db_helpers["execute_db"]("""
+                    UPDATE job_seeker_profiles
+                    SET full_name = %s, whatsapp_number = %s, location = %s, department = %s,
+                        job_role = %s, experience_years = %s, skills = %s, current_company = %s,
+                        expected_salary = %s, preferred_location = %s,
+                        resume_url = COALESCE(%s, resume_url), updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s;
+                """, (
+                    name_clean, wa_clean, loc_clean, dept_clean,
+                    role_clean, exp_clean, skills_clean, comp_clean, sal_clean,
+                    pref_loc_clean, resume_clean, legacy_rows[0]["id"]
+                ))
+
+            return {
+                "success": True,
+                "is_existing": True,
+                "public_user_id": pub_user_id,
+                "individual_profile_id": ind_profile_id,
+                "profile_id": ind_profile_id,
+                "user_id": pub_user_id,
+                "message": "Candidate profile updated successfully."
+            }
+
+        # Unauthenticated caller: require Email OTP verification + password to create canonical account
+        if not email or not str(email).strip():
+            raise HTTPException(
+                status_code=400,
+                detail="Email address and Email OTP verification are required to register your candidate account."
+            )
+        email_clean = _validate_email_format(email)
+        pending_cookie = request.cookies.get(PENDING_REG_COOKIE_NAME) if request else None
+        otp_rec_id, _ = _verify_registration_otp_token_or_400(email_clean, pending_cookie)
+        password_clean = _validate_password_strength(password or "")
+
+        # Duplicate checks on canonical tables
+        existing_pub = db_helpers["query_db"]("SELECT id FROM public_users WHERE email = %s;", (email_clean,))
+        if existing_pub:
+            raise HTTPException(status_code=400, detail="This email is already registered. Please sign in.")
+
+        existing_mob = db_helpers["query_db"]("SELECT id FROM individual_profiles WHERE mobile = %s;", (clean_mobile,))
+        if existing_mob:
+            raise HTTPException(status_code=400, detail="This mobile number is already registered with another account. Please sign in.")
+
+        # Atomically consume OTP token before account creation (single-use) and clear dg_reg_verify cookie
+        _consume_registration_otp_or_400(otp_rec_id, response)
+
+        password_hash = generate_password_hash(password_clean, method="scrypt")
+
+        pub_user_rows = db_helpers["execute_db_returning"]("""
+            INSERT INTO public_users (account_type, email, password_hash, email_verified, is_active, created_at, updated_at)
+            VALUES ('individual', %s, %s, TRUE, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            RETURNING id;
+        """, (email_clean, password_hash))
+        new_pub_user_id = pub_user_rows[0]["id"]
+
+        ind_prof_rows = db_helpers["execute_db_returning"]("""
+            INSERT INTO individual_profiles (
+                user_id, full_name, email, mobile, location, department,
+                job_title, preferred_job_role, preferred_department,
+                experience_years, skills, expected_salary, preferred_location,
+                resume_url, created_at, updated_at
+            ) VALUES (
+                %s, %s, %s, %s, %s, %s,
+                %s, %s, %s,
+                %s, %s, %s, %s,
+                %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+            ) RETURNING id;
+        """, (
+            new_pub_user_id, name_clean, email_clean, clean_mobile, loc_clean, dept_clean,
+            role_clean, role_clean, dept_clean,
+            exp_clean, skills_clean, sal_clean, pref_loc_clean,
+            resume_clean
+        ))
+        new_ind_prof_id = ind_prof_rows[0]["id"]
+
+        # Sync pre-existing legacy job_seeker_profiles row in-place if one exists (never create unlinked duplicates)
+        legacy_rows = db_helpers["query_db"](
+            "SELECT id FROM job_seeker_profiles WHERE mobile = %s;",
+            (clean_mobile,)
+        )
+        if legacy_rows:
+            db_helpers["execute_db"]("""
                 UPDATE job_seeker_profiles
                 SET full_name = %s, whatsapp_number = %s, location = %s, department = %s,
                     job_role = %s, experience_years = %s, skills = %s, current_company = %s,
-                    expected_salary = %s, preferred_location = %s, 
+                    expected_salary = %s, preferred_location = %s,
                     resume_url = COALESCE(%s, resume_url), updated_at = CURRENT_TIMESTAMP
                 WHERE id = %s;
-            """
-            db_helpers["execute_db"](update_sql, (
+            """, (
                 name_clean, wa_clean, loc_clean, dept_clean,
                 role_clean, exp_clean, skills_clean, comp_clean, sal_clean,
-                pref_loc_clean, resume_clean, profile_id
+                pref_loc_clean, resume_clean, legacy_rows[0]["id"]
             ))
-            return {
-                "success": True,
-                "profile_id": profile_id,
-                "user_id": user_id,
-                "is_existing": True,
-                "message": "Candidate profile updated successfully."
-            }
-        else:
-            # Check or create user record
-            username = f"seeker_{clean_mobile[-10:]}"
-            email = f"seeker_{clean_mobile[-10:]}@candidate.digigarment.local"
-            user_rows = db_helpers["query_db"]("SELECT id FROM users WHERE username = %s;", (username,))
-            
-            if user_rows:
-                user_id = user_rows[0]["id"]
-            else:
-                user_insert = """
-                    INSERT INTO users (username, email, password_hash, is_active, created_at, updated_at)
-                    VALUES (%s, %s, 'UNSET_CANDIDATE_NO_PASSWORD', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-                    RETURNING id;
-                """
-                user_res = db_helpers["execute_db_returning"](user_insert, (username, email))
-                user_id = user_res[0]["id"]
 
-            # Create profile
-            profile_insert = """
-                INSERT INTO job_seeker_profiles (
-                    user_id, full_name, mobile, whatsapp_number, location, department,
-                    job_role, experience_years, skills, current_company, expected_salary,
-                    preferred_location, resume_url, created_at, updated_at
-                ) VALUES (
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                    CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
-                ) RETURNING id;
-            """
-            prof_res = db_helpers["execute_db_returning"](profile_insert, (
-                user_id, name_clean, clean_mobile, wa_clean,
-                loc_clean, dept_clean, role_clean, exp_clean, skills_clean, comp_clean,
-                sal_clean, pref_loc_clean, resume_clean
-            ))
-            profile_id = prof_res[0]["id"]
+        # Establish authenticated session cookie so immediate chained job application succeeds
+        session_token = str(uuid.uuid4())
+        db_helpers["execute_db"]("""
+            INSERT INTO public_user_sessions (token, user_id, expires_at, created_at)
+            VALUES (%s, %s, CURRENT_TIMESTAMP + INTERVAL '30 days', CURRENT_TIMESTAMP);
+        """, (session_token, new_pub_user_id))
 
-            return {
-                "success": True,
-                "profile_id": profile_id,
-                "user_id": user_id,
-                "is_existing": False,
-                "message": "Candidate profile registered successfully."
-            }
+        if response is not None:
+            response.set_cookie(
+                key="public_session_id",
+                value=session_token,
+                httponly=True,
+                expires=30 * 24 * 3600,
+                samesite="lax"
+            )
+
+        # Record registration_complete analytics event
+        try:
+            vid = (visitor_id or "").strip()[:64] or None
+            db_helpers["execute_db"]("""
+                INSERT INTO job_analytics_events (event_type, visitor_id, user_id, session_id, metadata)
+                VALUES ('registration_complete', %s, %s, %s, %s);
+            """, (vid, new_pub_user_id, session_token, json.dumps({"account_type": "individual", "source": "candidate_quick_register"})))
+        except Exception as ae:
+            logger.warning(f"Could not track registration_complete event in register_candidate: {ae}")
+
+        return {
+            "success": True,
+            "is_existing": False,
+            "public_user_id": new_pub_user_id,
+            "individual_profile_id": new_ind_prof_id,
+            "profile_id": new_ind_prof_id,
+            "user_id": new_pub_user_id,
+            "message": "Candidate profile registered successfully."
+        }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Candidate registration error: {e}")
         raise HTTPException(status_code=500, detail=f"Database error registering candidate: {e}")
@@ -761,6 +1053,7 @@ class JobApplicationRequest(BaseModel):
     applicant_name: Optional[str] = None
     applicant_phone: Optional[str] = None
     applicant_email: Optional[str] = None
+    visitor_id: Optional[str] = None
 
 @router.post("/jobs/{job_id}/apply")
 async def submit_job_application(
@@ -772,6 +1065,7 @@ async def submit_job_application(
     resume_url: Optional[str] = Form(None),
     cover_message: Optional[str] = Form(None),
     cover_letter: Optional[str] = Form(None),
+    visitor_id: Optional[str] = Form(None),
     request: Request = None
 ):
     """
@@ -808,6 +1102,7 @@ async def submit_job_application(
     c_name = None
     c_phone = None
     c_email = None
+    c_visitor_id = None
 
     if req_body:
         c_message = req_body.cover_message
@@ -815,12 +1110,26 @@ async def submit_job_application(
         c_name = req_body.applicant_name
         c_phone = req_body.applicant_phone
         c_email = req_body.applicant_email
+        c_visitor_id = req_body.visitor_id
+    elif request is not None and "application/json" in (request.headers.get("content-type") or "").lower():
+        try:
+            raw_json = await request.json()
+            if isinstance(raw_json, dict):
+                c_message = raw_json.get("cover_message") or raw_json.get("cover_letter")
+                c_resume = raw_json.get("resume_url")
+                c_name = raw_json.get("applicant_name")
+                c_phone = raw_json.get("applicant_phone")
+                c_email = raw_json.get("applicant_email")
+                c_visitor_id = raw_json.get("visitor_id")
+        except Exception:
+            pass
     
     c_message = _clean_str(c_message) or _clean_str(cover_message) or _clean_str(cover_letter)
     c_resume = _clean_str(c_resume) or _clean_str(resume_url) or profile.get("resume_url")
     c_name = _clean_str(c_name) or _clean_str(applicant_name) or profile.get("full_name") or current_user.get("email")
     c_phone = _clean_str(c_phone) or _clean_str(applicant_phone) or profile.get("mobile")
     c_email = _clean_str(c_email) or _clean_str(applicant_email) or profile.get("email") or current_user.get("email")
+    c_visitor_id = (_clean_str(c_visitor_id) or _clean_str(visitor_id) or "")[:64] or None
 
     if not db_helpers["db_enabled"] or not db_helpers["execute_db_returning"]:
         # Fallback in-memory
@@ -864,9 +1173,7 @@ async def submit_job_application(
             raise HTTPException(status_code=400, detail="This job vacancy is no longer active or accepting applications.")
 
         # Source eligibility: only verified direct employer or manual direct jobs can accept direct DigiGarment applications
-        is_direct = (job.get("employer_user_id") is not None) or (
-            (job.get("source_type") or "").lower().strip() in ("employer", "manual", "direct company", "direct")
-        )
+        is_direct = _is_direct_job(job)
         if not is_direct:
             raise HTTPException(
                 status_code=400,
@@ -906,13 +1213,13 @@ async def submit_job_application(
 
         app_id = rows[0]["id"]
 
-        # Track application_submit event
+        # Track single canonical application_submit event (with visitor_id, user_id, session_id, zero PII)
         try:
             db_helpers["execute_db_returning"]("""
-                INSERT INTO job_analytics_events (event_type, job_id, user_id, session_id, metadata)
-                VALUES ('application_submit', %s, %s, %s, %s)
+                INSERT INTO job_analytics_events (event_type, job_id, visitor_id, user_id, session_id, metadata)
+                VALUES ('application_submit', %s, %s, %s, %s, %s)
                 RETURNING id;
-            """, (job_id, user_id, session_cookie, json.dumps({"application_id": app_id})))
+            """, (job_id, c_visitor_id, user_id, session_cookie, json.dumps({"application_id": app_id})))
         except Exception as ae:
             logger.warning(f"Could not track application_submit event: {ae}")
 

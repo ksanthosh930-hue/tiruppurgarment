@@ -1506,10 +1506,10 @@
                     🔒
                 </div>
                 <h2 id="authPromptTitle" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; color: var(--dg-navy); margin: 0 0 10px 0;">
-                    Unlock Full Garment Job Details
+                    Sign In or Register Free to Continue
                 </h2>
                 <p style="font-size: 14px; line-height: 1.6; color: var(--dg-slate); margin: 0 0 20px 0;">
-                    Create your free DigiGarment account to access complete job information, available contact details, job-saving features, and eligible application workflows.
+                    Create your free DigiGarment Job Seeker account to apply for verified employer postings, save jobs, manage your job applications, and maintain your professional profile.
                 </p>
 
                 <!-- Job Preview Card -->
@@ -1523,19 +1523,19 @@
                 <div style="text-align: left; margin-bottom: 24px; display: grid; gap: 10px; font-size: 13.5px; color: #334155;">
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <span style="color: #10B981; font-weight: bold;">✓</span>
-                        <span>Direct recruiter contacts (WhatsApp &amp; Phone)</span>
+                        <span>Save jobs across mobile and desktop</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <span style="color: #10B981; font-weight: bold;">✓</span>
-                        <span>Complete job responsibilities and salary specifications</span>
+                        <span>Manage job applications and track status</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <span style="color: #10B981; font-weight: bold;">✓</span>
-                        <span>1-Click direct apply for verified employer postings</span>
+                        <span>Maintain a job-seeker profile &amp; resume</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <span style="color: #10B981; font-weight: bold;">✓</span>
-                        <span>Save and track jobs across desktop and mobile</span>
+                        <span>Access relevant job opportunities in Tiruppur</span>
                     </div>
                 </div>
 
@@ -1645,16 +1645,53 @@
             <form id="candidateForm" onsubmit="handleCandidateSubmit(event)">
                 <div class="modal-body">
                     <input type="hidden" id="applyJobId">
+                    <input type="hidden" id="candEmailVerified">
+
+                    <!-- Email OTP & Password Section for Unauthenticated Users -->
+                    <div id="candAuthSection" style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 14px 16px; margin-bottom: 16px;">
+                        <div style="font-size: 13px; font-weight: 700; color: var(--dg-navy); margin-bottom: 10px;">
+                            🔐 Account Verification (Email OTP Required)
+                        </div>
+                        <div class="form-group" style="margin-bottom: 10px;">
+                            <label for="candEmail">Email Address *</label>
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <input type="email" id="candEmail" class="form-control" style="flex: 1 1 200px;" placeholder="you@example.com" autocomplete="email">
+                                <button type="button" id="candSendOtpBtn" onclick="handleCandidateSendOtp()" class="btn-action btn-direct-link" style="white-space: nowrap; padding: 10px 14px; font-size: 13px;">
+                                    Send OTP
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="candOtpVerifyRow" style="display: none; margin-bottom: 10px;">
+                            <label for="candOtpInput">6-Digit Email Verification Code *</label>
+                            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                <input type="text" id="candOtpInput" class="form-control" style="flex: 1 1 140px; letter-spacing: 4px; font-weight: 700; text-align: center;" placeholder="000000" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">
+                                <button type="button" id="candVerifyOtpBtn" onclick="handleCandidateVerifyOtp()" class="btn-action btn-apply-primary" style="white-space: nowrap; padding: 10px 14px; font-size: 13px;">
+                                    Verify Code
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="candOtpStatus" style="font-size: 12.5px; margin-bottom: 10px; display: none;"></div>
+
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="candPassword">Create Account Password *</label>
+                            <div style="position: relative; display: flex; align-items: center;">
+                                <input type="password" id="candPassword" class="form-control" style="padding-right: 68px;" placeholder="Minimum 8 characters" minlength="8" autocomplete="new-password">
+                                <button type="button" id="candTogglePwdBtn" onclick="toggleCandPasswordVisibility()" style="position: absolute; right: 10px; background: none; border: none; color: var(--dg-slate); font-size: 12px; font-weight: 700; cursor: pointer; padding: 4px 6px;">Show</button>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="form-grid-2">
                         <div class="form-group">
                             <label for="candName">Full Name *</label>
-                            <input type="text" id="candName" class="form-control" placeholder="e.g. Kumaravel S"
+                            <input type="text" id="candName" class="form-control" placeholder="e.g. Kumaravel S" autocomplete="name"
                                 required>
                         </div>
                         <div class="form-group">
                             <label for="candMobile">Mobile Number *</label>
-                            <input type="tel" id="candMobile" class="form-control" placeholder="10-digit mobile number"
+                            <input type="tel" id="candMobile" class="form-control" placeholder="10-digit mobile number" maxlength="16" inputmode="tel" autocomplete="tel"
                                 required>
                         </div>
                     </div>
@@ -1662,7 +1699,7 @@
                     <div class="form-grid-2">
                         <div class="form-group">
                             <label for="candWhatsApp">WhatsApp Number (Optional)</label>
-                            <input type="tel" id="candWhatsApp" class="form-control"
+                            <input type="tel" id="candWhatsApp" class="form-control" maxlength="16" inputmode="tel"
                                 placeholder="Same as mobile if blank">
                         </div>
                         <div class="form-group">
@@ -1933,6 +1970,9 @@
                     body: JSON.stringify(payload),
                     keepalive: true
                 }).catch(() => {});
+                if (typeof window.gtag === "function") {
+                    window.gtag("event", eventType, Object.assign({ job_id: jobId ? Number(jobId) : undefined }, metadata || {}));
+                }
             } catch (e) {
                 // Non-blocking
             }
@@ -1968,7 +2008,11 @@
             localStorage.setItem("dg_intended_job_id", String(job.id));
             trackEvent("job_view_prompt", job.id);
 
-            const redirectTarget = `/jobs?open=${encodeURIComponent(job.id)}`;
+            const jobSlug = job.slug ? String(job.slug).trim() : "";
+            const currentPath = window.location.pathname || "";
+            const redirectTarget = jobSlug
+                ? `/jobs/${encodeURIComponent(jobSlug)}`
+                : (currentPath.startsWith("/jobs/") && currentPath.length > 6 ? currentPath : `/jobs?open=${encodeURIComponent(job.id)}`);
             const enc = encodeURIComponent(redirectTarget);
 
             const titleEl = document.getElementById("authPromptJobTitle");
@@ -1982,8 +2026,20 @@
 
             const signupBtn = document.getElementById("authPromptSignupBtn");
             const loginBtn = document.getElementById("authPromptLoginBtn");
-            if (signupBtn) signupBtn.href = `/signup?redirect=${enc}`;
-            if (loginBtn) loginBtn.href = `/login?redirect=${enc}`;
+            if (signupBtn) {
+                signupBtn.href = `/signup?redirect=${enc}`;
+                signupBtn.onclick = () => {
+                    trackEvent("registration_cta_click", job.id, { cta: "register_free", source: "auth_prompt_modal" });
+                    trackEvent("reg_cta_click", job.id, { cta: "register_free", source: "auth_prompt_modal" });
+                };
+            }
+            if (loginBtn) {
+                loginBtn.href = `/login?redirect=${enc}`;
+                loginBtn.onclick = () => {
+                    trackEvent("registration_cta_click", job.id, { cta: "login", source: "auth_prompt_modal" });
+                    trackEvent("reg_cta_click", job.id, { cta: "login", source: "auth_prompt_modal" });
+                };
+            }
 
             const modal = document.getElementById("authPromptModal");
             if (modal) {
@@ -2888,15 +2944,11 @@
             }
             if (!job) return;
 
-            // 1. Enforce Authentication Access Control
+            // 1. Check Authentication Status (Guests can open and view all job details & imported-job HR contacts)
             const user = await checkUserAuth();
-            if (!user) {
-                openAuthPromptModal(job);
-                return;
-            }
 
-            // 2. Authenticated Visitor -> Proceed to render details & record tracking
-            if (job.login_required || job.is_authenticated !== true) {
+            // 2. Refresh full job details if needed
+            if (!job.contact_whatsapp && !job.contact_phone && !job.contact_email && (job.has_whatsapp || job.has_phone || job.has_email || (user && job.is_authenticated !== true))) {
                 try {
                     const res = await fetch(`/api/public/jobs/${jobId}`, { cache: "no-store" });
                     if (res.ok) {
@@ -2917,7 +2969,14 @@
                 modalSavedScrollY = window.scrollY;
             }
             currentDetailJobId = jobId;
-            trackEvent("job_view", jobId);
+            const isDirectJob = Boolean(
+                job.is_direct_job ||
+                job.allow_direct_apply ||
+                job.employer_user_id ||
+                ["employer", "manual", "direct company", "direct"].includes((job.source_type || "").toLowerCase().trim())
+            );
+            trackEvent("job_view", jobId, { is_direct_job: isDirectJob });
+            trackEvent("job_detail_view", jobId, { is_direct_job: isDirectJob });
 
             // Sync browser URL to permalink without reloading
             if (options.fromPopState) {
@@ -3018,14 +3077,7 @@
             `;
             actionsBar.appendChild(shareActionBtn);
 
-            // 1. Direct Apply Action (ONLY for verified direct employer jobs)
-            const isDirectJob = Boolean(
-                job.is_direct_job ||
-                job.allow_direct_apply ||
-                job.employer_user_id ||
-                ["employer", "manual", "direct company", "direct"].includes((job.source_type || "").toLowerCase().trim())
-            );
-
+            // 1. Direct Apply Action (ONLY for verified direct employer jobs; NEVER for Imported Jobs)
             if (isDirectJob) {
                 const applyActionWrap = document.createElement("div");
                 applyActionWrap.id = "modalApplyActionWrap";
@@ -3036,41 +3088,109 @@
                 checkApplicationStatusForModal(job.id, job.title);
             }
 
-            // 2. WhatsApp Button (rendered ONLY if contact_whatsapp is present)
-            if (job.contact_whatsapp && job.contact_whatsapp.trim()) {
-                const cleanWA = job.contact_whatsapp.replace(/[^0-9]/g, '');
-                const waText = encodeURIComponent(`Hello, I saw your job vacancy "${job.title}" on DigiGarment Tiruppur Jobs. I would like to apply.`);
+            // 2. WhatsApp Button (direct access without registration)
+            if ((job.contact_whatsapp && job.contact_whatsapp.trim()) || job.has_whatsapp) {
                 const waLink = document.createElement("a");
                 waLink.className = "btn-action btn-whatsapp";
-                waLink.href = `https://wa.me/${cleanWA}?text=${waText}`;
+                if (job.contact_whatsapp && job.contact_whatsapp.trim()) {
+                    const cleanWA = job.contact_whatsapp.replace(/[^0-9]/g, '');
+                    const waText = encodeURIComponent(`Hello, I saw your job vacancy "${job.title}" on DigiGarment Tiruppur Jobs. I would like to apply.`);
+                    waLink.href = `https://wa.me/${cleanWA}?text=${waText}`;
+                } else {
+                    waLink.href = `/api/public/jobs/${job.id}/contact/whatsapp?visitor_id=${encodeURIComponent(getVisitorId())}`;
+                }
                 waLink.target = "_blank";
-                waLink.onclick = () => trackEvent("whatsapp_click", job.id);
+                waLink.rel = "noopener noreferrer";
+                waLink.onclick = () => trackEvent("whatsapp_click", job.id, { source: "job_detail_modal" });
                 waLink.innerHTML = "💬 WhatsApp HR";
                 actionsBar.appendChild(waLink);
             }
 
-            // 3. Call Button (rendered ONLY if contact_phone is present)
-            if (job.contact_phone && job.contact_phone.trim()) {
-                const cleanPhone = job.contact_phone.replace(/[^0-9+]/g, '');
+            // 3. Call Button (direct access without registration)
+            if ((job.contact_phone && job.contact_phone.trim()) || job.has_phone) {
                 const callLink = document.createElement("a");
                 callLink.className = "btn-action btn-call";
-                callLink.href = `tel:${cleanPhone}`;
-                callLink.onclick = () => trackEvent("call_click", job.id);
-                callLink.innerHTML = `📞 Call (${job.contact_phone})`;
+                if (job.contact_phone && job.contact_phone.trim()) {
+                    const cleanPhone = job.contact_phone.replace(/[^0-9+]/g, '');
+                    callLink.href = `tel:${cleanPhone}`;
+                    callLink.innerHTML = `📞 Call (${escapeHtml(job.contact_phone)})`;
+                } else {
+                    callLink.href = `/api/public/jobs/${job.id}/contact/call?visitor_id=${encodeURIComponent(getVisitorId())}`;
+                    callLink.innerHTML = "📞 Call HR";
+                }
+                callLink.onclick = () => trackEvent("call_click", job.id, { source: "job_detail_modal" });
                 actionsBar.appendChild(callLink);
             }
 
-            // 4. Email Button (rendered ONLY if contact_email is present)
-            if (job.contact_email && job.contact_email.trim()) {
-                const emailSubject = encodeURIComponent(`Application for ${job.title} - DigiGarment`);
+            // 4. Email Button (direct access without registration)
+            if ((job.contact_email && job.contact_email.trim()) || job.has_email) {
                 const emailLink = document.createElement("a");
                 emailLink.className = "btn-action btn-email";
-                emailLink.href = `mailto:${job.contact_email}?subject=${emailSubject}`;
+                if (job.contact_email && job.contact_email.trim()) {
+                    const emailSubject = encodeURIComponent(`Application for ${job.title} - DigiGarment`);
+                    emailLink.href = `mailto:${job.contact_email}?subject=${emailSubject}`;
+                } else {
+                    emailLink.href = `/api/public/jobs/${job.id}/contact/email?visitor_id=${encodeURIComponent(getVisitorId())}`;
+                }
+                emailLink.onclick = () => trackEvent("email_click", job.id, { source: "job_detail_modal" });
                 emailLink.innerHTML = "✉️ Email Resume";
                 actionsBar.appendChild(emailLink);
             }
 
-            // 5. Note: Company Portal button is deliberately REMOVED to keep visitors on DigiGarment
+            // 5. Guest Registration CTA & Value Proposition Banner ( preserves original job URL )
+            const jobSlugForRedirect = job.slug || job.id;
+            const redirectJobPath = `/jobs/${encodeURIComponent(jobSlugForRedirect)}`;
+            const encodedRedirect = encodeURIComponent(redirectJobPath);
+
+            let guestConvWrap = document.getElementById("modalGuestConversionWrap");
+            if (!guestConvWrap) {
+                guestConvWrap = document.createElement("div");
+                guestConvWrap.id = "modalGuestConversionWrap";
+                actionsBar.parentNode.appendChild(guestConvWrap);
+            }
+
+            if (!user) {
+                const regActionBtn = document.createElement("a");
+                regActionBtn.className = "btn-action";
+                regActionBtn.id = "modalActionRegisterBtn";
+                regActionBtn.href = `/signup?redirect=${encodedRedirect}`;
+                regActionBtn.style.cssText = "background: var(--dg-red); color: #ffffff; text-decoration: none; font-weight: 700;";
+                regActionBtn.innerHTML = "✨ Register Free";
+                regActionBtn.onclick = () => {
+                    localStorage.setItem("dg_intended_job_id", String(job.id));
+                    trackEvent("registration_cta_click", job.id, { cta: "register_free", source: "job_detail_actions" });
+                    trackEvent("reg_cta_click", job.id, { cta: "register_free", source: "job_detail_actions" });
+                };
+                actionsBar.appendChild(regActionBtn);
+
+                guestConvWrap.style.display = "block";
+                guestConvWrap.style.marginTop = "20px";
+                guestConvWrap.innerHTML = `
+                    <div id="modalGuestConversionCard" style="background: linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 100%); border: 1px solid #BFDBFE; border-radius: 12px; padding: 18px 20px; box-sizing: border-box;">
+                        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+                            <div style="flex: 1 1 260px;">
+                                <div style="font-size: 11.5px; font-weight: 800; color: var(--dg-red); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">Free Job Seeker Account</div>
+                                <h3 style="font-size: 16px; font-weight: 800; color: var(--dg-navy); margin: 0 0 8px 0;">Get Hired Faster in Tiruppur Garment Companies</h3>
+                                <ul style="margin: 0; padding-left: 18px; font-size: 13px; color: #334155; line-height: 1.65; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 4px 16px;">
+                                    <li><strong>Save jobs</strong> across mobile &amp; desktop</li>
+                                    <li><strong>Manage job applications</strong> in one place</li>
+                                    <li><strong>Maintain a job-seeker profile</strong> &amp; resume</li>
+                                    <li><strong>Access relevant job opportunities</strong> matched to your role</li>
+                                </ul>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 8px; min-width: 180px; flex: 0 1 auto; width: 100%; max-width: 240px;">
+                                <a id="seoModalRegisterCtaBtn" href="/signup?redirect=${encodedRedirect}" onclick="localStorage.setItem('dg_intended_job_id', '${job.id}'); if(window.dgTrackEvent) { window.dgTrackEvent('registration_cta_click', ${job.id}, {cta: 'register_free', source: 'job_detail_banner'}); window.dgTrackEvent('reg_cta_click', ${job.id}, {cta: 'register_free', source: 'job_detail_banner'}); }" style="background: var(--dg-red); color: #ffffff; padding: 11px 16px; border-radius: 8px; font-weight: 700; font-size: 14px; text-decoration: none; text-align: center; display: inline-block; box-shadow: 0 4px 12px rgba(158, 27, 50, 0.2);">✨ Register Free</a>
+                                <a id="seoModalLoginCtaBtn" href="/login?redirect=${encodedRedirect}" onclick="localStorage.setItem('dg_intended_job_id', '${job.id}'); if(window.dgTrackEvent) { window.dgTrackEvent('registration_cta_click', ${job.id}, {cta: 'login', source: 'job_detail_banner'}); window.dgTrackEvent('reg_cta_click', ${job.id}, {cta: 'login', source: 'job_detail_banner'}); }" style="background: #ffffff; color: var(--dg-navy); border: 1.5px solid #CBD5E1; padding: 9px 16px; border-radius: 8px; font-weight: 600; font-size: 13.5px; text-decoration: none; text-align: center; display: inline-block;">Already registered? Login</a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                guestConvWrap.style.display = "none";
+                guestConvWrap.innerHTML = "";
+            }
+
+            // 6. Note: Company Portal button is deliberately REMOVED to keep visitors on DigiGarment
 
             document.getElementById("jobDetailModal").style.display = "flex";
             } finally {
@@ -3178,7 +3298,7 @@
                 const res = await fetch(`/api/public/jobs/${jobId}/apply`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ cover_message: coverMsg || null })
+                    body: JSON.stringify({ cover_message: coverMsg || null, visitor_id: getVisitorId() })
                 });
                 const data = await res.json();
 
@@ -3186,7 +3306,11 @@
                     throw new Error(data.detail || "Application submission failed.");
                 }
 
-                trackEvent("application_submit", jobId, { application_id: data.application_id });
+                // Server-side submit_job_application already records canonical application_submit in job_analytics_events;
+                // forward to GA4 only if gtag is active to avoid duplicate DB rows.
+                if (typeof window.gtag === "function") {
+                    window.gtag("event", "application_submit", { job_id: Number(jobId), application_id: data.application_id });
+                }
                 showToast("Application submitted successfully to employer!", true);
                 closeDirectApplyModal();
 
@@ -3384,11 +3508,138 @@
             }
         }
 
-        // Candidate Application / Registration Modal Logic (Fallback)
-        function openCandidateModal(jobId = null, jobTitle = null) {
+        // Candidate Application / Registration Modal Logic (Canonical Account Unification)
+        function normalizeCandMobileInput(val) {
+            if (!val) return "";
+            let digits = String(val).replace(/\D/g, "");
+            if (digits.length === 12 && digits.startsWith("91")) {
+                digits = digits.slice(2);
+            } else if (digits.length === 11 && digits.startsWith("0")) {
+                digits = digits.slice(1);
+            }
+            return digits.slice(0, 10);
+        }
+
+        function toggleCandPasswordVisibility() {
+            const pwdInput = document.getElementById("candPassword");
+            const toggleBtn = document.getElementById("candTogglePwdBtn");
+            if (!pwdInput || !toggleBtn) return;
+            if (pwdInput.type === "password") {
+                pwdInput.type = "text";
+                toggleBtn.textContent = "Hide";
+            } else {
+                pwdInput.type = "password";
+                toggleBtn.textContent = "Show";
+            }
+        }
+
+        async function handleCandidateSendOtp() {
+            const emailInput = document.getElementById("candEmail");
+            const sendBtn = document.getElementById("candSendOtpBtn");
+            const otpRow = document.getElementById("candOtpVerifyRow");
+            const statusEl = document.getElementById("candOtpStatus");
+            const email = (emailInput ? emailInput.value : "").trim().toLowerCase();
+
+            if (!email || !email.includes("@")) {
+                showToast("Please enter a valid email address first.", false);
+                return;
+            }
+
+            sendBtn.disabled = true;
+            const origText = sendBtn.textContent;
+            sendBtn.textContent = "Sending...";
+
+            try {
+                const res = await fetch("/api/auth/register/send-otp", {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        email: email,
+                        account_type: "individual",
+                        visitor_id: getVisitorId()
+                    })
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    if (otpRow) otpRow.style.display = "block";
+                    if (statusEl) {
+                        statusEl.style.display = "block";
+                        statusEl.style.color = "#0369A1";
+                        statusEl.textContent = "6-digit verification code sent to your email. Enter it above.";
+                    }
+                    showToast("Verification code sent to your email!", true);
+                    sendBtn.textContent = "Resend OTP";
+                } else {
+                    if (res.status === 429 && otpRow) {
+                        otpRow.style.display = "block";
+                    }
+                    showToast(data.detail || "Could not send verification code.", false);
+                    sendBtn.textContent = origText;
+                }
+            } catch (err) {
+                showToast("Network error sending verification code.", false);
+                sendBtn.textContent = origText;
+            } finally {
+                sendBtn.disabled = false;
+            }
+        }
+
+        async function handleCandidateVerifyOtp() {
+            const email = (document.getElementById("candEmail")?.value || "").trim().toLowerCase();
+            const otpInput = document.getElementById("candOtpInput");
+            const verifyBtn = document.getElementById("candVerifyOtpBtn");
+            const statusEl = document.getElementById("candOtpStatus");
+            const verifiedFlagInput = document.getElementById("candEmailVerified");
+            const otp = (otpInput ? otpInput.value : "").replace(/\D/g, "").slice(0, 6);
+
+            if (otpInput) otpInput.value = otp;
+            if (otp.length !== 6) {
+                showToast("Please enter the 6-digit verification code.", false);
+                return;
+            }
+
+            verifyBtn.disabled = true;
+            verifyBtn.textContent = "Verifying...";
+
+            try {
+                const res = await fetch("/api/auth/register/verify-otp", {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: email, otp: otp })
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    if (verifiedFlagInput) verifiedFlagInput.value = "1";
+                    if (statusEl) {
+                        statusEl.style.display = "block";
+                        statusEl.style.color = "#15803D";
+                        statusEl.innerHTML = "<strong>✓ Email verified!</strong> Complete your profile below.";
+                    }
+                    const emailInput = document.getElementById("candEmail");
+                    if (emailInput) emailInput.readOnly = true;
+                    verifyBtn.textContent = "✓ Verified";
+                    showToast("Email verified successfully!", true);
+                } else {
+                    showToast(data.detail || "Invalid verification code.", false);
+                    verifyBtn.disabled = false;
+                    verifyBtn.textContent = "Verify Code";
+                }
+            } catch (err) {
+                showToast("Network error verifying code.", false);
+                verifyBtn.disabled = false;
+                verifyBtn.textContent = "Verify Code";
+            }
+        }
+
+        async function openCandidateModal(jobId = null, jobTitle = null) {
             document.getElementById("applyJobId").value = jobId || "";
             const titleEl = document.getElementById("candidateModalTitle");
             const submitBtn = document.getElementById("candSubmitBtn");
+            const authSection = document.getElementById("candAuthSection");
+            const emailInput = document.getElementById("candEmail");
+            const pwdInput = document.getElementById("candPassword");
 
             if (jobId && jobTitle) {
                 titleEl.textContent = `Apply for: ${jobTitle}`;
@@ -3398,12 +3649,63 @@
                 submitBtn.textContent = "Register Candidate Profile";
             }
 
+            const user = await checkUserAuth();
+            if (user && user.account_type === "individual") {
+                if (authSection) authSection.style.display = "none";
+                if (emailInput) emailInput.required = false;
+                if (pwdInput) pwdInput.required = false;
+                const prof = user.profile || {};
+                if (prof.full_name && !document.getElementById("candName").value) {
+                    document.getElementById("candName").value = prof.full_name;
+                }
+                if (prof.mobile && !document.getElementById("candMobile").value) {
+                    document.getElementById("candMobile").value = prof.mobile;
+                }
+                if (prof.location && !document.getElementById("candLocation").value) {
+                    document.getElementById("candLocation").value = prof.location;
+                }
+                if (prof.department && !document.getElementById("candDept").value) {
+                    document.getElementById("candDept").value = prof.department;
+                }
+                if ((prof.job_title || prof.preferred_job_role) && !document.getElementById("candRole").value) {
+                    document.getElementById("candRole").value = prof.job_title || prof.preferred_job_role;
+                }
+            } else {
+                if (authSection) authSection.style.display = "block";
+                if (emailInput) {
+                    emailInput.required = true;
+                    emailInput.readOnly = Boolean(document.getElementById("candEmailVerified")?.value);
+                }
+                if (pwdInput) pwdInput.required = true;
+            }
+
             document.getElementById("candidateModal").style.display = "flex";
         }
 
         function closeCandidateModal() {
             document.getElementById("candidateModal").style.display = "none";
         }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            ["candMobile", "candWhatsApp"].forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener("blur", () => {
+                        const norm = normalizeCandMobileInput(el.value);
+                        if (norm.length === 10) el.value = norm;
+                    });
+                }
+            });
+            const candOtpInput = document.getElementById("candOtpInput");
+            if (candOtpInput) {
+                candOtpInput.addEventListener("input", () => {
+                    candOtpInput.value = candOtpInput.value.replace(/\D/g, "").slice(0, 6);
+                    if (candOtpInput.value.length === 6) {
+                        handleCandidateVerifyOtp();
+                    }
+                });
+            }
+        });
 
         // Resume Upload Handler
         async function handleResumeFile(input) {
@@ -3447,6 +3749,33 @@
             e.preventDefault();
             const btn = document.getElementById("candSubmitBtn");
             const origText = btn.textContent;
+
+            const user = await checkUserAuth();
+            const isLoggedInIndividual = Boolean(user && user.account_type === "individual");
+            const isEmailVerified = (document.getElementById("candEmailVerified")?.value || "").trim();
+            const emailVal = (document.getElementById("candEmail")?.value || "").trim().toLowerCase();
+            const pwdVal = document.getElementById("candPassword")?.value || "";
+
+            if (!isLoggedInIndividual) {
+                if (!emailVal || !isEmailVerified) {
+                    showToast("Please verify your email address with the 6-digit OTP code before submitting.", false);
+                    return;
+                }
+                if (!pwdVal || pwdVal.length < 8) {
+                    showToast("Please enter a password of at least 8 characters.", false);
+                    return;
+                }
+            }
+
+            const normMob = normalizeCandMobileInput(document.getElementById("candMobile").value);
+            if (normMob.length === 10) {
+                document.getElementById("candMobile").value = normMob;
+            }
+            const normWa = normalizeCandMobileInput(document.getElementById("candWhatsApp").value);
+            if (normWa.length === 10) {
+                document.getElementById("candWhatsApp").value = normWa;
+            }
+
             btn.disabled = true;
             btn.textContent = "Processing...";
 
@@ -3461,38 +3790,52 @@
             formData.append("expected_salary", document.getElementById("candSalary").value);
             formData.append("skills", document.getElementById("candSkills").value);
             formData.append("resume_url", document.getElementById("candResumeUrl").value);
+            formData.append("visitor_id", getVisitorId());
+            if (!isLoggedInIndividual) {
+                formData.append("email", emailVal);
+                formData.append("password", pwdVal);
+            }
 
             try {
-                // 1. Register candidate profile
+                // 1. Register or update canonical candidate profile (sets public_session_id cookie for new users)
                 const regRes = await fetch("/api/public/candidates/register", {
                     method: "POST",
+                    credentials: "same-origin",
                     body: formData
                 });
                 const regData = await regRes.json();
 
                 if (!regRes.ok || !regData.success) {
-                    showToast(regData.detail || "Registration failed. Please check your mobile number.", false);
+                    showToast(regData.detail || "Registration failed. Please check your details.", false);
                     btn.disabled = false;
                     btn.textContent = origText;
                     return;
                 }
 
-                // 2. If applying for a specific job, submit application
+                // Refresh client auth cache so newly established session is active immediately
+                authCheckPromise = null;
+                await checkUserAuth();
+
+                // 2. If applying for a specific job, submit application using established canonical session
                 const jobId = document.getElementById("applyJobId").value;
                 if (jobId) {
-                    const appFormData = new FormData();
-                    appFormData.append("applicant_name", document.getElementById("candName").value);
-                    appFormData.append("applicant_phone", document.getElementById("candMobile").value);
-                    appFormData.append("resume_url", document.getElementById("candResumeUrl").value);
-                    appFormData.append("cover_letter", `Candidate applied via Tiruppur Jobs Portal. Target Role: ${document.getElementById("candRole").value}`);
-
                     const appRes = await fetch(`/api/public/jobs/${jobId}/apply`, {
                         method: "POST",
-                        body: appFormData
+                        credentials: "same-origin",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            applicant_name: document.getElementById("candName").value,
+                            applicant_phone: document.getElementById("candMobile").value,
+                            resume_url: document.getElementById("candResumeUrl").value || null,
+                            cover_message: `Candidate applied via Tiruppur Jobs Portal. Target Role: ${document.getElementById("candRole").value}`,
+                            visitor_id: getVisitorId()
+                        })
                     });
                     const appData = await appRes.json();
                     if (appRes.ok && appData.success) {
                         showToast(appData.message || "Application submitted successfully!", true);
+                    } else {
+                        showToast(appData.detail || "Profile saved, but job application could not be submitted.", false);
                     }
                 } else {
                     showToast(regData.message || "Candidate profile registered successfully!", true);
@@ -3500,6 +3843,12 @@
 
                 closeCandidateModal();
                 document.getElementById("candidateForm").reset();
+                const tokenEl = document.getElementById("candVerificationToken");
+                if (tokenEl) tokenEl.value = "";
+                const otpRow = document.getElementById("candOtpVerifyRow");
+                if (otpRow) otpRow.style.display = "none";
+                const statusEl = document.getElementById("candOtpStatus");
+                if (statusEl) statusEl.style.display = "none";
                 document.getElementById("resumeUploadLabel").textContent = "Click or drop resume file here";
                 document.getElementById("resumeUploadStatus").textContent = "PDF, DOC, DOCX up to 10MB";
             } catch (err) {

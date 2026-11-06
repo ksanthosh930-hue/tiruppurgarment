@@ -1373,6 +1373,7 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
                 SELECT j.id, j.title, j.slug, j.department, j.job_role, j.location,
                        j.salary_text, j.salary_min, j.salary_max, j.experience_min, j.experience_max, j.job_type,
                        j.description, j.requirements, j.skills, j.qualification,
+                       j.source_type, j.employer_user_id, j.company_profile_id,
                        j.contact_phone, j.contact_whatsapp, j.contact_email, j.application_url,
                        COALESCE(cp.company_name, c.name, '') AS company_name,
                        COALESCE(cp.location, c.location, j.location) AS company_location
@@ -1452,6 +1453,15 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
                 except Exception:
                     sal_text = ""
 
+            is_direct_job = (
+                (job.get("employer_user_id") is not None)
+                or (job.get("company_profile_id") is not None)
+                or (str(job.get("source_type") or "").strip().lower() in ("employer", "manual", "direct company", "direct", "company"))
+            )
+            has_whatsapp = bool((job.get("contact_whatsapp") or "").strip())
+            has_phone = bool((job.get("contact_phone") or "").strip())
+            has_email = bool((job.get("contact_email") or "").strip())
+
             cat_jobs_map[j_slug] = {
                 "id": job.get("id"),
                 "title": disp_title,
@@ -1467,10 +1477,10 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
                 "description": job.get("description") or "",
                 "requirements": job.get("requirements") or "",
                 "skills": job.get("skills") or "",
-                "contact_phone": job.get("contact_phone") or "",
-                "contact_whatsapp": job.get("contact_whatsapp") or "",
-                "contact_email": job.get("contact_email") or "",
-                "application_url": job.get("application_url") or "",
+                "is_direct_job": is_direct_job,
+                "has_whatsapp": has_whatsapp,
+                "has_phone": has_phone,
+                "has_email": has_email,
             }
 
             jobs_list_html += f"""
@@ -2253,6 +2263,8 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
                 <a href="/services">Services</a>
                 <a href="/blog">Blog</a>
                 <a href="/#contact">Contact</a>
+                <a href="/login?redirect=/{page_slug}" onclick="if(window.dgTrackEvent){{dgTrackEvent('registration_cta_click', null, {{cta:'nav_login', source:'seo_landing'}});}}" style="color: #E2E8F0; font-weight: 600;">Login</a>
+                <a href="/signup?redirect=/{page_slug}" onclick="if(window.dgTrackEvent){{dgTrackEvent('registration_cta_click', null, {{cta:'nav_register', source:'seo_landing'}});dgTrackEvent('reg_cta_click', null, {{cta:'nav_register', source:'seo_landing'}});}}" style="background: #9E1B32; color: #FFFFFF; padding: 7px 14px; border-radius: 6px; font-weight: 700;">Register Free</a>
             </nav>
         </div>
     </header>
@@ -2292,6 +2304,23 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
     </section>
 
     <main class="landing-main">
+        <!-- Candidate Value Proposition Banner -->
+        <div style="background: linear-gradient(135deg, #FFFDF5 0%, #FEF2F2 100%); border: 1px solid #FECACA; border-radius: 12px; padding: 18px 20px; margin-bottom: 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;">
+            <div style="flex: 1 1 320px;">
+                <div style="font-size: 15px; font-weight: 800; color: #081226; margin-bottom: 6px;">🎯 Looking for Garment Jobs in Tiruppur? Register Free in 60 Seconds</div>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 13px; color: #334155;">
+                    <span>✓ Save jobs to review later</span>
+                    <span>✓ Manage job applications</span>
+                    <span>✓ Maintain a job-seeker profile</span>
+                    <span>✓ Access relevant job opportunities</span>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <a href="/signup?redirect=/{page_slug}" onclick="if(window.dgTrackEvent){{dgTrackEvent('registration_cta_click', null, {{cta:'banner_register', source:'seo_landing'}});dgTrackEvent('reg_cta_click', null, {{cta:'banner_register', source:'seo_landing'}});}}" style="background: #9E1B32; color: #FFFFFF; padding: 10px 18px; border-radius: 8px; font-weight: 700; font-size: 13.5px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">✨ Register Free</a>
+                <a href="/login?redirect=/{page_slug}" onclick="if(window.dgTrackEvent){{dgTrackEvent('registration_cta_click', null, {{cta:'banner_login', source:'seo_landing'}});}}" style="background: #FFFFFF; color: #081226; border: 1px solid #CBD5E1; padding: 10px 14px; border-radius: 8px; font-weight: 600; font-size: 13px; text-decoration: none;">Login</a>
+            </div>
+        </div>
+
         <div class="section-header-wrap">
             <h2 class="section-title">Current Published Vacancies</h2>
             <a href="/jobs" class="link-browse-all">Browse all jobs with advanced filters →</a>
@@ -2417,6 +2446,7 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
                 <div class="actions-bar" id="catModalActions">
                     <!-- Populated dynamically via JS -->
                 </div>
+                <div id="catModalConversionCard" style="margin-top: 16px;"></div>
             </div>
         </div>
     </div>
@@ -2426,6 +2456,43 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
     </script>
     <script>
     (function() {{
+        function dgGetVisitorId() {{
+            try {{
+                var vid = localStorage.getItem('tirupur_visitor_id');
+                if (!vid) {{
+                    vid = 'vis_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now();
+                    localStorage.setItem('tirupur_visitor_id', vid);
+                }}
+                return vid;
+            }} catch(e) {{
+                return 'vis_anon';
+            }}
+        }}
+
+        window.dgTrackEvent = function(eventType, jobId, metadata) {{
+            try {{
+                var payload = {{
+                    event_type: eventType,
+                    job_id: jobId || null,
+                    visitor_id: dgGetVisitorId(),
+                    metadata: Object.assign({{ page_slug: '{page_slug}' }}, metadata || {{}})
+                }};
+                fetch('/api/public/analytics/track', {{
+                    method: 'POST',
+                    headers: {{ 'Content-Type': 'application/json' }},
+                    body: JSON.stringify(payload),
+                    keepalive: true
+                }}).catch(function() {{}});
+                if (typeof window.gtag === 'function') {{
+                    window.gtag('event', eventType, Object.assign({{ job_id: jobId || undefined }}, metadata || {{}}));
+                }}
+            }} catch(e) {{}}
+        }};
+
+        document.addEventListener('DOMContentLoaded', function() {{
+            window.dgTrackEvent('page_view', null, {{ page: window.location.pathname, source: 'seo_landing' }});
+        }});
+
         var jobsDataEl = document.getElementById('category-jobs-data');
         var categoryJobs = {{}};
         if (jobsDataEl) {{
@@ -2452,8 +2519,10 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
             var idx = savedJobs.indexOf(id);
             if (idx === -1) {{
                 savedJobs.push(id);
+                window.dgTrackEvent('job_save', id, {{ source: 'category_modal' }});
             }} else {{
                 savedJobs.splice(idx, 1);
+                window.dgTrackEvent('job_unsave', id, {{ source: 'category_modal' }});
             }}
             try {{
                 localStorage.setItem('tirupur_saved_jobs', JSON.stringify(savedJobs));
@@ -2480,6 +2549,7 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
 
         window.handleCategoryShareClick = function() {{
             if (!currentActiveJob) return;
+            window.dgTrackEvent('share_click', currentActiveJob.id, {{ source: 'category_modal' }});
             var jobUrl = window.location.origin + '/jobs/' + encodeURIComponent(currentActiveJob.slug);
             var title = (currentActiveJob.title || 'Garment Job') + ' in Tiruppur';
             var text = 'Garment vacancy: ' + (currentActiveJob.title || '') + (currentActiveJob.company_name ? ' at ' + currentActiveJob.company_name : '');
@@ -2532,6 +2602,8 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
             }}
 
             currentActiveJob = job;
+            window.dgTrackEvent('job_view', job.id, {{ source: 'category_modal', is_direct_job: !!job.is_direct_job }});
+            window.dgTrackEvent('job_detail_view', job.id, {{ source: 'category_modal', is_direct_job: !!job.is_direct_job }});
 
             document.getElementById('catModalTitle').textContent = job.title || 'Job Vacancy';
             document.getElementById('catModalDept').textContent = job.department || 'Garments';
@@ -2605,83 +2677,104 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
             barShareBtn.onclick = handleCategoryShareClick;
             actionsBar.appendChild(barShareBtn);
 
-            // 3. Apply Now (Primary)
-            var applyBtn = document.createElement('a');
-            applyBtn.className = 'btn-action btn-apply-primary';
-            if (job.contact_whatsapp && job.contact_whatsapp.trim()) {{
-                var cleanWA = job.contact_whatsapp.replace(/[^0-9]/g, '');
-                var waText = encodeURIComponent('Hello, I saw your job vacancy "' + job.title + '" on DigiGarment Tiruppur Jobs. I would like to apply.');
-                applyBtn.href = 'https://wa.me/' + cleanWA + '?text=' + waText;
-                applyBtn.target = '_blank';
-                applyBtn.rel = 'noopener noreferrer';
-                applyBtn.innerHTML = '🚀 Apply Now';
-            }} else if (job.application_url && job.application_url.trim()) {{
-                applyBtn.href = job.application_url;
-                applyBtn.target = '_blank';
-                applyBtn.rel = 'noopener noreferrer';
-                applyBtn.innerHTML = '🚀 Apply Now';
-            }} else if (job.contact_email && job.contact_email.trim()) {{
-                var emailSub = encodeURIComponent('Application for ' + job.title + ' - DigiGarment');
-                applyBtn.href = 'mailto:' + encodeURIComponent(job.contact_email) + '?subject=' + emailSub;
-                applyBtn.innerHTML = '🚀 Apply Now';
-            }} else {{
-                applyBtn.href = '/jobs/' + encodeURIComponent(job.slug);
-                applyBtn.target = '_blank';
-                applyBtn.innerHTML = '🚀 Apply Now';
-            }}
-            actionsBar.appendChild(applyBtn);
+            var jobPath = '/jobs/' + encodeURIComponent(job.slug);
 
-            // 4. WhatsApp HR action
-            if (job.contact_whatsapp && job.contact_whatsapp.trim()) {{
-                var cleanWA2 = job.contact_whatsapp.replace(/[^0-9]/g, '');
-                var waText2 = encodeURIComponent('Hello, I saw your job vacancy "' + job.title + '" on DigiGarment Tiruppur Jobs. I would like to apply.');
+            // 3. Apply Now ONLY for Direct Jobs (NEVER for Imported Jobs)
+            if (job.is_direct_job) {{
+                var applyBtn = document.createElement('a');
+                applyBtn.className = 'btn-action btn-apply-primary';
+                applyBtn.href = jobPath;
+                applyBtn.innerHTML = '🚀 Apply Now';
+                applyBtn.onclick = function() {{
+                    window.dgTrackEvent('apply_click', job.id, {{ source: 'category_modal', is_direct_job: true }});
+                }};
+                actionsBar.appendChild(applyBtn);
+            }}
+
+            // 4. WhatsApp HR action (Direct access without registration)
+            if (job.has_whatsapp) {{
                 var waLink = document.createElement('a');
                 waLink.className = 'btn-action btn-whatsapp';
-                waLink.href = 'https://wa.me/' + cleanWA2 + '?text=' + waText2;
+                waLink.href = '/api/public/jobs/' + encodeURIComponent(job.id) + '/contact/whatsapp';
                 waLink.target = '_blank';
                 waLink.rel = 'noopener noreferrer';
                 waLink.innerHTML = '💬 WhatsApp HR';
+                waLink.onclick = function() {{
+                    window.dgTrackEvent('whatsapp_click', job.id, {{ source: 'category_modal' }});
+                }};
                 actionsBar.appendChild(waLink);
             }}
 
-            // 5. Call action
-            if (job.contact_phone && job.contact_phone.trim()) {{
-                var cleanPhone = job.contact_phone.replace(/[^0-9+]/g, '');
+            // 5. Call action (Direct access without registration)
+            if (job.has_phone) {{
                 var callLink = document.createElement('a');
                 callLink.className = 'btn-action btn-call';
-                callLink.href = 'tel:' + cleanPhone;
-                callLink.innerHTML = '📞 Call (' + escapeHtml(job.contact_phone) + ')';
+                callLink.href = '/api/public/jobs/' + encodeURIComponent(job.id) + '/contact/call';
+                callLink.innerHTML = '📞 Call HR';
+                callLink.onclick = function() {{
+                    window.dgTrackEvent('call_click', job.id, {{ source: 'category_modal' }});
+                }};
                 actionsBar.appendChild(callLink);
+                // Populate display phone number asynchronously
+                fetch('/api/public/jobs/' + encodeURIComponent(job.id) + '/contact/call?format=json')
+                    .then(function(r) {{ return r.ok ? r.json() : null; }})
+                    .then(function(d) {{
+                        if (d && d.phone) {{
+                            callLink.href = d.target_url || ('tel:' + d.phone.replace(/[^0-9+]/g, ''));
+                            callLink.innerHTML = '📞 Call (' + escapeHtml(d.phone) + ')';
+                        }}
+                    }}).catch(function() {{}});
             }}
 
-            // 6. Email action
-            if (job.contact_email && job.contact_email.trim()) {{
-                var emailSubject = encodeURIComponent('Application for ' + job.title + ' - DigiGarment');
+            // 6. Email action (Direct access without registration)
+            if (job.has_email) {{
                 var emailLink = document.createElement('a');
                 emailLink.className = 'btn-action btn-email';
-                emailLink.href = 'mailto:' + encodeURIComponent(job.contact_email) + '?subject=' + emailSubject;
+                emailLink.href = '/api/public/jobs/' + encodeURIComponent(job.id) + '/contact/email';
                 emailLink.innerHTML = '✉️ Email Resume';
+                emailLink.onclick = function() {{
+                    window.dgTrackEvent('email_click', job.id, {{ source: 'category_modal' }});
+                }};
                 actionsBar.appendChild(emailLink);
             }}
 
-            // 7. Company Portal Apply
-            if (job.application_url && job.application_url.trim()) {{
-                var portalLink = document.createElement('a');
-                portalLink.className = 'btn-action btn-direct-link';
-                portalLink.href = job.application_url;
-                portalLink.target = '_blank';
-                portalLink.rel = 'noopener noreferrer';
-                portalLink.innerHTML = '🌐 Company Portal &rarr;';
-                actionsBar.appendChild(portalLink);
-            }}
+            // 7. Prominent Register Free CTA
+            var regBtn = document.createElement('a');
+            regBtn.className = 'btn-action btn-apply-primary';
+            regBtn.style.background = '#9E1B32';
+            regBtn.href = '/signup?redirect=' + encodeURIComponent(jobPath);
+            regBtn.innerHTML = '✨ Register Free';
+            regBtn.onclick = function() {{
+                window.dgTrackEvent('registration_cta_click', job.id, {{ cta: 'modal_register_free', source: 'category_modal' }});
+                window.dgTrackEvent('reg_cta_click', job.id, {{ cta: 'modal_register_free', source: 'category_modal' }});
+            }};
+            actionsBar.appendChild(regBtn);
 
             // 8. Direct Job Page Link
             var directLink = document.createElement('a');
             directLink.className = 'btn-action btn-direct-link';
-            directLink.href = '/jobs/' + encodeURIComponent(job.slug);
-            directLink.target = '_blank';
+            directLink.href = jobPath;
             directLink.innerHTML = '🔗 Open Full Page';
             actionsBar.appendChild(directLink);
+
+            // 9. Value Proposition Conversion Card inside Modal
+            var convCard = document.getElementById('catModalConversionCard');
+            if (convCard) {{
+                convCard.innerHTML =
+                    '<div style="background: linear-gradient(135deg, #FFFDF5 0%, #FEF2F2 100%); border: 1px solid #FECACA; border-radius: 10px; padding: 14px 16px;">' +
+                        '<div style="font-size: 13.5px; font-weight: 800; color: #081226; margin-bottom: 6px;">🎯 Create Your Free DigiGarment Job Seeker Account</div>' +
+                        '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 4px 12px; font-size: 12.5px; color: #334155; margin-bottom: 10px;">' +
+                            '<span>✓ Save jobs to review later</span>' +
+                            '<span>✓ Manage job applications</span>' +
+                            '<span>✓ Maintain a job-seeker profile</span>' +
+                            '<span>✓ Access relevant job opportunities</span>' +
+                        '</div>' +
+                        '<div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">' +
+                            '<a href="/signup?redirect=' + encodeURIComponent(jobPath) + '" onclick="if(window.dgTrackEvent){{dgTrackEvent(\\'registration_cta_click\\',' + job.id + ',{{cta:\\'modal_card_register\\',source:\\'category_modal\\'}});dgTrackEvent(\\'reg_cta_click\\',' + job.id + ',{{cta:\\'modal_card_register\\',source:\\'category_modal\\'}});}}" style="background: #9E1B32; color: #FFFFFF; padding: 8px 16px; border-radius: 6px; font-weight: 700; font-size: 12.5px; text-decoration: none;">✨ Register Free</a>' +
+                            '<a href="/login?redirect=' + encodeURIComponent(jobPath) + '" onclick="if(window.dgTrackEvent){{dgTrackEvent(\\'registration_cta_click\\',' + job.id + ',{{cta:\\'modal_card_login\\',source:\\'category_modal\\'}});}}" style="color: #081226; font-weight: 600; font-size: 12.5px; text-decoration: underline;">Already registered? Login</a>' +
+                        '</div>' +
+                    '</div>';
+            }}
 
             var modal = document.getElementById('categoryJobModal');
             modal.style.display = 'flex';
@@ -2710,6 +2803,7 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
         }});
     }})();
     </script>
+    <script src="/js/auth-nav.js"></script>
 </body>
 </html>
 """)
@@ -3176,6 +3270,7 @@ def get_job_or_category_page(slug: str, request: Request):
                     SELECT j.id, j.title, j.slug, j.department, j.job_role, j.location,
                            j.salary_text, j.salary_min, j.salary_max, j.experience_min, j.experience_max, j.job_type,
                            j.description, j.requirements, j.skills, j.qualification,
+                           j.source_type, j.employer_user_id, j.company_profile_id,
                            j.contact_phone, j.contact_whatsapp, j.contact_email, j.application_url,
                            COALESCE(cp.company_name, c.name, '') AS company_name
                     FROM jobs j
@@ -3238,6 +3333,15 @@ def get_job_or_category_page(slug: str, request: Request):
                     except Exception:
                         sal_text = ""
 
+                is_direct_job = (
+                (job.get("employer_user_id") is not None)
+                or (job.get("company_profile_id") is not None)
+                or (str(job.get("source_type") or "").strip().lower() in ("employer", "manual", "direct company", "direct", "company"))
+            )
+                has_whatsapp = bool((job.get("contact_whatsapp") or "").strip())
+                has_phone = bool((job.get("contact_phone") or "").strip())
+                has_email = bool((job.get("contact_email") or "").strip())
+
                 cat_jobs_map[j_slug] = {
                     "id": job.get("id"),
                     "title": disp_title,
@@ -3253,10 +3357,10 @@ def get_job_or_category_page(slug: str, request: Request):
                     "description": job.get("description") or "",
                     "requirements": job.get("requirements") or "",
                     "skills": job.get("skills") or "",
-                    "contact_phone": job.get("contact_phone") or "",
-                    "contact_whatsapp": job.get("contact_whatsapp") or "",
-                    "contact_email": job.get("contact_email") or "",
-                    "application_url": job.get("application_url") or "",
+                    "is_direct_job": is_direct_job,
+                    "has_whatsapp": has_whatsapp,
+                    "has_phone": has_phone,
+                    "has_email": has_email,
                 }
                 
                 jobs_list_html += f"""
@@ -3707,6 +3811,8 @@ def get_job_or_category_page(slug: str, request: Request):
                 <a href="/services">Services</a>
                 <a href="/blog">Blog</a>
                 <a href="/#contact">Contact</a>
+                <a href="/login?redirect=/jobs/{clean_slug}" onclick="if(window.dgTrackEvent){{dgTrackEvent('registration_cta_click', null, {{cta:'nav_login', source:'seo_category'}});}}" style="color: #E2E8F0; font-weight: 600;">Login</a>
+                <a href="/signup?redirect=/jobs/{clean_slug}" onclick="if(window.dgTrackEvent){{dgTrackEvent('registration_cta_click', null, {{cta:'nav_register', source:'seo_category'}});dgTrackEvent('reg_cta_click', null, {{cta:'nav_register', source:'seo_category'}});}}" style="background: #9E1B32; color: #FFFFFF; padding: 7px 14px; border-radius: 6px; font-weight: 700;">Register Free</a>
             </nav>
         </div>
     </header>
@@ -3729,6 +3835,23 @@ def get_job_or_category_page(slug: str, request: Request):
     </section>
 
     <main class="container" style="max-width: 900px; margin: 40px auto;">
+        <!-- Candidate Value Proposition Banner -->
+        <div style="background: linear-gradient(135deg, #FFFDF5 0%, #FEF2F2 100%); border: 1px solid #FECACA; border-radius: 12px; padding: 18px 20px; margin-bottom: 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;">
+            <div style="flex: 1 1 320px;">
+                <div style="font-size: 15px; font-weight: 800; color: #081226; margin-bottom: 6px;">🎯 Looking for Garment Jobs in Tiruppur? Register Free in 60 Seconds</div>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 13px; color: #334155;">
+                    <span>✓ Save jobs to review later</span>
+                    <span>✓ Manage job applications</span>
+                    <span>✓ Maintain a job-seeker profile</span>
+                    <span>✓ Access relevant job opportunities</span>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <a href="/signup?redirect=/jobs/{clean_slug}" onclick="if(window.dgTrackEvent){{dgTrackEvent('registration_cta_click', null, {{cta:'banner_register', source:'seo_category'}});dgTrackEvent('reg_cta_click', null, {{cta:'banner_register', source:'seo_category'}});}}" style="background: #9E1B32; color: #FFFFFF; padding: 10px 18px; border-radius: 8px; font-weight: 700; font-size: 13.5px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">✨ Register Free</a>
+                <a href="/login?redirect=/jobs/{clean_slug}" onclick="if(window.dgTrackEvent){{dgTrackEvent('registration_cta_click', null, {{cta:'banner_login', source:'seo_category'}});}}" style="background: #FFFFFF; color: #081226; border: 1px solid #CBD5E1; padding: 10px 14px; border-radius: 8px; font-weight: 600; font-size: 13px; text-decoration: none;">Login</a>
+            </div>
+        </div>
+
         <h2 style="font-size: 20px; color: #081226; margin-bottom: 20px;">Current Openings in this Category</h2>
         {jobs_list_html}
         {pagination_html}
@@ -3825,6 +3948,7 @@ def get_job_or_category_page(slug: str, request: Request):
                 <div class="actions-bar" id="catModalActions">
                     <!-- Populated dynamically via JS -->
                 </div>
+                <div id="catModalConversionCard" style="margin-top: 16px;"></div>
             </div>
         </div>
     </div>
@@ -3834,6 +3958,43 @@ def get_job_or_category_page(slug: str, request: Request):
     </script>
     <script>
     (function() {{
+        function dgGetVisitorId() {{
+            try {{
+                var vid = localStorage.getItem('tirupur_visitor_id');
+                if (!vid) {{
+                    vid = 'vis_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now();
+                    localStorage.setItem('tirupur_visitor_id', vid);
+                }}
+                return vid;
+            }} catch(e) {{
+                return 'vis_anon';
+            }}
+        }}
+
+        window.dgTrackEvent = function(eventType, jobId, metadata) {{
+            try {{
+                var payload = {{
+                    event_type: eventType,
+                    job_id: jobId || null,
+                    visitor_id: dgGetVisitorId(),
+                    metadata: Object.assign({{ category_slug: '{clean_slug}' }}, metadata || {{}})
+                }};
+                fetch('/api/public/analytics/track', {{
+                    method: 'POST',
+                    headers: {{ 'Content-Type': 'application/json' }},
+                    body: JSON.stringify(payload),
+                    keepalive: true
+                }}).catch(function() {{}});
+                if (typeof window.gtag === 'function') {{
+                    window.gtag('event', eventType, Object.assign({{ job_id: jobId || undefined }}, metadata || {{}}));
+                }}
+            }} catch(e) {{}}
+        }};
+
+        document.addEventListener('DOMContentLoaded', function() {{
+            window.dgTrackEvent('page_view', null, {{ page: window.location.pathname, source: 'seo_category' }});
+        }});
+
         var jobsDataEl = document.getElementById('category-jobs-data');
         var categoryJobs = {{}};
         if (jobsDataEl) {{
@@ -3860,8 +4021,10 @@ def get_job_or_category_page(slug: str, request: Request):
             var idx = savedJobs.indexOf(id);
             if (idx === -1) {{
                 savedJobs.push(id);
+                window.dgTrackEvent('job_save', id, {{ source: 'category_modal' }});
             }} else {{
                 savedJobs.splice(idx, 1);
+                window.dgTrackEvent('job_unsave', id, {{ source: 'category_modal' }});
             }}
             try {{
                 localStorage.setItem('tirupur_saved_jobs', JSON.stringify(savedJobs));
@@ -3888,6 +4051,7 @@ def get_job_or_category_page(slug: str, request: Request):
 
         window.handleCategoryShareClick = function() {{
             if (!currentActiveJob) return;
+            window.dgTrackEvent('share_click', currentActiveJob.id, {{ source: 'category_modal' }});
             var jobUrl = window.location.origin + '/jobs/' + encodeURIComponent(currentActiveJob.slug);
             var title = (currentActiveJob.title || 'Garment Job') + ' in Tiruppur';
             var text = 'Garment vacancy: ' + (currentActiveJob.title || '') + (currentActiveJob.company_name ? ' at ' + currentActiveJob.company_name : '');
@@ -3921,7 +4085,6 @@ def get_job_or_category_page(slug: str, request: Request):
 
         window.handleCategoryJobClick = function(jobSlug, event) {{
             if (!event) event = window.event;
-            // If user held Ctrl, Cmd, Shift, or used middle click, allow opening in new tab
             if (event && (event.ctrlKey || event.metaKey || event.shiftKey || event.button === 1)) {{
                 return true;
             }}
@@ -3941,6 +4104,8 @@ def get_job_or_category_page(slug: str, request: Request):
             }}
 
             currentActiveJob = job;
+            window.dgTrackEvent('job_view', job.id, {{ source: 'category_modal', is_direct_job: !!job.is_direct_job }});
+            window.dgTrackEvent('job_detail_view', job.id, {{ source: 'category_modal', is_direct_job: !!job.is_direct_job }});
 
             document.getElementById('catModalTitle').textContent = job.title || 'Job Vacancy';
             document.getElementById('catModalDept').textContent = job.department || 'Garments';
@@ -4014,72 +4179,103 @@ def get_job_or_category_page(slug: str, request: Request):
             barShareBtn.onclick = handleCategoryShareClick;
             actionsBar.appendChild(barShareBtn);
 
-            // 3. Apply Now (Primary)
-            var applyBtn = document.createElement('a');
-            applyBtn.className = 'btn-action btn-apply-primary';
-            if (job.contact_whatsapp && job.contact_whatsapp.trim()) {{
-                var cleanWA = job.contact_whatsapp.replace(/[^0-9]/g, '');
-                var waText = encodeURIComponent('Hello, I saw your job vacancy "' + job.title + '" on DigiGarment Tiruppur Jobs. I would like to apply.');
-                applyBtn.href = 'https://wa.me/' + cleanWA + '?text=' + waText;
-                applyBtn.target = '_blank';
-                applyBtn.rel = 'noopener noreferrer';
-                applyBtn.innerHTML = '🚀 Apply Now';
-            }} else if (job.application_url && job.application_url.trim()) {{
-                applyBtn.href = job.application_url;
-                applyBtn.target = '_blank';
-                applyBtn.rel = 'noopener noreferrer';
-                applyBtn.innerHTML = '🚀 Apply Now';
-            }} else if (job.contact_email && job.contact_email.trim()) {{
-                var emailSub = encodeURIComponent('Application for ' + job.title + ' - DigiGarment');
-                applyBtn.href = 'mailto:' + encodeURIComponent(job.contact_email) + '?subject=' + emailSub;
-                applyBtn.innerHTML = '🚀 Apply Now';
-            }} else {{
-                applyBtn.href = '/jobs/' + encodeURIComponent(job.slug);
-                applyBtn.target = '_blank';
-                applyBtn.innerHTML = '🚀 Apply Now';
-            }}
-            actionsBar.appendChild(applyBtn);
+            var jobPath = '/jobs/' + encodeURIComponent(job.slug);
 
-            // 4. WhatsApp HR action
-            if (job.contact_whatsapp && job.contact_whatsapp.trim()) {{
-                var cleanWA2 = job.contact_whatsapp.replace(/[^0-9]/g, '');
-                var waText2 = encodeURIComponent('Hello, I saw your job vacancy "' + job.title + '" on DigiGarment Tiruppur Jobs. I would like to apply.');
+            // 3. Apply Now ONLY for Direct Jobs (NEVER for Imported Jobs)
+            if (job.is_direct_job) {{
+                var applyBtn = document.createElement('a');
+                applyBtn.className = 'btn-action btn-apply-primary';
+                applyBtn.href = jobPath;
+                applyBtn.innerHTML = '🚀 Apply Now';
+                applyBtn.onclick = function() {{
+                    window.dgTrackEvent('apply_click', job.id, {{ source: 'category_modal', is_direct_job: true }});
+                }};
+                actionsBar.appendChild(applyBtn);
+            }}
+
+            // 4. WhatsApp HR action (Direct access without registration)
+            if (job.has_whatsapp) {{
                 var waLink = document.createElement('a');
                 waLink.className = 'btn-action btn-whatsapp';
-                waLink.href = 'https://wa.me/' + cleanWA2 + '?text=' + waText2;
+                waLink.href = '/api/public/jobs/' + encodeURIComponent(job.id) + '/contact/whatsapp';
                 waLink.target = '_blank';
                 waLink.rel = 'noopener noreferrer';
                 waLink.innerHTML = '💬 WhatsApp HR';
+                waLink.onclick = function() {{
+                    window.dgTrackEvent('whatsapp_click', job.id, {{ source: 'category_modal' }});
+                }};
                 actionsBar.appendChild(waLink);
             }}
 
-            // 5. Call action
-            if (job.contact_phone && job.contact_phone.trim()) {{
-                var cleanPhone = job.contact_phone.replace(/[^0-9+]/g, '');
+            // 5. Call action (Direct access without registration)
+            if (job.has_phone) {{
                 var callLink = document.createElement('a');
                 callLink.className = 'btn-action btn-call';
-                callLink.href = 'tel:' + cleanPhone;
-                callLink.innerHTML = '📞 Call (' + escapeHtml(job.contact_phone) + ')';
+                callLink.href = '/api/public/jobs/' + encodeURIComponent(job.id) + '/contact/call';
+                callLink.innerHTML = '📞 Call HR';
+                callLink.onclick = function() {{
+                    window.dgTrackEvent('call_click', job.id, {{ source: 'category_modal' }});
+                }};
                 actionsBar.appendChild(callLink);
+                fetch('/api/public/jobs/' + encodeURIComponent(job.id) + '/contact/call?format=json')
+                    .then(function(r) {{ return r.ok ? r.json() : null; }})
+                    .then(function(d) {{
+                        if (d && d.phone) {{
+                            callLink.href = d.target_url || ('tel:' + d.phone.replace(/[^0-9+]/g, ''));
+                            callLink.innerHTML = '📞 Call (' + escapeHtml(d.phone) + ')';
+                        }}
+                    }}).catch(function() {{}});
             }}
 
-            // 6. Email action
-            if (job.contact_email && job.contact_email.trim()) {{
-                var emailSubject = encodeURIComponent('Application for ' + job.title + ' - DigiGarment');
+            // 6. Email action (Direct access without registration)
+            if (job.has_email) {{
                 var emailLink = document.createElement('a');
                 emailLink.className = 'btn-action btn-email';
-                emailLink.href = 'mailto:' + encodeURIComponent(job.contact_email) + '?subject=' + emailSubject;
+                emailLink.href = '/api/public/jobs/' + encodeURIComponent(job.id) + '/contact/email';
                 emailLink.innerHTML = '✉️ Email Resume';
+                emailLink.onclick = function() {{
+                    window.dgTrackEvent('email_click', job.id, {{ source: 'category_modal' }});
+                }};
                 actionsBar.appendChild(emailLink);
             }}
+
+            // 7. Prominent Register Free CTA
+            var regBtn = document.createElement('a');
+            regBtn.className = 'btn-action btn-apply-primary';
+            regBtn.style.background = '#9E1B32';
+            regBtn.href = '/signup?redirect=' + encodeURIComponent(jobPath);
+            regBtn.innerHTML = '✨ Register Free';
+            regBtn.onclick = function() {{
+                window.dgTrackEvent('registration_cta_click', job.id, {{ cta: 'modal_register_free', source: 'category_modal' }});
+                window.dgTrackEvent('reg_cta_click', job.id, {{ cta: 'modal_register_free', source: 'category_modal' }});
+            }};
+            actionsBar.appendChild(regBtn);
 
             // 8. Direct Job Page Link
             var directLink = document.createElement('a');
             directLink.className = 'btn-action btn-direct-link';
-            directLink.href = '/jobs/' + encodeURIComponent(job.slug);
-            directLink.target = '_blank';
+            directLink.href = jobPath;
             directLink.innerHTML = '🔗 Open Full Page';
             actionsBar.appendChild(directLink);
+
+            // 9. Value Proposition Conversion Card inside Modal
+            var convCard = document.getElementById('catModalConversionCard');
+            if (convCard) {{
+                convCard.innerHTML =
+                    '<div style="background: linear-gradient(135deg, #FFFDF5 0%, #FEF2F2 100%); border: 1px solid #FECACA; border-radius: 10px; padding: 14px 16px;">' +
+                        '<div style="font-size: 13.5px; font-weight: 800; color: #081226; margin-bottom: 6px;">🎯 Create Your Free DigiGarment Job Seeker Account</div>' +
+                        '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 4px 12px; font-size: 12.5px; color: #334155; margin-bottom: 10px;">' +
+                            '<span>✓ Save jobs to review later</span>' +
+                            '<span>✓ Manage job applications</span>' +
+                            '<span>✓ Maintain a job-seeker profile</span>' +
+                            '<span>✓ Access relevant job opportunities</span>' +
+                        '</div>' +
+                        '<div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">' +
+                            '<a href="/signup?redirect=' + encodeURIComponent(jobPath) + '" onclick="if(window.dgTrackEvent){{dgTrackEvent(\\'registration_cta_click\\',' + job.id + ',{{cta:\\'modal_card_register\\',source:\\'category_modal\\'}});dgTrackEvent(\\'reg_cta_click\\',' + job.id + ',{{cta:\\'modal_card_register\\',source:\\'category_modal\\'}});}}" style="background: #9E1B32; color: #FFFFFF; padding: 8px 16px; border-radius: 6px; font-weight: 700; font-size: 12.5px; text-decoration: none;">✨ Register Free</a>' +
+                            '<a href="/login?redirect=' + encodeURIComponent(jobPath) + '" onclick="if(window.dgTrackEvent){{dgTrackEvent(\\'registration_cta_click\\',' + job.id + ',{{cta:\\'modal_card_login\\',source:\\'category_modal\\'}});}}" style="color: #081226; font-weight: 600; font-size: 12.5px; text-decoration: underline;">Already registered? Login</a>' +
+                        '</div>' +
+                    '</div>';
+            }}
 
             var modal = document.getElementById('categoryJobModal');
             modal.style.display = 'flex';
@@ -4108,6 +4304,7 @@ def get_job_or_category_page(slug: str, request: Request):
         }});
     }})();
     </script>
+    <script src="/js/auth-nav.js"></script>
 </body>
 </html>
 """
@@ -4124,7 +4321,7 @@ def get_job_or_category_page(slug: str, request: Request):
                    j.salary_min, j.salary_max, j.salary_text, j.description,
                    j.requirements, j.skills, j.qualification, j.gender,
                    j.contact_phone, j.contact_whatsapp, j.contact_email, j.application_url,
-                   j.source_type, j.employer_user_id,
+                   j.source_type, j.employer_user_id, j.company_profile_id,
                    j.published_at, j.expires_at, j.created_at, j.status, j.is_archived,
                    COALESCE(cp.company_name, c.name, '') AS company_name,
                    COALESCE(cp.company_logo, c.logo_url, '') AS company_logo,
@@ -4165,16 +4362,22 @@ def get_job_or_category_page(slug: str, request: Request):
                 pass
 
         # Source classification
-        is_direct_job = (job.get("employer_user_id") is not None) or (
-            (job.get("source_type") or "").lower().strip() in ("employer", "manual", "direct company", "direct")
+        is_direct_job = (
+            (job.get("employer_user_id") is not None)
+            or (job.get("company_profile_id") is not None)
+            or ((job.get("source_type") or "").lower().strip() in ("employer", "manual", "direct company", "direct", "company"))
         )
 
-        # Protect contact information for anonymous visitors
-        if not is_authenticated:
-            job["contact_phone"] = None
-            job["contact_whatsapp"] = None
-            job["contact_email"] = None
-            job["application_url"] = None
+        # Preserve contact availability flags before any normalization/masking
+        has_whatsapp = bool((job.get("contact_whatsapp") or "").strip())
+        has_phone = bool((job.get("contact_phone") or "").strip())
+        has_email = bool((job.get("contact_email") or "").strip())
+        job["has_whatsapp"] = has_whatsapp
+        job["has_phone"] = has_phone
+        job["has_email"] = has_email
+
+        # Never expose external employer portal URLs
+        job["application_url"] = None
 
         job_title = get_display_job_title(job)
         job_slug = job.get("slug") or str(job.get("id"))
@@ -4412,6 +4615,9 @@ def get_job_or_category_page(slug: str, request: Request):
             custom_html = custom_html.replace('<div id="modalSkillsWrap">', '<div id="modalSkillsWrap" style="display: none;">', 1)
 
         # Pre-render actions bar according to source classification & auth
+        redirect_job_path = f"/jobs/{urllib.parse.quote(str(job_slug))}"
+        encoded_redirect = urllib.parse.quote(redirect_job_path, safe="")
+
         actions_html = f"""
             <button type="button" class="btn-action btn-save-action" id="modalActionSaveBtn" aria-label="Save job" onclick="handleToggleSaveJob({job['id']})">
                 <span class="save-icon" id="modalActionSaveIcon">♡</span>
@@ -4430,27 +4636,59 @@ def get_job_or_category_page(slug: str, request: Request):
             </div>
             """
 
-        # WhatsApp HR rendered ONLY when authenticated and contact exists
-        if job.get("contact_whatsapp") and job["contact_whatsapp"].strip():
+        # WhatsApp HR rendered directly for both guest and registered users when contact exists
+        if has_whatsapp and job.get("contact_whatsapp"):
             clean_wa = re.sub(r'[^0-9]', '', job["contact_whatsapp"])
             wa_text = urllib.parse.quote(f'Hello, I saw your job vacancy "{job_title}" on DigiGarment Tiruppur Jobs. I would like to apply.')
-            actions_html += f'<a class="btn-action btn-whatsapp" href="https://wa.me/{clean_wa}?text={wa_text}" target="_blank">💬 WhatsApp HR</a>'
+            actions_html += f'<a class="btn-action btn-whatsapp" href="https://wa.me/{clean_wa}?text={wa_text}" target="_blank" rel="noopener noreferrer" onclick="if(window.dgTrackEvent) window.dgTrackEvent(\'whatsapp_click\', {job["id"]}, {{source: \'seo_job_page\'}})">💬 WhatsApp HR</a>'
 
-        # Call rendered ONLY when authenticated and contact exists
-        if job.get("contact_phone") and job["contact_phone"].strip():
+        # Call HR rendered directly for both guest and registered users when contact exists
+        if has_phone and job.get("contact_phone"):
             clean_phone = re.sub(r'[^0-9+]', '', job["contact_phone"])
-            actions_html += f'<a class="btn-action btn-call" href="tel:{clean_phone}">📞 Call ({html.escape(job["contact_phone"])})</a>'
+            actions_html += f'<a class="btn-action btn-call" href="tel:{clean_phone}" onclick="if(window.dgTrackEvent) window.dgTrackEvent(\'call_click\', {job["id"]}, {{source: \'seo_job_page\'}})">📞 Call ({html.escape(job["contact_phone"])})</a>'
 
-        # Email rendered ONLY when authenticated and contact exists
-        if job.get("contact_email") and job["contact_email"].strip():
+        # Email HR rendered directly for both guest and registered users when contact exists
+        if has_email and job.get("contact_email"):
             subj = urllib.parse.quote(f'Application for {job_title} - DigiGarment')
-            actions_html += f'<a class="btn-action btn-email" href="mailto:{html.escape(job["contact_email"])}?subject={subj}">✉️ Email Resume</a>'
+            actions_html += f'<a class="btn-action btn-email" href="mailto:{html.escape(job["contact_email"])}?subject={subj}" onclick="if(window.dgTrackEvent) window.dgTrackEvent(\'email_click\', {job["id"]}, {{source: \'seo_job_page\'}})">✉️ Email Resume</a>'
+
+        if not is_authenticated:
+            actions_html += f"""
+            <a class="btn-action" id="modalActionRegisterBtn" href="/signup?redirect={encoded_redirect}" onclick="localStorage.setItem('dg_intended_job_id', '{job['id']}'); if(window.dgTrackEvent) {{ window.dgTrackEvent('registration_cta_click', {job['id']}, {{cta: 'register_free', source: 'seo_job_actions'}}); window.dgTrackEvent('reg_cta_click', {job['id']}, {{cta: 'register_free', source: 'seo_job_actions'}}); }}" style="background: var(--dg-red); color: #ffffff; text-decoration: none; font-weight: 700;">✨ Register Free</a>
+            """
 
         # Note: Company Portal button is deliberately REMOVED to keep visitors on DigiGarment
 
+        guest_conversion_html = ""
+        if not is_authenticated:
+            guest_conversion_html = f"""
+            <div id="modalGuestConversionWrap" style="margin-top: 20px;">
+                <div id="modalGuestConversionCard" style="background: linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 100%); border: 1px solid #BFDBFE; border-radius: 12px; padding: 18px 20px; box-sizing: border-box;">
+                    <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+                        <div style="flex: 1 1 260px;">
+                            <div style="font-size: 11.5px; font-weight: 800; color: var(--dg-red); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">Free Job Seeker Account</div>
+                            <h3 style="font-size: 16px; font-weight: 800; color: var(--dg-navy); margin: 0 0 8px 0;">Get Hired Faster in Tiruppur Garment Companies</h3>
+                            <ul style="margin: 0; padding-left: 18px; font-size: 13px; color: #334155; line-height: 1.65; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 4px 16px;">
+                                <li><strong>Save jobs</strong> across mobile &amp; desktop</li>
+                                <li><strong>Manage job applications</strong> in one place</li>
+                                <li><strong>Maintain a job-seeker profile</strong> &amp; resume</li>
+                                <li><strong>Access relevant job opportunities</strong> matched to your role</li>
+                            </ul>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 8px; min-width: 180px; flex: 0 1 auto; width: 100%; max-width: 240px;">
+                            <a id="seoModalRegisterCtaBtn" href="/signup?redirect={encoded_redirect}" onclick="localStorage.setItem('dg_intended_job_id', '{job['id']}'); if(window.dgTrackEvent) {{ window.dgTrackEvent('registration_cta_click', {job['id']}, {{cta: 'register_free', source: 'seo_job_banner'}}); window.dgTrackEvent('reg_cta_click', {job['id']}, {{cta: 'register_free', source: 'seo_job_banner'}}); }}" style="background: var(--dg-red); color: #ffffff; padding: 11px 16px; border-radius: 8px; font-weight: 700; font-size: 14px; text-decoration: none; text-align: center; display: inline-block; box-shadow: 0 4px 12px rgba(158, 27, 50, 0.2);">✨ Register Free</a>
+                            <a id="seoModalLoginCtaBtn" href="/login?redirect={encoded_redirect}" onclick="localStorage.setItem('dg_intended_job_id', '{job['id']}'); if(window.dgTrackEvent) {{ window.dgTrackEvent('registration_cta_click', {job['id']}, {{cta: 'login', source: 'seo_job_banner'}}); window.dgTrackEvent('reg_cta_click', {job['id']}, {{cta: 'login', source: 'seo_job_banner'}}); }}" style="background: #ffffff; color: var(--dg-navy); border: 1.5px solid #CBD5E1; padding: 9px 16px; border-radius: 8px; font-weight: 600; font-size: 13.5px; text-decoration: none; text-align: center; display: inline-block;">Already registered? Login</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            """
+        else:
+            guest_conversion_html = '<div id="modalGuestConversionWrap" style="display: none;"></div>'
+
         custom_html = custom_html.replace(
             '<div class="actions-bar" id="modalActionsBar">\n                    <!-- Dynamic Contact Actions injected only when verified data exists -->\n                </div>',
-            f'<div class="actions-bar" id="modalActionsBar">{actions_html}</div>',
+            f'<div class="actions-bar" id="modalActionsBar">{actions_html}</div>\n                {guest_conversion_html}',
             1
         )
 
@@ -4458,7 +4696,11 @@ def get_job_or_category_page(slug: str, request: Request):
         client_job = dict(job)
         client_job["is_direct_job"] = is_direct_job
         client_job["allow_direct_apply"] = is_direct_job
+        client_job["has_whatsapp"] = has_whatsapp
+        client_job["has_phone"] = has_phone
+        client_job["has_email"] = has_email
         client_job["is_authenticated"] = is_authenticated
+        client_job["login_required"] = bool(is_direct_job and not is_authenticated)
         for k, v in list(client_job.items()):
             if isinstance(v, (datetime.datetime, datetime.date)):
                 client_job[k] = v.isoformat()
@@ -4478,6 +4720,10 @@ def get_job_or_category_page(slug: str, request: Request):
                         activeJobsCache[existingIdx] = window.SERVER_RENDERED_JOB;
                     }}
                     currentDetailJobId = window.SERVER_RENDERED_JOB.id;
+                    if (typeof trackEvent === 'function') {{
+                        trackEvent('job_view', window.SERVER_RENDERED_JOB.id, {{ source: 'seo_job_page', is_direct_job: Boolean(window.SERVER_RENDERED_JOB.is_direct_job) }});
+                        trackEvent('job_detail_view', window.SERVER_RENDERED_JOB.id, {{ source: 'seo_job_page', is_direct_job: Boolean(window.SERVER_RENDERED_JOB.is_direct_job) }});
+                    }}
                     if (typeof updateSaveButtonUI === 'function') {{
                         updateSaveButtonUI(window.SERVER_RENDERED_JOB.id);
                     }}

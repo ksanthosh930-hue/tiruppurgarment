@@ -282,6 +282,15 @@
             el.style.display = "none";
         }
 
+        function getVisitorId() {
+            let vid = localStorage.getItem("dg_visitor_id");
+            if (!vid) {
+                vid = "v_" + (window.crypto && crypto.randomUUID ? crypto.randomUUID() : (Math.random().toString(36).substring(2) + Date.now().toString(36)));
+                localStorage.setItem("dg_visitor_id", vid);
+            }
+            return vid;
+        }
+
         function getSafeRedirectUrl() {
             try {
                 const params = new URLSearchParams(window.location.search);
@@ -293,12 +302,12 @@
             return null;
         }
 
-        // Preserve redirect param on registration links
+        // Preserve redirect param on registration links (including header Create Account button)
         document.addEventListener("DOMContentLoaded", () => {
             const safeRedirect = getSafeRedirectUrl();
             if (safeRedirect) {
                 const encoded = encodeURIComponent(safeRedirect);
-                const links = document.querySelectorAll(".auth-footer-links a");
+                const links = document.querySelectorAll(".auth-footer-links a, .nav-signup-btn");
                 links.forEach(link => {
                     const href = link.getAttribute("href");
                     if (href && !href.includes("redirect=")) {
@@ -323,7 +332,11 @@
                 const res = await fetch("/api/auth/login", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email: identifier, password: password })
+                    body: JSON.stringify({
+                        email: identifier,
+                        password: password,
+                        visitor_id: getVisitorId()
+                    })
                 });
 
                 const data = await res.json();

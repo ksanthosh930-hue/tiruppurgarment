@@ -502,9 +502,45 @@
         }
     };
 
+    // Conditional GA4 Loader (activates ONLY for valid G-XXXXXXXXXX GA4 Measurement IDs; rejects UA-* and never invents a fake ID)
+    async function initConditionalGA4() {
+        if (window.gtag || document.querySelector('script[src*="googletagmanager.com/gtag/js"]')) return;
+        try {
+            const res = await fetch("/api/public/settings");
+            if (!res.ok) return;
+            const settings = await res.json();
+            const gaId = String((settings && (settings.seo_google_analytics_id || settings.google_analytics_id)) || "").trim();
+            if (!gaId) {
+                window.__dgGa4Status = "disabled_no_id";
+                return;
+            }
+            if (!/^G-[A-Z0-9]{10}$/i.test(gaId)) {
+                window.__dgGa4Status = "rejected_invalid_ga4_id";
+                return;
+            }
+
+            window.__dgGa4Status = "enabled";
+            window.dataLayer = window.dataLayer || [];
+            window.gtag = function () { window.dataLayer.push(arguments); };
+            window.gtag("js", new Date());
+            window.gtag("config", gaId, { anonymize_ip: true });
+
+            const s = document.createElement("script");
+            s.async = true;
+            s.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gaId)}`;
+            document.head.appendChild(s);
+        } catch (e) {
+            // Non-blocking
+        }
+    }
+
     if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", initAuthNav);
+        document.addEventListener("DOMContentLoaded", () => {
+            initAuthNav();
+            initConditionalGA4();
+        });
     } else {
         initAuthNav();
+        initConditionalGA4();
     }
 })();

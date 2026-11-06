@@ -424,8 +424,11 @@
 
             <form id="step2Form" onsubmit="handleVerifyOtp(event)">
                 <div class="otp-input-wrap">
-                    <label style="display: block; font-size: 13px; font-weight: 600; color: var(--dg-navy); margin-bottom: 8px;">Enter 6-Digit Code</label>
-                    <input type="text" id="otpCode" class="otp-input-field" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" placeholder="••••••" required autocomplete="one-time-code">
+                    <label for="otpCode" style="display: block; font-size: 13px; font-weight: 600; color: var(--dg-navy); margin-bottom: 8px;">Enter 6-Digit Verification Code</label>
+                    <input type="text" id="otpCode" class="otp-input-field" maxlength="12" pattern="[0-9]{6}" inputmode="numeric" placeholder="••••••" required autocomplete="one-time-code">
+                    <div id="otpExpiryHint" style="font-size: 12px; color: var(--dg-slate); margin-top: 8px;">
+                        Code valid for <strong id="otpExpiryCountdown">05:00</strong> • Check Inbox or Spam folder
+                    </div>
                 </div>
 
                 <div style="text-align: center; margin-bottom: 18px; font-size: 13px; color: var(--dg-slate);">
@@ -450,18 +453,18 @@
                 <!-- Job Seeker Fields -->
                 <div id="fieldsJobseeker">
                     <div class="form-group">
-                        <label>Full Name <span class="req">*</span></label>
+                        <label for="empFullName">Full Name <span class="req">*</span></label>
                         <input type="text" id="empFullName" class="form-control" placeholder="e.g. Kumaravel S" autocomplete="name">
                     </div>
 
                     <div class="form-grid">
                         <div class="form-group">
-                            <label>Mobile Number <span class="req">*</span></label>
-                            <input type="tel" id="empMobile" class="form-control" placeholder="10-digit mobile" maxlength="10" autocomplete="tel">
+                            <label for="empMobile">Mobile Number <span class="req">*</span></label>
+                            <input type="tel" id="empMobile" class="form-control" placeholder="10-digit mobile number" maxlength="16" inputmode="tel" autocomplete="tel">
                         </div>
                         <div class="form-group">
-                            <label>Location / Area <span class="opt">(Optional)</span></label>
-                            <input type="text" id="empLocation" class="form-control" placeholder="e.g. Tiruppur, Angeripalayam">
+                            <label for="empLocation">Location / Area <span class="opt">(Optional)</span></label>
+                            <input type="text" id="empLocation" class="form-control" placeholder="e.g. Tiruppur, Angeripalayam" autocomplete="address-level2">
                         </div>
                     </div>
                 </div>
@@ -470,41 +473,40 @@
                 <div id="fieldsEmployer" style="display: none;">
                     <div class="form-grid">
                         <div class="form-group">
-                            <label>Company / Mill Name <span class="req">*</span></label>
-                            <input type="text" id="emprCompanyName" class="form-control" placeholder="e.g. Apex Apparels Pvt Ltd">
+                            <label for="emprCompanyName">Company / Mill Name <span class="req">*</span></label>
+                            <input type="text" id="emprCompanyName" class="form-control" placeholder="e.g. Apex Apparels Pvt Ltd" autocomplete="organization">
                         </div>
                         <div class="form-group">
-                            <label>HR / Contact Person Name <span class="req">*</span></label>
-                            <input type="text" id="emprContactPerson" class="form-control" placeholder="e.g. Ramesh Kumar (HR)">
+                            <label for="emprContactPerson">HR / Contact Person Name <span class="req">*</span></label>
+                            <input type="text" id="emprContactPerson" class="form-control" placeholder="e.g. Ramesh Kumar (HR)" autocomplete="name">
                         </div>
                     </div>
 
                     <div class="form-grid">
                         <div class="form-group">
-                            <label>Official Mobile Number <span class="req">*</span></label>
-                            <input type="tel" id="emprMobile" class="form-control" placeholder="10-digit mobile" maxlength="10" autocomplete="tel">
+                            <label for="emprMobile">Official Mobile Number <span class="req">*</span></label>
+                            <input type="tel" id="emprMobile" class="form-control" placeholder="10-digit mobile number" maxlength="16" inputmode="tel" autocomplete="tel">
                         </div>
                         <div class="form-group">
-                            <label>WhatsApp Number <span class="opt">(Optional)</span></label>
-                            <input type="tel" id="emprWhatsapp" class="form-control" placeholder="10-digit WhatsApp" maxlength="10">
+                            <label for="emprWhatsapp">WhatsApp Number <span class="opt">(Optional)</span></label>
+                            <input type="tel" id="emprWhatsapp" class="form-control" placeholder="10-digit WhatsApp" maxlength="16" inputmode="tel" autocomplete="tel">
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label>Area / Industrial Cluster <span class="opt">(Optional)</span></label>
+                        <label for="emprArea">Area / Industrial Cluster <span class="opt">(Optional)</span></label>
                         <input type="text" id="emprArea" class="form-control" placeholder="e.g. Angeripalayam, Netaji Apparel Park">
                     </div>
                 </div>
 
-                <!-- Password Fields (Common) -->
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Set Password <span class="req">*</span></label>
-                        <input type="password" id="userPassword" class="form-control" placeholder="Min. 8 characters" required minlength="8" autocomplete="new-password">
-                    </div>
-                    <div class="form-group">
-                        <label>Confirm Password <span class="req">*</span></label>
-                        <input type="password" id="userConfirmPassword" class="form-control" placeholder="Re-enter password" required minlength="8" autocomplete="new-password">
+                <!-- Password Field (Single Field + Show/Hide Toggle for Mobile Ergonomics) -->
+                <div class="form-group">
+                    <label for="userPassword">Set Password <span class="req">*</span></label>
+                    <div style="position: relative; display: flex; align-items: center;">
+                        <input type="password" id="userPassword" class="form-control" placeholder="Minimum 8 characters" required minlength="8" autocomplete="new-password" style="padding-right: 78px;">
+                        <button type="button" id="togglePasswordBtn" onclick="toggleSignupPasswordVisibility()" aria-label="Show password" style="position: absolute; right: 10px; background: #F1F5F9; border: 1px solid #CBD5E1; border-radius: 6px; padding: 5px 10px; font-size: 12px; font-weight: 600; color: var(--dg-navy); cursor: pointer;">
+                            Show
+                        </button>
                     </div>
                 </div>
 
@@ -515,47 +517,146 @@
         </div>
 
         <div class="auth-footer-links">
-            Already have an account? <a href="/login">Sign In here</a>
+            Already have an account? <a href="/login" id="signupFooterLoginLink">Sign In here</a>
         </div>
     </div>
 
     <script>
+        const SIGNUP_STATE_KEY = "dg_signup_state";
         let currentRole = "individual"; // 'individual' or 'company'
+        let currentStep = 1;
         let registeredEmail = "";
-        let verificationToken = "";
+        let emailVerified = false;
+        let cooldownUntil = 0;
+        let otpExpiresAt = 0;
         let timerInterval = null;
+        let isVerifyingOtp = false;
 
-        function switchRole(role) {
-            currentRole = role;
+        function getVisitorId() {
+            let vid = localStorage.getItem("dg_visitor_id");
+            if (!vid) {
+                vid = "v_" + (window.crypto && crypto.randomUUID ? crypto.randomUUID() : (Math.random().toString(36).substring(2) + Date.now().toString(36)));
+                localStorage.setItem("dg_visitor_id", vid);
+            }
+            return vid;
+        }
+
+        function getSafeRedirectUrl() {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const r = params.get("redirect") || params.get("return_to");
+                if (r && r.startsWith("/") && !r.startsWith("//") && !r.includes("\\") && !r.startsWith("/\\")) {
+                    return r;
+                }
+                const savedRaw = sessionStorage.getItem(SIGNUP_STATE_KEY);
+                if (savedRaw) {
+                    const saved = JSON.parse(savedRaw);
+                    const sr = saved && saved.redirectUrl;
+                    if (sr && sr.startsWith("/") && !sr.startsWith("//") && !sr.includes("\\") && !sr.startsWith("/\\")) {
+                        return sr;
+                    }
+                }
+            } catch (e) {}
+            return null;
+        }
+
+        function normalizeIndianMobileInput(rawVal) {
+            if (!rawVal) return "";
+            let cleaned = String(rawVal).replace(/[\s\-\(\)]/g, "").trim();
+            if (cleaned.startswith ? cleaned.startswith("+91") : cleaned.indexOf("+91") === 0) {
+                cleaned = cleaned.slice(3);
+            } else if (cleaned.length === 12 && cleaned.indexOf("91") === 0) {
+                cleaned = cleaned.slice(2);
+            } else if (cleaned.length === 11 && cleaned.indexOf("0") === 0) {
+                cleaned = cleaned.slice(1);
+            }
+            cleaned = cleaned.replace(/\D/g, "");
+            if (cleaned.length > 10) {
+                if (cleaned.length === 12 && cleaned.indexOf("91") === 0) {
+                    cleaned = cleaned.slice(2);
+                } else if (cleaned.length === 11 && cleaned.indexOf("0") === 0) {
+                    cleaned = cleaned.slice(1);
+                } else {
+                    cleaned = cleaned.slice(0, 10);
+                }
+            }
+            return cleaned;
+        }
+
+        function saveSignupState() {
+            try {
+                // Security invariant: NEVER store verification tokens, passwords, or bearer secrets in sessionStorage.
+                // Pending email verification is authenticated via the server-set HttpOnly cookie `dg_reg_verify`.
+                const state = {
+                    step: currentStep,
+                    role: currentRole,
+                    email: registeredEmail || (document.getElementById("userEmail") ? document.getElementById("userEmail").value.trim() : ""),
+                    emailVerified: Boolean(emailVerified),
+                    cooldownUntil: cooldownUntil || 0,
+                    otpExpiresAt: otpExpiresAt || 0,
+                    redirectUrl: getSafeRedirectUrl() || null,
+                    draftProfile: {
+                        fullName: document.getElementById("empFullName") ? document.getElementById("empFullName").value : "",
+                        mobile: document.getElementById("empMobile") ? document.getElementById("empMobile").value : "",
+                        location: document.getElementById("empLocation") ? document.getElementById("empLocation").value : "",
+                        companyName: document.getElementById("emprCompanyName") ? document.getElementById("emprCompanyName").value : "",
+                        contactPerson: document.getElementById("emprContactPerson") ? document.getElementById("emprContactPerson").value : "",
+                        emprMobile: document.getElementById("emprMobile") ? document.getElementById("emprMobile").value : "",
+                        whatsapp: document.getElementById("emprWhatsapp") ? document.getElementById("emprWhatsapp").value : "",
+                        area: document.getElementById("emprArea") ? document.getElementById("emprArea").value : ""
+                    },
+                    updatedAt: Date.now()
+                };
+                sessionStorage.setItem(SIGNUP_STATE_KEY, JSON.stringify(state));
+            } catch (e) {}
+        }
+
+        function clearSignupState() {
+            try {
+                sessionStorage.removeItem(SIGNUP_STATE_KEY);
+            } catch (e) {}
+        }
+
+        function toggleSignupPasswordVisibility() {
+            const pwdInput = document.getElementById("userPassword");
+            const btn = document.getElementById("togglePasswordBtn");
+            if (!pwdInput || !btn) return;
+            if (pwdInput.type === "password") {
+                pwdInput.type = "text";
+                btn.textContent = "Hide";
+                btn.setAttribute("aria-label", "Hide password");
+            } else {
+                pwdInput.type = "password";
+                btn.textContent = "Show";
+                btn.setAttribute("aria-label", "Show password");
+            }
+        }
+
+        function switchRole(role, skipSave = false) {
+            currentRole = role === "company" ? "company" : "individual";
             const btnEmp = document.getElementById("btnRoleJobseeker");
             const btnEmpr = document.getElementById("btnRoleEmployer");
             const emailLabel = document.getElementById("emailLabel");
 
-            if (role === "individual") {
+            if (currentRole === "individual") {
                 btnEmp.classList.add("active");
                 btnEmpr.classList.remove("active");
                 emailLabel.innerHTML = 'Personal Email Address <span class="req">*</span>';
                 document.getElementById("roleBadgeDisplay").textContent = "Job Seeker Account";
-                window.location.hash = "jobseeker";
+                if (window.location.hash !== "#jobseeker") {
+                    history.replaceState(null, "", window.location.pathname + window.location.search + "#jobseeker");
+                }
             } else {
                 btnEmp.classList.remove("active");
                 btnEmpr.classList.add("active");
                 emailLabel.innerHTML = 'Company / Official Email <span class="req">*</span>';
                 document.getElementById("roleBadgeDisplay").textContent = "Employer Account";
-                window.location.hash = "employer";
+                if (window.location.hash !== "#employer") {
+                    history.replaceState(null, "", window.location.pathname + window.location.search + "#employer");
+                }
             }
+            if (!skipSave) saveSignupState();
         }
-
-        // Initialize from URL path or hash
-        document.addEventListener("DOMContentLoaded", () => {
-            const path = window.location.pathname.toLowerCase();
-            const hash = window.location.hash.toLowerCase();
-            if (path.includes("employer") || hash === "#employer") {
-                switchRole("company");
-            } else {
-                switchRole("individual");
-            }
-        });
 
         function showAlert(msg, isError = true) {
             const el = document.getElementById("alertBox");
@@ -569,9 +670,18 @@
             document.getElementById("alertBox").style.display = "none";
         }
 
-        function goToStep1() {
+        function goToStep1(clearStored = false) {
             hideAlert();
             clearInterval(timerInterval);
+            currentStep = 1;
+            emailVerified = false;
+            if (clearStored) {
+                cooldownUntil = 0;
+                otpExpiresAt = 0;
+                clearSignupState();
+            } else {
+                saveSignupState();
+            }
             document.getElementById("viewStep1").style.display = "block";
             document.getElementById("viewStep2").style.display = "none";
             document.getElementById("viewStep3").style.display = "none";
@@ -581,11 +691,17 @@
             document.getElementById("pillStep3").className = "step-pill";
         }
 
-        function goToStep2(email) {
+        function goToStep2(email, cooldownSeconds = 60, expirySeconds = 300, isRestore = false) {
             hideAlert();
+            currentStep = 2;
+            emailVerified = false;
             registeredEmail = email;
             document.getElementById("displayTargetEmail").textContent = email;
-            document.getElementById("otpCode").value = "";
+            if (!isRestore) {
+                document.getElementById("otpCode").value = "";
+                cooldownUntil = Date.now() + (cooldownSeconds * 1000);
+                otpExpiresAt = Date.now() + (expirySeconds * 1000);
+            }
 
             document.getElementById("viewStep1").style.display = "none";
             document.getElementById("viewStep2").style.display = "block";
@@ -595,12 +711,15 @@
             document.getElementById("pillStep2").className = "step-pill active";
             document.getElementById("pillStep3").className = "step-pill";
 
-            startCountdown(60);
+            saveSignupState();
+            startCountdownFromTimestamps();
         }
 
-        function goToStep3() {
+        function goToStep3(isRestore = false) {
             hideAlert();
             clearInterval(timerInterval);
+            currentStep = 3;
+            emailVerified = true;
             document.getElementById("verifiedEmailDisplay").textContent = registeredEmail;
 
             document.getElementById("viewStep1").style.display = "none";
@@ -628,58 +747,98 @@
                 document.getElementById("emprContactPerson").required = true;
                 document.getElementById("emprMobile").required = true;
             }
+            if (!isRestore) saveSignupState();
         }
 
-        function startCountdown(seconds) {
-            clearInterval(timerInterval);
-            let left = seconds;
+        function updateTimerDisplay() {
+            const now = Date.now();
             const cooldownText = document.getElementById("cooldownText");
             const btnResend = document.getElementById("btnResend");
             const timerSeconds = document.getElementById("timerSeconds");
+            const expiryEl = document.getElementById("otpExpiryCountdown");
+            const expiryHint = document.getElementById("otpExpiryHint");
 
-            cooldownText.style.display = "inline";
-            btnResend.style.display = "none";
-            timerSeconds.textContent = left;
+            const cooldownLeft = Math.max(0, Math.ceil((cooldownUntil - now) / 1000));
+            if (cooldownLeft > 0) {
+                cooldownText.style.display = "inline";
+                btnResend.style.display = "none";
+                timerSeconds.textContent = cooldownLeft;
+            } else {
+                cooldownText.style.display = "none";
+                btnResend.style.display = "inline";
+            }
 
-            timerInterval = setInterval(() => {
-                left--;
-                timerSeconds.textContent = left;
-                if (left <= 0) {
-                    clearInterval(timerInterval);
-                    cooldownText.style.display = "none";
-                    btnResend.style.display = "inline";
+            if (otpExpiresAt > 0 && expiryEl && expiryHint) {
+                const expiryLeft = Math.max(0, Math.ceil((otpExpiresAt - now) / 1000));
+                if (expiryLeft > 0) {
+                    const mins = String(Math.floor(expiryLeft / 60)).padStart(2, "0");
+                    const secs = String(expiryLeft % 60).padStart(2, "0");
+                    expiryHint.innerHTML = `Code valid for <strong id="otpExpiryCountdown">${mins}:${secs}</strong> • Check Inbox or Spam folder`;
+                } else {
+                    expiryHint.innerHTML = `<span style="color: #b91c1c; font-weight: 600;">Verification code expired. Please tap Resend Code Now below.</span>`;
                 }
-            }, 1000);
+            }
+
+            if (cooldownLeft <= 0 && (!otpExpiresAt || now >= otpExpiresAt)) {
+                clearInterval(timerInterval);
+            }
         }
+
+        function startCountdownFromTimestamps() {
+            clearInterval(timerInterval);
+            updateTimerDisplay();
+            timerInterval = setInterval(updateTimerDisplay, 1000);
+        }
+
+        document.addEventListener("visibilitychange", () => {
+            if (!document.hidden && currentStep === 2) {
+                updateTimerDisplay();
+            }
+        });
 
         // --- 1. SEND OTP ---
         async function handleSendOtp(e) {
-            e.preventDefault();
+            if (e && e.preventDefault) e.preventDefault();
             hideAlert();
 
-            const email = document.getElementById("userEmail").value.trim();
+            const email = document.getElementById("userEmail").value.trim().toLowerCase();
             if (!email) {
                 showAlert("Please enter your email address.");
                 return;
             }
 
             const btn = document.getElementById("btnSendOtp");
+            if (btn.disabled) return;
             btn.disabled = true;
             btn.textContent = "Sending Verification Code...";
 
             try {
                 const res = await fetch("/api/auth/register/send-otp", {
                     method: "POST",
+                    credentials: "same-origin",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email: email })
+                    body: JSON.stringify({
+                        email: email,
+                        visitor_id: getVisitorId(),
+                        account_type: currentRole
+                    })
                 });
 
                 const data = await res.json();
                 if (!res.ok) {
-                    throw new Error(data.detail || "Failed to send verification code.");
+                    const errDetail = data.detail || "Failed to send verification code.";
+                    // If a code was just sent within the last 60s for this email, advance smoothly to Step 2
+                    const waitMatch = errDetail.match(/wait\s+(\d+)\s+second/i);
+                    if (res.status === 429 && waitMatch) {
+                        const remSec = parseInt(waitMatch[1], 10) || 60;
+                        goToStep2(email, remSec, 240 + remSec, false);
+                        showAlert(`A verification code was recently sent to ${email}. Please enter it below or wait ${remSec}s to resend.`, false);
+                        return;
+                    }
+                    throw new Error(errDetail);
                 }
 
-                goToStep2(email);
+                goToStep2(email, data.cooldown_seconds || 60, data.expires_in_seconds || 300, false);
                 showAlert("Verification code has been sent to your email.", false);
             } catch (err) {
                 showAlert(err.message || "Failed to send verification code.");
@@ -691,24 +850,46 @@
 
         async function handleResendOtp() {
             hideAlert();
+            const now = Date.now();
+            if (cooldownUntil > now) {
+                updateTimerDisplay();
+                return;
+            }
             const btn = document.getElementById("btnResend");
+            if (btn.disabled) return;
             btn.disabled = true;
             btn.textContent = "Sending...";
 
             try {
                 const res = await fetch("/api/auth/register/send-otp", {
                     method: "POST",
+                    credentials: "same-origin",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email: registeredEmail })
+                    body: JSON.stringify({
+                        email: registeredEmail,
+                        visitor_id: getVisitorId(),
+                        account_type: currentRole
+                    })
                 });
 
                 const data = await res.json();
                 if (!res.ok) {
-                    throw new Error(data.detail || "Failed to resend verification code.");
+                    const errDetail = data.detail || "Failed to resend verification code.";
+                    const waitMatch = errDetail.match(/wait\s+(\d+)\s+second/i);
+                    if (res.status === 429 && waitMatch) {
+                        const remSec = parseInt(waitMatch[1], 10) || 60;
+                        cooldownUntil = Date.now() + (remSec * 1000);
+                        saveSignupState();
+                        startCountdownFromTimestamps();
+                    }
+                    throw new Error(errDetail);
                 }
 
+                cooldownUntil = Date.now() + ((data.cooldown_seconds || 60) * 1000);
+                otpExpiresAt = Date.now() + ((data.expires_in_seconds || 300) * 1000);
+                saveSignupState();
+                startCountdownFromTimestamps();
                 showAlert("New verification code sent successfully.", false);
-                startCountdown(60);
             } catch (err) {
                 showAlert(err.message || "Failed to resend code.");
             } finally {
@@ -719,15 +900,20 @@
 
         // --- 2. VERIFY OTP ---
         async function handleVerifyOtp(e) {
-            e.preventDefault();
+            if (e) e.preventDefault();
+            if (isVerifyingOtp) return;
             hideAlert();
 
-            const otp = document.getElementById("otpCode").value.trim();
+            const otpInput = document.getElementById("otpCode");
+            const otp = (otpInput.value || "").replace(/\D/g, "").slice(0, 6);
+            otpInput.value = otp;
+
             if (otp.length !== 6 || !/^\d{6}$/.test(otp)) {
                 showAlert("Please enter the 6-digit numeric verification code.");
                 return;
             }
 
+            isVerifyingOtp = true;
             const btn = document.getElementById("btnVerifyOtp");
             btn.disabled = true;
             btn.textContent = "Verifying Code...";
@@ -735,6 +921,7 @@
             try {
                 const res = await fetch("/api/auth/register/verify-otp", {
                     method: "POST",
+                    credentials: "same-origin",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         email: registeredEmail,
@@ -747,12 +934,13 @@
                     throw new Error(data.detail || "Invalid or expired verification code.");
                 }
 
-                verificationToken = data.verification_token;
-                goToStep3();
+                emailVerified = true;
+                goToStep3(false);
                 showAlert("Email verified! Complete your profile to finish registration.", false);
             } catch (err) {
                 showAlert(err.message || "Verification failed.");
             } finally {
+                isVerifyingOtp = false;
                 btn.disabled = false;
                 btn.textContent = "Verify Code & Continue";
             }
@@ -760,32 +948,29 @@
 
         // --- 3. COMPLETE REGISTRATION ---
         async function handleCompleteRegistration(e) {
-            e.preventDefault();
+            if (e && e.preventDefault) e.preventDefault();
             hideAlert();
 
             const pwd = document.getElementById("userPassword").value;
-            const confirmPwd = document.getElementById("userConfirmPassword").value;
 
             if (pwd.length < 8) {
                 showAlert("Password must be at least 8 characters long.");
                 return;
             }
 
-            if (pwd !== confirmPwd) {
-                showAlert("Passwords do not match. Please re-enter.");
-                return;
-            }
-
             const payload = {
-                verification_token: verificationToken,
+                email: registeredEmail,
                 account_type: currentRole,
                 password: pwd,
-                confirm_password: confirmPwd
+                confirm_password: pwd,
+                visitor_id: getVisitorId()
             };
 
             if (currentRole === "individual") {
                 const fullName = document.getElementById("empFullName").value.trim();
-                const mobile = document.getElementById("empMobile").value.trim();
+                const mobileInput = document.getElementById("empMobile");
+                const mobile = normalizeIndianMobileInput(mobileInput.value);
+                mobileInput.value = mobile;
                 const location = document.getElementById("empLocation").value.trim();
 
                 if (!fullName) {
@@ -803,8 +988,12 @@
             } else {
                 const companyName = document.getElementById("emprCompanyName").value.trim();
                 const contactPerson = document.getElementById("emprContactPerson").value.trim();
-                const mobile = document.getElementById("emprMobile").value.trim();
-                const whatsapp = document.getElementById("emprWhatsapp").value.trim();
+                const mobileInput = document.getElementById("emprMobile");
+                const mobile = normalizeIndianMobileInput(mobileInput.value);
+                mobileInput.value = mobile;
+                const waInput = document.getElementById("emprWhatsapp");
+                const whatsapp = waInput.value.trim() ? normalizeIndianMobileInput(waInput.value) : "";
+                if (whatsapp) waInput.value = whatsapp;
                 const area = document.getElementById("emprArea").value.trim();
 
                 if (!companyName) {
@@ -834,6 +1023,7 @@
             try {
                 const res = await fetch("/api/auth/register/complete", {
                     method: "POST",
+                    credentials: "same-origin",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(payload)
                 });
@@ -843,23 +1033,91 @@
                     throw new Error(data.detail || "Failed to complete registration.");
                 }
 
-        function getSafeRedirectUrl() {
-            try {
-                const params = new URLSearchParams(window.location.search);
-                const r = params.get("redirect") || params.get("return_to");
-                if (r && r.startsWith("/") && !r.startsWith("//") && !r.includes("\\") && !r.startsWith("/\\")) {
-                    return r;
-                }
-            } catch (e) {}
-            return null;
+                const safeTarget = getSafeRedirectUrl() || data.redirect_url || (currentRole === "individual" ? "/dashboard/individual" : "/dashboard/company");
+                clearSignupState();
+                showAlert("Account created successfully! Redirecting...", false);
+                setTimeout(() => {
+                    window.location.href = safeTarget;
+                }, 600);
+            } catch (err) {
+                showAlert(err.message || "Failed to complete registration.");
+                btn.disabled = false;
+                btn.textContent = "Complete Registration & Access Dashboard";
+            }
         }
 
-        // Preserve redirect param on login link
+        // Top-level initialization: restore state, wire OTP paste/auto-submit, mobile normalization, and redirect links
         document.addEventListener("DOMContentLoaded", () => {
+            // 1. Determine role from URL or hash first
+            const path = window.location.pathname.toLowerCase();
+            const hash = window.location.hash.toLowerCase();
+            if (path.includes("employer") || hash === "#employer") {
+                switchRole("company", true);
+            } else {
+                switchRole("individual", true);
+            }
+
+            // 2. Restore sessionStorage signup state if available (survives Gmail app switching & reload without storing secrets)
+            try {
+                const rawState = sessionStorage.getItem(SIGNUP_STATE_KEY);
+                if (rawState) {
+                    const saved = JSON.parse(rawState);
+                    if (saved && typeof saved === "object") {
+                        // Strip any legacy verificationToken key if present
+                        if ("verificationToken" in saved) {
+                            delete saved.verificationToken;
+                        }
+                        if (saved.role === "company" || saved.role === "individual") {
+                            switchRole(saved.role, true);
+                        }
+                        if (saved.email && document.getElementById("userEmail")) {
+                            document.getElementById("userEmail").value = saved.email;
+                        }
+                        const dp = saved.draftProfile || {};
+                        if (dp.fullName && document.getElementById("empFullName")) document.getElementById("empFullName").value = dp.fullName;
+                        if (dp.mobile && document.getElementById("empMobile")) document.getElementById("empMobile").value = dp.mobile;
+                        if (dp.location && document.getElementById("empLocation")) document.getElementById("empLocation").value = dp.location;
+                        if (dp.companyName && document.getElementById("emprCompanyName")) document.getElementById("emprCompanyName").value = dp.companyName;
+                        if (dp.contactPerson && document.getElementById("emprContactPerson")) document.getElementById("emprContactPerson").value = dp.contactPerson;
+                        if (dp.emprMobile && document.getElementById("emprMobile")) document.getElementById("emprMobile").value = dp.emprMobile;
+                        if (dp.whatsapp && document.getElementById("emprWhatsapp")) document.getElementById("emprWhatsapp").value = dp.whatsapp;
+                        if (dp.area && document.getElementById("emprArea")) document.getElementById("emprArea").value = dp.area;
+
+                        if (saved.step === 3 && saved.email && saved.emailVerified) {
+                            registeredEmail = saved.email;
+                            emailVerified = true;
+                            goToStep3(true);
+                            saveSignupState();
+                            // Confirm server-side HttpOnly pending registration cookie is still valid
+                            fetch(`/api/auth/register/pending-status?email=${encodeURIComponent(saved.email)}`, { credentials: "same-origin" })
+                                .then(r => r.ok ? r.json() : null)
+                                .then(st => {
+                                    if (st && !st.verified) {
+                                        if (st.otp_pending) {
+                                            goToStep2(saved.email, st.cooldown_seconds || 0, st.expires_in_seconds || 0, false);
+                                            showAlert("Please enter your 6-digit verification code to continue.", false);
+                                        } else {
+                                            goToStep1(false);
+                                            showAlert("Your email verification session expired. Please verify your email again.");
+                                        }
+                                    }
+                                })
+                                .catch(() => {});
+                        } else if (saved.step === 2 && saved.email) {
+                            registeredEmail = saved.email;
+                            cooldownUntil = Number(saved.cooldownUntil) || 0;
+                            otpExpiresAt = Number(saved.otpExpiresAt) || 0;
+                            goToStep2(saved.email, 0, 0, true);
+                        }
+                    }
+                }
+            } catch (e) {}
+
+            // 3. Preserve redirect param on login links
             const safeRedirect = getSafeRedirectUrl();
             if (safeRedirect) {
                 const encoded = encodeURIComponent(safeRedirect);
-                const links = document.querySelectorAll(".auth-footer-links a");
+                const links = document.querySelectorAll(".auth-footer-links a, .auth-nav a[href*='/login']");
                 links.forEach(link => {
                     const href = link.getAttribute("href");
                     if (href && !href.includes("redirect=")) {
@@ -867,19 +1125,63 @@
                     }
                 });
             }
-        });
 
-                showAlert("Account created successfully! Redirecting...", false);
-                const safeTarget = getSafeRedirectUrl() || data.redirect_url || (currentRole === "individual" ? "/dashboard/individual" : "/dashboard/company");
-                setTimeout(() => {
-                    window.location.href = safeTarget;
-                }, 800);
-            } catch (err) {
-                showAlert(err.message || "Failed to complete registration.");
-                btn.disabled = false;
-                btn.textContent = "Complete Registration & Access Dashboard";
+            // 4. OTP input sanitization, paste handling & auto-submit on 6 digits
+            const otpInput = document.getElementById("otpCode");
+            if (otpInput) {
+                otpInput.addEventListener("paste", (e) => {
+                    e.preventDefault();
+                    const pasted = (e.clipboardData || window.clipboardData).getData("text") || "";
+                    const digits = pasted.replace(/\D/g, "").slice(0, 6);
+                    otpInput.value = digits;
+                    if (digits.length === 6) {
+                        handleVerifyOtp();
+                    }
+                });
+                otpInput.addEventListener("input", () => {
+                    const digits = otpInput.value.replace(/\D/g, "").slice(0, 6);
+                    if (otpInput.value !== digits) {
+                        otpInput.value = digits;
+                    }
+                    if (digits.length === 6) {
+                        handleVerifyOtp();
+                    }
+                });
             }
-        }
+
+            // 5. Mobile number normalization on input/change/blur & state saving on profile inputs
+            ["empMobile", "emprMobile", "emprWhatsapp"].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                const handleMobNorm = () => {
+                    const raw = el.value;
+                    if (raw && (raw.includes("+") || raw.includes(" ") || raw.includes("-") || raw.replace(/\D/g, "").length >= 10)) {
+                        const norm = normalizeIndianMobileInput(raw);
+                        if (norm.length === 10) {
+                            el.value = norm;
+                        }
+                    }
+                    saveSignupState();
+                };
+                el.addEventListener("change", handleMobNorm);
+                el.addEventListener("blur", handleMobNorm);
+                el.addEventListener("input", () => {
+                    const digitsOnly = el.value.replace(/\D/g, "");
+                    if (el.value.startsWith("+91") || (digitsOnly.length > 10)) {
+                        const norm = normalizeIndianMobileInput(el.value);
+                        if (norm.length === 10) el.value = norm;
+                    }
+                    saveSignupState();
+                });
+            });
+
+            ["userEmail", "empFullName", "empLocation", "emprCompanyName", "emprContactPerson", "emprArea"].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener("input", saveSignupState);
+                }
+            });
+        });
     </script>
 </body>
 </html>
