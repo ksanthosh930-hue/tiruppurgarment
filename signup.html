@@ -380,12 +380,16 @@
             <div class="step-pill" id="pillStep3">3. Complete Profile</div>
         </div>
 
+        <div id="jobUnlockContextBanner" style="display: none; background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%); border: 1.5px solid #93C5FD; border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; color: #1E3A8A; font-size: 13.5px; line-height: 1.45;">
+            🔓 <strong>Unlock HR Phone &amp; WhatsApp Contact:</strong> Verify your email in 30 seconds to view HR contact details for this job.
+        </div>
+
         <div id="alertBox" class="msg-alert"></div>
 
         <!-- ================= STEP 1: Email Input ================= -->
         <div id="viewStep1">
             <!-- Role Selector -->
-            <div class="role-selector">
+            <div class="role-selector" id="roleSelectorWrap">
                 <button type="button" class="role-btn active" id="btnRoleJobseeker" onclick="switchRole('individual')">
                     👤 Job Seeker / Employee
                 </button>
@@ -397,7 +401,8 @@
             <form id="step1Form" onsubmit="handleSendOtp(event)">
                 <div class="form-group">
                     <label id="emailLabel">Email Address <span class="req">*</span></label>
-                    <input type="email" id="userEmail" class="form-control" placeholder="name@example.com" required autocomplete="email">
+                    <input type="email" id="userEmail" class="form-control" placeholder="name@gmail.com" required autocomplete="email">
+                    <div id="emailTypoSuggestion" style="display: none; margin-top: 8px; background: #FEF3C7; border: 1px solid #F59E0B; border-radius: 8px; padding: 8px 12px; font-size: 13px; color: #92400E;"></div>
                 </div>
 
                 <p style="font-size: 13px; color: var(--dg-slate); margin: 0 0 16px 0; line-height: 1.5;">
@@ -417,7 +422,10 @@
                     We've sent a 6-digit verification code to:
                 </p>
                 <strong id="displayTargetEmail" style="color: var(--dg-navy); font-size: 15px;"></strong>
-                <div>
+                <div id="openGmailWrap" style="margin-top: 10px; display: none;">
+                    <a id="openGmailBtn" href="https://mail.google.com/mail/u/0/#search/DigiGarment" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 6px; background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 700; text-decoration: none;">📬 Open Gmail App to Get Code</a>
+                </div>
+                <div style="margin-top: 6px;">
                     <button type="button" class="btn-secondary-link" onclick="goToStep1()">Change Email</button>
                 </div>
             </div>
@@ -691,12 +699,69 @@
             document.getElementById("pillStep3").className = "step-pill";
         }
 
+        const EMAIL_DOMAIN_TYPO_MAP = {
+            "gmai.com": "gmail.com",
+            "gmaip.com": "gmail.com",
+            "gmial.com": "gmail.com",
+            "gamil.com": "gmail.com",
+            "gnail.com": "gmail.com",
+            "gmal.com": "gmail.com",
+            "gmail.con": "gmail.com",
+            "gmail.cim": "gmail.com",
+            "gmail.om": "gmail.com",
+            "gmail.co": "gmail.com",
+            "yaho.com": "yahoo.com",
+            "outlok.com": "outlook.com"
+        };
+
+        function getCorrectedEmailIfTypo(rawEmail) {
+            if (!rawEmail || !rawEmail.includes("@")) return null;
+            const parts = rawEmail.trim().toLowerCase().split("@");
+            if (parts.length !== 2 || !parts[0] || !parts[1]) return null;
+            const suggestedDomain = EMAIL_DOMAIN_TYPO_MAP[parts[1]];
+            if (suggestedDomain) {
+                return `${parts[0]}@${suggestedDomain}`;
+            }
+            return null;
+        }
+
+        function applyEmailTypoFix(correctedEmail) {
+            const el = document.getElementById("userEmail");
+            const box = document.getElementById("emailTypoSuggestion");
+            if (el) {
+                el.value = correctedEmail;
+                saveSignupState();
+            }
+            if (box) {
+                box.style.display = "none";
+                box.innerHTML = "";
+            }
+        }
+
+        function checkEmailTypoUI() {
+            const el = document.getElementById("userEmail");
+            const box = document.getElementById("emailTypoSuggestion");
+            if (!el || !box) return;
+            const corrected = getCorrectedEmailIfTypo(el.value);
+            if (corrected) {
+                box.style.display = "block";
+                box.innerHTML = `⚠️ Did you mean <strong>${corrected.replace(/[<>&"']/g, "")}</strong>? <button type="button" onclick="applyEmailTypoFix('${corrected.replace(/['"\\]/g, "")}')" style="margin-left: 6px; background: #D97706; color: #ffffff; border: none; border-radius: 5px; padding: 3px 9px; font-size: 12px; font-weight: 700; cursor: pointer;">Yes, Fix It</button>`;
+            } else {
+                box.style.display = "none";
+                box.innerHTML = "";
+            }
+        }
+
         function goToStep2(email, cooldownSeconds = 60, expirySeconds = 300, isRestore = false) {
             hideAlert();
             currentStep = 2;
             emailVerified = false;
             registeredEmail = email;
             document.getElementById("displayTargetEmail").textContent = email;
+            const gmailWrap = document.getElementById("openGmailWrap");
+            if (gmailWrap) {
+                gmailWrap.style.display = String(email || "").toLowerCase().endsWith("@gmail.com") ? "block" : "none";
+            }
             if (!isRestore) {
                 document.getElementById("otpCode").value = "";
                 cooldownUntil = Date.now() + (cooldownSeconds * 1000);
@@ -801,10 +866,15 @@
             if (e && e.preventDefault) e.preventDefault();
             hideAlert();
 
-            const email = document.getElementById("userEmail").value.trim().toLowerCase();
+            let email = document.getElementById("userEmail").value.trim().toLowerCase();
             if (!email) {
                 showAlert("Please enter your email address.");
                 return;
+            }
+            const autoFixed = getCorrectedEmailIfTypo(email);
+            if (autoFixed) {
+                applyEmailTypoFix(autoFixed);
+                email = autoFixed;
             }
 
             const btn = document.getElementById("btnSendOtp");
@@ -1113,7 +1183,7 @@
                 }
             } catch (e) {}
 
-            // 3. Preserve redirect param on login links
+            // 3. Preserve redirect param on login links & show contextual Job Unlock Banner
             const safeRedirect = getSafeRedirectUrl();
             if (safeRedirect) {
                 const encoded = encodeURIComponent(safeRedirect);
@@ -1124,6 +1194,23 @@
                         link.setAttribute("href", `${href}${href.includes('?') ? '&' : '?'}redirect=${encoded}`);
                     }
                 });
+                if (safeRedirect.startsWith("/jobs")) {
+                    const banner = document.getElementById("jobUnlockContextBanner");
+                    if (banner) banner.style.display = "block";
+                    const roleWrap = document.getElementById("roleSelectorWrap");
+                    if (roleWrap && !window.location.hash.toLowerCase().includes("employer")) {
+                        roleWrap.style.display = "none";
+                        switchRole("individual", true);
+                    }
+                }
+            }
+
+            // 3b. Wire email typo auto-suggestion on #userEmail
+            const userEmailEl = document.getElementById("userEmail");
+            if (userEmailEl) {
+                userEmailEl.addEventListener("input", checkEmailTypoUI);
+                userEmailEl.addEventListener("blur", checkEmailTypoUI);
+                checkEmailTypoUI();
             }
 
             // 4. OTP input sanitization, paste handling & auto-submit on 6 digits

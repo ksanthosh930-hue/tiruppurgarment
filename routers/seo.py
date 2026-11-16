@@ -58,6 +58,18 @@ def get_display_job_title(job: Dict[str, Any]) -> str:
             return f"{dept} Vacancy"
     return raw_title if (raw_title and not is_generic) else "Garment Industry Vacancy"
 
+def _mask_seo_phone_preview(raw_phone: Optional[str]) -> Optional[str]:
+    if not raw_phone:
+        return None
+    digits = re.sub(r"\D", "", str(raw_phone))
+    if len(digits) == 12 and digits.startswith("91"):
+        digits = digits[2:]
+    elif len(digits) == 11 and digits.startswith("0"):
+        digits = digits[1:]
+    if len(digits) >= 6:
+        return f"{digits[:2]}*** ***{digits[-2:]}"
+    return None
+
 # --- 1. ROBOTS.TXT ---
 @router.get("/robots.txt", response_class=PlainTextResponse)
 def get_robots_txt():
@@ -1461,6 +1473,7 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
             has_whatsapp = bool((job.get("contact_whatsapp") or "").strip())
             has_phone = bool((job.get("contact_phone") or "").strip())
             has_email = bool((job.get("contact_email") or "").strip())
+            masked_phone = _mask_seo_phone_preview(job.get("contact_phone") or job.get("contact_whatsapp"))
 
             cat_jobs_map[j_slug] = {
                 "id": job.get("id"),
@@ -1481,6 +1494,7 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
                 "has_whatsapp": has_whatsapp,
                 "has_phone": has_phone,
                 "has_email": has_email,
+                "masked_phone": masked_phone,
             }
 
             jobs_list_html += f"""
@@ -2711,30 +2725,9 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
             var actionsBar = document.getElementById('catModalActions');
             actionsBar.innerHTML = '';
 
-            // 1. Save Job
-            var barSaveBtn = document.createElement('button');
-            barSaveBtn.type = 'button';
-            barSaveBtn.className = 'btn-action btn-direct-link';
-            barSaveBtn.innerHTML = '♡ Save Job';
-            barSaveBtn.onclick = function() {{
-                handleCategorySaveClick();
-                var saved = isJobSaved(job.id);
-                barSaveBtn.innerHTML = saved ? '♥ Saved' : '♡ Save Job';
-            }};
-            if (isJobSaved(job.id)) barSaveBtn.innerHTML = '♥ Saved';
-            actionsBar.appendChild(barSaveBtn);
-
-            // 2. Share Job
-            var barShareBtn = document.createElement('button');
-            barShareBtn.type = 'button';
-            barShareBtn.className = 'btn-action btn-direct-link';
-            barShareBtn.innerHTML = '↗ Share Job';
-            barShareBtn.onclick = handleCategoryShareClick;
-            actionsBar.appendChild(barShareBtn);
-
             var jobPath = '/jobs/' + encodeURIComponent(job.slug);
 
-            // 3. Apply Now ONLY for Direct Jobs (NEVER for Imported Jobs)
+            // 1. Apply Now ONLY for Direct Jobs (NEVER for Imported Jobs)
             if (job.is_direct_job) {{
                 var applyBtn = document.createElement('a');
                 applyBtn.className = 'btn-action btn-apply-primary';
@@ -2747,7 +2740,7 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
             }}
 
             if (isCategoryUserLoggedIn) {{
-                // 4. WhatsApp HR action (Registered users only)
+                // 2. WhatsApp HR action (Registered users only)
                 if (job.has_whatsapp) {{
                     var waLink = document.createElement('a');
                     waLink.className = 'btn-action btn-whatsapp';
@@ -2761,7 +2754,7 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
                     actionsBar.appendChild(waLink);
                 }}
 
-                // 5. Call action (Registered users only)
+                // 3. Call action (Registered users only)
                 if (job.has_phone) {{
                     var callLink = document.createElement('a');
                     callLink.className = 'btn-action btn-call';
@@ -2783,7 +2776,7 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
                         }}).catch(function() {{}});
                 }}
 
-                // 6. Email action (Registered users only)
+                // 4. Email action (Registered users only)
                 if (job.has_email) {{
                     var emailLink = document.createElement('a');
                     emailLink.className = 'btn-action btn-email';
@@ -2795,21 +2788,22 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
                     actionsBar.appendChild(emailLink);
                 }}
             }} else if (job.has_whatsapp || job.has_phone || job.has_email) {{
-                // Non-registered user: show "Get HR Contact Details" redirecting to registration page
+                // Non-registered user: show "Get HR Contact Details" FIRST with masked phone preview
                 var getContactBtn = document.createElement('a');
                 getContactBtn.className = 'btn-action btn-call';
                 getContactBtn.style.background = '#0284C7';
                 getContactBtn.style.color = '#ffffff';
                 getContactBtn.style.fontWeight = '700';
                 getContactBtn.href = '/signup?redirect=' + encodeURIComponent(jobPath);
-                getContactBtn.innerHTML = '📞 Get HR Contact Details';
+                var maskedSuffix = job.masked_phone ? (' (' + escapeHtml(job.masked_phone) + ')') : '';
+                getContactBtn.innerHTML = '📞 Get HR Contact Details' + maskedSuffix;
                 getContactBtn.onclick = function() {{
                     window.dgTrackEvent('registration_cta_click', job.id, {{ cta: 'get_hr_contact_details', source: 'category_modal' }});
                     window.dgTrackEvent('reg_cta_click', job.id, {{ cta: 'get_hr_contact_details', source: 'category_modal' }});
                 }};
                 actionsBar.appendChild(getContactBtn);
             }} else {{
-                // 7. Prominent Register Free CTA fallback
+                // 5. Prominent Register Free CTA fallback
                 var regBtn = document.createElement('a');
                 regBtn.className = 'btn-action btn-apply-primary';
                 regBtn.style.background = '#9E1B32';
@@ -2821,6 +2815,27 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
                 }};
                 actionsBar.appendChild(regBtn);
             }}
+
+            // 6. Save Job
+            var barSaveBtn = document.createElement('button');
+            barSaveBtn.type = 'button';
+            barSaveBtn.className = 'btn-action btn-direct-link';
+            barSaveBtn.innerHTML = '♡ Save Job';
+            barSaveBtn.onclick = function() {{
+                handleCategorySaveClick();
+                var saved = isJobSaved(job.id);
+                barSaveBtn.innerHTML = saved ? '♥ Saved' : '♡ Save Job';
+            }};
+            if (isJobSaved(job.id)) barSaveBtn.innerHTML = '♥ Saved';
+            actionsBar.appendChild(barSaveBtn);
+
+            // 7. Share Job
+            var barShareBtn = document.createElement('button');
+            barShareBtn.type = 'button';
+            barShareBtn.className = 'btn-action btn-direct-link';
+            barShareBtn.innerHTML = '↗ Share Job';
+            barShareBtn.onclick = handleCategoryShareClick;
+            actionsBar.appendChild(barShareBtn);
 
             // 8. Direct Job Page Link
             var directLink = document.createElement('a');
@@ -3424,6 +3439,7 @@ def get_job_or_category_page(slug: str, request: Request):
                 has_whatsapp = bool((job.get("contact_whatsapp") or "").strip())
                 has_phone = bool((job.get("contact_phone") or "").strip())
                 has_email = bool((job.get("contact_email") or "").strip())
+                masked_phone = _mask_seo_phone_preview(job.get("contact_phone") or job.get("contact_whatsapp"))
 
                 cat_jobs_map[j_slug] = {
                     "id": job.get("id"),
@@ -3444,6 +3460,7 @@ def get_job_or_category_page(slug: str, request: Request):
                     "has_whatsapp": has_whatsapp,
                     "has_phone": has_phone,
                     "has_email": has_email,
+                    "masked_phone": masked_phone,
                 }
                 
                 jobs_list_html += f"""
@@ -4296,30 +4313,9 @@ def get_job_or_category_page(slug: str, request: Request):
             var actionsBar = document.getElementById('catModalActions');
             actionsBar.innerHTML = '';
 
-            // 1. Save Job
-            var barSaveBtn = document.createElement('button');
-            barSaveBtn.type = 'button';
-            barSaveBtn.className = 'btn-action btn-direct-link';
-            barSaveBtn.innerHTML = '♡ Save Job';
-            barSaveBtn.onclick = function() {{
-                handleCategorySaveClick();
-                var saved = isJobSaved(job.id);
-                barSaveBtn.innerHTML = saved ? '♥ Saved' : '♡ Save Job';
-            }};
-            if (isJobSaved(job.id)) barSaveBtn.innerHTML = '♥ Saved';
-            actionsBar.appendChild(barSaveBtn);
-
-            // 2. Share Job
-            var barShareBtn = document.createElement('button');
-            barShareBtn.type = 'button';
-            barShareBtn.className = 'btn-action btn-direct-link';
-            barShareBtn.innerHTML = '↗ Share Job';
-            barShareBtn.onclick = handleCategoryShareClick;
-            actionsBar.appendChild(barShareBtn);
-
             var jobPath = '/jobs/' + encodeURIComponent(job.slug);
 
-            // 3. Apply Now ONLY for Direct Jobs (NEVER for Imported Jobs)
+            // 1. Apply Now ONLY for Direct Jobs (NEVER for Imported Jobs)
             if (job.is_direct_job) {{
                 var applyBtn = document.createElement('a');
                 applyBtn.className = 'btn-action btn-apply-primary';
@@ -4332,7 +4328,7 @@ def get_job_or_category_page(slug: str, request: Request):
             }}
 
             if (isCategoryUserLoggedIn) {{
-                // 4. WhatsApp HR action (Registered users only)
+                // 2. WhatsApp HR action (Registered users only)
                 if (job.has_whatsapp) {{
                     var waLink = document.createElement('a');
                     waLink.className = 'btn-action btn-whatsapp';
@@ -4346,7 +4342,7 @@ def get_job_or_category_page(slug: str, request: Request):
                     actionsBar.appendChild(waLink);
                 }}
 
-                // 5. Call action (Registered users only)
+                // 3. Call action (Registered users only)
                 if (job.has_phone) {{
                     var callLink = document.createElement('a');
                     callLink.className = 'btn-action btn-call';
@@ -4367,7 +4363,7 @@ def get_job_or_category_page(slug: str, request: Request):
                         }}).catch(function() {{}});
                 }}
 
-                // 6. Email action (Registered users only)
+                // 4. Email action (Registered users only)
                 if (job.has_email) {{
                     var emailLink = document.createElement('a');
                     emailLink.className = 'btn-action btn-email';
@@ -4379,21 +4375,22 @@ def get_job_or_category_page(slug: str, request: Request):
                     actionsBar.appendChild(emailLink);
                 }}
             }} else if (job.has_whatsapp || job.has_phone || job.has_email) {{
-                // Non-registered user: show "Get HR Contact Details" redirecting to registration page
+                // Non-registered user: show "Get HR Contact Details" FIRST with masked phone preview
                 var getContactBtn = document.createElement('a');
                 getContactBtn.className = 'btn-action btn-call';
                 getContactBtn.style.background = '#0284C7';
                 getContactBtn.style.color = '#ffffff';
                 getContactBtn.style.fontWeight = '700';
                 getContactBtn.href = '/signup?redirect=' + encodeURIComponent(jobPath);
-                getContactBtn.innerHTML = '📞 Get HR Contact Details';
+                var maskedSuffix = job.masked_phone ? (' (' + escapeHtml(job.masked_phone) + ')') : '';
+                getContactBtn.innerHTML = '📞 Get HR Contact Details' + maskedSuffix;
                 getContactBtn.onclick = function() {{
                     window.dgTrackEvent('registration_cta_click', job.id, {{ cta: 'get_hr_contact_details', source: 'category_modal' }});
                     window.dgTrackEvent('reg_cta_click', job.id, {{ cta: 'get_hr_contact_details', source: 'category_modal' }});
                 }};
                 actionsBar.appendChild(getContactBtn);
             }} else {{
-                // 7. Prominent Register Free CTA fallback
+                // 5. Prominent Register Free CTA fallback
                 var regBtn = document.createElement('a');
                 regBtn.className = 'btn-action btn-apply-primary';
                 regBtn.style.background = '#9E1B32';
@@ -4405,6 +4402,27 @@ def get_job_or_category_page(slug: str, request: Request):
                 }};
                 actionsBar.appendChild(regBtn);
             }}
+
+            // 6. Save Job
+            var barSaveBtn = document.createElement('button');
+            barSaveBtn.type = 'button';
+            barSaveBtn.className = 'btn-action btn-direct-link';
+            barSaveBtn.innerHTML = '♡ Save Job';
+            barSaveBtn.onclick = function() {{
+                handleCategorySaveClick();
+                var saved = isJobSaved(job.id);
+                barSaveBtn.innerHTML = saved ? '♥ Saved' : '♡ Save Job';
+            }};
+            if (isJobSaved(job.id)) barSaveBtn.innerHTML = '♥ Saved';
+            actionsBar.appendChild(barSaveBtn);
+
+            // 7. Share Job
+            var barShareBtn = document.createElement('button');
+            barShareBtn.type = 'button';
+            barShareBtn.className = 'btn-action btn-direct-link';
+            barShareBtn.innerHTML = '↗ Share Job';
+            barShareBtn.onclick = handleCategoryShareClick;
+            actionsBar.appendChild(barShareBtn);
 
             // 8. Direct Job Page Link
             var directLink = document.createElement('a');
@@ -4780,21 +4798,13 @@ def get_job_or_category_page(slug: str, request: Request):
         else:
             custom_html = custom_html.replace('<div id="modalSkillsWrap">', '<div id="modalSkillsWrap" style="display: none;">', 1)
 
-        # Pre-render actions bar according to source classification & auth
+        # Pre-render actions bar according to source classification & auth (Primary Conversion CTAs FIRST)
         redirect_job_path = f"/jobs/{urllib.parse.quote(str(job_slug))}"
         encoded_redirect = urllib.parse.quote(redirect_job_path, safe="")
+        masked_phone = _mask_seo_phone_preview(job.get("contact_phone") or job.get("contact_whatsapp"))
 
-        actions_html = f"""
-            <button type="button" class="btn-action btn-save-action" id="modalActionSaveBtn" aria-label="Save job" onclick="handleToggleSaveJob({job['id']})">
-                <span class="save-icon" id="modalActionSaveIcon">♡</span>
-                <span class="save-text" id="modalActionSaveText">Save Job</span>
-            </button>
-            <button type="button" class="btn-action btn-share-action" id="modalActionShareBtn" aria-label="Share job" onclick="openShareModal({job['id']})">
-                <span class="share-icon">↗</span>
-                <span>Share Job</span>
-            </button>
-        """
-        # Apply Now is rendered ONLY for verified direct employer jobs
+        actions_html = ""
+        # 1. Apply Now is rendered ONLY for verified direct employer jobs
         if is_direct_job:
             actions_html += f"""
             <div id="modalApplyActionWrap">
@@ -4819,14 +4829,26 @@ def get_job_or_category_page(slug: str, request: Request):
                 subj = urllib.parse.quote(f'Application for {job_title} - DigiGarment')
                 actions_html += f'<a class="btn-action btn-email" href="mailto:{html.escape(job["contact_email"])}?subject={subj}" onclick="if(window.dgTrackEvent) window.dgTrackEvent(\'email_click\', {job["id"]}, {{source: \'seo_job_page\'}})">✉️ Email Resume</a>'
         elif has_whatsapp or has_phone or has_email:
-            # Non-registered user: show "Get HR Contact Details" redirecting to registration page
+            # Non-registered user: show "Get HR Contact Details" FIRST with masked phone preview
+            masked_suffix = f" ({html.escape(masked_phone)})" if masked_phone else ""
             actions_html += f"""
-            <a class="btn-action btn-call" id="modalActionRegisterBtn" href="/signup?redirect={encoded_redirect}" onclick="localStorage.setItem('dg_intended_job_id', '{job['id']}'); if(window.dgTrackEvent) {{ window.dgTrackEvent('registration_cta_click', {job['id']}, {{cta: 'get_hr_contact_details', source: 'seo_job_actions'}}); window.dgTrackEvent('reg_cta_click', {job['id']}, {{cta: 'get_hr_contact_details', source: 'seo_job_actions'}}); }}" style="background: #0284C7; color: #ffffff; text-decoration: none; font-weight: 700;">📞 Get HR Contact Details</a>
+            <a class="btn-action btn-call" id="modalActionRegisterBtn" href="/signup?redirect={encoded_redirect}" onclick="localStorage.setItem('dg_intended_job_id', '{job['id']}'); if(window.dgTrackEvent) {{ window.dgTrackEvent('registration_cta_click', {job['id']}, {{cta: 'get_hr_contact_details', source: 'seo_job_actions'}}); window.dgTrackEvent('reg_cta_click', {job['id']}, {{cta: 'get_hr_contact_details', source: 'seo_job_actions'}}); }}" style="background: #0284C7; color: #ffffff; text-decoration: none; font-weight: 700;">📞 Get HR Contact Details{masked_suffix}</a>
             """
         else:
             actions_html += f"""
             <a class="btn-action" id="modalActionRegisterBtn" href="/signup?redirect={encoded_redirect}" onclick="localStorage.setItem('dg_intended_job_id', '{job['id']}'); if(window.dgTrackEvent) {{ window.dgTrackEvent('registration_cta_click', {job['id']}, {{cta: 'register_free', source: 'seo_job_actions'}}); window.dgTrackEvent('reg_cta_click', {job['id']}, {{cta: 'register_free', source: 'seo_job_actions'}}); }}" style="background: var(--dg-red); color: #ffffff; text-decoration: none; font-weight: 700;">✨ Register Free</a>
             """
+
+        actions_html += f"""
+            <button type="button" class="btn-action btn-save-action" id="modalActionSaveBtn" aria-label="Save job" onclick="handleToggleSaveJob({job['id']})">
+                <span class="save-icon" id="modalActionSaveIcon">♡</span>
+                <span class="save-text" id="modalActionSaveText">Save Job</span>
+            </button>
+            <button type="button" class="btn-action btn-share-action" id="modalActionShareBtn" aria-label="Share job" onclick="openShareModal({job['id']})">
+                <span class="share-icon">↗</span>
+                <span>Share Job</span>
+            </button>
+        """
 
         # Note: Company Portal button is deliberately REMOVED to keep visitors on DigiGarment
 
@@ -4874,6 +4896,7 @@ def get_job_or_category_page(slug: str, request: Request):
         client_job["has_whatsapp"] = has_whatsapp
         client_job["has_phone"] = has_phone
         client_job["has_email"] = has_email
+        client_job["masked_phone"] = masked_phone
         client_job["is_authenticated"] = is_authenticated
         client_job["login_required"] = not is_authenticated
         for k, v in list(client_job.items()):

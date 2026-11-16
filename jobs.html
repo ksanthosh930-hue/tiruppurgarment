@@ -3150,36 +3150,9 @@
             // Update modal header save button state
             updateSaveButtonUI(jobId);
 
-            // Render Actions Bar
+            // Render Actions Bar (Primary Conversion / Contact CTAs FIRST for mobile visibility)
             const actionsBar = document.getElementById("modalActionsBar");
             actionsBar.innerHTML = "";
-
-            // 0. Save Job Action inside Modal Action Bar
-            const saved = isJobSaved(job.id);
-            const saveActionBtn = document.createElement("button");
-            saveActionBtn.type = "button";
-            saveActionBtn.className = `btn-action btn-save-action ${saved ? 'saved' : ''}`;
-            saveActionBtn.id = "modalActionSaveBtn";
-            saveActionBtn.setAttribute("aria-label", saved ? "Remove job from saved jobs" : "Save job");
-            saveActionBtn.onclick = () => handleToggleSaveJob(job.id);
-            saveActionBtn.innerHTML = `
-                <span class="save-icon" id="modalActionSaveIcon">${saved ? '♥' : '♡'}</span>
-                <span class="save-text" id="modalActionSaveText">${saved ? 'Saved' : 'Save Job'}</span>
-            `;
-            actionsBar.appendChild(saveActionBtn);
-
-            // 0b. Share Job Action inside Modal Action Bar
-            const shareActionBtn = document.createElement("button");
-            shareActionBtn.type = "button";
-            shareActionBtn.className = "btn-action btn-share-action";
-            shareActionBtn.id = "modalActionShareBtn";
-            shareActionBtn.setAttribute("aria-label", "Share job");
-            shareActionBtn.onclick = () => openShareModal(job.id);
-            shareActionBtn.innerHTML = `
-                <span class="share-icon">↗</span>
-                <span>Share Job</span>
-            `;
-            actionsBar.appendChild(shareActionBtn);
 
             // 1. Direct Apply Action (ONLY for verified direct employer jobs; NEVER for Imported Jobs)
             if (isDirectJob) {
@@ -3251,13 +3224,14 @@
                     actionsBar.appendChild(emailLink);
                 }
             } else if (hasHrContact) {
-                // Non-registered user: show "Get HR Contact Details" redirecting to registration page
+                // Non-registered user: show "Get HR Contact Details" first with masked phone preview
                 const getContactBtn = document.createElement("a");
                 getContactBtn.className = "btn-action btn-call";
                 getContactBtn.id = "modalActionRegisterBtn";
                 getContactBtn.href = `/signup?redirect=${encodedRedirect}`;
                 getContactBtn.style.cssText = "background: #0284C7; color: #ffffff; text-decoration: none; font-weight: 700;";
-                getContactBtn.innerHTML = "📞 Get HR Contact Details";
+                const maskedSuffix = job.masked_phone ? ` (${escapeHtml(job.masked_phone)})` : "";
+                getContactBtn.innerHTML = `📞 Get HR Contact Details${maskedSuffix}`;
                 getContactBtn.onclick = () => {
                     localStorage.setItem("dg_intended_job_id", String(job.id));
                     trackEvent("registration_cta_click", job.id, { cta: "get_hr_contact_details", source: "job_detail_actions" });
@@ -3278,6 +3252,33 @@
                 };
                 actionsBar.appendChild(regActionBtn);
             }
+
+            // 5. Save Job Action inside Modal Action Bar
+            const saved = isJobSaved(job.id);
+            const saveActionBtn = document.createElement("button");
+            saveActionBtn.type = "button";
+            saveActionBtn.className = `btn-action btn-save-action ${saved ? 'saved' : ''}`;
+            saveActionBtn.id = "modalActionSaveBtn";
+            saveActionBtn.setAttribute("aria-label", saved ? "Remove job from saved jobs" : "Save job");
+            saveActionBtn.onclick = () => handleToggleSaveJob(job.id);
+            saveActionBtn.innerHTML = `
+                <span class="save-icon" id="modalActionSaveIcon">${saved ? '♥' : '♡'}</span>
+                <span class="save-text" id="modalActionSaveText">${saved ? 'Saved' : 'Save Job'}</span>
+            `;
+            actionsBar.appendChild(saveActionBtn);
+
+            // 6. Share Job Action inside Modal Action Bar
+            const shareActionBtn = document.createElement("button");
+            shareActionBtn.type = "button";
+            shareActionBtn.className = "btn-action btn-share-action";
+            shareActionBtn.id = "modalActionShareBtn";
+            shareActionBtn.setAttribute("aria-label", "Share job");
+            shareActionBtn.onclick = () => openShareModal(job.id);
+            shareActionBtn.innerHTML = `
+                <span class="share-icon">↗</span>
+                <span>Share Job</span>
+            `;
+            actionsBar.appendChild(shareActionBtn);
 
             // 5. Guest Value Proposition Banner ( preserves original job URL )
             let guestConvWrap = document.getElementById("modalGuestConversionWrap");

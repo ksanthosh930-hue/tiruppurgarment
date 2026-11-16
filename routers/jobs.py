@@ -232,6 +232,18 @@ def _is_direct_job(job: dict) -> bool:
     src_type = (job.get("source_type") or "").lower().strip()
     return (emp_user_id is not None) or (comp_prof_id is not None) or (src_type in ("employer", "manual", "direct company", "direct", "company"))
 
+def _mask_phone_preview(raw_phone: Optional[str]) -> Optional[str]:
+    if not raw_phone:
+        return None
+    digits = re.sub(r"\D", "", str(raw_phone))
+    if len(digits) == 12 and digits.startswith("91"):
+        digits = digits[2:]
+    elif len(digits) == 11 and digits.startswith("0"):
+        digits = digits[1:]
+    if len(digits) >= 6:
+        return f"{digits[:2]}*** ***{digits[-2:]}"
+    return None
+
 def _enrich_and_filter_job(job: dict, is_authenticated: bool) -> dict:
     if not job:
         return job
@@ -240,16 +252,18 @@ def _enrich_and_filter_job(job: dict, is_authenticated: bool) -> dict:
     is_direct = _is_direct_job(job)
     allow_apply = is_direct and (job.get("status") or "").lower() == "published"
     
-    # Preserve contact availability flags before any normalization/masking
+    # Preserve contact availability flags and masked preview before any normalization/masking
     has_whatsapp = bool((job.get("contact_whatsapp") or "").strip())
     has_phone = bool((job.get("contact_phone") or "").strip())
     has_email = bool((job.get("contact_email") or "").strip())
+    masked_phone = _mask_phone_preview(job.get("contact_phone") or job.get("contact_whatsapp"))
     
     job["is_direct_job"] = is_direct
     job["allow_direct_apply"] = allow_apply
     job["has_whatsapp"] = has_whatsapp
     job["has_phone"] = has_phone
     job["has_email"] = has_email
+    job["masked_phone"] = masked_phone
     
     # Never expose external employer portal URLs
     job["application_url"] = None
