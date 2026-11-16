@@ -1095,6 +1095,7 @@ class CompleteRegistrationRequest(BaseModel):
     full_name: Optional[str] = None
     mobile: Optional[str] = None
     location: Optional[str] = None
+    department: Optional[str] = None
     company_name: Optional[str] = None
     contact_person: Optional[str] = None
     whatsapp: Optional[str] = None
@@ -1118,6 +1119,7 @@ def register_complete(
 
     full_name_clean = (req_data.full_name or "").strip()
     location_clean = (req_data.location or "").strip() or None
+    department_clean = (req_data.department or "").strip() or None
     company_name_clean = (req_data.company_name or "").strip()
     contact_person_clean = (req_data.contact_person or "").strip()
     area_clean = (req_data.area or "").strip() or None
@@ -1172,9 +1174,9 @@ def register_complete(
         
         if account_type == "individual":
             _execute_db("""
-                INSERT INTO individual_profiles (user_id, full_name, email, mobile, location, created_at, updated_at)
-                VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-            """, (new_user_id, full_name_clean, email, mobile_clean, location_clean))
+                INSERT INTO individual_profiles (user_id, full_name, email, mobile, location, department, preferred_department, created_at, updated_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+            """, (new_user_id, full_name_clean, email, mobile_clean, location_clean, department_clean, department_clean))
         else:
             _execute_db("""
                 INSERT INTO company_profiles (user_id, company_name, contact_person, email, mobile, whatsapp, area, verification_status, created_at, updated_at)

@@ -5008,9 +5008,81 @@ def get_job_or_category_page(slug: str, request: Request):
         else:
             guest_conversion_html = '<div id="modalGuestConversionWrap" style="display: none;"></div>'
 
+        # Query up to 4 related active jobs in the same department for SSR crawlability & zero-bounce discovery
+        related_jobs_ssr_html = '<div id="modalRelatedJobsWrap" class="related-jobs-modal-box" style="display: none;"></div>'
+        if db_helpers["db_enabled"] and db_helpers["query_db"]:
+            try:
+                rel_rows = db_helpers["query_db"]("""
+                    SELECT j.id, j.title, j.slug, j.department, j.location,
+                           COALESCE(cp.company_name, c.name, '') AS company_name
+                    FROM jobs j
+                    LEFT JOIN companies c ON j.company_id = c.id
+                    LEFT JOIN company_profiles cp ON j.company_profile_id = cp.id
+                    WHERE LOWER(j.status) = 'published'
+                      AND COALESCE(j.is_archived, FALSE) = FALSE
+                      AND j.id != %s
+                      AND LOWER(COALESCE(j.department, '')) = LOWER(%s)
+                    ORDER BY j.is_featured DESC, j.published_at DESC NULLS LAST, j.id DESC
+                    LIMIT 4;
+                """, (job["id"], job_dept))
+                if not rel_rows:
+                    rel_rows = db_helpers["query_db"]("""
+                        SELECT j.id, j.title, j.slug, j.department, j.location,
+                               COALESCE(cp.company_name, c.name, '') AS company_name
+                        FROM jobs j
+                        LEFT JOIN companies c ON j.company_id = c.id
+                        LEFT JOIN company_profiles cp ON j.company_profile_id = cp.id
+                        WHERE LOWER(j.status) = 'published'
+                          AND COALESCE(j.is_archived, FALSE) = FALSE
+                          AND j.id != %s
+                        ORDER BY j.is_featured DESC, j.published_at DESC NULLS LAST, j.id DESC
+                        LIMIT 4;
+                    """, (job["id"],))
+                if rel_rows:
+                    rel_cards = []
+                    for rr in rel_rows:
+                        r_id = rr.get("id")
+                        r_slug = rr.get("slug") or str(r_id)
+                        r_title = html.escape(get_display_job_title(rr))
+                        r_comp = html.escape((rr.get("company_name") or "").strip() or (rr.get("department") or "Garments"))
+                        r_loc = html.escape((rr.get("location") or "Tiruppur").strip())
+                        rel_cards.append(f"""
+                            <a href="/jobs/{urllib.parse.quote(str(r_slug))}" class="related-job-mini-card" onclick="event.preventDefault(); openJobDetailModal({r_id});">
+                                <div style="font-size: 13.5px; font-weight: 700; color: var(--dg-navy); margin-bottom: 3px; line-height: 1.3;">{r_title}</div>
+                                <div style="font-size: 12px; color: #64748B;">🏢 {r_comp} • 📍 {r_loc}</div>
+                            </a>
+                        """)
+                    related_jobs_ssr_html = f"""
+                    <div id="modalRelatedJobsWrap" class="related-jobs-modal-box" style="display: block;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+                            <span style="font-size: 13.5px; font-weight: 800; color: var(--dg-navy);">🔍 Similar {html.escape(job_dept)} Jobs in Tiruppur</span>
+                            <button type="button" onclick="handleFindRelatedJobs()" style="background: none; border: none; color: var(--dg-red); font-size: 12.5px; font-weight: 700; cursor: pointer; padding: 0;">View All {html.escape(job_dept)} Jobs &rarr;</button>
+                        </div>
+                        <div class="related-jobs-modal-grid">{"".join(rel_cards)}</div>
+                    </div>
+                    """
+            except Exception:
+                pass
+
+        # Pre-render Mobile Sticky Bottom CTA Bar
+        sticky_mobile_html = ""
+        if not is_authenticated and (has_whatsapp or has_phone or has_email):
+            masked_suffix = f" ({html.escape(masked_phone)})" if masked_phone else ""
+            sticky_mobile_html = f'<a href="/signup?redirect={encoded_redirect}" onclick="localStorage.setItem(\'dg_intended_job_id\', \'{job["id"]}\'); if(window.dgTrackEvent) {{ window.dgTrackEvent(\'registration_cta_click\', {job["id"]}, {{cta: \'get_hr_contact_details\', source: \'mobile_sticky_bar\'}}); window.dgTrackEvent(\'reg_cta_click\', {job["id"]}, {{cta: \'get_hr_contact_details\', source: \'mobile_sticky_bar\'}}); }}" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: #0284C7; color: #ffffff; padding: 11px 14px; border-radius: 8px; font-weight: 700; font-size: 13.5px; text-decoration: none; box-sizing: border-box;">📞 Get HR Contact Details{masked_suffix}</a>'
+        elif not is_authenticated:
+            sticky_mobile_html = f'<a href="/signup?redirect={encoded_redirect}" onclick="localStorage.setItem(\'dg_intended_job_id\', \'{job["id"]}\'); if(window.dgTrackEvent) {{ window.dgTrackEvent(\'registration_cta_click\', {job["id"]}, {{cta: \'register_free\', source: \'mobile_sticky_bar\'}}); window.dgTrackEvent(\'reg_cta_click\', {job["id"]}, {{cta: \'register_free\', source: \'mobile_sticky_bar\'}}); }}" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: var(--dg-red); color: #ffffff; padding: 11px 14px; border-radius: 8px; font-weight: 700; font-size: 13.5px; text-decoration: none; box-sizing: border-box;">✨ Register Free to Apply</a>'
+        else:
+            if has_whatsapp and job.get("contact_whatsapp"):
+                clean_wa = re.sub(r'[^0-9]', '', job["contact_whatsapp"])
+                wa_text = urllib.parse.quote(f'Hello, I saw your job vacancy "{job_title}" on DigiGarment Tiruppur Jobs.')
+                sticky_mobile_html += f'<a href="https://wa.me/{clean_wa}?text={wa_text}" target="_blank" rel="noopener noreferrer" onclick="if(window.dgTrackEvent) window.dgTrackEvent(\'whatsapp_click\', {job["id"]}, {{source: \'mobile_sticky_bar\'}})" style="flex: 1; background: #25D366; color: #ffffff; padding: 10px 12px; border-radius: 8px; font-weight: 700; font-size: 13px; text-decoration: none; text-align: center;">💬 WhatsApp HR</a>'
+            if has_phone and job.get("contact_phone"):
+                clean_phone = re.sub(r'[^0-9+]', '', job["contact_phone"])
+                sticky_mobile_html += f'<a href="tel:{clean_phone}" onclick="if(window.dgTrackEvent) window.dgTrackEvent(\'call_click\', {job["id"]}, {{source: \'mobile_sticky_bar\'}})" style="flex: 1; background: #0284C7; color: #ffffff; padding: 10px 12px; border-radius: 8px; font-weight: 700; font-size: 13px; text-decoration: none; text-align: center;">📞 Call HR</a>'
+
         custom_html = custom_html.replace(
-            '<div class="actions-bar" id="modalActionsBar">\n                    <!-- Dynamic Contact Actions injected only when verified data exists -->\n                </div>',
-            f'<div class="actions-bar" id="modalActionsBar">{actions_html}</div>\n                {guest_conversion_html}',
+            '<div class="actions-bar" id="modalActionsBar">\n                    <!-- Dynamic Contact Actions injected only when verified data exists -->\n                </div>\n                <div id="modalRelatedJobsWrap" class="related-jobs-modal-box" style="display: none;"></div>\n            </div>\n            <div class="modal-sticky-mobile-cta" id="modalStickyMobileCta"></div>',
+            f'<div class="actions-bar" id="modalActionsBar">{actions_html}</div>\n                {guest_conversion_html}\n                {related_jobs_ssr_html}\n            </div>\n            <div class="modal-sticky-mobile-cta" id="modalStickyMobileCta">{sticky_mobile_html}</div>',
             1
         )
 

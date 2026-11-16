@@ -475,6 +475,24 @@
                             <input type="text" id="empLocation" class="form-control" placeholder="e.g. Tiruppur, Angeripalayam" autocomplete="address-level2">
                         </div>
                     </div>
+
+                    <div class="form-group">
+                        <label for="empDepartment">Preferred Job Department <span class="opt">(Optional)</span></label>
+                        <select id="empDepartment" class="form-control">
+                            <option value="">-- Select Department --</option>
+                            <option value="Merchandising">Merchandising &amp; Sampling</option>
+                            <option value="Production">Production &amp; Line Supervision</option>
+                            <option value="Quality">Quality Assurance / QC / Checking</option>
+                            <option value="Cutting">Cutting &amp; CAD Pattern Master</option>
+                            <option value="Fabric">Fabric Follow-up &amp; Sourcing</option>
+                            <option value="Accounts & Finance">Accounts, Tally &amp; Finance</option>
+                            <option value="HR & Admin">HR, Compliance &amp; Office Admin</option>
+                            <option value="Stores & Purchase">Stores, Purchase &amp; ERP</option>
+                            <option value="Finishing & Logistics">Finishing, Packing &amp; Despatch</option>
+                            <option value="Printing & Embroidery">Printing, Embroidery &amp; Graphic Design</option>
+                            <option value="General Services">Driver, Mechanic &amp; General Services</option>
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Employer Fields -->
@@ -1055,6 +1073,8 @@
                 payload.full_name = fullName;
                 payload.mobile = mobile;
                 payload.location = location || null;
+                const deptEl = document.getElementById("empDepartment");
+                payload.department = (deptEl && deptEl.value) ? deptEl.value.trim() : null;
             } else {
                 const companyName = document.getElementById("emprCompanyName").value.trim();
                 const contactPerson = document.getElementById("emprContactPerson").value.trim();

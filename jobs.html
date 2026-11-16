@@ -1361,6 +1361,56 @@
                 height: 29px;
                 font-size: 17px;
             }
+
+            .modal-sticky-mobile-cta {
+                display: flex !important;
+            }
+        }
+
+        .modal-sticky-mobile-cta {
+            display: none;
+            position: sticky;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border-top: 1px solid #E2E8F0;
+            padding: 10px 14px;
+            z-index: 15;
+            gap: 8px;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 -4px 12px rgba(15, 23, 42, 0.06);
+            box-sizing: border-box;
+        }
+
+        .related-jobs-modal-box {
+            margin-top: 22px;
+            padding-top: 18px;
+            border-top: 1px solid #E2E8F0;
+        }
+
+        .related-jobs-modal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .related-job-mini-card {
+            display: block;
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            padding: 11px 13px;
+            text-decoration: none;
+            color: var(--dg-navy);
+            transition: all 0.15s ease;
+        }
+
+        .related-job-mini-card:hover {
+            border-color: var(--dg-red);
+            background: #FFFBFB;
         }
     </style>
 </head>
@@ -1731,7 +1781,9 @@
                 <div class="actions-bar" id="modalActionsBar">
                     <!-- Dynamic Contact Actions injected only when verified data exists -->
                 </div>
+                <div id="modalRelatedJobsWrap" class="related-jobs-modal-box" style="display: none;"></div>
             </div>
+            <div class="modal-sticky-mobile-cta" id="modalStickyMobileCta"></div>
         </div>
     </div>
 
@@ -3285,7 +3337,7 @@
             if (!guestConvWrap) {
                 guestConvWrap = document.createElement("div");
                 guestConvWrap.id = "modalGuestConversionWrap";
-                actionsBar.parentNode.appendChild(guestConvWrap);
+                actionsBar.parentNode.insertBefore(guestConvWrap, document.getElementById("modalRelatedJobsWrap") || null);
             }
 
             if (!user) {
@@ -3315,6 +3367,34 @@
                 guestConvWrap.style.display = "none";
                 guestConvWrap.innerHTML = "";
             }
+
+            // 6. Populate Mobile Sticky Bottom CTA Bar & Similar Jobs in Department
+            const stickyCta = document.getElementById("modalStickyMobileCta");
+            if (stickyCta) {
+                if (!user && hasHrContact) {
+                    const maskedSuffix = job.masked_phone ? ` (${escapeHtml(job.masked_phone)})` : "";
+                    stickyCta.innerHTML = `<a href="/signup?redirect=${encodedRedirect}" onclick="localStorage.setItem('dg_intended_job_id', '${job.id}'); if(window.dgTrackEvent) { window.dgTrackEvent('registration_cta_click', ${job.id}, {cta: 'get_hr_contact_details', source: 'mobile_sticky_bar'}); window.dgTrackEvent('reg_cta_click', ${job.id}, {cta: 'get_hr_contact_details', source: 'mobile_sticky_bar'}); }" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: #0284C7; color: #ffffff; padding: 11px 14px; border-radius: 8px; font-weight: 700; font-size: 13.5px; text-decoration: none; box-sizing: border-box;">📞 Get HR Contact Details${maskedSuffix}</a>`;
+                } else if (!user) {
+                    stickyCta.innerHTML = `<a href="/signup?redirect=${encodedRedirect}" onclick="localStorage.setItem('dg_intended_job_id', '${job.id}'); if(window.dgTrackEvent) { window.dgTrackEvent('registration_cta_click', ${job.id}, {cta: 'register_free', source: 'mobile_sticky_bar'}); window.dgTrackEvent('reg_cta_click', ${job.id}, {cta: 'register_free', source: 'mobile_sticky_bar'}); }" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: var(--dg-red); color: #ffffff; padding: 11px 14px; border-radius: 8px; font-weight: 700; font-size: 13.5px; text-decoration: none; box-sizing: border-box;">✨ Register Free to Apply</a>`;
+                } else {
+                    let stickyBtns = "";
+                    if ((job.contact_whatsapp && job.contact_whatsapp.trim()) || job.has_whatsapp) {
+                        const waHref = (job.contact_whatsapp && job.contact_whatsapp.trim())
+                            ? `https://wa.me/${job.contact_whatsapp.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('Hello, I saw your job vacancy "' + job.title + '" on DigiGarment Tiruppur Jobs.')}`
+                            : `/api/public/jobs/${job.id}/contact/whatsapp?visitor_id=${encodeURIComponent(getVisitorId())}`;
+                        stickyBtns += `<a href="${waHref}" target="_blank" rel="noopener noreferrer" onclick="trackEvent('whatsapp_click', ${job.id}, {source: 'mobile_sticky_bar'})" style="flex: 1; background: #25D366; color: #ffffff; padding: 10px 12px; border-radius: 8px; font-weight: 700; font-size: 13px; text-decoration: none; text-align: center;">💬 WhatsApp HR</a>`;
+                    }
+                    if ((job.contact_phone && job.contact_phone.trim()) || job.has_phone) {
+                        const callHref = (job.contact_phone && job.contact_phone.trim())
+                            ? `tel:${job.contact_phone.replace(/[^0-9+]/g, '')}`
+                            : `/api/public/jobs/${job.id}/contact/call?visitor_id=${encodeURIComponent(getVisitorId())}`;
+                        stickyBtns += `<a href="${callHref}" onclick="trackEvent('call_click', ${job.id}, {source: 'mobile_sticky_bar'})" style="flex: 1; background: #0284C7; color: #ffffff; padding: 10px 12px; border-radius: 8px; font-weight: 700; font-size: 13px; text-decoration: none; text-align: center;">📞 Call HR</a>`;
+                    }
+                    stickyCta.innerHTML = stickyBtns;
+                }
+            }
+
+            renderModalRelatedJobs(job);
 
             // 6. Note: Company Portal button is deliberately REMOVED to keep visitors on DigiGarment
 
@@ -3471,6 +3551,38 @@
                     modalSavedScrollY = null;
                 }
             }
+        }
+
+        function renderModalRelatedJobs(job) {
+            const wrap = document.getElementById("modalRelatedJobsWrap");
+            if (!wrap || !job) return;
+            const dept = (job.department || "Garments").trim();
+            const sameDept = activeJobsCache.filter(j => j.id !== job.id && (j.department || "").toLowerCase() === dept.toLowerCase());
+            const others = activeJobsCache.filter(j => j.id !== job.id && (j.department || "").toLowerCase() !== dept.toLowerCase());
+            const related = [...sameDept, ...others].slice(0, 4);
+            if (!related.length) {
+                wrap.style.display = "none";
+                return;
+            }
+            const cardsHtml = related.map(r => {
+                const rSlug = r.slug || r.id;
+                const rComp = (r.company_name && r.company_name.trim()) ? r.company_name.trim() : (r.department || "Garments");
+                const rLoc = r.location || "Tiruppur";
+                return `
+                    <a href="/jobs/${encodeURIComponent(rSlug)}" class="related-job-mini-card" onclick="event.preventDefault(); openJobDetailModal(${r.id});">
+                        <div style="font-size: 13.5px; font-weight: 700; color: var(--dg-navy); margin-bottom: 3px; line-height: 1.3;">${escapeHtml(r.title)}</div>
+                        <div style="font-size: 12px; color: #64748B;">🏢 ${escapeHtml(rComp)} • 📍 ${escapeHtml(rLoc)}</div>
+                    </a>
+                `;
+            }).join("");
+            wrap.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+                    <span style="font-size: 13.5px; font-weight: 800; color: var(--dg-navy);">🔍 Similar ${escapeHtml(dept)} Jobs in Tiruppur</span>
+                    <button type="button" onclick="handleFindRelatedJobs()" style="background: none; border: none; color: var(--dg-red); font-size: 12.5px; font-weight: 700; cursor: pointer; padding: 0;">View All ${escapeHtml(dept)} Jobs &rarr;</button>
+                </div>
+                <div class="related-jobs-modal-grid">${cardsHtml}</div>
+            `;
+            wrap.style.display = "block";
         }
 
         function handleFindRelatedJobs() {
