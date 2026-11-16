@@ -1341,4 +1341,225 @@ def get_registered_employers_list(
         raise HTTPException(status_code=500, detail=f"Database error loading registered employers: {e}")
 
 
+@router.get("/analytics/employers/posted-jobs")
+def get_all_registered_employers_posted_jobs(
+    admin: Dict[str, Any] = Depends(require_admin)
+):
+    """
+    Strictly READ-ONLY administrative endpoint returning all jobs posted by Direct Registered Employers
+    with full company profile metadata, timestamps, job specifications, and engagement counts for CSV/Excel export.
+    """
+    if not db_helpers["db_enabled"] or not db_helpers["query_db"]:
+        return {"success": True, "jobs": [], "total": 0}
+
+    try:
+        query = """
+            SELECT
+                j.id AS job_id,
+                j.title,
+                j.slug,
+                COALESCE(j.department, '') AS department,
+                COALESCE(j.job_role, '') AS job_role,
+                COALESCE(j.job_type, 'Full Time') AS job_type,
+                COALESCE(j.location, '') AS job_location,
+                COALESCE(j.openings_count, 1) AS openings_count,
+                j.experience_min,
+                j.experience_max,
+                j.salary_min,
+                j.salary_max,
+                COALESCE(j.salary_text, '') AS salary_text,
+                COALESCE(j.qualification, '') AS qualification,
+                COALESCE(j.gender, 'Any') AS gender,
+                COALESCE(j.skills, '') AS skills,
+                COALESCE(j.description, '') AS description,
+                COALESCE(j.requirements, '') AS requirements,
+                COALESCE(j.contact_phone, '') AS contact_phone,
+                COALESCE(j.contact_whatsapp, '') AS contact_whatsapp,
+                COALESCE(j.contact_email, '') AS contact_email,
+                COALESCE(j.status, 'draft') AS status,
+                COALESCE(j.verification_status, 'unverified') AS verification_status,
+                COALESCE(j.is_archived, FALSE) AS is_archived,
+                j.created_at,
+                j.published_at,
+                j.expires_at,
+                u.id AS employer_user_id,
+                COALESCE(u.email, '') AS employer_account_email,
+                u.created_at AS employer_registered_at,
+                COALESCE(cp.company_name, c.name, '') AS company_name,
+                COALESCE(cp.contact_person, '') AS contact_person,
+                COALESCE(cp.mobile, '') AS employer_mobile,
+                COALESCE(cp.whatsapp, cp.mobile, '') AS employer_whatsapp,
+                COALESCE(cp.location, cp.area, '') AS company_location,
+                COALESCE(ev.views_count, 0) AS views_count,
+                COALESCE(ev.whatsapp_clicks, 0) AS whatsapp_clicks,
+                COALESCE(ev.call_clicks, 0) AS call_clicks,
+                COALESCE(ap.applications_count, 0) AS applications_count
+            FROM jobs j
+            LEFT JOIN public_users u ON j.employer_user_id = u.id
+            LEFT JOIN company_profiles cp ON (u.id = cp.user_id OR j.company_profile_id = cp.id)
+            LEFT JOIN companies c ON j.company_id = c.id
+            LEFT JOIN (
+                SELECT
+                    job_id,
+                    COUNT(*) FILTER (WHERE event_type = 'job_view') AS views_count,
+                    COUNT(*) FILTER (WHERE event_type = 'whatsapp_click') AS whatsapp_clicks,
+                    COUNT(*) FILTER (WHERE event_type = 'call_click') AS call_clicks
+                FROM job_analytics_events
+                WHERE job_id IS NOT NULL
+                GROUP BY job_id
+            ) ev ON j.id = ev.job_id
+            LEFT JOIN (
+                SELECT job_id, COUNT(*) AS applications_count
+                FROM job_applications
+                GROUP BY job_id
+            ) ap ON j.id = ap.job_id
+            WHERE j.employer_user_id IS NOT NULL OR j.company_profile_id IS NOT NULL
+            ORDER BY j.created_at DESC NULLS LAST, j.id DESC;
+        """
+        rows = db_helpers["query_db"](query) or []
+        return {
+            "success": True,
+            "jobs": rows,
+            "total": len(rows)
+        }
+    except Exception as e:
+        logger.error(f"Error fetching all employer posted jobs: {e}")
+        raise HTTPException(status_code=500, detail=f"Database error loading posted jobs: {e}")
+
+
+@router.get("/analytics/employers/{user_id}/details")
+def get_registered_employer_detail_and_jobs(
+    user_id: int,
+    admin: Dict[str, Any] = Depends(require_admin)
+):
+    """
+    Strictly READ-ONLY administrative endpoint returning full company profile details
+    and all posted jobs (with timestamps, specifications, and engagement metrics)
+    for a specific Direct Registered Employer (by public_users.id).
+    """
+    if not db_helpers["db_enabled"] or not db_helpers["query_db"]:
+        raise HTTPException(status_code=503, detail="Database unavailable.")
+
+    try:
+        emp_rows = db_helpers["query_db"]("""
+            SELECT
+                cp.*,
+                u.id AS user_id,
+                u.email AS account_email,
+                u.is_active,
+                u.email_verified,
+                u.created_at AS user_created_at,
+                cp.id AS company_profile_id
+            FROM public_users u
+            LEFT JOIN company_profiles cp ON u.id = cp.user_id
+            WHERE u.id = %s AND u.account_type = 'company'
+            LIMIT 1;
+        """, (user_id,))
+
+        if not emp_rows:
+            raise HTTPException(status_code=404, detail="Registered employer not found.")
+
+        raw_emp = dict(emp_rows[0])
+        employer = {
+            "user_id": raw_emp.get("user_id"),
+            "email": raw_emp.get("account_email") or raw_emp.get("email") or "",
+            "company_email": raw_emp.get("email") or raw_emp.get("account_email") or "",
+            "is_active": bool(raw_emp.get("is_active", True)),
+            "email_verified": bool(raw_emp.get("email_verified", False)),
+            "created_at": raw_emp.get("user_created_at") or raw_emp.get("created_at"),
+            "company_profile_id": raw_emp.get("company_profile_id"),
+            "company_name": raw_emp.get("company_name") or "",
+            "contact_person": raw_emp.get("contact_person") or "",
+            "mobile": raw_emp.get("mobile") or "",
+            "whatsapp": raw_emp.get("whatsapp") or raw_emp.get("mobile") or "",
+            "area": raw_emp.get("area") or "",
+            "location": raw_emp.get("location") or raw_emp.get("area") or "",
+            "address": raw_emp.get("address") or "",
+            "city": raw_emp.get("city") or "",
+            "district": raw_emp.get("district") or "",
+            "state": raw_emp.get("state") or "",
+            "pincode": raw_emp.get("pincode") or "",
+            "gst_number": raw_emp.get("gst_number") or "",
+            "website": raw_emp.get("website") or "",
+            "business_type": raw_emp.get("business_type") or "",
+            "company_description": raw_emp.get("company_description") or "",
+            "company_logo": raw_emp.get("company_logo") or "",
+            "verification_status": raw_emp.get("verification_status") or "pending",
+        }
+        cp_id = employer.get("company_profile_id")
+
+        if cp_id:
+            jobs_where = "(j.employer_user_id = %s OR j.company_profile_id = %s)"
+            jobs_params = (user_id, cp_id)
+        else:
+            jobs_where = "j.employer_user_id = %s"
+            jobs_params = (user_id,)
+
+        jobs_query = f"""
+            SELECT
+                j.id AS job_id,
+                j.title,
+                j.slug,
+                COALESCE(j.department, '') AS department,
+                COALESCE(j.job_role, '') AS job_role,
+                COALESCE(j.job_type, 'Full Time') AS job_type,
+                COALESCE(j.location, '') AS location,
+                COALESCE(j.openings_count, 1) AS openings_count,
+                j.experience_min,
+                j.experience_max,
+                j.salary_min,
+                j.salary_max,
+                COALESCE(j.salary_text, '') AS salary_text,
+                COALESCE(j.qualification, '') AS qualification,
+                COALESCE(j.gender, 'Any') AS gender,
+                COALESCE(j.skills, '') AS skills,
+                COALESCE(j.description, '') AS description,
+                COALESCE(j.requirements, '') AS requirements,
+                COALESCE(j.contact_phone, '') AS contact_phone,
+                COALESCE(j.contact_whatsapp, '') AS contact_whatsapp,
+                COALESCE(j.contact_email, '') AS contact_email,
+                COALESCE(j.status, 'draft') AS status,
+                COALESCE(j.verification_status, 'unverified') AS verification_status,
+                COALESCE(j.is_archived, FALSE) AS is_archived,
+                j.created_at,
+                j.published_at,
+                j.expires_at,
+                COALESCE(ev.views_count, 0) AS views_count,
+                COALESCE(ev.whatsapp_clicks, 0) AS whatsapp_clicks,
+                COALESCE(ev.call_clicks, 0) AS call_clicks,
+                COALESCE(ap.applications_count, 0) AS applications_count
+            FROM jobs j
+            LEFT JOIN (
+                SELECT
+                    job_id,
+                    COUNT(*) FILTER (WHERE event_type = 'job_view') AS views_count,
+                    COUNT(*) FILTER (WHERE event_type = 'whatsapp_click') AS whatsapp_clicks,
+                    COUNT(*) FILTER (WHERE event_type = 'call_click') AS call_clicks
+                FROM job_analytics_events
+                WHERE job_id IS NOT NULL
+                GROUP BY job_id
+            ) ev ON j.id = ev.job_id
+            LEFT JOIN (
+                SELECT job_id, COUNT(*) AS applications_count
+                FROM job_applications
+                GROUP BY job_id
+            ) ap ON j.id = ap.job_id
+            WHERE {jobs_where}
+            ORDER BY j.created_at DESC NULLS LAST, j.id DESC;
+        """
+        jobs = db_helpers["query_db"](jobs_query, jobs_params) or []
+
+        return {
+            "success": True,
+            "employer": employer,
+            "jobs": jobs,
+            "total_jobs": len(jobs)
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching details for employer {user_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Database error loading employer details: {e}")
+
+
 

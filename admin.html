@@ -619,12 +619,15 @@
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
                             <div>
                                 <h2 class="card-panel-title" style="margin: 0 0 2px 0;">🏢 Direct Registered Employers / Companies (<span class="registered-employers-count-badge">0</span>)</h2>
-                                <p style="margin: 0; font-size: 13px; color: #64748b;">Read-only list of garment companies &amp; HR recruiters who registered directly on the website (<code style="font-size: 12px;">/employer/register</code>).</p>
+                                <p style="margin: 0; font-size: 13px; color: #64748b;">Read-only list of garment companies &amp; HR recruiters who registered directly on the website (<code style="font-size: 12px;">/employer/register</code>). <strong style="color: #0284c7;">Click any company to view full details &amp; posted jobs.</strong></p>
                             </div>
                             <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                                <input type="text" id="registeredEmployersSearchTab" class="form-control" placeholder="🔍 Search company, HR name, mobile, email..." style="min-width: 260px;" oninput="filterRegisteredEmployers(this.value)">
-                                <button type="button" class="btn btn-secondary" onclick="exportRegisteredEmployersCSV()" style="display: flex; align-items: center; gap: 6px; white-space: nowrap;">
-                                    <span>📥</span> Export CSV / Excel
+                                <input type="text" id="registeredEmployersSearchTab" class="form-control" placeholder="🔍 Search company, HR name, mobile, email..." style="min-width: 250px;" oninput="filterRegisteredEmployers(this.value)">
+                                <button type="button" class="btn btn-secondary" onclick="exportRegisteredEmployersCSV()" style="display: flex; align-items: center; gap: 6px; white-space: nowrap;" title="Export Registered Companies List">
+                                    <span>📥</span> Export Companies CSV
+                                </button>
+                                <button type="button" class="btn btn-primary" onclick="exportAllEmployersPostedJobsCSV()" style="display: flex; align-items: center; gap: 6px; white-space: nowrap; background: #0284c7; border-color: #0284c7;" title="Export All Posted Jobs Details (CSV / Excel)">
+                                    <span>📋</span> Export Posted Jobs CSV
                                 </button>
                             </div>
                         </div>
@@ -1454,12 +1457,15 @@
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
                             <div>
                                 <h2 class="card-panel-title" style="margin: 0 0 2px 0;">🏢 Direct Registered Employers Directory (<span class="registered-employers-count-badge">0</span>)</h2>
-                                <p style="margin: 0; font-size: 13px; color: #64748b;">Complete read-only list of all Employers (Garment Companies &amp; HR) registered on the portal with contact details and posted vacancies.</p>
+                                <p style="margin: 0; font-size: 13px; color: #64748b;">Complete read-only list of all Employers (Garment Companies &amp; HR) registered on the portal with contact details and posted vacancies. <strong style="color: #0284c7;">Click any company to view full details &amp; posted jobs.</strong></p>
                             </div>
                             <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                                <input type="text" id="registeredEmployersSearchAnalytics" class="form-control" placeholder="🔍 Search company, HR name, mobile, email..." style="min-width: 260px;" oninput="filterRegisteredEmployers(this.value)">
-                                <button type="button" class="btn btn-secondary" onclick="exportRegisteredEmployersCSV()" style="display: flex; align-items: center; gap: 6px; white-space: nowrap;">
-                                    <span>📥</span> Export CSV / Excel
+                                <input type="text" id="registeredEmployersSearchAnalytics" class="form-control" placeholder="🔍 Search company, HR name, mobile, email..." style="min-width: 250px;" oninput="filterRegisteredEmployers(this.value)">
+                                <button type="button" class="btn btn-secondary" onclick="exportRegisteredEmployersCSV()" style="display: flex; align-items: center; gap: 6px; white-space: nowrap;" title="Export Registered Companies List">
+                                    <span>📥</span> Export Companies CSV
+                                </button>
+                                <button type="button" class="btn btn-primary" onclick="exportAllEmployersPostedJobsCSV()" style="display: flex; align-items: center; gap: 6px; white-space: nowrap; background: #0284c7; border-color: #0284c7;" title="Export All Posted Jobs Details (CSV / Excel)">
+                                    <span>📋</span> Export Posted Jobs CSV
                                 </button>
                             </div>
                         </div>
@@ -2406,6 +2412,89 @@
         </div>
     </div>
 
+    <!-- Registered Employer Company Profile & Posted Jobs Details Modal (Strictly Read-Only) -->
+    <div id="registeredEmployerDetailModal" class="modal-overlay" style="display: none; z-index: 2600;">
+        <div class="modal-box" style="max-width: 1120px; width: 96%; max-height: 90vh; display: flex; flex-direction: column;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <div>
+                    <h3 id="empDetailModalTitle" style="margin: 0; font-size: 18px; color: #0f172a;">🏢 Company Profile &amp; Posted Jobs Details</h3>
+                    <small id="empDetailModalSubtitle" style="color: #64748b;">Complete company profile, HR contact info, and full posted job details with timestamps</small>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button type="button" id="empDetailExportJobsBtn" class="btn btn-primary" onclick="exportSingleEmployerPostedJobsCSV()" style="display: flex; align-items: center; gap: 6px; font-size: 13px; padding: 7px 14px; background: #0284c7; border-color: #0284c7;">
+                        <span>📥</span> Export This Company's Posted Jobs (CSV / Excel)
+                    </button>
+                    <button class="modal-close" onclick="closeRegisteredEmployerDetailModal()">×</button>
+                </div>
+            </div>
+            <div class="modal-body" style="overflow-y: auto; flex: 1; padding: 18px 20px;">
+                <!-- Company Profile Summary Card -->
+                <div id="empDetailProfileCard" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px 18px; margin-bottom: 18px;">
+                    <div style="color: #64748b; text-align: center; padding: 12px;">Loading company profile details...</div>
+                </div>
+
+                <!-- Summary KPI Strip -->
+                <div id="empDetailKpiStrip" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 18px;">
+                    <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px 14px;">
+                        <div style="font-size: 11.5px; color: #1e40af; font-weight: 600; text-transform: uppercase;">Total Jobs Posted</div>
+                        <div id="empModalTotalJobs" style="font-size: 20px; font-weight: 800; color: #1d4ed8; margin-top: 2px;">0</div>
+                    </div>
+                    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px 14px;">
+                        <div style="font-size: 11.5px; color: #166534; font-weight: 600; text-transform: uppercase;">Published / Live</div>
+                        <div id="empModalPublishedJobs" style="font-size: 20px; font-weight: 800; color: #15803d; margin-top: 2px;">0</div>
+                    </div>
+                    <div style="background: #fefce8; border: 1px solid #fef08a; border-radius: 8px; padding: 10px 14px;">
+                        <div style="font-size: 11.5px; color: #854d0e; font-weight: 600; text-transform: uppercase;">Total Vacancies</div>
+                        <div id="empModalTotalOpenings" style="font-size: 20px; font-weight: 800; color: #a16207; margin-top: 2px;">0</div>
+                    </div>
+                    <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 10px 14px;">
+                        <div style="font-size: 11.5px; color: #0369a1; font-weight: 600; text-transform: uppercase;">Total Job Views</div>
+                        <div id="empModalTotalViews" style="font-size: 20px; font-weight: 800; color: #0284c7; margin-top: 2px;">0</div>
+                    </div>
+                    <div style="background: #fdf4ff; border: 1px solid #f5d0fe; border-radius: 8px; padding: 10px 14px;">
+                        <div style="font-size: 11.5px; color: #86198f; font-weight: 600; text-transform: uppercase;">WA + Call Clicks</div>
+                        <div id="empModalTotalContactClicks" style="font-size: 20px; font-weight: 800; color: #a21caf; margin-top: 2px;">0</div>
+                    </div>
+                    <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 10px 14px;">
+                        <div style="font-size: 11.5px; color: #065f46; font-weight: 600; text-transform: uppercase;">Applications</div>
+                        <div id="empModalTotalApps" style="font-size: 20px; font-weight: 800; color: #059669; margin-top: 2px;">0</div>
+                    </div>
+                </div>
+
+                <!-- Posted Jobs Section -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                    <h4 style="margin: 0; font-size: 15px; color: #0f172a;">📋 Jobs Posted by This Company (<span id="empDetailJobsCountLabel">0</span>)</h4>
+                    <span style="font-size: 12px; color: #64748b;">Sorted by newest posted date first (IST)</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Job Title, Role &amp; Specifications</th>
+                                <th>Openings, Exp &amp; Salary</th>
+                                <th>Job Location &amp; HR Contact</th>
+                                <th>Posted Date &amp; Time (IST)</th>
+                                <th>Status</th>
+                                <th>Views / Clicks / Applied</th>
+                            </tr>
+                        </thead>
+                        <tbody id="empDetailJobsBody">
+                            <tr><td colspan="7" style="text-align: center; padding: 24px; color: #64748b;">Loading posted jobs...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer" style="padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <span style="font-size: 12px; color: #64748b;">Strictly Read-Only Admin Inspector</span>
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" class="btn btn-primary" onclick="exportSingleEmployerPostedJobsCSV()" style="background: #0284c7; border-color: #0284c7;">📥 Export Posted Jobs CSV</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeRegisteredEmployerDetailModal()">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- SPA Router & Page controllers Script -->
     <script>
         // --- Core UI Logic & Navigation ---
@@ -2703,8 +2792,8 @@
 
                 const mobileHtml = mobile
                     ? `<div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                           <a href="tel:+91${escapeHtml(mobile)}" style="font-weight: 700; color: #0f172a; text-decoration: none;">📞 ${escapeHtml(mobile)}</a>
-                           ${waNumber ? `<a href="https://wa.me/${waNumber}" target="_blank" rel="noopener noreferrer" style="background: #dcfce7; color: #15803d; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 4px; text-decoration: none;">💬 WhatsApp</a>` : ""}
+                           <a href="tel:+91${escapeHtml(mobile)}" onclick="event.stopPropagation();" style="font-weight: 700; color: #0f172a; text-decoration: none;">📞 ${escapeHtml(mobile)}</a>
+                           ${waNumber ? `<a href="https://wa.me/${waNumber}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();" style="background: #dcfce7; color: #15803d; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 4px; text-decoration: none;">💬 WhatsApp</a>` : ""}
                        </div>`
                     : `<span style="color: #94a3b8;">-</span>`;
 
@@ -2718,18 +2807,23 @@
                     : "-";
 
                 return `
-                    <tr>
+                    <tr style="cursor: pointer; transition: background 0.15s;" onclick="openRegisteredEmployerDetailModal(${emp.user_id})" onmouseover="this.style.background='#f0f9ff'" onmouseout="this.style.background=''">
                         <td style="color: #64748b; font-weight: 600;">${idx + 1}</td>
                         <td>
-                            <div style="font-weight: 700; color: #0f172a; font-size: 14px;">🏢 ${escapeHtml(compName)}</div>
-                            ${emp.job_titles_summary ? `<small style="color: #0284c7; font-weight: 500;">Posted: ${escapeHtml(emp.job_titles_summary)}</small>` : ""}
+                            <div style="font-weight: 700; color: #0284c7; font-size: 14px; text-decoration: underline; text-underline-offset: 2px;">🏢 ${escapeHtml(compName)}</div>
+                            ${emp.job_titles_summary ? `<small style="color: #0369a1; font-weight: 500; display: block; margin-top: 2px;">Posted: ${escapeHtml(emp.job_titles_summary)}</small>` : ""}
+                            <div style="margin-top: 4px;">
+                                <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; color: #1d4ed8; background: #eff6ff; border: 1px solid #bfdbfe; padding: 2px 7px; border-radius: 4px;">🔍 View Company &amp; Job Details</span>
+                            </div>
                         </td>
                         <td style="font-weight: 600; color: #1e293b;">👔 ${escapeHtml(hrName)}</td>
                         <td>${mobileHtml}</td>
                         <td style="font-size: 13px; color: #334155;">${escapeHtml(emp.email || "-")}</td>
                         <td style="font-weight: 500; color: #1e293b;">${escapeHtml(emp.location || emp.area || "-")}</td>
                         <td>
-                            <span style="font-weight: 700; color: #2563eb;">💼 ${emp.total_jobs_posted || 0} Jobs</span>
+                            <button type="button" onclick="event.stopPropagation(); openRegisteredEmployerDetailModal(${emp.user_id});" style="background: #eff6ff; border: 1px solid #93c5fd; color: #1d4ed8; font-weight: 700; font-size: 12px; padding: 4px 9px; border-radius: 6px; cursor: pointer;">
+                                💼 ${emp.total_jobs_posted || 0} Jobs
+                            </button>
                             <span style="color: #cbd5e1; margin: 0 4px;">|</span>
                             <span style="font-weight: 700; color: #059669;">📄 ${emp.applications_received || 0} Applications</span>
                         </td>
@@ -2798,6 +2892,357 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
+        }
+
+        let currentSelectedEmployerDetail = null;
+        let currentSelectedEmployerJobs = [];
+
+        async function openRegisteredEmployerDetailModal(userId) {
+            if (!userId) return;
+            const modal = document.getElementById("registeredEmployerDetailModal");
+            const profileCard = document.getElementById("empDetailProfileCard");
+            const jobsBody = document.getElementById("empDetailJobsBody");
+            const titleEl = document.getElementById("empDetailModalTitle");
+            const subtitleEl = document.getElementById("empDetailModalSubtitle");
+            const countLabel = document.getElementById("empDetailJobsCountLabel");
+
+            currentSelectedEmployerDetail = null;
+            currentSelectedEmployerJobs = [];
+
+            if (titleEl) titleEl.textContent = "🏢 Loading Company Details...";
+            if (subtitleEl) subtitleEl.textContent = "Fetching company profile and posted job history...";
+            if (profileCard) profileCard.innerHTML = `<div style="color: #64748b; text-align: center; padding: 16px;">Loading company profile details...</div>`;
+            if (jobsBody) jobsBody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 24px; color: #64748b;">Loading posted jobs...</td></tr>`;
+            if (modal) modal.style.display = "flex";
+
+            try {
+                const res = await fetch(`/api/admin/analytics/employers/${encodeURIComponent(userId)}/details`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                if (!data || !data.success || !data.employer) throw new Error("Failed to load employer details");
+
+                const emp = data.employer;
+                const jobs = data.jobs || [];
+                currentSelectedEmployerDetail = emp;
+                currentSelectedEmployerJobs = jobs;
+
+                const compName = emp.company_name || "Registered Company";
+                const hrName = emp.contact_person || "-";
+                const mobile = (emp.mobile || "").trim();
+                const cleanWa = (emp.whatsapp || mobile).replace(/\D/g, "");
+                const waNumber = cleanWa.length === 10 ? `91${cleanWa}` : cleanWa;
+                const regDate = emp.created_at
+                    ? new Date(emp.created_at).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
+                    : "-";
+                const verifStatus = (emp.verification_status || "pending").toLowerCase();
+
+                if (titleEl) titleEl.textContent = `🏢 ${compName}`;
+                if (subtitleEl) subtitleEl.textContent = `HR: ${hrName} • Registered on ${regDate} IST • ${jobs.length} Job(s) Posted`;
+                if (countLabel) countLabel.textContent = jobs.length.toLocaleString();
+
+                const fullLocationParts = [emp.address, emp.location || emp.area, emp.city, emp.district, emp.state, emp.pincode].filter(Boolean);
+                const fullLocationText = [...new Set(fullLocationParts)].join(", ") || "-";
+
+                if (profileCard) {
+                    profileCard.innerHTML = `
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;">
+                            <div>
+                                <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Company Name</div>
+                                <div style="font-size: 15px; font-weight: 800; color: #0f172a; margin-top: 2px;">🏢 ${escapeHtml(compName)}</div>
+                                ${emp.business_type ? `<div style="font-size: 12px; color: #0284c7; font-weight: 600; margin-top: 2px;">${escapeHtml(emp.business_type)}</div>` : ""}
+                            </div>
+                            <div>
+                                <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">HR / Contact Person</div>
+                                <div style="font-size: 14px; font-weight: 700; color: #1e293b; margin-top: 2px;">👔 ${escapeHtml(hrName)}</div>
+                                <div style="font-size: 12px; color: #475569; margin-top: 2px;">Account Status: <strong>${emp.is_active ? "Active" : "Inactive"}</strong> (${escapeHtml(verifStatus.toUpperCase())})</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Mobile &amp; WhatsApp</div>
+                                <div style="margin-top: 3px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                    ${mobile ? `<a href="tel:+91${escapeHtml(mobile)}" style="font-weight: 700; color: #0f172a; text-decoration: none; font-size: 14px;">📞 ${escapeHtml(mobile)}</a>` : "-"}
+                                    ${waNumber ? `<a href="https://wa.me/${waNumber}" target="_blank" rel="noopener noreferrer" style="background: #dcfce7; color: #15803d; font-size: 11.5px; font-weight: 700; padding: 2px 8px; border-radius: 4px; text-decoration: none;">💬 WhatsApp</a>` : ""}
+                                </div>
+                            </div>
+                            <div>
+                                <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Email &amp; Website</div>
+                                <div style="font-size: 13.5px; font-weight: 600; color: #1e293b; margin-top: 2px;">✉️ ${escapeHtml(emp.email || "-")}</div>
+                                ${emp.website ? `<div style="font-size: 12px; margin-top: 2px;"><a href="${escapeHtml(emp.website)}" target="_blank" rel="noopener noreferrer" style="color: #0284c7;">🌐 ${escapeHtml(emp.website)}</a></div>` : ""}
+                                ${emp.gst_number ? `<div style="font-size: 12px; color: #475569; margin-top: 2px;">GST: ${escapeHtml(emp.gst_number)}</div>` : ""}
+                            </div>
+                            <div style="grid-column: 1 / -1; border-top: 1px solid #e2e8f0; padding-top: 10px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                                <div>
+                                    <span style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">📍 Location / Address: </span>
+                                    <span style="font-size: 13px; font-weight: 600; color: #1e293b;">${escapeHtml(fullLocationText)}</span>
+                                </div>
+                                <div>
+                                    <span style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">🕒 Registered Date: </span>
+                                    <span style="font-size: 13px; font-weight: 600; color: #0f172a;">${regDate} IST</span>
+                                </div>
+                            </div>
+                            ${emp.company_description ? `
+                            <div style="grid-column: 1 / -1; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; font-size: 12.5px; color: #334155;">
+                                <strong>About Company:</strong> ${escapeHtml(emp.company_description)}
+                            </div>` : ""}
+                        </div>
+                    `;
+                }
+
+                // KPI Totals
+                const publishedCount = jobs.filter(j => (j.status || "").toLowerCase() === "published" && !j.is_archived).length;
+                const totalOpenings = jobs.reduce((acc, j) => acc + (parseInt(j.openings_count, 10) || 1), 0);
+                const totalViews = jobs.reduce((acc, j) => acc + (parseInt(j.views_count, 10) || 0), 0);
+                const totalContactClicks = jobs.reduce((acc, j) => acc + (parseInt(j.whatsapp_clicks, 10) || 0) + (parseInt(j.call_clicks, 10) || 0), 0);
+                const totalApps = jobs.reduce((acc, j) => acc + (parseInt(j.applications_count, 10) || 0), 0);
+
+                const setElText = (id, val) => {
+                    const el = document.getElementById(id);
+                    if (el) el.textContent = val.toLocaleString();
+                };
+                setElText("empModalTotalJobs", jobs.length);
+                setElText("empModalPublishedJobs", publishedCount);
+                setElText("empModalTotalOpenings", totalOpenings);
+                setElText("empModalTotalViews", totalViews);
+                setElText("empModalTotalContactClicks", totalContactClicks);
+                setElText("empModalTotalApps", totalApps);
+
+                if (!jobs.length) {
+                    if (jobsBody) {
+                        jobsBody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 28px; color: #64748b;">This company has not posted any jobs yet.</td></tr>`;
+                    }
+                    return;
+                }
+
+                if (jobsBody) {
+                    jobsBody.innerHTML = jobs.map((j, i) => {
+                        const createdDate = j.created_at
+                            ? new Date(j.created_at).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
+                            : "-";
+                        const pubDate = j.published_at
+                            ? new Date(j.published_at).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
+                            : "-";
+
+                        let expText = "Fresher / Any";
+                        if (j.experience_min != null && j.experience_max != null) {
+                            expText = `${j.experience_min} - ${j.experience_max} Yrs`;
+                        } else if (j.experience_min != null) {
+                            expText = `${j.experience_min}+ Yrs`;
+                        }
+
+                        let salaryDisplay = j.salary_text || "";
+                        if (!salaryDisplay && (j.salary_min || j.salary_max)) {
+                            salaryDisplay = `₹${(j.salary_min || 0).toLocaleString()} - ₹${(j.salary_max || 0).toLocaleString()}`;
+                        }
+                        if (!salaryDisplay) salaryDisplay = "As per norms";
+
+                        const st = (j.status || "draft").toLowerCase();
+                        let stBadge = `<span class="badge" style="background: #f1f5f9; color: #475569; font-size: 11px; padding: 3px 7px; border-radius: 4px;">${escapeHtml(st.toUpperCase())}</span>`;
+                        if (j.is_archived) {
+                            stBadge = `<span class="badge" style="background: #fee2e2; color: #b91c1c; font-size: 11px; padding: 3px 7px; border-radius: 4px;">ARCHIVED</span>`;
+                        } else if (st === "published") {
+                            stBadge = `<span class="badge" style="background: #dcfce7; color: #15803d; font-weight: 700; font-size: 11px; padding: 3px 7px; border-radius: 4px;">PUBLISHED</span>`;
+                        } else if (st === "pending") {
+                            stBadge = `<span class="badge" style="background: #fef3c7; color: #b45309; font-weight: 700; font-size: 11px; padding: 3px 7px; border-radius: 4px;">PENDING</span>`;
+                        }
+
+                        const jobUrl = j.slug ? `/jobs/${encodeURIComponent(j.slug)}` : `/jobs`;
+                        const safeTitleForAttr = escapeHtml(j.title || "Job").replace(/'/g, "\\'");
+
+                        return `
+                            <tr>
+                                <td style="font-weight: 700; color: #64748b;">
+                                    ${i + 1}
+                                    <div style="font-size: 11px; color: #94a3b8;">#${j.job_id}</div>
+                                </td>
+                                <td style="max-width: 340px;">
+                                    <div style="font-weight: 800; color: #0f172a; font-size: 14px;">
+                                        <a href="${jobUrl}" target="_blank" rel="noopener noreferrer" style="color: #0284c7; text-decoration: none;">${escapeHtml(j.title || "Untitled Job")} ↗</a>
+                                    </div>
+                                    <div style="font-size: 12px; color: #334155; margin-top: 3px;">
+                                        ${j.department ? `<span style="background: #eff6ff; color: #1d4ed8; padding: 1px 6px; border-radius: 4px; font-weight: 600; margin-right: 4px;">${escapeHtml(j.department)}</span>` : ""}
+                                        ${j.job_role ? `<span style="color: #475569; font-weight: 600;">Role: ${escapeHtml(j.job_role)}</span> • ` : ""}
+                                        <span style="color: #64748b;">${escapeHtml(j.job_type || "Full Time")}</span>
+                                        ${j.gender ? ` • <span style="color: #475569;">Gender: ${escapeHtml(j.gender)}</span>` : ""}
+                                    </div>
+                                    ${j.qualification ? `<div style="font-size: 11.5px; color: #475569; margin-top: 2px;">🎓 Qualification: ${escapeHtml(j.qualification)}</div>` : ""}
+                                    ${j.skills ? `<div style="font-size: 11.5px; color: #0369a1; margin-top: 2px;">🛠️ Skills: ${escapeHtml(j.skills)}</div>` : ""}
+                                    ${(j.description || j.requirements) ? `
+                                    <details style="margin-top: 5px; font-size: 12px; color: #334155; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 5px; padding: 4px 8px;">
+                                        <summary style="cursor: pointer; font-weight: 600; color: #0284c7;">View Description &amp; Requirements</summary>
+                                        ${j.description ? `<div style="margin-top: 4px; white-space: pre-wrap;"><strong>Description:</strong> ${escapeHtml(j.description)}</div>` : ""}
+                                        ${j.requirements ? `<div style="margin-top: 4px; white-space: pre-wrap;"><strong>Requirements:</strong> ${escapeHtml(j.requirements)}</div>` : ""}
+                                    </details>` : ""}
+                                </td>
+                                <td style="font-size: 12.5px; white-space: nowrap;">
+                                    <div style="font-weight: 700; color: #0f172a;">👥 ${j.openings_count || 1} Opening(s)</div>
+                                    <div style="color: #1d4ed8; font-weight: 600; margin-top: 2px;">⏳ Exp: ${escapeHtml(expText)}</div>
+                                    <div style="color: #15803d; font-weight: 700; margin-top: 2px;">💰 ${escapeHtml(salaryDisplay)}</div>
+                                </td>
+                                <td style="font-size: 12.5px;">
+                                    <div style="font-weight: 600; color: #1e293b;">📍 ${escapeHtml(j.location || emp.location || "-")}</div>
+                                    ${j.contact_phone ? `<div style="color: #334155; margin-top: 2px;">📞 ${escapeHtml(j.contact_phone)}</div>` : ""}
+                                    ${j.contact_whatsapp ? `<div style="color: #15803d; margin-top: 1px;">💬 WA: ${escapeHtml(j.contact_whatsapp)}</div>` : ""}
+                                    ${j.contact_email ? `<div style="color: #64748b; font-size: 11.5px; margin-top: 1px;">✉️ ${escapeHtml(j.contact_email)}</div>` : ""}
+                                </td>
+                                <td style="font-size: 12px; white-space: nowrap;">
+                                    <div><strong style="color: #0f172a;">Posted:</strong> ${createdDate}</div>
+                                    <div style="color: #15803d; margin-top: 2px;"><strong>Published:</strong> ${pubDate}</div>
+                                </td>
+                                <td>${stBadge}</td>
+                                <td style="font-size: 12.5px; white-space: nowrap;">
+                                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                        <span style="font-weight: 700; color: #0284c7;">👁️ ${j.views_count || 0} Views</span>
+                                        ${(j.views_count || 0) > 0 ? `<button type="button" class="btn btn-secondary btn-sm" style="padding: 1px 6px; font-size: 11px;" onclick="openJobViewersModal(${j.job_id}, '${safeTitleForAttr}')">Who Viewed</button>` : ""}
+                                    </div>
+                                    <div style="margin-top: 3px; color: #475569;">
+                                        <span style="color: #15803d; font-weight: 600;">💬 ${j.whatsapp_clicks || 0} WA</span> •
+                                        <span style="color: #0369a1; font-weight: 600;">📞 ${j.call_clicks || 0} Call</span>
+                                    </div>
+                                    <div style="margin-top: 2px; font-weight: 700; color: #059669;">📄 ${j.applications_count || 0} Applied</div>
+                                </td>
+                            </tr>
+                        `;
+                    }).join("");
+                }
+            } catch (err) {
+                console.error("Error loading employer detail modal:", err);
+                if (profileCard) {
+                    profileCard.innerHTML = `<div style="color: #ef4444; text-align: center; padding: 14px;">Failed to load company details: ${escapeHtml(err.message)}</div>`;
+                }
+            }
+        }
+
+        function closeRegisteredEmployerDetailModal() {
+            const modal = document.getElementById("registeredEmployerDetailModal");
+            if (modal) modal.style.display = "none";
+        }
+
+        function buildPostedJobsCSVDownload(jobsList, filenamePrefix) {
+            if (!jobsList || jobsList.length === 0) {
+                showToast("No posted jobs available to export.", false);
+                return;
+            }
+            const headers = [
+                "S.No",
+                "Job ID",
+                "Company Name",
+                "HR / Contact Person",
+                "Company Mobile",
+                "Company WhatsApp",
+                "Company Email",
+                "Job Title",
+                "Department",
+                "Job Role",
+                "Job Type",
+                "Openings",
+                "Min Experience (Yrs)",
+                "Max Experience (Yrs)",
+                "Salary Text / Range",
+                "Qualification",
+                "Gender",
+                "Skills",
+                "Job Location",
+                "Job Contact Phone",
+                "Job Contact WhatsApp",
+                "Job Contact Email",
+                "Status",
+                "Posted Date & Time (IST)",
+                "Published Date & Time (IST)",
+                "Job Views",
+                "WhatsApp Clicks",
+                "Call Clicks",
+                "Applications Received",
+                "Job Description",
+                "Job Requirements"
+            ];
+
+            const rows = jobsList.map((j, i) => {
+                const postedDate = j.created_at
+                    ? new Date(j.created_at).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })
+                    : "";
+                const pubDate = j.published_at
+                    ? new Date(j.published_at).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })
+                    : "";
+                let salaryStr = j.salary_text || "";
+                if (!salaryStr && (j.salary_min || j.salary_max)) {
+                    salaryStr = `${j.salary_min || 0} - ${j.salary_max || 0}`;
+                }
+
+                const cols = [
+                    i + 1,
+                    j.job_id || "",
+                    j.company_name || (currentSelectedEmployerDetail ? currentSelectedEmployerDetail.company_name : "") || "",
+                    j.contact_person || (currentSelectedEmployerDetail ? currentSelectedEmployerDetail.contact_person : "") || "",
+                    j.employer_mobile || (currentSelectedEmployerDetail ? currentSelectedEmployerDetail.mobile : "") || "",
+                    j.employer_whatsapp || (currentSelectedEmployerDetail ? currentSelectedEmployerDetail.whatsapp : "") || "",
+                    j.employer_account_email || (currentSelectedEmployerDetail ? currentSelectedEmployerDetail.email : "") || "",
+                    j.title || "",
+                    j.department || "",
+                    j.job_role || "",
+                    j.job_type || "",
+                    j.openings_count ?? 1,
+                    j.experience_min ?? "",
+                    j.experience_max ?? "",
+                    salaryStr,
+                    j.qualification || "",
+                    j.gender || "",
+                    j.skills || "",
+                    j.job_location || j.location || "",
+                    j.contact_phone || "",
+                    j.contact_whatsapp || "",
+                    j.contact_email || "",
+                    j.is_archived ? "ARCHIVED" : (j.status || ""),
+                    postedDate,
+                    pubDate,
+                    j.views_count || 0,
+                    j.whatsapp_clicks || 0,
+                    j.call_clicks || 0,
+                    j.applications_count || 0,
+                    (j.description || "").replace(/\r?\n/g, " "),
+                    (j.requirements || "").replace(/\r?\n/g, " ")
+                ];
+                return cols.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",");
+            });
+
+            const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\r\n");
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `${filenamePrefix}_${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function exportSingleEmployerPostedJobsCSV() {
+            if (!currentSelectedEmployerJobs || currentSelectedEmployerJobs.length === 0) {
+                showToast("This company has no posted jobs to export.", false);
+                return;
+            }
+            const safeComp = ((currentSelectedEmployerDetail && currentSelectedEmployerDetail.company_name) || "Company")
+                .replace(/[^a-zA-Z0-9_-]+/g, "_")
+                .replace(/^_+|_+$/g, "");
+            buildPostedJobsCSVDownload(currentSelectedEmployerJobs, `${safeComp}_Posted_Jobs`);
+        }
+
+        async function exportAllEmployersPostedJobsCSV() {
+            try {
+                showToast("Preparing posted jobs CSV export...", true);
+                const res = await fetch("/api/admin/analytics/employers/posted-jobs");
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                if (!data || !data.success) throw new Error("Invalid response");
+                const jobs = data.jobs || [];
+                if (!jobs.length) {
+                    showToast("No posted jobs found for registered employers.", false);
+                    return;
+                }
+                buildPostedJobsCSVDownload(jobs, "All_Registered_Companies_Posted_Jobs");
+            } catch (err) {
+                console.error("Error exporting all posted jobs CSV:", err);
+                showToast("Failed to export posted jobs: " + err.message, false);
+            }
         }
 
         function renderAnalyticsKPIs(m) {
