@@ -139,6 +139,11 @@ def get_sitemap_xml():
         {"loc": f"{CANONICAL_DOMAIN}/jobs/fresher-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
         {"loc": f"{CANONICAL_DOMAIN}/jobs/buying-office-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
         {"loc": f"{CANONICAL_DOMAIN}/jobs/ie-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
+        {"loc": f"{CANONICAL_DOMAIN}/jobs/cotton-jobs-tiruppur", "priority": "0.9", "changefreq": "daily"},
+        {"loc": f"{CANONICAL_DOMAIN}/jobs/erp-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
+        {"loc": f"{CANONICAL_DOMAIN}/jobs/netaji-apparel-park-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
+        {"loc": f"{CANONICAL_DOMAIN}/jobs/avinashi-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
+        {"loc": f"{CANONICAL_DOMAIN}/jobs/kangayam-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
     ]
 
     job_urls = []
@@ -999,7 +1004,12 @@ SEO_LANDING_PAGES = {
             {"title": "Graphic & Apparel Designer", "url": "/jobs/designer-jobs-tiruppur"},
             {"title": "Fresher Job Vacancies", "url": "/jobs/fresher-jobs-tiruppur"},
             {"title": "Buying Office & Export Docs", "url": "/jobs/buying-office-jobs-tiruppur"},
-            {"title": "Accounts & Tally Jobs", "url": "/jobs/accounts-jobs-tiruppur"}
+            {"title": "Accounts & Tally Jobs", "url": "/jobs/accounts-jobs-tiruppur"},
+            {"title": "Cotton & Knitwear Jobs", "url": "/jobs/cotton-jobs-tiruppur"},
+            {"title": "ERP Assistant & EDP Jobs", "url": "/jobs/erp-jobs-tiruppur"},
+            {"title": "Netaji Apparel Park Jobs", "url": "/jobs/netaji-apparel-park-jobs-tiruppur"},
+            {"title": "Avinashi Garment Jobs", "url": "/jobs/avinashi-jobs-tiruppur"},
+            {"title": "Kangayam Garment Jobs", "url": "/jobs/kangayam-jobs-tiruppur"}
         ],
         "related_searches": [
             {"title": "Tirupur Garment Industry Hub", "url": "/tirupur-garment-jobs"},
@@ -1025,6 +1035,10 @@ SEO_LANDING_PAGES = {
             {
                 "q": "Can job seekers apply directly to employers for jobs in Tirupur?",
                 "a": "Yes. Candidates can browse verified vacancies and contact employers directly via verified phone, WhatsApp, or email contact options, or apply online through their registered profile."
+            },
+            {
+                "q": "திருப்பூரில் கார்மெண்ட்ஸ் மற்றும் பனியன் கம்பெனி வேலைவாய்ப்புகளுக்கு (Tirupur Garment & Cotton Jobs) எப்படி விண்ணப்பிப்பது?",
+                "a": "DigiGarment இணையதளத்தில் திருப்பூர், அவிநாசி, காங்கேயம் மற்றும் நேதாஜி அப்பேரல் பார்க் (Netaji Apparel Park) பகுதிகளில் உள்ள அனைத்து முன்னணி கார்மெண்ட்ஸ் கம்பெனிகளின் வேலைவாய்ப்புகளும் தினமும் பதிவேற்றப்படுகின்றன. இலவசமாக Register செய்து HR தொலைபேசி எண் மற்றும் WhatsApp மூலம் நேரடியாகத் தொடர்பு கொள்ளலாம்."
             }
         ]
     },
@@ -2974,6 +2988,33 @@ def redirect_apparel_jobs_in_tiruppur(request: Request):
     target = f"/apparel-jobs-in-tirupur?{qs}" if qs else "/apparel-jobs-in-tirupur"
     return RedirectResponse(url=target, status_code=301)
 
+@router.get("/cotton-jobs-tirupur", response_class=RedirectResponse, status_code=301)
+@router.get("/cotton-jobs-tiruppur", response_class=RedirectResponse, status_code=301)
+def redirect_cotton_jobs_tirupur(request: Request):
+    qs = request.url.query
+    target = f"/jobs/cotton-jobs-tiruppur?{qs}" if qs else "/jobs/cotton-jobs-tiruppur"
+    return RedirectResponse(url=target, status_code=301)
+
+@router.get("/netaji-apparel-park-jobs", response_class=RedirectResponse, status_code=301)
+def redirect_nap_jobs_tirupur(request: Request):
+    qs = request.url.query
+    target = f"/jobs/netaji-apparel-park-jobs-tiruppur?{qs}" if qs else "/jobs/netaji-apparel-park-jobs-tiruppur"
+    return RedirectResponse(url=target, status_code=301)
+
+@router.get("/avinashi-jobs", response_class=RedirectResponse, status_code=301)
+@router.get("/avinashi-garment-jobs", response_class=RedirectResponse, status_code=301)
+def redirect_avinashi_jobs_tirupur(request: Request):
+    qs = request.url.query
+    target = f"/jobs/avinashi-jobs-tiruppur?{qs}" if qs else "/jobs/avinashi-jobs-tiruppur"
+    return RedirectResponse(url=target, status_code=301)
+
+@router.get("/kangayam-jobs", response_class=RedirectResponse, status_code=301)
+@router.get("/kangayam-garment-jobs", response_class=RedirectResponse, status_code=301)
+def redirect_kangayam_jobs_tirupur(request: Request):
+    qs = request.url.query
+    target = f"/jobs/kangayam-jobs-tiruppur?{qs}" if qs else "/jobs/kangayam-jobs-tiruppur"
+    return RedirectResponse(url=target, status_code=301)
+
 
 # --- 6. JOB CATEGORY SEO HUBS ---
 CATEGORY_MAPPINGS = {
@@ -3195,6 +3236,10 @@ CATEGORY_MAPPINGS = {
             {
                 "q": "Do Tirupur garment factories provide day-shift timing and transport for female staff?",
                 "a": "Yes, most export houses in Tirupur, Angeripalayam, Kangayam Road, and Netaji Apparel Park provide fixed day-shift timings, company bus/van transport, and ESI/PF benefits for female employees."
+            },
+            {
+                "q": "திருப்பூரில் பெண்களுக்கான வேலைவாய்ப்புகள் (Female Job Vacancies in Tirupur) என்னென்ன உள்ளன?",
+                "a": "திருப்பூர் கார்மெண்ட்ஸ் மற்றும் எக்ஸ்போர்ட் நிறுவனங்களில் பெண்களுக்கு Day-Shift செக்கிங் (Checking), டெய்லரிங், பேக்கிங், அக்கவுண்ட்ஸ் (Tally), மெர்ச்சண்டைசிங் மற்றும் ஆபீஸ் வேலைவாய்ப்புகள் உள்ளன. இலவசமாக Register செய்து உடனடியாக HR எண்ணைப் பெறலாம்."
             }
         ]
     },
@@ -3270,6 +3315,85 @@ CATEGORY_MAPPINGS = {
             {
                 "q": "What does an Industrial Engineer (IE) do in a Tirupur garment factory?",
                 "a": "An IE prepares Operation Bulletins (OB), calculates Standard Allowed Minutes (SAM/SMV), balances sewing workstations to eliminate bottlenecks, and monitors operator efficiency."
+            }
+        ]
+    },
+    "cotton-jobs-tiruppur": {
+        "h1": "Cotton Jobs in Tirupur — Cotton Garment, Knitwear & Mill Vacancies (2026)",
+        "title": "Cotton Jobs Tirupur (2026) | Today's Cotton Garment, Hosiery & Export Vacancies (Direct HR Contact)",
+        "description": "Find verified cotton jobs in Tirupur today. Direct HR phone & WhatsApp contact for cotton garment export companies, hosiery units, fabric sourcing, quality checking, and merchandising.",
+        "sql_condition": "(j.department IN ('Production', 'Quality', 'Merchandising', 'Fabric', 'Cutting') OR j.title ILIKE %s OR j.description ILIKE %s)",
+        "sql_params": ["%cotton%", "%cotton%"],
+        "intro": "Central vacancy hub for cotton garment, hosiery knitwear, spinning, and export factory jobs across Tirupur—featuring daily updated openings with verified HR contact details.",
+        "skills": ["Cotton Knitwear Production", "Single Jersey / Interlock / Fleece QC", "Yarn & Cotton Fabric Sourcing", "Garment Export Merchandising", "Cutting & Finishing Supervision"],
+        "faq": [
+            {
+                "q": "What types of cotton jobs in Tirupur are available today?",
+                "a": "Tirupur's cotton knitwear and hosiery export companies hire daily across Production Supervision, Quality Control (Inline & AQL), Cotton Fabric Follow-up, Merchandising, Cutting, and Packing with direct HR phone and WhatsApp contact."
+            },
+            {
+                "q": "How can I get the HR contact number for cotton jobs in Tirupur?",
+                "a": "Click on any active vacancy on DigiGarment and tap 'Get HR Contact Details' to unlock the verified HR mobile and WhatsApp number for free."
+            }
+        ]
+    },
+    "erp-jobs-tiruppur": {
+        "h1": "Garment ERP Assistant, ERP Executive & EDP Jobs in Tirupur",
+        "title": "ERP Jobs in Tirupur Garment Companies (2026) | ERP Assistant, EDP & Data Entry Vacancies",
+        "description": "Apply for ERP Assistant, ERP Executive, EDP Incharge, and garment software data entry job vacancies in Tirupur export companies with direct HR contact.",
+        "sql_condition": "(j.title ILIKE %s OR j.job_role ILIKE %s OR j.title ILIKE %s OR j.job_role ILIKE %s OR j.skills ILIKE %s OR j.title ILIKE %s)",
+        "sql_params": ["%erp%", "%erp%", "%edp%", "%edp%", "%erp%", "%data entry%"],
+        "intro": "Verified vacancies for Garment ERP Executives, ERP Assistants, EDP Coordinators, and Production/Store Data Entry operators across Tirupur knitwear export houses.",
+        "skills": ["Garment ERP BOM & PO Entry", "Production & Cutting Data Entry", "Fabric & Store Inventory ERP", "MS Excel & MIS Reporting", "Barcode & Packing List Generation"],
+        "faq": [
+            {
+                "q": "What does an ERP Assistant do in a Tirupur garment company?",
+                "a": "An ERP Assistant manages style creation, Bill of Materials (BOM) entry, Purchase Orders (PO), cutting/sewing floor production entries, and fabric stock reconciliation in garment ERP software."
+            }
+        ]
+    },
+    "netaji-apparel-park-jobs-tiruppur": {
+        "h1": "Netaji Apparel Park (NAP) & New Tirupur Job Vacancies (2026)",
+        "title": "Netaji Apparel Park Job Vacancy Tirupur (2026) | Export Garment Company Jobs",
+        "description": "Browse today's verified job vacancies in Netaji Apparel Park (NAP), Eettiveerampalayam, and New Tirupur export garment factories with direct HR phone & WhatsApp.",
+        "sql_condition": "(j.location ILIKE %s OR j.location ILIKE %s OR j.description ILIKE %s OR j.location ILIKE %s)",
+        "sql_params": ["%netaji%", "%new tirupur%", "%netaji apparel%", "%avinashi%"],
+        "intro": "Active job openings in Netaji Apparel Park (NAP), New Tirupur, and surrounding export-oriented garment manufacturing units—offering modern shopfloor facilities, staff bus transport, and PF/ESI benefits.",
+        "skills": ["Export Factory Production & QA", "Compliance & Buyer Audit Standards", "Merchandiser & Sampling Follow-up", "Industrial Engineering (IE)", "Day-Shift Operator & Staff Roles"],
+        "faq": [
+            {
+                "q": "How do I apply for Netaji Apparel Park job vacancies in Tirupur?",
+                "a": "Browse the active Netaji Apparel Park and New Tirupur listings above, register your free job seeker profile in 30 seconds, and contact factory HR directly via phone or WhatsApp."
+            }
+        ]
+    },
+    "avinashi-jobs-tiruppur": {
+        "h1": "Job Vacancy in Avinashi & Avinashi Road Garment Companies (2026)",
+        "title": "Avinashi Job Vacancy (2026) | Garment & Company Jobs in Avinashi Road, Tirupur",
+        "description": "Find verified job vacancies in Avinashi, Avinashi Road, Perumanallur, and Tekic Murraypalayam garment export companies with direct HR contact numbers.",
+        "sql_condition": "(j.location ILIKE %s OR j.description ILIKE %s OR j.location ILIKE %s)",
+        "sql_params": ["%avinashi%", "%avinashi%", "%perumanallur%"],
+        "intro": "Verified garment and industrial job vacancies along the Avinashi, Perumanallur, and Avinashi Road export corridor in Tirupur.",
+        "skills": ["Garment Production & Quality Control", "Export Merchandising & Accounts", "Cutting & Finishing Operations", "Store & Logistics Management", "Female & Fresher Day-Shift Roles"],
+        "faq": [
+            {
+                "q": "Are company transport facilities available for Avinashi Road garment jobs?",
+                "a": "Yes, most export garment units along Avinashi Road and Perumanallur provide staff bus and van routes covering Tirupur, Avinashi, and nearby towns."
+            }
+        ]
+    },
+    "kangayam-jobs-tiruppur": {
+        "h1": "Job Vacancy in Kangayam & Kangayam Road Garment Units (2026)",
+        "title": "Kangayam Job Vacancy (2026) | Garment & Company Jobs on Kangayam Road, Tirupur",
+        "description": "Explore verified job vacancies in Kangayam, Kangayam Road, Nallur, and Dharapuram Road garment companies with direct HR phone and WhatsApp contact.",
+        "sql_condition": "(j.location ILIKE %s OR j.description ILIKE %s OR j.location ILIKE %s OR j.location ILIKE %s)",
+        "sql_params": ["%kangayam%", "%kangayam%", "%nallur%", "%dharapuram%"],
+        "intro": "Active garment manufacturing, quality checking, accounts, and supervisor vacancies across Kangayam Road, Nallur, and Kangayam industrial units.",
+        "skills": ["Garment Quality & Checking", "Production Line Supervision", "Accounts & Office Administration", "Fabric & Store Management", "Day-Shift Female & Male Openings"],
+        "faq": [
+            {
+                "q": "What garment jobs are available on Kangayam Road and Kangayam?",
+                "a": "Garment factories along Kangayam Road and Nallur regularly recruit Checking Incharges, Line QCs, Production Supervisors, Accountants, and Female Day-Shift Operators."
             }
         ]
     }
@@ -3517,6 +3641,11 @@ def get_job_or_category_page(slug: str, request: Request):
             ("/jobs/fresher-jobs-tiruppur", "Fresher Garment Jobs"),
             ("/jobs/buying-office-jobs-tiruppur", "Buying Office & Export"),
             ("/jobs/ie-jobs-tiruppur", "Industrial Engineer (IE)"),
+            ("/jobs/cotton-jobs-tiruppur", "Cotton & Knitwear Jobs"),
+            ("/jobs/erp-jobs-tiruppur", "ERP & EDP Jobs"),
+            ("/jobs/netaji-apparel-park-jobs-tiruppur", "Netaji Apparel Park Jobs"),
+            ("/jobs/avinashi-jobs-tiruppur", "Avinashi Garment Jobs"),
+            ("/jobs/kangayam-jobs-tiruppur", "Kangayam Garment Jobs"),
             ("/tirupur-jobs", "Tirupur Jobs Portal"),
             ("/garment-jobs-in-tirupur", "Garment Jobs in Tirupur"),
             ("/tirupur-garment-jobs", "Tirupur Garment Industry"),
