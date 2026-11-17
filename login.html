@@ -65,6 +65,9 @@
                 const data = await res.json();
                 
                 if (res.ok && data.success) {
+                    if (typeof window.gtag === "function") {
+                        window.gtag("event", "login", { method: "admin" });
+                    }
                     window.location.href = "/admin";
                 } else {
                     errAlert.textContent = data.detail || "Invalid username or password.";

@@ -3524,7 +3524,7 @@
                 // Server-side submit_job_application already records canonical application_submit in job_analytics_events;
                 // forward to GA4 only if gtag is active to avoid duplicate DB rows.
                 if (typeof window.gtag === "function") {
-                    window.gtag("event", "application_submit", { job_id: Number(jobId), application_id: data.application_id });
+                    window.gtag("event", "application_submit", { job_id: Number(jobId) });
                 }
                 showToast("Application submitted successfully to employer!", true);
                 closeDirectApplyModal();
@@ -4082,6 +4082,12 @@
                     return;
                 }
 
+                if (!isLoggedInIndividual) {
+                    if (typeof window.gtag === "function") {
+                        window.gtag("event", "sign_up", { method: "candidate_modal" });
+                    }
+                }
+
                 // Refresh client auth cache so newly established session is active immediately
                 authCheckPromise = null;
                 await checkUserAuth();
@@ -4103,6 +4109,9 @@
                     });
                     const appData = await appRes.json();
                     if (appRes.ok && appData.success) {
+                        if (typeof window.gtag === "function") {
+                            window.gtag("event", "application_submit", { job_id: Number(jobId) });
+                        }
                         showToast(appData.message || "Application submitted successfully!", true);
                     } else {
                         showToast(appData.detail || "Profile saved, but job application could not be submitted.", false);

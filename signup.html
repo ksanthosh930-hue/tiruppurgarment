@@ -566,6 +566,7 @@
         let otpExpiresAt = 0;
         let timerInterval = null;
         let isVerifyingOtp = false;
+        let hasTrackedSignUp = false;
 
         function getVisitorId() {
             let vid = localStorage.getItem("dg_visitor_id");
@@ -1130,6 +1131,13 @@
                 const data = await res.json();
                 if (!res.ok) {
                     throw new Error(data.detail || "Failed to complete registration.");
+                }
+
+                if (!hasTrackedSignUp && typeof window.gtag === "function") {
+                    hasTrackedSignUp = true;
+                    window.gtag("event", "sign_up", {
+                        method: currentRole === "individual" ? "jobseeker" : "employer"
+                    });
                 }
 
                 const safeTarget = getSafeRedirectUrl() || data.redirect_url || (currentRole === "individual" ? "/dashboard/individual" : "/dashboard/company");

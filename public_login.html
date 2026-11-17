@@ -326,6 +326,8 @@
             }
         });
 
+        let hasTrackedLogin = false;
+
         async function handleLogin(e) {
             e.preventDefault();
             hideAlert();
@@ -351,6 +353,13 @@
                 const data = await res.json();
                 if (!res.ok) {
                     throw new Error(data.detail || "Sign in failed. Please check your credentials.");
+                }
+
+                if (!hasTrackedLogin && typeof window.gtag === "function") {
+                    hasTrackedLogin = true;
+                    window.gtag("event", "login", {
+                        method: data.role === "employer" ? "employer" : "jobseeker"
+                    });
                 }
 
                 showAlert("Signed in successfully! Redirecting...", false);
