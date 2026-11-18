@@ -355,18 +355,31 @@
                     throw new Error(data.detail || "Sign in failed. Please check your credentials.");
                 }
 
+                showAlert("Signed in successfully! Redirecting...", false);
+                const safeTarget = getSafeRedirectUrl() || data.redirect_url || (data.role === "employer" ? "/dashboard/company" : "/dashboard/individual");
+
+                let hasRedirected = false;
+                const doRedirect = () => {
+                    if (!hasRedirected) {
+                        hasRedirected = true;
+                        try { window.dispatchEvent(new Event("pagehide")); } catch (e) {}
+                        window.location.href = safeTarget;
+                    }
+                };
+
                 if (!hasTrackedLogin && typeof window.gtag === "function") {
                     hasTrackedLogin = true;
                     window.gtag("event", "login", {
-                        method: data.role === "employer" ? "employer" : "jobseeker"
+                        method: data.role === "employer" ? "employer" : "jobseeker",
+                        event_callback: () => {
+                            setTimeout(doRedirect, 100);
+                        },
+                        event_timeout: 1500
                     });
+                    setTimeout(doRedirect, 1600);
+                } else {
+                    setTimeout(doRedirect, 500);
                 }
-
-                showAlert("Signed in successfully! Redirecting...", false);
-                const safeTarget = getSafeRedirectUrl() || data.redirect_url || (data.role === "employer" ? "/dashboard/company" : "/dashboard/individual");
-                setTimeout(() => {
-                    window.location.href = safeTarget;
-                }, 500);
             } catch (err) {
                 showAlert(err.message || "Something went wrong. Please try again.");
                 btn.disabled = false;

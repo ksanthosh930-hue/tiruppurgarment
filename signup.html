@@ -1133,19 +1133,32 @@
                     throw new Error(data.detail || "Failed to complete registration.");
                 }
 
-                if (!hasTrackedSignUp && typeof window.gtag === "function") {
-                    hasTrackedSignUp = true;
-                    window.gtag("event", "sign_up", {
-                        method: currentRole === "individual" ? "jobseeker" : "employer"
-                    });
-                }
-
                 const safeTarget = getSafeRedirectUrl() || data.redirect_url || (currentRole === "individual" ? "/dashboard/individual" : "/dashboard/company");
                 clearSignupState();
                 showAlert("Account created successfully! Redirecting...", false);
-                setTimeout(() => {
-                    window.location.href = safeTarget;
-                }, 600);
+
+                let hasRedirected = false;
+                const doRedirect = () => {
+                    if (!hasRedirected) {
+                        hasRedirected = true;
+                        try { window.dispatchEvent(new Event("pagehide")); } catch (e) {}
+                        window.location.href = safeTarget;
+                    }
+                };
+
+                if (!hasTrackedSignUp && typeof window.gtag === "function") {
+                    hasTrackedSignUp = true;
+                    window.gtag("event", "sign_up", {
+                        method: currentRole === "individual" ? "jobseeker" : "employer",
+                        event_callback: () => {
+                            setTimeout(doRedirect, 100);
+                        },
+                        event_timeout: 1500
+                    });
+                    setTimeout(doRedirect, 1600);
+                } else {
+                    setTimeout(doRedirect, 600);
+                }
             } catch (err) {
                 showAlert(err.message || "Failed to complete registration.");
                 btn.disabled = false;
