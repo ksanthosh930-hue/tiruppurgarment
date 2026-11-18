@@ -372,7 +372,7 @@
                     window.gtag("event", "login", {
                         method: data.role === "employer" ? "employer" : "jobseeker",
                         event_callback: () => {
-                            setTimeout(doRedirect, 100);
+                            setTimeout(doRedirect, 500);
                         },
                         event_timeout: 1500
                     });
