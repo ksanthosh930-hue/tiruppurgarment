@@ -906,6 +906,20 @@
     </div>
 
     <script>
+        // Track one-time post-login conversion if arriving from login flow
+        (function trackJustLoggedIn() {
+            try {
+                const method = sessionStorage.getItem("dg_just_logged_in");
+                if (method) {
+                    sessionStorage.removeItem("dg_just_logged_in");
+                    const validatedMethod = (method === "jobseeker" || method === "individual") ? "jobseeker" : method;
+                    if (typeof window.gtag === "function") {
+                        window.gtag("event", "login", { method: validatedMethod });
+                    }
+                }
+            } catch (e) {}
+        })();
+
         let currentUserProfile = {};
         let savedJobsCurrentPage = 1;
         let savedJobsTotalPages = 1;

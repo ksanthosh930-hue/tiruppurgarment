@@ -2508,6 +2508,20 @@
 
     <!-- SPA Router & Page controllers Script -->
     <script>
+        // Track one-time post-login conversion if arriving from login flow
+        (function trackJustLoggedIn() {
+            try {
+                const method = sessionStorage.getItem("dg_just_logged_in");
+                if (method) {
+                    sessionStorage.removeItem("dg_just_logged_in");
+                    const validatedMethod = method === "admin" ? "admin" : "admin";
+                    if (typeof window.gtag === "function") {
+                        window.gtag("event", "login", { method: validatedMethod });
+                    }
+                }
+            } catch (e) {}
+        })();
+
         // --- Core UI Logic & Navigation ---
 
         function showToast(message, isSuccess = true) {

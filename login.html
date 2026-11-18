@@ -65,27 +65,10 @@
                 const data = await res.json();
                 
                 if (res.ok && data.success) {
-                    let hasRedirected = false;
-                    const doRedirect = () => {
-                        if (!hasRedirected) {
-                            hasRedirected = true;
-                            try { window.dispatchEvent(new Event("pagehide")); } catch (e) {}
-                            window.location.href = "/admin";
-                        }
-                    };
-
-                    if (typeof window.gtag === "function") {
-                        window.gtag("event", "login", {
-                            method: "admin",
-                            event_callback: () => {
-                                setTimeout(doRedirect, 500);
-                            },
-                            event_timeout: 1500
-                        });
-                        setTimeout(doRedirect, 1600);
-                    } else {
-                        doRedirect();
-                    }
+                    try {
+                        sessionStorage.setItem("dg_just_logged_in", "admin");
+                    } catch (e) {}
+                    window.location.href = "/admin";
                 } else {
                     errAlert.textContent = data.detail || "Invalid username or password.";
                     errAlert.style.display = "block";

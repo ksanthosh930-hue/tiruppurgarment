@@ -2089,6 +2089,20 @@
 
     <!-- Client Script -->
     <script>
+        // Track one-time post-login conversion if arriving from safe login redirect (e.g. /jobs)
+        (function trackJustLoggedIn() {
+            try {
+                const method = sessionStorage.getItem("dg_just_logged_in");
+                if (method) {
+                    sessionStorage.removeItem("dg_just_logged_in");
+                    const validatedMethod = (method === "employer" || method === "company") ? "employer" : "jobseeker";
+                    if (typeof window.gtag === "function") {
+                        window.gtag("event", "login", { method: validatedMethod });
+                    }
+                }
+            } catch (e) {}
+        })();
+
         let currentPage = 1;
         const pageLimit = 10;
         let totalPages = 1;
