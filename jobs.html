@@ -1438,11 +1438,23 @@
                 <a href="/tools">Tools</a>
                 <a href="/services">Services</a>
                 <a href="/blog">Blog</a>
+                <a href="/employer/register" style="color: var(--dg-red); font-weight: 700;">👔 Post a Job (Free)</a>
                 <a href="/login">Login</a>
                 <a class="nav-cta" href="/signup">Sign Up</a>
             </nav>
         </div>
     </header>
+
+    <!-- Top Job Seeker Alert Strip -->
+    <div style="background: linear-gradient(90deg, #081226 0%, #0E1C38 100%); color: #ffffff; padding: 10px 16px; font-size: 13.5px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <div style="max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 16px;">🔔</span>
+                <span>Explore the latest garment job vacancies &amp; unlock direct factory contacts in Tiruppur.</span>
+            </div>
+            <a href="/signup" style="color: #FCA5A5; font-weight: 700; text-decoration: underline; white-space: nowrap;">Register Free &rarr;</a>
+        </div>
+    </div>
 
     <div style="background: #ffffff; border-bottom: 1px solid #E2E8F0; padding: 12px 0; font-size: 13px;">
         <div style="max-width: 1200px; margin: 0 auto; padding: 0 24px;">
@@ -2045,8 +2057,31 @@
         </div>
     </section>
 
+    <!-- Employer Callout Section -->
+    <section class="employer-callout-section" style="padding: 48px 0; background: #ffffff; border-top: 1px solid #E2E8F0; border-bottom: 1px solid #E2E8F0;">
+        <div class="container" style="max-width: 900px; margin: 0 auto; text-align: center; padding: 0 20px;">
+            <div style="display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 50%; background: rgba(158, 27, 50, 0.1); color: var(--dg-red); font-size: 26px; margin-bottom: 16px;">
+                🏢
+            </div>
+            <h2 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 24px; font-weight: 800; color: var(--dg-navy); margin: 0 0 10px 0;">
+                Hiring Garment Staff in Tiruppur?
+            </h2>
+            <p style="font-size: 15px; color: var(--dg-slate); max-width: 620px; margin: 0 auto 24px auto; line-height: 1.6;">
+                Post your garment manufacturing, merchandising, quality, and tailoring vacancies directly. Connect with verified local candidates with zero agency commissions.
+            </p>
+            <div style="display: flex; justify-content: center; align-items: center; gap: 14px; flex-wrap: wrap;">
+                <a href="/employer/register" class="btn btn-primary" style="padding: 12px 26px; font-weight: 700; border-radius: 8px; text-decoration: none; font-size: 14.5px;">
+                    👔 Post a Job for Free &rarr;
+                </a>
+                <a href="/employer/login" style="padding: 11px 22px; font-weight: 600; color: var(--dg-navy); border: 1.5px solid #CBD5E1; border-radius: 8px; text-decoration: none; background: #fff; font-size: 14.5px;">
+                    Employer Sign In
+                </a>
+            </div>
+        </div>
+    </section>
+
     <!-- Footer -->
-    <footer id="footer" style="margin-top: 60px;">
+    <footer id="footer" style="margin-top: 0;">
         <div class="container footer-grid">
             <div class="footer-brand">
                 <img id="footerLogo" src="/assets/images/logo-light.png" alt="DigiGarment Logo">
@@ -2858,7 +2893,24 @@
                 return;
             }
 
-            jobs.forEach(j => {
+            jobs.forEach((j, idx) => {
+                if (idx === 2) {
+                    const regBanner = document.createElement("div");
+                    regBanner.className = "job-stream-reg-card";
+                    regBanner.style.cssText = "background: linear-gradient(135deg, #081226 0%, #0E1C38 100%); color: #ffffff; border-radius: 12px; padding: 22px 24px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; box-shadow: 0 4px 16px rgba(8, 18, 38, 0.08); border-left: 4px solid var(--dg-red);";
+                    regBanner.innerHTML = `
+                        <div style="flex: 1 1 300px;">
+                            <span style="display: inline-block; background: rgba(158, 27, 50, 0.25); color: #FCA5A5; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; margin-bottom: 8px;">GARMENT CAREER NETWORK</span>
+                            <h3 style="font-size: 18px; font-weight: 800; margin: 0 0 6px 0; color: #ffffff;">Looking for Garment Roles in Tiruppur?</h3>
+                            <p style="font-size: 13.5px; color: #94A3B8; margin: 0; line-height: 1.5;">Explore the latest garment job vacancies &amp; unlock direct factory contacts in Tiruppur. Register Free to view HR phone numbers, save vacancies, and connect directly.</p>
+                        </div>
+                        <div style="flex-shrink: 0;">
+                            <a href="/signup" class="btn-primary" style="display: inline-flex; align-items: center; gap: 6px; padding: 11px 20px; font-weight: 700; font-size: 13.5px; border-radius: 8px; text-decoration: none; white-space: nowrap;">Register Free as Job Seeker &rarr;</a>
+                        </div>
+                    `;
+                    grid.appendChild(regBanner);
+                }
+
                 const card = document.createElement("div");
                 card.className = `job-card ${j.is_featured ? 'featured' : ''}`;
                 card.id = `job-card-${j.id}`;

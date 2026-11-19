@@ -238,12 +238,14 @@
 
         .otp-input-field {
             width: 220px;
-            font-size: 26px;
+            max-width: 100%;
+            height: 52px;
+            font-size: 24px;
             font-weight: 800;
             letter-spacing: 8px;
             text-align: center;
             font-family: monospace;
-            padding: 12px;
+            padding: 10px;
             border: 2px solid var(--dg-border);
             border-radius: 8px;
             background: #f8fafc;
@@ -407,10 +409,28 @@
                 </button>
             </div>
 
+            <!-- Immediate Employer Registration Details in Step 1 -->
+            <div id="fieldsEmployerStep1" style="display: none; background: #F8FAFC; border: 1.5px solid #CBD5E1; border-radius: 10px; padding: 14px 16px; margin-bottom: 16px;">
+                <div style="font-weight: 700; color: var(--dg-navy); font-size: 13.5px; margin-bottom: 4px;">
+                    🏢 Employer / Garment Company Registration
+                </div>
+                <p style="font-size: 12.5px; color: var(--dg-slate); margin: 0 0 12px 0; line-height: 1.45;">
+                    Register your Tiruppur garment unit, export house, or buying agency to post vacancies.
+                </p>
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label for="step1CompanyName" style="display: block; font-size: 12.5px; font-weight: 600; color: var(--dg-navy); margin-bottom: 4px;">Company / Mill Name <span class="req">*</span></label>
+                    <input type="text" id="step1CompanyName" class="form-control" placeholder="e.g. Apex Apparels Pvt Ltd / S.V. Knits" autocomplete="organization" oninput="if(document.getElementById('emprCompanyName')) document.getElementById('emprCompanyName').value = this.value; saveSignupState();">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="step1ContactPerson" style="display: block; font-size: 12.5px; font-weight: 600; color: var(--dg-navy); margin-bottom: 4px;">HR / Contact Person Name <span class="req">*</span></label>
+                    <input type="text" id="step1ContactPerson" class="form-control" placeholder="e.g. Ramesh Kumar (HR Manager)" autocomplete="name" oninput="if(document.getElementById('emprContactPerson')) document.getElementById('emprContactPerson').value = this.value; saveSignupState();">
+                </div>
+            </div>
+
             <form id="step1Form" onsubmit="handleSendOtp(event)">
                 <div class="form-group">
                     <label id="emailLabel">Email Address <span class="req">*</span></label>
-                    <input type="email" id="userEmail" class="form-control" placeholder="name@gmail.com" required autocomplete="email">
+                    <input type="email" id="userEmail" class="form-control" placeholder="name@gmail.com" required autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false">
                     <div id="emailTypoSuggestion" style="display: none; margin-top: 8px; background: #FEF3C7; border: 1px solid #F59E0B; border-radius: 8px; padding: 8px 12px; font-size: 13px; color: #92400E;"></div>
                 </div>
 
@@ -442,7 +462,7 @@
             <form id="step2Form" onsubmit="handleVerifyOtp(event)">
                 <div class="otp-input-wrap">
                     <label for="otpCode" style="display: block; font-size: 13px; font-weight: 600; color: var(--dg-navy); margin-bottom: 8px;">Enter 6-Digit Verification Code</label>
-                    <input type="text" id="otpCode" class="otp-input-field" maxlength="12" pattern="[0-9]{6}" inputmode="numeric" placeholder="••••••" required autocomplete="one-time-code">
+                    <input type="text" id="otpCode" class="otp-input-field" maxlength="6" pattern="[0-9]*" inputmode="numeric" placeholder="••••••" required autocomplete="one-time-code">
                     <div id="otpExpiryHint" style="font-size: 12px; color: var(--dg-slate); margin-top: 8px;">
                         Code valid for <strong id="otpExpiryCountdown">05:00</strong> • Check Inbox or Spam folder
                     </div>
@@ -471,17 +491,17 @@
                 <div id="fieldsJobseeker">
                     <div class="form-group">
                         <label for="empFullName">Full Name <span class="req">*</span></label>
-                        <input type="text" id="empFullName" class="form-control" placeholder="e.g. Kumaravel S" autocomplete="name">
+                        <input type="text" id="empFullName" class="form-control" placeholder="e.g. Kumaravel S" autocomplete="name" autocapitalize="words">
                     </div>
 
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="empMobile">Mobile Number <span class="req">*</span></label>
-                            <input type="tel" id="empMobile" class="form-control" placeholder="10-digit mobile number" maxlength="16" inputmode="tel" autocomplete="tel">
+                            <input type="tel" id="empMobile" class="form-control" placeholder="10-digit mobile (e.g. 98421 XXXXX)" maxlength="16" inputmode="tel" autocomplete="tel">
                         </div>
                         <div class="form-group">
                             <label for="empLocation">Location / Area <span class="opt">(Optional)</span></label>
-                            <input type="text" id="empLocation" class="form-control" placeholder="e.g. Tiruppur, Angeripalayam" autocomplete="address-level2">
+                            <input type="text" id="empLocation" class="form-control" placeholder="e.g. Angeripalayam, Tiruppur / Avinashi" autocomplete="address-level2">
                         </div>
                     </div>
 
@@ -509,28 +529,28 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="emprCompanyName">Company / Mill Name <span class="req">*</span></label>
-                            <input type="text" id="emprCompanyName" class="form-control" placeholder="e.g. Apex Apparels Pvt Ltd" autocomplete="organization">
+                            <input type="text" id="emprCompanyName" class="form-control" placeholder="e.g. Apex Apparels Pvt Ltd / S.V. Knits / K.P.R. Mill" autocomplete="organization">
                         </div>
                         <div class="form-group">
                             <label for="emprContactPerson">HR / Contact Person Name <span class="req">*</span></label>
-                            <input type="text" id="emprContactPerson" class="form-control" placeholder="e.g. Ramesh Kumar (HR)" autocomplete="name">
+                            <input type="text" id="emprContactPerson" class="form-control" placeholder="e.g. Ramesh Kumar (HR Manager / Partner)" autocomplete="name">
                         </div>
                     </div>
 
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="emprMobile">Official Mobile Number <span class="req">*</span></label>
-                            <input type="tel" id="emprMobile" class="form-control" placeholder="10-digit mobile number" maxlength="16" inputmode="tel" autocomplete="tel">
+                            <input type="tel" id="emprMobile" class="form-control" placeholder="10-digit mobile (e.g. 98421 XXXXX)" maxlength="16" inputmode="tel" autocomplete="tel">
                         </div>
                         <div class="form-group">
                             <label for="emprWhatsapp">WhatsApp Number <span class="opt">(Optional)</span></label>
-                            <input type="tel" id="emprWhatsapp" class="form-control" placeholder="10-digit WhatsApp" maxlength="16" inputmode="tel" autocomplete="tel">
+                            <input type="tel" id="emprWhatsapp" class="form-control" placeholder="10-digit WhatsApp number" maxlength="16" inputmode="tel" autocomplete="tel">
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label for="emprArea">Area / Industrial Cluster <span class="opt">(Optional)</span></label>
-                        <input type="text" id="emprArea" class="form-control" placeholder="e.g. Angeripalayam, Netaji Apparel Park">
+                        <input type="text" id="emprArea" class="form-control" placeholder="e.g. Angeripalayam, Netaji Apparel Park, Avinashi Road">
                     </div>
                 </div>
 
@@ -635,8 +655,8 @@
                         fullName: document.getElementById("empFullName") ? document.getElementById("empFullName").value : "",
                         mobile: document.getElementById("empMobile") ? document.getElementById("empMobile").value : "",
                         location: document.getElementById("empLocation") ? document.getElementById("empLocation").value : "",
-                        companyName: document.getElementById("emprCompanyName") ? document.getElementById("emprCompanyName").value : "",
-                        contactPerson: document.getElementById("emprContactPerson") ? document.getElementById("emprContactPerson").value : "",
+                        companyName: (document.getElementById("emprCompanyName") && document.getElementById("emprCompanyName").value) || (document.getElementById("step1CompanyName") ? document.getElementById("step1CompanyName").value : ""),
+                        contactPerson: (document.getElementById("emprContactPerson") && document.getElementById("emprContactPerson").value) || (document.getElementById("step1ContactPerson") ? document.getElementById("step1ContactPerson").value : ""),
                         emprMobile: document.getElementById("emprMobile") ? document.getElementById("emprMobile").value : "",
                         whatsapp: document.getElementById("emprWhatsapp") ? document.getElementById("emprWhatsapp").value : "",
                         area: document.getElementById("emprArea") ? document.getElementById("emprArea").value : ""
@@ -673,11 +693,15 @@
             const btnEmp = document.getElementById("btnRoleJobseeker");
             const btnEmpr = document.getElementById("btnRoleEmployer");
             const emailLabel = document.getElementById("emailLabel");
+            const step1EmpFields = document.getElementById("fieldsEmployerStep1");
+            const userEmail = document.getElementById("userEmail");
 
             if (currentRole === "individual") {
                 btnEmp.classList.add("active");
                 btnEmpr.classList.remove("active");
                 emailLabel.innerHTML = 'Personal Email Address <span class="req">*</span>';
+                if (userEmail) userEmail.placeholder = "name@gmail.com";
+                if (step1EmpFields) step1EmpFields.style.display = "none";
                 document.getElementById("roleBadgeDisplay").textContent = "Job Seeker Account";
                 if (window.location.hash !== "#jobseeker") {
                     history.replaceState(null, "", window.location.pathname + window.location.search + "#jobseeker");
@@ -686,6 +710,8 @@
                 btnEmp.classList.remove("active");
                 btnEmpr.classList.add("active");
                 emailLabel.innerHTML = 'Company / Official Email <span class="req">*</span>';
+                if (userEmail) userEmail.placeholder = "official@company.com / hr@garments.com";
+                if (step1EmpFields) step1EmpFields.style.display = "block";
                 document.getElementById("roleBadgeDisplay").textContent = "Employer Account";
                 if (window.location.hash !== "#employer") {
                     history.replaceState(null, "", window.location.pathname + window.location.search + "#employer");
@@ -1171,7 +1197,8 @@
             // 1. Determine role from URL or hash first
             const path = window.location.pathname.toLowerCase();
             const hash = window.location.hash.toLowerCase();
-            if (path.includes("employer") || hash === "#employer") {
+            const isEmployerRoute = path.includes("employer") || hash === "#employer";
+            if (isEmployerRoute) {
                 switchRole("company", true);
             } else {
                 switchRole("individual", true);
@@ -1187,7 +1214,9 @@
                         if ("verificationToken" in saved) {
                             delete saved.verificationToken;
                         }
-                        if (saved.role === "company" || saved.role === "individual") {
+                        if (isEmployerRoute) {
+                            switchRole("company", true);
+                        } else if (saved.role === "company" || saved.role === "individual") {
                             switchRole(saved.role, true);
                         }
                         if (saved.email && document.getElementById("userEmail")) {
@@ -1197,8 +1226,14 @@
                         if (dp.fullName && document.getElementById("empFullName")) document.getElementById("empFullName").value = dp.fullName;
                         if (dp.mobile && document.getElementById("empMobile")) document.getElementById("empMobile").value = dp.mobile;
                         if (dp.location && document.getElementById("empLocation")) document.getElementById("empLocation").value = dp.location;
-                        if (dp.companyName && document.getElementById("emprCompanyName")) document.getElementById("emprCompanyName").value = dp.companyName;
-                        if (dp.contactPerson && document.getElementById("emprContactPerson")) document.getElementById("emprContactPerson").value = dp.contactPerson;
+                        if (dp.companyName) {
+                            if (document.getElementById("emprCompanyName")) document.getElementById("emprCompanyName").value = dp.companyName;
+                            if (document.getElementById("step1CompanyName")) document.getElementById("step1CompanyName").value = dp.companyName;
+                        }
+                        if (dp.contactPerson) {
+                            if (document.getElementById("emprContactPerson")) document.getElementById("emprContactPerson").value = dp.contactPerson;
+                            if (document.getElementById("step1ContactPerson")) document.getElementById("step1ContactPerson").value = dp.contactPerson;
+                        }
                         if (dp.emprMobile && document.getElementById("emprMobile")) document.getElementById("emprMobile").value = dp.emprMobile;
                         if (dp.whatsapp && document.getElementById("emprWhatsapp")) document.getElementById("emprWhatsapp").value = dp.whatsapp;
                         if (dp.area && document.getElementById("emprArea")) document.getElementById("emprArea").value = dp.area;
@@ -1312,7 +1347,7 @@
                 });
             });
 
-            ["userEmail", "empFullName", "empLocation", "emprCompanyName", "emprContactPerson", "emprArea"].forEach(id => {
+            ["userEmail", "empFullName", "empLocation", "emprCompanyName", "emprContactPerson", "step1CompanyName", "step1ContactPerson", "emprArea"].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
                     el.addEventListener("input", saveSignupState);
