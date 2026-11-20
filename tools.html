@@ -10,6 +10,16 @@
       gtag('js', new Date());
 
       gtag('config', 'G-JWR79C4JQE');
+
+      window.dgTrackEmployerEvent = function(eventName, params) {
+        if (typeof window.gtag === 'function') {
+          var payload = Object.assign({
+            page_path: window.location.pathname,
+            device_category: window.innerWidth <= 768 ? 'mobile' : 'desktop'
+          }, params || {});
+          window.gtag('event', eventName, payload);
+        }
+      };
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -240,6 +250,7 @@
                 <a class="active" href="/tools">Tools</a>
                 <a href="/services">Services</a>
                 <a href="/blog">Blog</a>
+                <a href="/employer/register?ref=nav_desktop" class="nav-btn-employer" onclick="if(window.dgTrackEmployerEvent){window.dgTrackEmployerEvent('employer_cta_click', {cta_location: 'nav_desktop'});}">👔 Post a Job – FREE</a>
                 <a href="/login">Login</a>
                 <a class="nav-cta" href="/signup">Sign Up</a>
             </nav>

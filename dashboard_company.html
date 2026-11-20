@@ -9,6 +9,16 @@
       gtag('js', new Date());
 
       gtag('config', 'G-JWR79C4JQE');
+
+      window.dgTrackEmployerEvent = function(eventName, params) {
+        if (typeof window.gtag === 'function') {
+          var payload = Object.assign({
+            page_path: window.location.pathname,
+            device_category: window.innerWidth <= 768 ? 'mobile' : 'desktop'
+          }, params || {});
+          window.gtag('event', eventName, payload);
+        }
+      };
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -2234,6 +2244,13 @@
                     throw new Error(data.detail || "Failed to save job opening.");
                 }
 
+                if (window.dgTrackEmployerEvent) {
+                    window.dgTrackEmployerEvent('employer_job_post', {
+                        posting_method: editingId ? 'dashboard_single_update' : 'dashboard_single_new',
+                        job_status: targetStatus
+                    });
+                }
+
                 showAlert(data.message || (targetStatus !== "draft" ? "🚀 Job published successfully!" : "💾 Job saved as draft!"), true);
                 cancelJobEdit();
                 showTab("dashboard", true);
@@ -2496,6 +2513,13 @@
                 const results = data.results || [];
                 const publishedItems = results.filter(r => r.success);
                 const failedItems = results.filter(r => !r.success);
+
+                if (window.dgTrackEmployerEvent && publishedItems.length > 0) {
+                    window.dgTrackEmployerEvent('employer_job_post', {
+                        posting_method: 'dashboard_bulk_new',
+                        jobs_count: publishedItems.length
+                    });
+                }
 
                 // Render Submission Summary Banner
                 const summaryBanner = document.getElementById("bulkSubmissionSummary");

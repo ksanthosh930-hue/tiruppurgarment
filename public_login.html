@@ -9,6 +9,16 @@
       gtag('js', new Date());
 
       gtag('config', 'G-JWR79C4JQE');
+
+      window.dgTrackEmployerEvent = function(eventName, params) {
+        if (typeof window.gtag === 'function') {
+          var payload = Object.assign({
+            page_path: window.location.pathname,
+            device_category: window.innerWidth <= 768 ? 'mobile' : 'desktop'
+          }, params || {});
+          window.gtag('event', eventName, payload);
+        }
+      };
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -440,6 +450,13 @@
                     sessionStorage.setItem("dg_just_logged_in", method);
                 } catch (e) {}
 
+                if ((data.role === "employer" || data.role === "company") && window.dgTrackEmployerEvent) {
+                    window.dgTrackEmployerEvent('employer_login', {
+                        login_method: 'email_password',
+                        role_type: 'company'
+                    });
+                }
+
                 showAlert("Signed in successfully! Redirecting...", false);
                 const safeTarget = getSafeRedirectUrl() || data.redirect_url || (data.role === "employer" ? "/dashboard/company" : "/dashboard/individual");
                 setTimeout(() => {
@@ -508,6 +525,12 @@
                 }
 
                 if (data.action === "login") {
+                    if ((data.role === "employer" || data.role === "company") && window.dgTrackEmployerEvent) {
+                        window.dgTrackEmployerEvent('employer_login', {
+                            login_method: 'google',
+                            role_type: 'company'
+                        });
+                    }
                     showAlert("Signed in successfully! Redirecting...", false);
                     setTimeout(() => {
                         window.location.href = getSafeRedirectUrl() || data.redirect_url;

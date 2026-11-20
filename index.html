@@ -10,6 +10,16 @@
       gtag('js', new Date());
 
       gtag('config', 'G-JWR79C4JQE');
+
+      window.dgTrackEmployerEvent = function(eventName, params) {
+        if (typeof window.gtag === 'function') {
+          var payload = Object.assign({
+            page_path: window.location.pathname,
+            device_category: window.innerWidth <= 768 ? 'mobile' : 'desktop'
+          }, params || {});
+          window.gtag('event', eventName, payload);
+        }
+      };
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -762,6 +772,7 @@
             <a class="brand" href="/">
                 <img id="navLogo" src="assets/images/logo-light.png" alt="Tiruppur Garment Logo">
             </a>
+            <a href="/employer/register?ref=nav_mobile_header" class="nav-btn-employer-mobile" onclick="if(window.dgTrackEmployerEvent){window.dgTrackEmployerEvent('employer_cta_click', {cta_location: 'nav_mobile_header'});}">👔 Post Job</a>
             <button class="menu-toggle" aria-label="Open menu" aria-expanded="false">☰</button>
             <nav class="nav" id="mainNav">
                 <a class="active" href="/">Home</a>
@@ -771,7 +782,7 @@
                 <a href="/blog">Knowledge</a>
                 <a href="#about">About</a>
                 <a href="#contact">Contact</a>
-                <a href="/employer/register" style="color: var(--dg-red); font-weight: 700;">Post a Job (Free)</a>
+                <a href="/employer/register?ref=nav_desktop" class="nav-btn-employer" onclick="if(window.dgTrackEmployerEvent){window.dgTrackEmployerEvent('employer_cta_click', {cta_location: 'nav_desktop'});}">👔 Post a Job – FREE</a>
                 <a href="/login">Login</a>
                 <a class="nav-cta" href="/signup">Sign Up</a>
             </nav>
@@ -800,7 +811,7 @@
                         <a class="btn btn-primary" href="/jobs" style="padding: 12px 22px; font-weight: 700; border-radius: 6px;">
                             <span>Explore Garment Jobs &rarr;</span>
                         </a>
-                        <a class="btn btn-navy" href="/employer/register" style="padding: 12px 22px; font-weight: 700; background: var(--dg-navy); color: #fff; border: 1.5px solid rgba(255, 255, 255, 0.25); border-radius: 6px;">
+                        <a class="btn btn-navy" href="/employer/register?ref=home_hero" onclick="if(window.dgTrackEmployerEvent){window.dgTrackEmployerEvent('employer_cta_click', {cta_location: 'home_hero'});}" style="padding: 12px 22px; font-weight: 700; background: var(--dg-navy); color: #fff; border: 1.5px solid rgba(255, 255, 255, 0.25); border-radius: 6px;">
                             <span>👔 Post a Job for Free &rarr;</span>
                         </a>
                         <a class="btn btn-navy" href="/tools" style="padding: 12px 22px; font-weight: 700; background: rgba(8, 18, 38, 0.6); color: #fff; border-radius: 6px;">
@@ -890,10 +901,10 @@
                                 </div>
                             </div>
                             <div class="track-actions">
-                                <a class="btn btn-navy btn-track-primary" id="heroPostJobBtn" href="/post-a-job">
+                                <a class="btn btn-navy btn-track-primary" id="heroPostJobBtn" href="/post-a-job" onclick="if(window.dgTrackEmployerEvent){window.dgTrackEmployerEvent('employer_cta_click', {cta_location: 'home_card_post_job'});}">
                                     <span>Post a Job &rarr;</span>
                                 </a>
-                                <a class="hero-micro-link" href="/employer/register">Register Company &rarr;</a>
+                                <a class="hero-micro-link" href="/employer/register?ref=home_card_register" onclick="if(window.dgTrackEmployerEvent){window.dgTrackEmployerEvent('employer_cta_click', {cta_location: 'home_card_register'});}">Register Company &rarr;</a>
                             </div>
                         </div>
                     </div>

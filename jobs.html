@@ -10,6 +10,16 @@
       gtag('js', new Date());
 
       gtag('config', 'G-JWR79C4JQE');
+
+      window.dgTrackEmployerEvent = function(eventName, params) {
+        if (typeof window.gtag === 'function') {
+          var payload = Object.assign({
+            page_path: window.location.pathname,
+            device_category: window.innerWidth <= 768 ? 'mobile' : 'desktop'
+          }, params || {});
+          window.gtag('event', eventName, payload);
+        }
+      };
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1431,6 +1441,7 @@
             <a class="brand" href="/">
                 <img id="navLogo" src="/assets/images/logo-light.png" alt="DigiGarment Logo">
             </a>
+            <a href="/employer/register?ref=nav_mobile_header" class="nav-btn-employer-mobile" onclick="if(window.dgTrackEmployerEvent){window.dgTrackEmployerEvent('employer_cta_click', {cta_location: 'nav_mobile_header'});}">👔 Post Job</a>
             <button class="menu-toggle" aria-label="Open menu" aria-expanded="false">☰</button>
             <nav class="nav" id="mainNav">
                 <a href="/">Home</a>
@@ -1438,7 +1449,7 @@
                 <a href="/tools">Tools</a>
                 <a href="/services">Services</a>
                 <a href="/blog">Blog</a>
-                <a href="/employer/register" style="color: var(--dg-red); font-weight: 700;">👔 Post a Job (Free)</a>
+                <a href="/employer/register?ref=nav_desktop" class="nav-btn-employer" onclick="if(window.dgTrackEmployerEvent){window.dgTrackEmployerEvent('employer_cta_click', {cta_location: 'nav_desktop'});}">👔 Post a Job – FREE</a>
                 <a href="/login">Login</a>
                 <a class="nav-cta" href="/signup">Sign Up</a>
             </nav>
@@ -1801,6 +1812,20 @@
                 <!-- Action Bar -->
                 <div class="actions-bar" id="modalActionsBar">
                     <!-- Dynamic Contact Actions injected only when verified data exists -->
+                </div>
+
+                <!-- Employer Conversion Banner -->
+                <div class="employer-job-detail-banner" style="margin-top: 20px; background: linear-gradient(135deg, #F0FDF4 0%, #E8F5E9 100%); border: 1.5px solid #86EFAC; border-radius: 12px; padding: 18px 20px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px;">
+                    <div style="flex: 1 1 260px;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                            <span style="font-size: 18px;">🏢</span>
+                            <strong style="color: #065F46; font-size: 15px; font-weight: 800;">Are You Hiring Garment Staff in Tiruppur?</strong>
+                        </div>
+                        <p style="margin: 0; color: #1E293B; font-size: 13px; line-height: 1.5;">Post your vacancy for FREE on DigiGarment and connect with local garment job seekers.</p>
+                    </div>
+                    <a href="/employer/register?ref=job_detail_banner" class="btn-employer-banner-cta" onclick="if(window.dgTrackEmployerEvent){window.dgTrackEmployerEvent('employer_cta_click', {cta_location: 'job_detail_banner'});}" style="background: #059669; color: #FFFFFF; font-weight: 700; font-size: 13.5px; padding: 10px 18px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);">
+                        Post a Job for Free &rarr;
+                    </a>
                 </div>
                 <div id="modalRelatedJobsWrap" class="related-jobs-modal-box" style="display: none;"></div>
             </div>

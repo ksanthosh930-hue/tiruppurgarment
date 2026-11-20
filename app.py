@@ -1073,9 +1073,40 @@ def get_individual_dashboard():
 @app.get("/employer/post-job")
 @app.get("/employer/jobs")
 @app.get("/employer/applications")
-@app.get("/post-a-job")
 def get_company_dashboard():
     return FileResponse(os.path.join(BASE_DIR, "dashboard_company.html"))
+
+@app.get("/post-a-job")
+def handle_post_a_job(request: Request, public_session_id: Optional[str] = Cookie(None)):
+    """
+    Intelligent entry point for job posting:
+    1. Authenticated Employer -> Serve company dashboard.
+    2. Unauthenticated Visitor -> Redirect to /employer/register?ref=post_a_job.
+    3. Authenticated Job Seeker -> Redirect to /employer/register?notice=jobseeker_account_detected.
+    """
+    _ensure_db_connected()
+    if not public_session_id or not db_enabled:
+        return RedirectResponse(url="/employer/register?ref=post_a_job", status_code=302)
+
+    try:
+        user_rows = query_db("""
+            SELECT u.id, u.account_type, u.is_active
+            FROM public_user_sessions s
+            JOIN public_users u ON s.user_id = u.id
+            WHERE s.token = %s AND s.expires_at > CURRENT_TIMESTAMP AND u.is_active = TRUE;
+        """, (public_session_id,))
+
+        if user_rows:
+            acc_type = (user_rows[0].get("account_type") or "").strip().lower()
+            if acc_type == "company":
+                return FileResponse(os.path.join(BASE_DIR, "dashboard_company.html"))
+            else:
+                return RedirectResponse(url="/employer/register?notice=jobseeker_account_detected", status_code=302)
+        else:
+            return RedirectResponse(url="/employer/register?ref=post_a_job", status_code=302)
+    except Exception as e:
+        logger.error(f"Error resolving /post-a-job session: {e}")
+        return RedirectResponse(url="/employer/register?ref=post_a_job", status_code=302)
 
 @app.get("/logout")
 def get_logout_redirect(public_session_id: Optional[str] = Cookie(None)):

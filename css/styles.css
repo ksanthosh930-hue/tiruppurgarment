@@ -87,6 +87,30 @@ a {
     border: 1px solid #b92a43
 }
 
+.nav-btn-employer {
+    background: #047857;
+    color: #FFFFFF !important;
+    font-weight: 700 !important;
+    font-size: 13.5px;
+    padding: 7px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 0.2s ease, transform 0.1s ease;
+    white-space: nowrap;
+}
+
+.nav-btn-employer:hover {
+    background: #065F46;
+    color: #FFFFFF !important;
+}
+
+.nav-btn-employer-mobile {
+    display: none;
+}
+
 .menu-toggle {
     display: none;
     margin-left: auto;
@@ -1610,8 +1634,28 @@ footer {
         display: flex
     }
 
+    .nav-btn-employer-mobile {
+        display: inline-flex !important;
+        align-items: center;
+        gap: 4px;
+        background: #047857;
+        color: #FFFFFF !important;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 6px 11px;
+        border-radius: 5px;
+        text-decoration: none;
+        white-space: nowrap;
+        margin-left: auto;
+    }
+
+    .nav-btn-employer-mobile:hover {
+        background: #065F46;
+    }
+
     .menu-toggle {
-        display: block
+        display: block;
+        margin-left: 10px !important;
     }
 
     .hero-grid {

@@ -2333,6 +2333,7 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
                 <a href="/services">Services</a>
                 <a href="/blog">Blog</a>
                 <a href="/#contact">Contact</a>
+                <a href="/employer/register?ref=seo_nav" onclick="if(window.dgTrackEmployerEvent){{dgTrackEmployerEvent('employer_cta_click', {{cta_location:'seo_nav'}});}}" style="background: #047857; color: #FFFFFF !important; font-weight: 700 !important; font-size: 13px; padding: 7px 13px; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">👔 Post a Job – FREE</a>
                 <a href="/login?redirect=/{page_slug}" onclick="if(window.dgTrackEvent){{dgTrackEvent('registration_cta_click', null, {{cta:'nav_login', source:'seo_landing'}});}}" style="color: #E2E8F0; font-weight: 600;">Login</a>
                 <a href="/signup?redirect=/{page_slug}" onclick="if(window.dgTrackEvent){{dgTrackEvent('registration_cta_click', null, {{cta:'nav_register', source:'seo_landing'}});dgTrackEvent('reg_cta_click', null, {{cta:'nav_register', source:'seo_landing'}});}}" style="background: #9E1B32; color: #FFFFFF; padding: 7px 14px; border-radius: 6px; font-weight: 700;">Register Free</a>
             </nav>
@@ -2562,6 +2563,16 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
                     window.gtag('event', eventType, Object.assign({{ job_id: jobId || undefined }}, metadata || {{}}));
                 }}
             }} catch(e) {{}}
+        }};
+
+        window.dgTrackEmployerEvent = function(eventName, params) {{
+            if (typeof window.gtag === 'function') {{
+                var payload = Object.assign({{
+                    page_path: window.location.pathname,
+                    device_category: window.innerWidth <= 768 ? 'mobile' : 'desktop'
+                }}, params || {{}});
+                window.gtag('event', eventName, payload);
+            }}
         }};
 
         document.addEventListener('DOMContentLoaded', function() {{
@@ -4082,6 +4093,7 @@ def get_job_or_category_page(slug: str, request: Request):
                 <a href="/services">Services</a>
                 <a href="/blog">Blog</a>
                 <a href="/#contact">Contact</a>
+                <a href="/employer/register?ref=seo_nav" onclick="if(window.dgTrackEmployerEvent){{dgTrackEmployerEvent('employer_cta_click', {{cta_location:'seo_nav'}});}}" style="background: #047857; color: #FFFFFF !important; font-weight: 700 !important; font-size: 13px; padding: 7px 13px; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">👔 Post a Job – FREE</a>
                 <a href="/login?redirect=/jobs/{clean_slug}" onclick="if(window.dgTrackEvent){{dgTrackEvent('registration_cta_click', null, {{cta:'nav_login', source:'seo_category'}});}}" style="color: #E2E8F0; font-weight: 600;">Login</a>
                 <a href="/signup?redirect=/jobs/{clean_slug}" onclick="if(window.dgTrackEvent){{dgTrackEvent('registration_cta_click', null, {{cta:'nav_register', source:'seo_category'}});dgTrackEvent('reg_cta_click', null, {{cta:'nav_register', source:'seo_category'}});}}" style="background: #9E1B32; color: #FFFFFF; padding: 7px 14px; border-radius: 6px; font-weight: 700;">Register Free</a>
             </nav>
@@ -4265,6 +4277,16 @@ def get_job_or_category_page(slug: str, request: Request):
                     window.gtag('event', eventType, Object.assign({{ job_id: jobId || undefined }}, metadata || {{}}));
                 }}
             }} catch(e) {{}}
+        }};
+
+        window.dgTrackEmployerEvent = function(eventName, params) {{
+            if (typeof window.gtag === 'function') {{
+                var payload = Object.assign({{
+                    page_path: window.location.pathname,
+                    device_category: window.innerWidth <= 768 ? 'mobile' : 'desktop'
+                }}, params || {{}});
+                window.gtag('event', eventName, payload);
+            }}
         }};
 
         document.addEventListener('DOMContentLoaded', function() {{
@@ -5081,8 +5103,13 @@ def get_job_or_category_page(slug: str, request: Request):
                 sticky_mobile_html += f'<a href="tel:{clean_phone}" onclick="if(window.dgTrackEvent) window.dgTrackEvent(\'call_click\', {job["id"]}, {{source: \'mobile_sticky_bar\'}})" style="flex: 1; background: #0284C7; color: #ffffff; padding: 10px 12px; border-radius: 8px; font-weight: 700; font-size: 13px; text-decoration: none; text-align: center;">📞 Call HR</a>'
 
         custom_html = custom_html.replace(
-            '<div class="actions-bar" id="modalActionsBar">\n                    <!-- Dynamic Contact Actions injected only when verified data exists -->\n                </div>\n                <div id="modalRelatedJobsWrap" class="related-jobs-modal-box" style="display: none;"></div>\n            </div>\n            <div class="modal-sticky-mobile-cta" id="modalStickyMobileCta"></div>',
-            f'<div class="actions-bar" id="modalActionsBar">{actions_html}</div>\n                {guest_conversion_html}\n                {related_jobs_ssr_html}\n            </div>\n            <div class="modal-sticky-mobile-cta" id="modalStickyMobileCta">{sticky_mobile_html}</div>',
+            '<div class="actions-bar" id="modalActionsBar">\n                    <!-- Dynamic Contact Actions injected only when verified data exists -->\n                </div>',
+            f'<div class="actions-bar" id="modalActionsBar">{actions_html}</div>\n                {guest_conversion_html}',
+            1
+        )
+        custom_html = custom_html.replace(
+            '<div id="modalRelatedJobsWrap" class="related-jobs-modal-box" style="display: none;"></div>\n            </div>\n            <div class="modal-sticky-mobile-cta" id="modalStickyMobileCta"></div>',
+            f'{related_jobs_ssr_html}\n            </div>\n            <div class="modal-sticky-mobile-cta" id="modalStickyMobileCta">{sticky_mobile_html}</div>',
             1
         )
 

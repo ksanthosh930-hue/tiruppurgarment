@@ -9,6 +9,16 @@
       gtag('js', new Date());
 
       gtag('config', 'G-JWR79C4JQE');
+
+      window.dgTrackEmployerEvent = function(eventName, params) {
+        if (typeof window.gtag === 'function') {
+          var payload = Object.assign({
+            page_path: window.location.pathname,
+            device_category: window.innerWidth <= 768 ? 'mobile' : 'desktop'
+          }, params || {});
+          window.gtag('event', eventName, payload);
+        }
+      };
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -827,8 +837,22 @@
             }
         }
 
+        let hasTrackedEmployerRegStart = false;
+        function trackEmployerRegStart(method) {
+            if (!hasTrackedEmployerRegStart && window.dgTrackEmployerEvent) {
+                hasTrackedEmployerRegStart = true;
+                window.dgTrackEmployerEvent('employer_reg_start', {
+                    registration_method: method || 'role_toggle',
+                    role_type: 'company'
+                });
+            }
+        }
+
         function switchRole(role, skipSave = false) {
             currentRole = role === "company" ? "company" : "individual";
+            if (currentRole === "company") {
+                trackEmployerRegStart("role_toggle");
+            }
             const btnEmp = document.getElementById("btnRoleJobseeker");
             const btnEmpr = document.getElementById("btnRoleEmployer");
             const emailLabel = document.getElementById("emailLabel");
@@ -1315,6 +1339,13 @@
                     }
                 };
 
+                if (currentRole === "company" && window.dgTrackEmployerEvent) {
+                    window.dgTrackEmployerEvent('employer_reg_complete', {
+                        registration_method: 'email_otp',
+                        role_type: 'company'
+                    });
+                }
+
                 if (!hasTrackedSignUp && typeof window.gtag === "function") {
                     hasTrackedSignUp = true;
                     window.gtag("event", "sign_up", {
@@ -1346,6 +1377,14 @@
             } else {
                 switchRole("individual", true);
             }
+
+            // Check for job seeker account notice (e.g. from /post-a-job redirect)
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get("notice") === "jobseeker_account_detected") {
+                    showAlert("ℹ️ You are signed in as a Job Seeker. To post jobs and recruit staff, please register an Employer account below.", false);
+                }
+            } catch (e) {}
 
             // 2. Restore sessionStorage signup state if available (survives Gmail app switching & reload without storing secrets)
             try {
@@ -1665,6 +1704,13 @@
                 const data = await res.json();
                 if (!res.ok) {
                     throw new Error(data.detail || "Registration completion failed.");
+                }
+
+                if (currentRole === "company" && window.dgTrackEmployerEvent) {
+                    window.dgTrackEmployerEvent('employer_reg_complete', {
+                        registration_method: 'google',
+                        role_type: 'company'
+                    });
                 }
 
                 showAlert("Account created successfully! Redirecting...", false);
