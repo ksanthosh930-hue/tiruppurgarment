@@ -24,7 +24,12 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 logger = logging.getLogger(__name__)
 
 # Load environment variables
-load_dotenv()
+env_file = os.getenv("ENV_FILE")
+if env_file and os.path.exists(env_file):
+    load_dotenv(env_file, override=True)
+else:
+    load_dotenv()
+
 DATABASE_URL = os.getenv("DATABASE_URL")
 SECRET_KEY = os.getenv("SECRET_KEY", "digigarment-secret-key-change-in-prod-2026")
 
@@ -38,6 +43,25 @@ def _ensure_db_connected() -> bool:
     if db_enabled and db_pool:
         return True
     db_url = os.getenv("DATABASE_URL")
+    environment = os.getenv("ENVIRONMENT", "").strip().lower()
+
+    # --- STARTUP SAFETY GUARD: TEST_LOCAL ALLOWLIST ---
+    if environment == "test_local":
+        from urllib.parse import urlparse
+        parsed = urlparse(db_url or "")
+        host = (parsed.hostname or "").strip().lower()
+        ALLOWED_LOCAL_HOSTS = {"127.0.0.1", "localhost", "::1"}
+        if host not in ALLOWED_LOCAL_HOSTS:
+            err_msg = f"FATAL SAFETY VIOLATION: Database host '{host}' is NOT in localhost allowlist {ALLOWED_LOCAL_HOSTS}!"
+            logger.critical(err_msg)
+            raise RuntimeError(err_msg)
+        dbname = (parsed.path.lstrip("/") or "").strip().lower()
+        if dbname != "digigarment_test":
+            err_msg = f"FATAL SAFETY VIOLATION: Database name '{dbname}' is not 'digigarment_test'!"
+            logger.critical(err_msg)
+            raise RuntimeError(err_msg)
+        logger.info(f"[TEST SAFETY GUARD] Verified isolated database host '{host}' and dbname '{dbname}'. Connection allowed.")
+
     if db_url:
         try:
             db_pool = ThreadedConnectionPool(2, 40, db_url)
@@ -48,7 +72,7 @@ def _ensure_db_connected() -> bool:
             cursor.close()
             db_pool.putconn(conn)
             db_enabled = True
-            logger.info("Successfully established/recovered connection to Supabase PostgreSQL database.")
+            logger.info("Successfully established/recovered connection to PostgreSQL database.")
             return True
         except Exception as e:
             logger.warning(f"Database connection attempt failed: {e}")

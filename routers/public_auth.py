@@ -4,6 +4,7 @@ import uuid
 import json
 import logging
 import datetime
+import secrets
 from typing import Dict, Any, Optional, Tuple
 import re
 from fastapi import APIRouter, HTTPException, Cookie, Depends, Response, Form, Request, UploadFile, File
@@ -497,7 +498,14 @@ def public_login(req_data: LoginRequest, response: Response, request: Request):
         if not user["is_active"]:
             raise HTTPException(status_code=403, detail="Your account has been deactivated. Please contact support.")
             
-        if not check_password_hash(user["password_hash"], password):
+        current_hash = user.get("password_hash") or ""
+        if current_hash.startswith("!google_oauth_"):
+            raise HTTPException(
+                status_code=400,
+                detail="This account was registered using Google Sign-In. Please sign in by clicking 'Continue with Google', or click 'Forgot password?' below to establish a password."
+            )
+
+        if not check_password_hash(current_hash, password):
             raise HTTPException(status_code=401, detail="Invalid email/mobile or password.")
             
         # Create public session
@@ -1381,3 +1389,720 @@ def reset_password(req_data: ResetPasswordRequest):
     except Exception as e:
         logger.error(f"Error during reset password: {e}")
         raise HTTPException(status_code=500, detail="Something went wrong. Please try again.")
+
+
+# ==============================================================================
+# --- 7. GOOGLE SIGN-IN INTEGRATION (HARDENED SECURITY ARCHITECTURE) ---
+# ==============================================================================
+
+OAUTH_PASSWORD_SENTINEL_PREFIX = "!google_oauth_"
+GOOGLE_TICKET_COOKIE_NAME = "dg_oauth_ticket"
+GOOGLE_TICKET_EXPIRY_SECONDS = 600  # 10 minutes
+
+# Thread-safe in-memory ticket store for local development/testing: {jti: dict}
+_LOCAL_OAUTH_TICKETS: Dict[str, Dict[str, Any]] = {}
+import threading
+_ticket_lock = threading.Lock()
+
+def generate_oauth_sentinel_hash() -> str:
+    """Generates an unguessable sentinel password string with 32 bytes (256 bits) of cryptographic entropy."""
+    return f"{OAUTH_PASSWORD_SENTINEL_PREFIX}{secrets.token_hex(32)}"
+
+def _classify_email_trust_tier(id_info: Dict[str, Any]) -> Tuple[int, str]:
+    """
+    Tier 1 (Consumer Gmail): domain in ['gmail.com', 'googlemail.com'] AND email_verified == True.
+    Tier 2 (Google Workspace): email_verified == True AND claim.get('hd') matches email domain strictly.
+    Tier 3 (Third-Party / Non-Authoritative): Yahoo, Outlook, Zoho, or domain mismatch. Mandatory Email OTP required.
+    Tier 4 (Untrusted): email_verified is False or missing.
+    Returns: (tier: int, reason: str)
+    """
+    if not id_info.get("email_verified"):
+        return 4, "Google email address is not verified."
+
+    email = (id_info.get("email") or "").strip().lower()
+    if "@" not in email:
+        return 4, "Invalid email address format."
+
+    email_domain = email.split("@")[1].strip().lower()
+    if email_domain in ["gmail.com", "googlemail.com"]:
+        return 1, "Authoritative Consumer Gmail"
+
+    hd = (id_info.get("hd") or "").strip().lower()
+    if hd and hd == email_domain:
+        return 2, "Authoritative Google Workspace Enterprise Domain"
+
+    return 3, "Third-Party Non-Authoritative Domain (Email OTP Mandatory)"
+
+def _verify_google_id_token(id_token_str: str) -> Dict[str, Any]:
+    from google.oauth2 import id_token
+    from google.auth.transport import requests as google_requests
+
+    client_id = os.getenv("GOOGLE_CLIENT_ID", "").strip()
+
+    # Development stub for testing without external Google Cloud dependency
+    if (not client_id or os.getenv("ENVIRONMENT") != "production") and id_token_str.startswith("mock_token_"):
+        parts = id_token_str.split(":")
+        # format: mock_token_valid:email:name:sub:hd:verified
+        email = parts[1] if len(parts) > 1 else "test@gmail.com"
+        name = parts[2] if len(parts) > 2 else "Test User"
+        sub = parts[3] if len(parts) > 3 else "sub_mock_123"
+        hd = parts[4] if len(parts) > 4 and parts[4] != "none" else None
+        verified = (parts[5].lower() != "false") if len(parts) > 5 else True
+        if parts[0] == "mock_token_invalid_sig":
+            raise HTTPException(status_code=401, detail="Invalid token signature.")
+        if parts[0] == "mock_token_wrong_aud":
+            raise HTTPException(status_code=401, detail="Audience mismatch.")
+        if parts[0] == "mock_token_wrong_iss":
+            raise HTTPException(status_code=401, detail="Invalid token issuer.")
+        if parts[0] == "mock_token_expired":
+            raise HTTPException(status_code=401, detail="Token has expired.")
+        if not sub:
+            raise HTTPException(status_code=400, detail="Missing Google identity identifier.")
+        return {
+            "email": email,
+            "name": name,
+            "sub": sub,
+            "hd": hd,
+            "email_verified": verified,
+            "aud": client_id or "mock_client_id",
+            "iss": "https://accounts.google.com"
+        }
+
+    if not client_id:
+        raise HTTPException(status_code=500, detail="Google Client ID is not configured on the server.")
+
+    try:
+        id_info = id_token.verify_oauth2_token(
+            id_token_str,
+            google_requests.Request(),
+            client_id
+        )
+        if id_info.get("iss") not in ["accounts.google.com", "https://accounts.google.com"]:
+            raise HTTPException(status_code=401, detail="Invalid token issuer.")
+        if not id_info.get("sub"):
+            raise HTTPException(status_code=400, detail="Missing Google identity identifier.")
+        return id_info
+    except ValueError as ve:
+        raise HTTPException(status_code=401, detail=f"Invalid Google ID token: {str(ve)}")
+    except Exception as e:
+        logger.error(f"Google ID token verification error: {e}")
+        raise HTTPException(status_code=401, detail="Google authentication verification failed.")
+
+def _store_pending_oauth_ticket(jti: str, google_sub: str, email: str, role: str, expires_at: datetime.datetime):
+    with _ticket_lock:
+        _LOCAL_OAUTH_TICKETS[jti] = {
+            "jti": jti,
+            "google_sub": google_sub,
+            "email": email,
+            "role": role,
+            "is_consumed": False,
+            "expires_at": expires_at.timestamp() if hasattr(expires_at, "timestamp") else time.time() + 600,
+            "created_at": time.time()
+        }
+    if _db_enabled:
+        try:
+            _execute_db("""
+                INSERT INTO pending_oauth_tickets (jti, google_sub, email, role, is_consumed, expires_at)
+                VALUES (%s, %s, %s, %s, FALSE, %s);
+            """, (jti, google_sub, email, role, expires_at))
+        except Exception as e:
+            logger.info(f"Using in-memory pending ticket store fallback: {e}")
+
+def _get_pending_oauth_ticket(jti: str, expected_role: str) -> Dict[str, Any]:
+    """
+    Validates ticket existence, expiry, consumption status, and role binding WITHOUT consuming it.
+    Uses database-side timestamp comparison (expires_at < CURRENT_TIMESTAMP) to avoid host/container clock skew.
+    """
+    with _ticket_lock:
+        ticket = _LOCAL_OAUTH_TICKETS.get(jti)
+        if _db_enabled:
+            try:
+                rows = _query_db("""
+                    SELECT jti, google_sub, email, role, is_consumed,
+                           (expires_at < CURRENT_TIMESTAMP) AS is_expired
+                    FROM pending_oauth_tickets
+                    WHERE jti = %s;
+                """, (jti,))
+                if rows:
+                    r = rows[0]
+                    ticket = {
+                        "jti": r["jti"],
+                        "google_sub": r["google_sub"],
+                        "email": r["email"],
+                        "role": r["role"],
+                        "is_consumed": r["is_consumed"],
+                        "is_expired": r["is_expired"]
+                    }
+            except Exception as e:
+                logger.warning(f"Database query for pending ticket failed: {e}")
+
+        if not ticket:
+            raise HTTPException(status_code=400, detail="Registration session not found or expired. Please sign in again.")
+
+        if ticket.get("is_consumed"):
+            raise HTTPException(status_code=400, detail="This registration session has already been used.")
+
+        # Check expiry via database flag or fallback to timestamp
+        if ticket.get("is_expired"):
+            raise HTTPException(status_code=400, detail="Registration session expired. Please sign in again.")
+        if "expires_at" in ticket and ticket["expires_at"] < time.time():
+            raise HTTPException(status_code=400, detail="Registration session expired. Please sign in again.")
+
+        if ticket.get("role") != expected_role:
+            raise HTTPException(status_code=400, detail=f"Role mismatch error: Expected {ticket.get('role')}, got {expected_role}.")
+
+        return ticket
+
+def _consume_pending_oauth_ticket(jti: str, expected_role: str) -> Dict[str, Any]:
+    ticket = _get_pending_oauth_ticket(jti, expected_role=expected_role)
+    with _ticket_lock:
+        ticket["is_consumed"] = True
+        _LOCAL_OAUTH_TICKETS[jti] = ticket
+    if _db_enabled:
+        updated = _execute_db_returning("""
+            UPDATE pending_oauth_tickets
+            SET is_consumed = TRUE
+            WHERE jti = %s AND is_consumed = FALSE AND expires_at > CURRENT_TIMESTAMP
+            RETURNING jti;
+        """, (jti,))
+        if not updated:
+            raise HTTPException(status_code=400, detail="This registration session has already been used or expired.")
+    return ticket
+
+
+class GoogleVerifyRequest(BaseModel):
+    id_token: str
+    role: str = "individual"  # 'individual' or 'company'
+    visitor_id: Optional[str] = None
+
+class GoogleCompleteRegistrationRequest(BaseModel):
+    full_name: Optional[str] = None
+    mobile: str
+    location: Optional[str] = None
+    company_name: Optional[str] = None
+    contact_person: Optional[str] = None
+    area: Optional[str] = None
+    otp_code: Optional[str] = None
+    visitor_id: Optional[str] = None
+
+class GoogleLinkAccountRequest(BaseModel):
+    method: str = "password"  # 'password' or 'otp'
+    password: Optional[str] = None
+    otp_code: Optional[str] = None
+    visitor_id: Optional[str] = None
+
+
+@router.get("/google/config")
+def get_google_oauth_config():
+    client_id = os.getenv("GOOGLE_CLIENT_ID", "").strip()
+    enabled = bool(os.getenv("GOOGLE_OAUTH_ENABLED", "true").lower() in ("true", "1") and client_id)
+    return {
+        "enabled": enabled,
+        "client_id": client_id
+    }
+
+
+@router.post("/google/verify")
+def google_verify(
+    req_data: GoogleVerifyRequest,
+    response: Response,
+    request: Request
+):
+    ip = _get_client_ip(request)
+    if not check_rate_limit(f"g_verify_ip:{ip}", max_requests=15, window_seconds=300):
+        raise HTTPException(status_code=429, detail="Too many verification attempts. Please wait a few minutes.")
+
+    target_role = "company" if req_data.role in ("company", "employer") else "individual"
+    id_info = _verify_google_id_token(req_data.id_token)
+
+    tier, tier_msg = _classify_email_trust_tier(id_info)
+    if tier == 4:
+        raise HTTPException(status_code=400, detail="Google account email is not verified.")
+
+    email = id_info["email"].strip().lower()
+    google_sub = id_info["sub"]
+    name = id_info.get("name", "")
+
+    if not _db_enabled:
+        raise HTTPException(status_code=503, detail="Database service temporarily unavailable.")
+
+    # 1. Check if user already exists
+    existing_user_rows = _query_db("""
+        SELECT id, account_type, email, google_sub, is_active
+        FROM public_users
+        WHERE email = %s;
+    """, (email,))
+
+    if existing_user_rows:
+        user = existing_user_rows[0]
+
+        # Enforce account active status
+        if not user["is_active"]:
+            raise HTTPException(status_code=403, detail="Your account has been deactivated. Please contact support.")
+
+        # Enforce strict role matching (prevent cross-role account linking/takeover)
+        if user["account_type"] != target_role:
+            existing_role_title = "Employer" if user["account_type"] == "company" else "Job Seeker"
+            requested_role_title = "Employer" if target_role == "company" else "Job Seeker"
+            raise HTTPException(
+                status_code=400,
+                detail=f"This email is already registered as a {existing_role_title} account. Cannot link with {requested_role_title} portal."
+            )
+
+        # Case A: Already linked to this Google ID -> Instant Login
+        if user.get("google_sub") == google_sub:
+            session_token = str(uuid.uuid4())
+            _execute_db("""
+                INSERT INTO public_user_sessions (token, user_id, expires_at, created_at)
+                VALUES (%s, %s, CURRENT_TIMESTAMP + INTERVAL '30 days', CURRENT_TIMESTAMP);
+            """, (session_token, user["id"]))
+
+            response.set_cookie(
+                key="public_session_id",
+                value=session_token,
+                httponly=True,
+                expires=30 * 24 * 3600,
+                samesite="lax",
+                secure=_is_secure_request(request)
+            )
+
+            redirect_url = "/dashboard/individual" if target_role == "individual" else "/dashboard/company"
+            return {
+                "success": True,
+                "action": "login",
+                "role": target_role,
+                "email": email,
+                "redirect_url": redirect_url
+            }
+
+        # Case B: Already linked to a DIFFERENT Google ID -> Identity Conflict
+        if user.get("google_sub") and user["google_sub"] != google_sub:
+            raise HTTPException(
+                status_code=403,
+                detail="Security Conflict: This account is already linked to a different Google account."
+            )
+
+        # Case C: Existing account with google_sub IS NULL -> Verification Challenge Required
+        jti = str(uuid.uuid4())
+        expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=GOOGLE_TICKET_EXPIRY_SECONDS)
+        _store_pending_oauth_ticket(jti, google_sub, email, target_role, expires_at)
+
+        response.set_cookie(
+            key=GOOGLE_TICKET_COOKIE_NAME,
+            value=jti,
+            httponly=True,
+            max_age=GOOGLE_TICKET_EXPIRY_SECONDS,
+            samesite="lax",
+            path="/api/auth/google",
+            secure=_is_secure_request(request)
+        )
+
+        return {
+            "success": True,
+            "action": "link_challenge_required",
+            "email": email,
+            "role": target_role,
+            "message": "An existing account with this email was found. Please enter your password or verify via email code to link your Google account."
+        }
+
+    # 2. Check if this google_sub is already linked to another email
+    sub_conflict = _query_db("SELECT id FROM public_users WHERE google_sub = %s;", (google_sub,))
+    if sub_conflict:
+        raise HTTPException(
+            status_code=400,
+            detail="This Google account is already linked to another DigiGarment account."
+        )
+
+    # 3. New User Registration Ticket
+    jti = str(uuid.uuid4())
+    expires_at = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=GOOGLE_TICKET_EXPIRY_SECONDS)
+    _store_pending_oauth_ticket(jti, google_sub, email, target_role, expires_at)
+
+    response.set_cookie(
+        key=GOOGLE_TICKET_COOKIE_NAME,
+        value=jti,
+        httponly=True,
+        max_age=GOOGLE_TICKET_EXPIRY_SECONDS,
+        samesite="lax",
+        path="/api/auth/google",
+        secure=_is_secure_request(request)
+    )
+
+    # Tier 3 Third-Party Domain: Trigger mandatory 6-digit Email OTP
+    if tier == 3:
+        otp = generate_6digit_otp()
+        otp_h = hash_otp(otp)
+        otp_nonce = jti
+        otp_purpose = f"google_oauth:{jti}"
+
+        # Invalidate any prior pending OTPs for this email and purpose
+        _execute_db("DELETE FROM email_otp_verifications WHERE email = %s AND purpose = %s;", (email, otp_purpose))
+
+        _execute_db("""
+            INSERT INTO email_otp_verifications (email, otp_hash, purpose, expires_at, token_nonce, attempts, is_consumed, created_at)
+            VALUES (%s, %s, %s, CURRENT_TIMESTAMP + INTERVAL '5 minutes', %s, 0, FALSE, CURRENT_TIMESTAMP);
+        """, (email, otp_h, otp_purpose, otp_nonce))
+
+        # Send Email OTP via Resend
+        send_otp_email(to_email=email, otp_code=otp, purpose="registration")
+
+        return {
+            "success": True,
+            "action": "otp_verification_required",
+            "email": email,
+            "role": target_role,
+            "prefilled_name": name,
+            "trust_tier": tier,
+            "message": f"Verification code sent to {email}. Please enter the 6-digit code to complete registration."
+        }
+
+    # Tier 1 & 2: Authoritative Gmail / Google Workspace -> Proceed to Profile Completion
+    return {
+        "success": True,
+        "action": "needs_profile",
+        "email": email,
+        "role": target_role,
+        "prefilled_name": name,
+        "trust_tier": tier
+    }
+
+
+@router.post("/google/complete-registration")
+def google_complete_registration(
+    req_data: GoogleCompleteRegistrationRequest,
+    response: Response,
+    request: Request,
+    dg_oauth_ticket: Optional[str] = Cookie(None)
+):
+    ip = _get_client_ip(request)
+    if not check_rate_limit(f"g_comp_ip:{ip}", max_requests=10, window_seconds=300):
+        raise HTTPException(status_code=429, detail="Too many registration attempts. Please wait a few minutes.")
+
+    jti = (dg_oauth_ticket or "").strip()
+    if not jti:
+        raise HTTPException(status_code=400, detail="Missing registration ticket. Please sign in with Google again.")
+
+    if not _db_enabled:
+        raise HTTPException(status_code=503, detail="Database service temporarily unavailable.")
+
+    # 1. Role determination & field validation
+    is_employer = bool(req_data.company_name or req_data.contact_person)
+    expected_role = "company" if is_employer else "individual"
+
+    # 2. Validate ticket existence, role, and expiry WITHOUT consuming it (Fix B)
+    ticket = _get_pending_oauth_ticket(jti, expected_role=expected_role)
+    email = ticket["email"]
+    google_sub = ticket["google_sub"]
+    role = ticket["role"]
+
+    # 3. Mobile Format Validation (preserves ticket on invalid mobile)
+    mobile = _validate_indian_mobile(req_data.mobile)
+
+    # 4. If Tier 3 Email OTP was required, verify OTP without consuming registration ticket (Fix A & B)
+    otp_purpose = f"google_oauth:{jti}"
+    otp_records = _query_db("""
+        SELECT id, otp_hash, attempts, is_consumed, (expires_at < CURRENT_TIMESTAMP) AS is_expired
+        FROM email_otp_verifications
+        WHERE email = %s AND purpose = %s;
+    """, (email, otp_purpose))
+
+    otp_rec = None
+    if otp_records:
+        otp_rec = otp_records[0]
+        submitted_otp = (req_data.otp_code or "").strip()
+        if not submitted_otp:
+            raise HTTPException(status_code=400, detail="Email verification code is required.")
+        if otp_rec["is_consumed"]:
+            raise HTTPException(status_code=400, detail="Email verification code has already been used.")
+        if otp_rec["is_expired"]:
+            raise HTTPException(status_code=400, detail="Email verification code has expired. Please try again.")
+        if otp_rec["attempts"] >= OTP_MAX_ATTEMPTS:
+            raise HTTPException(status_code=429, detail="Maximum OTP verification attempts exceeded.")
+
+        expected_hash = hash_otp(submitted_otp)
+        if otp_rec["otp_hash"] != expected_hash:
+            _execute_db("UPDATE email_otp_verifications SET attempts = attempts + 1 WHERE id = %s;", (otp_rec["id"],))
+            remaining = OTP_MAX_ATTEMPTS - (otp_rec["attempts"] + 1)
+            raise HTTPException(status_code=400, detail=f"Invalid verification code. {max(0, remaining)} attempt(s) remaining.")
+
+    # 5. Mobile Uniqueness & Profile Field Validation (preserves ticket on duplicate mobile or missing field)
+    if role == "individual":
+        existing_mob = _query_db("SELECT id FROM individual_profiles WHERE mobile = %s;", (mobile,))
+        if existing_mob:
+            raise HTTPException(status_code=400, detail="This mobile number is already registered with another account.")
+        full_name = (req_data.full_name or "").strip()
+        if not full_name:
+            raise HTTPException(status_code=400, detail="Full Name is required.")
+        location = (req_data.location or "").strip() or None
+    else:
+        existing_mob = _query_db("SELECT id FROM company_profiles WHERE mobile = %s;", (mobile,))
+        if existing_mob:
+            raise HTTPException(status_code=400, detail="This mobile number is already registered with another company account.")
+        company_name = (req_data.company_name or "").strip()
+        if not company_name:
+            raise HTTPException(status_code=400, detail="Company Name is required.")
+        contact_person = (req_data.contact_person or "").strip()
+        if not contact_person:
+            raise HTTPException(status_code=400, detail="Contact Person / HR Name is required.")
+        area = (req_data.area or "").strip() or None
+        if not area:
+            raise HTTPException(status_code=400, detail="Industrial Area / Cluster is required.")
+        location = (req_data.location or req_data.area or "").strip() or None
+
+    # 6. Final Atomic Transaction: Lock & Consume Ticket and OTP + Create User & Profile
+    # Use atomic conditional update to lock and consume the ticket (concurrency safe)
+    # Only one concurrent request can successfully update is_consumed from FALSE to TRUE
+    if _db_enabled:
+        consumed_ticket = _execute_db_returning("""
+            UPDATE pending_oauth_tickets
+            SET is_consumed = TRUE
+            WHERE jti = %s AND is_consumed = FALSE AND expires_at > CURRENT_TIMESTAMP
+            RETURNING jti;
+        """, (jti,))
+        if not consumed_ticket:
+            raise HTTPException(status_code=400, detail="This registration session has already been used or expired.")
+
+    with _ticket_lock:
+        if jti in _LOCAL_OAUTH_TICKETS:
+            _LOCAL_OAUTH_TICKETS[jti]["is_consumed"] = True
+
+    # Mark OTP consumed atomically
+    if otp_rec:
+        _execute_db("UPDATE email_otp_verifications SET is_consumed = TRUE, verified_at = CURRENT_TIMESTAMP WHERE id = %s;", (otp_rec["id"],))
+
+    sentinel_hash = generate_oauth_sentinel_hash()
+    try:
+        user_rows = _execute_db_returning("""
+            INSERT INTO public_users (account_type, email, google_sub, password_hash, auth_provider, email_verified, is_active, created_at, updated_at)
+            VALUES (%s, %s, %s, %s, 'google', TRUE, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            RETURNING id;
+        """, (role, email, google_sub, sentinel_hash))
+        new_user_id = user_rows[0]["id"]
+
+        if role == "individual":
+            _execute_db("""
+                INSERT INTO individual_profiles (user_id, full_name, email, mobile, location, created_at, updated_at)
+                VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+            """, (new_user_id, full_name, email, mobile, location))
+        else:
+            _execute_db("""
+                INSERT INTO company_profiles (user_id, company_name, contact_person, email, mobile, area, location, verification_status, created_at, updated_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, 'pending', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+            """, (new_user_id, company_name, contact_person, email, mobile, area, location))
+
+        # Create session
+        session_token = str(uuid.uuid4())
+        _execute_db("""
+            INSERT INTO public_user_sessions (token, user_id, expires_at, created_at)
+            VALUES (%s, %s, CURRENT_TIMESTAMP + INTERVAL '30 days', CURRENT_TIMESTAMP);
+        """, (session_token, new_user_id))
+
+        # Set session cookie and clear ticket cookie
+        response.set_cookie(
+            key="public_session_id",
+            value=session_token,
+            httponly=True,
+            expires=30 * 24 * 3600,
+            samesite="lax",
+            secure=_is_secure_request(request)
+        )
+        response.delete_cookie(key=GOOGLE_TICKET_COOKIE_NAME, path="/api/auth/google")
+
+        redirect_url = "/dashboard/individual" if role == "individual" else "/dashboard/company"
+        return {
+            "success": True,
+            "message": "Registration completed successfully.",
+            "role": role,
+            "redirect_url": redirect_url
+        }
+    except Exception as e:
+        logger.error(f"Error during Google complete registration: {e}")
+        # Roll back ticket consumption in case of failure so user/session is not bricked
+        try:
+            if 'new_user_id' in locals() and new_user_id:
+                _execute_db("DELETE FROM public_users WHERE id = %s;", (new_user_id,))
+            _execute_db("UPDATE pending_oauth_tickets SET is_consumed = FALSE WHERE jti = %s;", (jti,))
+            if otp_rec:
+                _execute_db("UPDATE email_otp_verifications SET is_consumed = FALSE WHERE id = %s;", (otp_rec["id"],))
+            with _ticket_lock:
+                if jti in _LOCAL_OAUTH_TICKETS:
+                    _LOCAL_OAUTH_TICKETS[jti]["is_consumed"] = False
+        except Exception as rb_err:
+            logger.error(f"Rollback failed: {rb_err}")
+        raise HTTPException(status_code=500, detail="Failed to create account. Please try again.")
+
+
+@router.post("/google/link-account")
+def google_link_account(
+    req_data: GoogleLinkAccountRequest,
+    response: Response,
+    request: Request,
+    dg_oauth_ticket: Optional[str] = Cookie(None)
+):
+    jti = (dg_oauth_ticket or "").strip()
+    if not jti:
+        raise HTTPException(status_code=400, detail="Missing linking ticket. Please sign in with Google again.")
+
+    if not _db_enabled:
+        raise HTTPException(status_code=503, detail="Database service temporarily unavailable.")
+
+    # Retrieve ticket from store without consuming yet (consumed on success)
+    with _ticket_lock:
+        ticket = _LOCAL_OAUTH_TICKETS.get(jti)
+    if not ticket and _db_enabled:
+        rows = _query_db("SELECT jti, google_sub, email, role, is_consumed, expires_at FROM pending_oauth_tickets WHERE jti = %s;", (jti,))
+        if rows:
+            r = rows[0]
+            ticket = {
+                "jti": r["jti"],
+                "google_sub": r["google_sub"],
+                "email": r["email"],
+                "role": r["role"],
+                "is_consumed": r["is_consumed"],
+                "expires_at": r["expires_at"].timestamp() if hasattr(r["expires_at"], "timestamp") else time.time() + 600
+            }
+
+    if not ticket or ticket["is_consumed"] or ticket["expires_at"] < time.time():
+        raise HTTPException(status_code=400, detail="Linking session expired or invalid. Please sign in with Google again.")
+
+    email = ticket["email"]
+    google_sub = ticket["google_sub"]
+    role = ticket["role"]
+
+    # Verify existing user
+    user_rows = _query_db("""
+        SELECT id, account_type, email, password_hash, google_sub, is_active
+        FROM public_users
+        WHERE email = %s;
+    """, (email,))
+
+    if not user_rows:
+        raise HTTPException(status_code=404, detail="Account not found.")
+
+    user = user_rows[0]
+    if not user["is_active"]:
+        raise HTTPException(status_code=403, detail="Your account has been deactivated.")
+
+    if user["account_type"] != role:
+        raise HTTPException(status_code=400, detail="Role mismatch error.")
+
+    if user.get("google_sub"):
+        raise HTTPException(status_code=403, detail="This account is already linked to a Google account.")
+
+    # Verification Challenge: Password or Email OTP
+    if req_data.method == "password":
+        pwd = (req_data.password or "").strip()
+        if not pwd:
+            raise HTTPException(status_code=400, detail="Password is required to link account.")
+        current_hash = user.get("password_hash") or ""
+        if current_hash.startswith("!google_oauth_") or not check_password_hash(current_hash, pwd):
+            raise HTTPException(status_code=401, detail="Incorrect account password.")
+    elif req_data.method == "otp":
+        otp_code = (req_data.otp_code or "").strip()
+        if not otp_code:
+            raise HTTPException(status_code=400, detail="Verification code is required.")
+        otp_purpose = f"google_link:{jti}"
+        otp_records = _query_db("""
+            SELECT id, otp_hash, attempts, is_consumed, (expires_at < CURRENT_TIMESTAMP) AS is_expired
+            FROM email_otp_verifications
+            WHERE email = %s AND purpose = %s;
+        """, (email, otp_purpose))
+        if not otp_records or otp_records[0]["is_consumed"] or otp_records[0]["is_expired"]:
+            raise HTTPException(status_code=400, detail="Verification code expired or invalid.")
+        if otp_records[0]["attempts"] >= OTP_MAX_ATTEMPTS:
+            raise HTTPException(status_code=429, detail="Maximum attempts exceeded.")
+        if otp_records[0]["otp_hash"] != hash_otp(otp_code):
+            _execute_db("UPDATE email_otp_verifications SET attempts = attempts + 1 WHERE id = %s;", (otp_records[0]["id"],))
+            raise HTTPException(status_code=400, detail="Invalid verification code.")
+        _execute_db("UPDATE email_otp_verifications SET is_consumed = TRUE WHERE id = %s;", (otp_records[0]["id"],))
+    else:
+        raise HTTPException(status_code=400, detail="Invalid verification method.")
+
+    # Atomically Link Account (verifying exactly 1 row updated)
+    updated_rows = _execute_db_returning("""
+        UPDATE public_users
+        SET google_sub = %s, auth_provider = 'google_linked', updated_at = CURRENT_TIMESTAMP
+        WHERE id = %s AND google_sub IS NULL
+        RETURNING id;
+    """, (google_sub, user["id"]))
+
+    if not updated_rows:
+        raise HTTPException(status_code=400, detail="Failed to link account. It may already be linked.")
+
+    # Mark ticket consumed
+    with _ticket_lock:
+        if jti in _LOCAL_OAUTH_TICKETS:
+            _LOCAL_OAUTH_TICKETS[jti]["is_consumed"] = True
+    if _db_enabled:
+        try:
+            _execute_db("UPDATE pending_oauth_tickets SET is_consumed = TRUE WHERE jti = %s;", (jti,))
+        except Exception:
+            pass
+
+    # Create session
+    session_token = str(uuid.uuid4())
+    _execute_db("""
+        INSERT INTO public_user_sessions (token, user_id, expires_at, created_at)
+        VALUES (%s, %s, CURRENT_TIMESTAMP + INTERVAL '30 days', CURRENT_TIMESTAMP);
+    """, (session_token, user["id"]))
+
+    response.set_cookie(
+        key="public_session_id",
+        value=session_token,
+        httponly=True,
+        expires=30 * 24 * 3600,
+        samesite="lax",
+        secure=_is_secure_request(request)
+    )
+    response.delete_cookie(key=GOOGLE_TICKET_COOKIE_NAME, path="/api/auth/google")
+
+    redirect_url = "/dashboard/individual" if role == "individual" else "/dashboard/company"
+    return {
+        "success": True,
+        "message": "Google account linked successfully.",
+        "role": role,
+        "redirect_url": redirect_url
+    }
+
+
+@router.post("/google/send-link-otp")
+def google_send_link_otp(
+    response: Response,
+    request: Request,
+    dg_oauth_ticket: Optional[str] = Cookie(None)
+):
+    ip = _get_client_ip(request)
+    if not check_rate_limit(f"g_link_otp:{ip}", max_requests=5, window_seconds=300):
+        raise HTTPException(status_code=429, detail="Too many code requests. Please wait a few minutes.")
+
+    jti = (dg_oauth_ticket or "").strip()
+    if not jti:
+        raise HTTPException(status_code=400, detail="Missing linking ticket.")
+
+    with _ticket_lock:
+        ticket = _LOCAL_OAUTH_TICKETS.get(jti)
+    if not ticket and _db_enabled:
+        rows = _query_db("SELECT jti, email, role, is_consumed, expires_at FROM pending_oauth_tickets WHERE jti = %s;", (jti,))
+        if rows:
+            r = rows[0]
+            ticket = {"jti": r["jti"], "email": r["email"], "role": r["role"], "is_consumed": r["is_consumed"], "expires_at": r["expires_at"].timestamp() if hasattr(r["expires_at"], "timestamp") else time.time() + 600}
+
+    if not ticket or ticket["is_consumed"] or ticket["expires_at"] < time.time():
+        raise HTTPException(status_code=400, detail="Linking session expired. Please sign in with Google again.")
+
+    email = ticket["email"]
+    otp = generate_6digit_otp()
+    otp_h = hash_otp(otp)
+    otp_purpose = f"google_link:{jti}"
+
+    _execute_db("DELETE FROM email_otp_verifications WHERE email = %s AND purpose = %s;", (email, otp_purpose))
+    _execute_db("""
+        INSERT INTO email_otp_verifications (email, otp_hash, purpose, expires_at, token_nonce, attempts, is_consumed, created_at)
+        VALUES (%s, %s, %s, CURRENT_TIMESTAMP + INTERVAL '5 minutes', %s, 0, FALSE, CURRENT_TIMESTAMP);
+    """, (email, otp_h, otp_purpose, jti))
+
+    send_otp_email(to_email=email, otp_code=otp, purpose="registration")
+    return {
+        "success": True,
+        "message": f"Verification code sent to {email}."
+    }

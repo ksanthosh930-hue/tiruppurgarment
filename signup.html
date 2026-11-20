@@ -18,6 +18,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/styles.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         :root {
             --dg-navy: #081226;
@@ -351,6 +352,75 @@
             text-decoration: underline;
         }
 
+        .btn-google {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: #ffffff;
+            color: #1f2937;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 14.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+
+        .btn-google:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 18px 0;
+            color: var(--dg-slate);
+            font-size: 11.5px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        .auth-divider::before, .auth-divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--dg-border);
+        }
+
+        .auth-divider span {
+            padding: 0 10px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(8, 18, 38, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 16px;
+        }
+
+        .modal-box {
+            background: #fff;
+            border-radius: 12px;
+            max-width: 420px;
+            width: 100%;
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
         @media (max-width: 600px) {
             .auth-container {
                 padding: 24px 18px;
@@ -427,6 +497,16 @@
                 </div>
             </div>
 
+            <!-- Google 1-Tap / Sign-In Button -->
+            <button type="button" id="btnGoogleSignUp" class="btn-google" onclick="triggerGoogleSignup()">
+                <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+                <span id="googleBtnText">Continue with Google (Job Seeker)</span>
+            </button>
+
+            <div class="auth-divider">
+                <span>OR REGISTER WITH EMAIL OTP</span>
+            </div>
+
             <form id="step1Form" onsubmit="handleSendOtp(event)">
                 <div class="form-group">
                     <label id="emailLabel">Email Address <span class="req">*</span></label>
@@ -440,6 +520,65 @@
 
                 <button type="submit" id="btnSendOtp" class="btn-submit">
                     Send 6-Digit Verification Code (OTP)
+                </button>
+            </form>
+        </div>
+
+        <!-- ================= GOOGLE COMPLETION VIEW ================= -->
+        <div id="viewGoogleComplete" style="display: none;">
+            <div class="email-verified-badge" style="margin-bottom: 16px;">
+                <span>✓ Google Verified: <strong id="googleVerifiedEmailDisplay"></strong></span>
+                <span style="font-size: 12px; color: #047857;" id="googleRoleBadgeDisplay">Job Seeker</span>
+            </div>
+
+            <form id="googleCompleteForm" onsubmit="handleGoogleCompleteSubmit(event)">
+                <!-- Job Seeker Fields -->
+                <div id="googleFieldsJobseeker">
+                    <div class="form-group">
+                        <label for="googleFullName">Full Name <span class="req">*</span></label>
+                        <input type="text" id="googleFullName" class="form-control" placeholder="e.g. Kumaravel S" autocomplete="name">
+                    </div>
+                    <div class="form-group">
+                        <label for="googleMobile">Mobile Number <span class="req">*</span></label>
+                        <input type="tel" id="googleMobile" class="form-control" placeholder="10-digit mobile (e.g. 98421 XXXXX)" maxlength="16" inputmode="tel" autocomplete="tel">
+                    </div>
+                    <div class="form-group">
+                        <label for="googleLocation">Location / Area <span class="opt">(Optional)</span></label>
+                        <input type="text" id="googleLocation" class="form-control" placeholder="e.g. Angeripalayam, Tiruppur / Avinashi" autocomplete="address-level2">
+                    </div>
+                </div>
+
+                <!-- Employer Fields -->
+                <div id="googleFieldsEmployer" style="display: none;">
+                    <div class="form-group">
+                        <label for="googleCompanyName">Company / Mill Name <span class="req">*</span></label>
+                        <input type="text" id="googleCompanyName" class="form-control" placeholder="e.g. Apex Apparels Pvt Ltd / S.V. Knits / K.P.R. Mill" autocomplete="organization">
+                    </div>
+                    <div class="form-group">
+                        <label for="googleContactPerson">HR / Contact Person Name <span class="req">*</span></label>
+                        <input type="text" id="googleContactPerson" class="form-control" placeholder="e.g. Ramesh Kumar (HR Manager / Partner)" autocomplete="name">
+                    </div>
+                    <div class="form-group">
+                        <label for="googleEmprMobile">Official Mobile Number <span class="req">*</span></label>
+                        <input type="tel" id="googleEmprMobile" class="form-control" placeholder="10-digit mobile (e.g. 98421 XXXXX)" maxlength="16" inputmode="tel" autocomplete="tel">
+                    </div>
+                    <div class="form-group">
+                        <label for="googleArea">Industrial Area / Cluster <span class="req">*</span></label>
+                        <input type="text" id="googleArea" class="form-control" placeholder="e.g. Angeripalayam, Netaji Apparel Park, Avinashi Road">
+                    </div>
+                </div>
+
+                <!-- Tier 3 Email OTP Field (shown only when non-Gmail/Workspace email) -->
+                <div id="googleOtpFieldWrap" style="display: none; background: #FEF3C7; border: 1.5px solid #F59E0B; border-radius: 8px; padding: 12px 14px; margin-bottom: 16px;">
+                    <label for="googleOtpCode" style="display: block; font-size: 13px; font-weight: 700; color: #92400E; margin-bottom: 4px;">
+                        Enter 6-Digit Email Verification Code <span class="req">*</span>
+                    </label>
+                    <p style="font-size: 12px; color: #78350F; margin: 0 0 8px 0;">A verification code was sent to your email to verify account ownership.</p>
+                    <input type="text" id="googleOtpCode" class="otp-input-field" maxlength="6" pattern="[0-9]*" inputmode="numeric" placeholder="••••••" style="width: 180px; height: 44px; font-size: 20px;">
+                </div>
+
+                <button type="submit" id="btnGoogleCompleteSubmit" class="btn-submit">
+                    Complete Registration &amp; Access Dashboard
                 </button>
             </form>
         </div>
@@ -716,6 +855,10 @@
                 if (window.location.hash !== "#employer") {
                     history.replaceState(null, "", window.location.pathname + window.location.search + "#employer");
                 }
+            }
+            const googleBtnText = document.getElementById("googleBtnText");
+            if (googleBtnText) {
+                googleBtnText.textContent = currentRole === "company" ? "Continue with Google (Employer)" : "Continue with Google (Job Seeker)";
             }
             if (!skipSave) saveSignupState();
         }
@@ -1354,6 +1497,250 @@
                 }
             });
         });
+
+        // --- GOOGLE SIGN-IN INTEGRATION (HARDENED SECURITY) ---
+        let googleClientId = null;
+        let googleRegisteredEmail = null;
+        let googleAuthRole = "individual";
+
+        async function initGoogleAuth() {
+            try {
+                const res = await fetch("/api/auth/google/config");
+                const data = await res.json();
+                if (data && data.enabled && data.client_id) {
+                    googleClientId = data.client_id;
+                    if (window.google && google.accounts && google.accounts.id) {
+                        google.accounts.id.initialize({
+                            client_id: googleClientId,
+                            callback: handleGoogleSignupCredentialResponse,
+                            auto_select: false,
+                            cancel_on_tap_outside: true
+                        });
+                    }
+                }
+            } catch (e) {}
+        }
+
+        function triggerGoogleSignup() {
+            if (!googleClientId) {
+                showAlert("Google Sign-In is being configured. Please use Email OTP registration below.");
+                return;
+            }
+            if (window.google && google.accounts && google.accounts.id) {
+                google.accounts.id.prompt();
+            }
+        }
+
+        async function handleGoogleSignupCredentialResponse(response) {
+            if (!response || !response.credential) return;
+            hideAlert();
+            const btn = document.getElementById("btnGoogleSignUp");
+            btn.disabled = true;
+            btn.innerHTML = "Verifying with Google...";
+
+            try {
+                const res = await fetch("/api/auth/google/verify", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        id_token: response.credential,
+                        role: currentRole,
+                        visitor_id: getVisitorId()
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.detail || "Google verification failed.");
+                }
+
+                googleRegisteredEmail = data.email || "";
+                googleAuthRole = data.role || currentRole;
+
+                if (data.action === "login") {
+                    showAlert("Google account verified! Redirecting...", false);
+                    setTimeout(() => {
+                        window.location.href = getSafeRedirectUrl() || data.redirect_url;
+                    }, 400);
+                } else if (data.action === "link_challenge_required") {
+                    document.getElementById("linkTargetEmail").textContent = googleRegisteredEmail;
+                    document.getElementById("linkingModal").style.display = "flex";
+                } else if (data.action === "needs_profile" || data.action === "otp_verification_required") {
+                    // Show Google profile completion view
+                    document.getElementById("viewStep1").style.display = "none";
+                    document.getElementById("viewStep2").style.display = "none";
+                    document.getElementById("viewStep3").style.display = "none";
+                    document.getElementById("viewGoogleComplete").style.display = "block";
+
+                    document.getElementById("googleVerifiedEmailDisplay").textContent = googleRegisteredEmail;
+                    document.getElementById("googleRoleBadgeDisplay").textContent = googleAuthRole === "company" ? "Employer Account" : "Job Seeker Account";
+
+                    if (googleAuthRole === "company") {
+                        document.getElementById("googleFieldsJobseeker").style.display = "none";
+                        document.getElementById("googleFieldsEmployer").style.display = "block";
+                        if (data.prefilled_name) document.getElementById("googleContactPerson").value = data.prefilled_name;
+                        if (document.getElementById("step1CompanyName") && document.getElementById("step1CompanyName").value) {
+                            document.getElementById("googleCompanyName").value = document.getElementById("step1CompanyName").value;
+                        }
+                    } else {
+                        document.getElementById("googleFieldsJobseeker").style.display = "block";
+                        document.getElementById("googleFieldsEmployer").style.display = "none";
+                        if (data.prefilled_name) document.getElementById("googleFullName").value = data.prefilled_name;
+                    }
+
+                    if (data.action === "otp_verification_required") {
+                        document.getElementById("googleOtpFieldWrap").style.display = "block";
+                        document.getElementById("googleOtpCode").required = true;
+                    } else {
+                        document.getElementById("googleOtpFieldWrap").style.display = "none";
+                        document.getElementById("googleOtpCode").required = false;
+                    }
+                }
+            } catch (err) {
+                showAlert(err.message || "Google Sign-In failed.");
+            } finally {
+                btn.disabled = false;
+                const roleLabel = currentRole === "company" ? "Continue with Google (Employer)" : "Continue with Google (Job Seeker)";
+                btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg> <span id="googleBtnText">${roleLabel}</span>`;
+            }
+        }
+
+        async function handleGoogleCompleteSubmit(e) {
+            e.preventDefault();
+            hideAlert();
+
+            const btn = document.getElementById("btnGoogleCompleteSubmit");
+            btn.disabled = true;
+            btn.textContent = "Setting up your account...";
+
+            const payload = {
+                visitor_id: getVisitorId()
+            };
+
+            if (googleAuthRole === "company") {
+                const compName = document.getElementById("googleCompanyName").value.trim();
+                const contact = document.getElementById("googleContactPerson").value.trim();
+                const mobile = normalizeIndianMobileInput(document.getElementById("googleEmprMobile").value);
+                const area = document.getElementById("googleArea").value.trim();
+
+                if (!compName) { showAlert("Please enter your Company / Mill name."); btn.disabled = false; btn.textContent = "Complete Registration & Access Dashboard"; return; }
+                if (!contact) { showAlert("Please enter Contact Person / HR name."); btn.disabled = false; btn.textContent = "Complete Registration & Access Dashboard"; return; }
+                if (!/^[6-9]\d{9}$/.test(mobile)) { showAlert("Please enter a valid 10-digit Indian official mobile number."); btn.disabled = false; btn.textContent = "Complete Registration & Access Dashboard"; return; }
+                if (!area) { showAlert("Please enter your industrial area / cluster."); btn.disabled = false; btn.textContent = "Complete Registration & Access Dashboard"; return; }
+
+                payload.company_name = compName;
+                payload.contact_person = contact;
+                payload.mobile = mobile;
+                payload.area = area;
+                payload.location = area;
+            } else {
+                const fullName = document.getElementById("googleFullName").value.trim();
+                const mobile = normalizeIndianMobileInput(document.getElementById("googleMobile").value);
+                const location = document.getElementById("googleLocation").value.trim();
+
+                if (!fullName) { showAlert("Please enter your full name."); btn.disabled = false; btn.textContent = "Complete Registration & Access Dashboard"; return; }
+                if (!/^[6-9]\d{9}$/.test(mobile)) { showAlert("Please enter a valid 10-digit Indian mobile number."); btn.disabled = false; btn.textContent = "Complete Registration & Access Dashboard"; return; }
+
+                payload.full_name = fullName;
+                payload.mobile = mobile;
+                payload.location = location || null;
+            }
+
+            const otpInput = document.getElementById("googleOtpCode");
+            if (otpInput && otpInput.required) {
+                payload.otp_code = otpInput.value.trim();
+                if (!payload.otp_code || payload.otp_code.length !== 6) {
+                    showAlert("Please enter the 6-digit verification code sent to your email.");
+                    btn.disabled = false;
+                    btn.textContent = "Complete Registration & Access Dashboard";
+                    return;
+                }
+            }
+
+            try {
+                const res = await fetch("/api/auth/google/complete-registration", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.detail || "Registration completion failed.");
+                }
+
+                showAlert("Account created successfully! Redirecting...", false);
+                setTimeout(() => {
+                    window.location.href = getSafeRedirectUrl() || data.redirect_url;
+                }, 500);
+            } catch (err) {
+                showAlert(err.message || "Failed to complete registration.");
+                btn.disabled = false;
+                btn.textContent = "Complete Registration & Access Dashboard";
+            }
+        }
+
+        async function submitAccountLinkPassword() {
+            const pwd = document.getElementById("linkPasswordInput").value;
+            const alertEl = document.getElementById("linkAlert");
+            alertEl.style.display = "none";
+            if (!pwd) {
+                alertEl.textContent = "Please enter your password.";
+                alertEl.className = "msg-alert msg-error";
+                alertEl.style.display = "block";
+                return;
+            }
+
+            try {
+                const res = await fetch("/api/auth/google/link-account", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        method: "password",
+                        password: pwd,
+                        visitor_id: getVisitorId()
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.detail || "Account linking failed.");
+                }
+
+                alertEl.textContent = "Linked successfully! Redirecting...";
+                alertEl.className = "msg-alert msg-success";
+                alertEl.style.display = "block";
+                setTimeout(() => {
+                    window.location.href = getSafeRedirectUrl() || data.redirect_url;
+                }, 500);
+            } catch (err) {
+                alertEl.textContent = err.message || "Failed to link account.";
+                alertEl.className = "msg-alert msg-error";
+                alertEl.style.display = "block";
+            }
+        }
+
+        function closeLinkingModal() {
+            document.getElementById("linkingModal").style.display = "none";
+        }
+
+        window.addEventListener("load", initGoogleAuth);
     </script>
+
+    <!-- Linking Challenge Modal -->
+    <div id="linkingModal" class="modal-overlay" style="display: none;">
+        <div class="modal-box">
+            <h3 style="margin-top: 0; margin-bottom: 8px; color: var(--dg-navy); font-size: 18px; font-weight: 800;">Link Google Account</h3>
+            <p style="font-size: 13.5px; color: var(--dg-slate); line-height: 1.5; margin-bottom: 16px;">
+                An existing DigiGarment account with email <strong id="linkTargetEmail" style="color: var(--dg-navy);"></strong> was found. Please enter your account password to verify and link your Google account.
+            </p>
+            <div id="linkAlert" class="msg-alert" style="display: none;"></div>
+            <div class="form-group" style="margin-bottom: 14px;">
+                <label style="font-size: 13px; font-weight: 600; color: var(--dg-navy); margin-bottom: 4px;">Existing Account Password</label>
+                <input type="password" id="linkPasswordInput" class="form-control" placeholder="Enter your current password">
+            </div>
+            <button type="button" class="btn-submit" style="margin-top: 0;" onclick="submitAccountLinkPassword()">Verify &amp; Link Account</button>
+            <div style="text-align: center; margin-top: 14px;">
+                <button type="button" style="background: none; border: none; color: var(--dg-slate); font-size: 13px; cursor: pointer; text-decoration: underline;" onclick="closeLinkingModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

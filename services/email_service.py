@@ -12,16 +12,22 @@ RESEND_API_URL = "https://api.resend.com/emails"
 
 def is_development_mode() -> bool:
     env = os.getenv("ENVIRONMENT", "development").strip().lower()
-    return env == "development"
+    return env in ("development", "test_local")
 
 def send_otp_email(to_email: str, otp_code: str, purpose: str = "registration") -> bool:
     """
     Sends a 6-digit OTP verification code via Resend.
     
     Security & Isolation Rules:
+    - Test Local: NEVER transmits externally. Strictly logs OTP locally.
     - Production: Strictly FAILS CLOSED. Requires valid RESEND_API_KEY and successful HTTP delivery.
     - Development: Only if RESEND_API_KEY is not configured and ENVIRONMENT=development, logs [DEV ONLY] code.
     """
+    # Strict isolation guard: In test_local mode, NEVER send external emails
+    if os.getenv("ENVIRONMENT", "").strip().lower() == "test_local":
+        logger.info(f"[TEST_LOCAL ONLY] Safe local OTP for {to_email}: {otp_code} (Purpose: {purpose})")
+        return True
+
     api_key = os.getenv("RESEND_API_KEY", "").strip()
     from_email = os.getenv("RESEND_FROM_EMAIL", "TirupurGarment <noreply@tirupurgarment.in>").strip()
     
