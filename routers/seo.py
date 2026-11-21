@@ -414,7 +414,7 @@ def get_service_detail_page(slug: str):
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/styles.css?v=20261121-2">
 
     <script type="application/ld+json">
     {faq_schema_json}
@@ -562,7 +562,7 @@ def get_service_detail_page(slug: str):
             <a href="/blog" style="color: #94A3B8; margin: 0 10px; text-decoration: none;">Blog</a>
         </div>
     </footer>
-    <script src="/js/auth-nav.js"></script>
+    <script src="/js/auth-nav.js?v=20261121-2"></script>
 </body>
 </html>
 """
@@ -822,7 +822,7 @@ def get_blog_detail_page(slug: str):
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/styles.css?v=20261121-2">
 
     <script type="application/ld+json">
     {article_schema_json}
@@ -970,7 +970,7 @@ def get_blog_detail_page(slug: str):
             <a href="/apparel-jobs-in-tirupur" style="color: #CBD5E1; text-decoration: none;">Apparel Jobs in Tirupur</a>
         </nav>
     </footer>
-    <script src="/js/auth-nav.js"></script>
+    <script src="/js/auth-nav.js?v=20261121-2"></script>
 </body>
 </html>
 """
@@ -1664,7 +1664,7 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/styles.css?v=20261121-2">
 
     <script type="application/ld+json">
     {landing_schema_json}
@@ -2952,7 +2952,7 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
         }});
     }})();
     </script>
-    <script src="/js/auth-nav.js"></script>
+    <script src="/js/auth-nav.js?v=20261121-2"></script>
 </body>
 </html>
 """)
@@ -3747,7 +3747,7 @@ def get_job_or_category_page(slug: str, request: Request):
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/styles.css?v=20261121-2">
 
     <script type="application/ld+json">
     {cat_schema_json}
@@ -4667,7 +4667,7 @@ def get_job_or_category_page(slug: str, request: Request):
         }});
     }})();
     </script>
-    <script src="/js/auth-nav.js"></script>
+    <script src="/js/auth-nav.js?v=20261121-2"></script>
 </body>
 </html>
 """

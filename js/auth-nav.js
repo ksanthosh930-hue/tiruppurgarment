@@ -13,7 +13,7 @@
         if (!document.querySelector('link[href*="auth-nav.css"]')) {
             const link = document.createElement("link");
             link.rel = "stylesheet";
-            link.href = "/css/auth-nav.css";
+            link.href = "/css/auth-nav.css?v=20261121-2";
             document.head.appendChild(link);
         }
     }
