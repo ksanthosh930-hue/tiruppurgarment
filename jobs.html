@@ -4239,14 +4239,7 @@
             return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
-        // Mobile menu toggle
-        const toggle = document.querySelector(".menu-toggle");
-        const nav = document.getElementById("mainNav");
-        if (toggle && nav) {
-            toggle.addEventListener("click", () => {
-                nav.classList.toggle("open");
-            });
-        }
+        // Mobile menu toggle is handled globally by auth-nav.js
 
         // Bootstrap on DOM Ready
         document.addEventListener("DOMContentLoaded", async () => {

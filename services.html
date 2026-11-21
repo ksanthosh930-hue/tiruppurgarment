@@ -202,9 +202,12 @@
             <a class="brand" href="/">
                 <img src="/assets/images/logo-light.png" alt="DigiGarment Logo" style="height: 38px;">
             </a>
-            <nav class="nav">
+            <a href="/employer/register?ref=nav_mobile_header" class="nav-btn-employer-mobile" onclick="if(window.dgTrackEmployerEvent){window.dgTrackEmployerEvent('employer_cta_click', {cta_location: 'nav_mobile_header'});}">👔 Post Job</a>
+            <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">☰</button>
+            <nav class="nav" id="mainNav">
                 <a href="/">Home</a>
                 <a href="/jobs">Tiruppur Jobs</a>
+                <a href="/hire">Hire Staff</a>
                 <a href="/tools">Tools</a>
                 <a class="active" href="/services">Services</a>
                 <a href="/blog">Blog</a>

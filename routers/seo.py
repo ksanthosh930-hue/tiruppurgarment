@@ -495,13 +495,18 @@ def get_service_detail_page(slug: str):
             <a class="brand" href="/">
                 <img src="/assets/images/logo-light.png" alt="DigiGarment Logo" style="height: 38px;">
             </a>
-            <nav class="nav">
+            <a href="/employer/register?ref=nav_mobile_header" class="nav-btn-employer-mobile" onclick="if(window.dgTrackEmployerEvent){{window.dgTrackEmployerEvent('employer_cta_click', {{cta_location: 'nav_mobile_header'}});}}">👔 Post Job</a>
+            <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">☰</button>
+            <nav class="nav" id="mainNav">
                 <a href="/">Home</a>
                 <a href="/jobs">Tiruppur Jobs</a>
+                <a href="/hire">Hire Staff</a>
                 <a href="/tools">Tools</a>
                 <a class="active" href="/services">Services</a>
                 <a href="/blog">Blog</a>
-                <a href="/#contact">Contact</a>
+                <a href="/employer/register?ref=nav_desktop" class="nav-btn-employer" onclick="if(window.dgTrackEmployerEvent){{window.dgTrackEmployerEvent('employer_cta_click', {{cta_location: 'nav_desktop'}});}}">👔 Post a Job – FREE</a>
+                <a href="/login">Login</a>
+                <a class="nav-cta" href="/signup">Sign Up</a>
             </nav>
         </div>
     </header>
@@ -557,6 +562,7 @@ def get_service_detail_page(slug: str):
             <a href="/blog" style="color: #94A3B8; margin: 0 10px; text-decoration: none;">Blog</a>
         </div>
     </footer>
+    <script src="/js/auth-nav.js"></script>
 </body>
 </html>
 """
@@ -904,13 +910,18 @@ def get_blog_detail_page(slug: str):
             <a class="brand" href="/">
                 <img src="/assets/images/logo-light.png" alt="DigiGarment Logo" style="height: 38px;">
             </a>
-            <nav class="nav">
+            <a href="/employer/register?ref=nav_mobile_header" class="nav-btn-employer-mobile" onclick="if(window.dgTrackEmployerEvent){{window.dgTrackEmployerEvent('employer_cta_click', {{cta_location: 'nav_mobile_header'}});}}">👔 Post Job</a>
+            <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">☰</button>
+            <nav class="nav" id="mainNav">
                 <a href="/">Home</a>
                 <a href="/jobs">Tiruppur Jobs</a>
+                <a href="/hire">Hire Staff</a>
                 <a href="/tools">Tools</a>
                 <a href="/services">Services</a>
                 <a class="active" href="/blog">Blog</a>
-                <a href="/#contact">Contact</a>
+                <a href="/employer/register?ref=nav_desktop" class="nav-btn-employer" onclick="if(window.dgTrackEmployerEvent){{window.dgTrackEmployerEvent('employer_cta_click', {{cta_location: 'nav_desktop'}});}}">👔 Post a Job – FREE</a>
+                <a href="/login">Login</a>
+                <a class="nav-cta" href="/signup">Sign Up</a>
             </nav>
         </div>
     </header>
@@ -959,6 +970,7 @@ def get_blog_detail_page(slug: str):
             <a href="/apparel-jobs-in-tirupur" style="color: #CBD5E1; text-decoration: none;">Apparel Jobs in Tirupur</a>
         </nav>
     </footer>
+    <script src="/js/auth-nav.js"></script>
 </body>
 </html>
 """
@@ -2338,13 +2350,15 @@ def render_seo_landing_page(page_slug: str, request: Request = None) -> HTMLResp
             <a class="brand" href="/">
                 <img src="/assets/images/logo-light.png" alt="DigiGarment Logo" style="height: 38px;">
             </a>
-            <nav class="nav">
+            <a href="/employer/register?ref=nav_mobile_header" class="nav-btn-employer-mobile" onclick="if(window.dgTrackEmployerEvent){{window.dgTrackEmployerEvent('employer_cta_click', {{cta_location: 'nav_mobile_header'}});}}">👔 Post Job</a>
+            <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">☰</button>
+            <nav class="nav" id="mainNav">
                 <a href="/">Home</a>
                 <a class="active" href="/jobs">Tiruppur Jobs</a>
+                <a href="/hire">Hire Staff</a>
                 <a href="/tools">Tools</a>
                 <a href="/services">Services</a>
                 <a href="/blog">Blog</a>
-                <a href="/#contact">Contact</a>
                 <a href="/employer/register?ref=seo_nav" onclick="if(window.dgTrackEmployerEvent){{dgTrackEmployerEvent('employer_cta_click', {{cta_location:'seo_nav'}});}}" style="background: #047857; color: #FFFFFF !important; font-weight: 700 !important; font-size: 13px; padding: 7px 13px; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">👔 Post a Job – FREE</a>
                 <a href="/login?redirect=/{page_slug}" onclick="if(window.dgTrackEvent){{dgTrackEvent('registration_cta_click', null, {{cta:'nav_login', source:'seo_landing'}});}}" style="color: #E2E8F0; font-weight: 600;">Login</a>
                 <a href="/signup?redirect=/{page_slug}" onclick="if(window.dgTrackEvent){{dgTrackEvent('registration_cta_click', null, {{cta:'nav_register', source:'seo_landing'}});dgTrackEvent('reg_cta_click', null, {{cta:'nav_register', source:'seo_landing'}});}}" style="background: #9E1B32; color: #FFFFFF; padding: 7px 14px; border-radius: 6px; font-weight: 700;">Register Free</a>
@@ -4098,13 +4112,15 @@ def get_job_or_category_page(slug: str, request: Request):
             <a class="brand" href="/">
                 <img src="/assets/images/logo-light.png" alt="DigiGarment Logo" style="height: 38px;">
             </a>
-            <nav class="nav">
+            <a href="/employer/register?ref=nav_mobile_header" class="nav-btn-employer-mobile" onclick="if(window.dgTrackEmployerEvent){{window.dgTrackEmployerEvent('employer_cta_click', {{cta_location: 'nav_mobile_header'}});}}">👔 Post Job</a>
+            <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">☰</button>
+            <nav class="nav" id="mainNav">
                 <a href="/">Home</a>
                 <a class="active" href="/jobs">Tiruppur Jobs</a>
+                <a href="/hire">Hire Staff</a>
                 <a href="/tools">Tools</a>
                 <a href="/services">Services</a>
                 <a href="/blog">Blog</a>
-                <a href="/#contact">Contact</a>
                 <a href="/employer/register?ref=seo_nav" onclick="if(window.dgTrackEmployerEvent){{dgTrackEmployerEvent('employer_cta_click', {{cta_location:'seo_nav'}});}}" style="background: #047857; color: #FFFFFF !important; font-weight: 700 !important; font-size: 13px; padding: 7px 13px; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">👔 Post a Job – FREE</a>
                 <a href="/login?redirect=/jobs/{clean_slug}" onclick="if(window.dgTrackEvent){{dgTrackEvent('registration_cta_click', null, {{cta:'nav_login', source:'seo_category'}});}}" style="color: #E2E8F0; font-weight: 600;">Login</a>
                 <a href="/signup?redirect=/jobs/{clean_slug}" onclick="if(window.dgTrackEvent){{dgTrackEvent('registration_cta_click', null, {{cta:'nav_register', source:'seo_category'}});dgTrackEvent('reg_cta_click', null, {{cta:'nav_register', source:'seo_category'}});}}" style="background: #9E1B32; color: #FFFFFF; padding: 7px 14px; border-radius: 6px; font-weight: 700;">Register Free</a>

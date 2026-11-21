@@ -225,6 +225,7 @@
 
     async function initAuthNav() {
         ensureAuthNavStylesheet();
+        initGlobalMobileNav();
         try {
             const res = await fetch("/api/auth/me");
             if (!res.ok) {
@@ -442,6 +443,30 @@
                 cluster.appendChild(userDropdownWrap);
                 nav.appendChild(cluster);
 
+                // Mobile Drawer Profile Card & Sign Out (Phase 1A)
+                const existingMobileCard = nav.querySelector(".dg-mobile-drawer-profile-card");
+                if (existingMobileCard) existingMobileCard.remove();
+                const existingMobileLogout = nav.querySelector(".dg-mobile-logout-btn");
+                if (existingMobileLogout) existingMobileLogout.remove();
+
+                const mobileProfileCard = document.createElement("div");
+                mobileProfileCard.className = "dg-mobile-drawer-profile-card";
+                mobileProfileCard.innerHTML = `
+                    <div class="dg-mobile-drawer-avatar">${escapeHtml(initials)}</div>
+                    <div class="dg-mobile-drawer-info">
+                        <div class="dg-mobile-drawer-name">${escapeHtml(displayName)}</div>
+                        <div class="dg-mobile-drawer-role">${roleBadge}</div>
+                    </div>
+                `;
+                nav.insertBefore(mobileProfileCard, nav.firstChild);
+
+                const mobileLogout = document.createElement("button");
+                mobileLogout.type = "button";
+                mobileLogout.className = "dg-mobile-logout-btn";
+                mobileLogout.innerHTML = `🚪 Sign Out`;
+                mobileLogout.onclick = function() { window.dgHandleUserLogout(); };
+                nav.appendChild(mobileLogout);
+
                 const pillBtn = userDropdownWrap.querySelector(".dg-user-pill-btn");
                 pillBtn.addEventListener("click", (e) => {
                     e.stopPropagation();
@@ -502,6 +527,69 @@
         }
     };
 
+    // Global Mobile Navigation Controller (Phase 1A)
+    function initGlobalMobileNav() {
+        const toggles = document.querySelectorAll(".menu-toggle, #menuToggle");
+        if (!toggles.length) return;
+
+        // Ensure single backdrop exists in document
+        let backdrop = document.getElementById("dgNavBackdrop");
+        if (!backdrop) {
+            backdrop = document.createElement("div");
+            backdrop.id = "dgNavBackdrop";
+            backdrop.className = "dg-nav-backdrop";
+            document.body.appendChild(backdrop);
+        }
+
+        toggles.forEach(toggle => {
+            if (toggle.dataset.dgBound === "true") return;
+            toggle.dataset.dgBound = "true";
+
+            const header = toggle.closest(".site-header, header") || document;
+            const nav = header.querySelector("#mainNav") || header.querySelector(".nav") || document.querySelector("#mainNav, .nav");
+            if (!nav) return;
+
+            function openDrawer() {
+                nav.classList.add("open");
+                backdrop.classList.add("active");
+                toggle.classList.add("active");
+                toggle.setAttribute("aria-expanded", "true");
+                document.body.classList.add("dg-nav-locked");
+            }
+
+            function closeDrawer() {
+                nav.classList.remove("open");
+                backdrop.classList.remove("active");
+                toggle.classList.remove("active");
+                toggle.setAttribute("aria-expanded", "false");
+                document.body.classList.remove("dg-nav-locked");
+            }
+
+            toggle.addEventListener("click", function(e) {
+                e.stopPropagation();
+                nav.classList.contains("open") ? closeDrawer() : openDrawer();
+            });
+
+            backdrop.addEventListener("click", closeDrawer);
+
+            // Close on nav link clicks (excluding dropdown toggles or clicks inside notification menu)
+            nav.querySelectorAll("a").forEach(link => {
+                link.addEventListener("click", function() {
+                    if (!link.classList.contains("dropdown-toggle") && !link.closest(".dg-notif-menu")) {
+                        closeDrawer();
+                    }
+                });
+            });
+
+            // Close on Escape key
+            document.addEventListener("keydown", function(e) {
+                if (e.key === "Escape" && nav.classList.contains("open")) {
+                    closeDrawer();
+                }
+            });
+        });
+    }
+
     // Conditional GA4 Loader (activates ONLY for valid G-XXXXXXXXXX GA4 Measurement IDs; rejects UA-* and never invents a fake ID)
     async function initConditionalGA4() {
         if (window.gtag || document.querySelector('script[src*="googletagmanager.com/gtag/js"]')) return;
@@ -536,10 +624,12 @@
 
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", () => {
+            initGlobalMobileNav();
             initAuthNav();
             initConditionalGA4();
         });
     } else {
+        initGlobalMobileNav();
         initAuthNav();
         initConditionalGA4();
     }

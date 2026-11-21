@@ -129,12 +129,18 @@
             <a class="brand" href="/">
                 <img src="/assets/images/logo-light.png" alt="DigiGarment Logo" style="height: 38px;">
             </a>
-            <nav class="nav">
+            <a href="/employer/register?ref=nav_mobile_header" class="nav-btn-employer-mobile" onclick="if(window.dgTrackEmployerEvent){window.dgTrackEmployerEvent('employer_cta_click', {cta_location: 'nav_mobile_header'});}">👔 Post Job</a>
+            <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">☰</button>
+            <nav class="nav" id="mainNav">
                 <a href="/">Home</a>
-                <a href="/jobs">Jobs</a>
+                <a href="/jobs">Tiruppur Jobs</a>
+                <a href="/hire">Hire Staff</a>
                 <a href="/tools">Tools</a>
                 <a href="/services">Services</a>
                 <a href="/blog">Blog</a>
+                <a href="/employer/register?ref=nav_desktop" class="nav-btn-employer" onclick="if(window.dgTrackEmployerEvent){window.dgTrackEmployerEvent('employer_cta_click', {cta_location: 'nav_desktop'});}">👔 Post a Job – FREE</a>
+                <a href="/login">Login</a>
+                <a class="nav-cta" href="/signup">Sign Up</a>
             </nav>
         </div>
     </header>
@@ -156,6 +162,7 @@
     <footer style="background: #081226; color: #94A3B8; text-align: center; padding: 24px; font-size: 13px;">
         © 2026 DigiGarment. All rights reserved. Practical digital solutions for garment manufacturing.
     </footer>
+    <script src="/js/auth-nav.js"></script>
 </body>
 
 </html>

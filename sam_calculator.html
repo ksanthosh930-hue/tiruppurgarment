@@ -1092,14 +1092,18 @@
             <a class="brand" href="/">
                 <img id="navLogo" src="/assets/images/logo-light.png" alt="DigiGarment Logo">
             </a>
-            <button class="menu-toggle" aria-label="Open menu" aria-expanded="false">☰</button>
+            <a href="/employer/register?ref=nav_mobile_header" class="nav-btn-employer-mobile" onclick="if(window.dgTrackEmployerEvent){window.dgTrackEmployerEvent('employer_cta_click', {cta_location: 'nav_mobile_header'});}">👔 Post Job</a>
+            <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">☰</button>
             <nav class="nav" id="mainNav">
-                <a href="/#home">Home</a>
-                <a class="active" href="/#tools">Tools</a>
-                <a href="/#services">Services</a>
-                <a href="/#about">About Us</a>
-                <a href="/#contact">Contact</a>
-                <a class="nav-cta" href="/#contact">Get Started</a>
+                <a href="/">Home</a>
+                <a href="/jobs">Tiruppur Jobs</a>
+                <a href="/hire">Hire Staff</a>
+                <a class="active" href="/tools">Tools</a>
+                <a href="/services">Services</a>
+                <a href="/blog">Blog</a>
+                <a href="/employer/register?ref=nav_desktop" class="nav-btn-employer" onclick="if(window.dgTrackEmployerEvent){window.dgTrackEmployerEvent('employer_cta_click', {cta_location: 'nav_desktop'});}">👔 Post a Job – FREE</a>
+                <a href="/login">Login</a>
+                <a class="nav-cta" href="/signup">Sign Up</a>
             </nav>
         </div>
     </header>
@@ -2728,15 +2732,7 @@
                 }
             }
 
-            // Mobile menu toggle logic
-            const toggle = document.querySelector(".menu-toggle");
-            const nav = document.getElementById("mainNav");
-            if (toggle && nav) {
-                toggle.addEventListener("click", () => {
-                    const open = nav.classList.toggle("open");
-                    toggle.setAttribute("aria-expanded", String(open));
-                });
-            }
+            // Mobile menu toggle is handled globally by auth-nav.js
 
             // ==========================================
             // --- TIME STUDY BASED SMV CALCULATOR LOGIC ---

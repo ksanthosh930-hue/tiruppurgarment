@@ -117,7 +117,14 @@ a {
     background: none;
     border: 0;
     color: #fff;
-    font-size: 26px
+    font-size: 26px;
+    min-width: 44px;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    touch-action: manipulation;
+    padding: 0;
 }
 
 .hero {
@@ -1622,16 +1629,56 @@ footer {
         position: absolute;
         left: 14px;
         right: 14px;
-        top: 88px;
+        top: 72px;
         background: #081226;
-        padding: 18px;
+        padding: 16px;
         flex-direction: column;
-        align-items: flex-start;
-        border-radius: 0 0 10px 10px
+        align-items: stretch;
+        border-radius: 12px;
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        z-index: 1000;
+        max-width: calc(100vw - 28px);
+        box-sizing: border-box;
     }
 
     .nav.open {
-        display: flex
+        display: flex !important;
+    }
+
+    .nav a {
+        padding: 11px 14px;
+        width: 100%;
+        box-sizing: border-box;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        border-radius: 8px;
+        font-size: 14px;
+        color: #E2E8F0;
+        text-decoration: none;
+        transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .nav a:hover, .nav a.active {
+        background: rgba(255, 255, 255, 0.08);
+        color: #FFFFFF;
+    }
+
+    .nav .nav-btn-employer {
+        margin-top: 6px;
+        justify-content: center;
+        background: #047857;
+        color: #FFFFFF !important;
+        font-weight: 700;
+    }
+
+    .nav .nav-cta {
+        margin-top: 6px;
+        justify-content: center;
+        background: var(--dg-red, #9E1B32);
+        color: #FFFFFF !important;
+        font-weight: 700;
     }
 
     .nav-btn-employer-mobile {
@@ -2729,5 +2776,37 @@ details[open] .faq-question::after {
 
     .btn-emerald-hero {
         width: 100%;
+    }
+}
+
+
+/* --- Global Mobile Navigation Backdrop & Interaction Overlay (Phase 1A) --- */
+.dg-nav-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(8, 18, 38, 0.65);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    z-index: 998;
+}
+
+.dg-nav-backdrop.active {
+    display: block;
+}
+
+body.dg-nav-locked {
+    overflow: hidden !important;
+}
+
+@media (min-width: 801px) {
+    .menu-toggle {
+        display: none !important;
+    }
+    .dg-nav-backdrop {
+        display: none !important;
     }
 }
