@@ -110,6 +110,8 @@ def get_sitemap_xml():
         {"loc": f"{CANONICAL_DOMAIN}/apparel-jobs-in-tirupur", "priority": "0.9", "changefreq": "daily"},
         {"loc": f"{CANONICAL_DOMAIN}/tools", "priority": "0.8", "changefreq": "weekly"},
         {"loc": f"{CANONICAL_DOMAIN}/tools/sam-calculator", "priority": "0.9", "changefreq": "weekly"},
+        {"loc": f"{CANONICAL_DOMAIN}/hire", "priority": "0.9", "changefreq": "weekly"},
+        {"loc": f"{CANONICAL_DOMAIN}/free-job-posting-tirupur", "priority": "0.9", "changefreq": "weekly"},
         {"loc": f"{CANONICAL_DOMAIN}/services", "priority": "0.8", "changefreq": "monthly"},
         {"loc": f"{CANONICAL_DOMAIN}/services/report-automation", "priority": "0.8", "changefreq": "monthly"},
         {"loc": f"{CANONICAL_DOMAIN}/services/excel-automation", "priority": "0.8", "changefreq": "monthly"},
@@ -216,6 +218,16 @@ def get_services_page():
 @router.get("/blog", response_class=FileResponse)
 def get_blog_page():
     return FileResponse(os.path.join(BASE_DIR, "blog.html"))
+
+
+# --- 3.1. EMPLOYER SEO HUBS ---
+@router.get("/hire", response_class=FileResponse)
+def get_hire_page():
+    return FileResponse(os.path.join(BASE_DIR, "hire.html"))
+
+@router.get("/free-job-posting-tirupur", response_class=FileResponse)
+def get_free_job_posting_page():
+    return FileResponse(os.path.join(BASE_DIR, "free_job_posting.html"))
 
 
 # --- 4. SERVICE DETAIL PAGES ---
