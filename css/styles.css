@@ -34,7 +34,7 @@ a {
 .site-header {
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 1000;
     background: #081226;
     color: #fff;
     border-bottom: 1px solid rgba(255, 255, 255, .08);
@@ -1635,7 +1635,7 @@ footer {
     .site-header {
         position: sticky;
         top: 0;
-        z-index: 100;
+        z-index: 1000;
         background: #081226;
     }
 
@@ -1683,8 +1683,11 @@ footer {
         border-radius: 12px;
         box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
         border: 1px solid rgba(255, 255, 255, 0.12);
-        z-index: 1000;
+        z-index: 1001;
         max-width: calc(100vw - 28px);
+        max-height: calc(100vh - 80px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
         box-sizing: border-box;
     }
 
@@ -2759,7 +2762,7 @@ details[open] .faq-question::after {
     background: #081226;
     border-top: 1px solid rgba(255, 255, 255, 0.15);
     padding: 10px 16px;
-    z-index: 999;
+    z-index: 990;
     box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
     align-items: center;
     justify-content: space-between;
