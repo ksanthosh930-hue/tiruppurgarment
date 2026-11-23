@@ -1706,17 +1706,41 @@
                     throw new Error(data.detail || "Registration completion failed.");
                 }
 
-                if (currentRole === "company" && window.dgTrackEmployerEvent) {
+                const effectiveRole = (googleAuthRole === "company" || currentRole === "company") ? "employer" : "jobseeker";
+                const safeTarget = getSafeRedirectUrl() || data.redirect_url || (effectiveRole === "employer" ? "/dashboard/company" : "/dashboard/individual");
+                clearSignupState();
+                showAlert("Account created successfully! Redirecting...", false);
+
+                let hasRedirected = false;
+                const doRedirect = () => {
+                    if (!hasRedirected) {
+                        hasRedirected = true;
+                        try { window.dispatchEvent(new Event("pagehide")); } catch (e) {}
+                        window.location.href = safeTarget;
+                    }
+                };
+
+                if (effectiveRole === "employer" && window.dgTrackEmployerEvent) {
                     window.dgTrackEmployerEvent('employer_reg_complete', {
                         registration_method: 'google',
                         role_type: 'company'
                     });
                 }
 
-                showAlert("Account created successfully! Redirecting...", false);
-                setTimeout(() => {
-                    window.location.href = getSafeRedirectUrl() || data.redirect_url;
-                }, 500);
+                if (!hasTrackedSignUp && typeof window.gtag === "function") {
+                    hasTrackedSignUp = true;
+                    window.gtag("event", "sign_up", {
+                        method: "google",
+                        role: effectiveRole,
+                        event_callback: () => {
+                            setTimeout(doRedirect, 100);
+                        },
+                        event_timeout: 1500
+                    });
+                    setTimeout(doRedirect, 1600);
+                } else {
+                    setTimeout(doRedirect, 600);
+                }
             } catch (err) {
                 showAlert(err.message || "Failed to complete registration.");
                 btn.disabled = false;
