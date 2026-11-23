@@ -848,10 +848,47 @@
             }
         }
 
+        let hasTrackedRegistrationStart = false;
+        function trackRegistrationStart(method, explicitRole) {
+            if (!hasTrackedRegistrationStart) {
+                hasTrackedRegistrationStart = true;
+                const role = explicitRole || (currentRole === "company" ? "employer" : "jobseeker");
+                if (typeof window.gtag === "function") {
+                    window.gtag("event", "registration_start", {
+                        role: role,
+                        method: method || "email"
+                    });
+                }
+            }
+        }
+
+        let hasTrackedOtpVerified = false;
+        function trackOtpRequested(method) {
+            if (typeof window.gtag === "function") {
+                window.gtag("event", "otp_requested", {
+                    role: currentRole === "company" ? "employer" : "jobseeker",
+                    method: method || "email"
+                });
+            }
+        }
+
+        function trackOtpVerified(method) {
+            if (!hasTrackedOtpVerified) {
+                hasTrackedOtpVerified = true;
+                if (typeof window.gtag === "function") {
+                    window.gtag("event", "otp_verified", {
+                        role: currentRole === "company" ? "employer" : "jobseeker",
+                        method: method || "email"
+                    });
+                }
+            }
+        }
+
         function switchRole(role, skipSave = false) {
             currentRole = role === "company" ? "company" : "individual";
             if (currentRole === "company") {
                 trackEmployerRegStart("role_toggle");
+                trackRegistrationStart("role_toggle", "employer");
             }
             const btnEmp = document.getElementById("btnRoleJobseeker");
             const btnEmpr = document.getElementById("btnRoleEmployer");
@@ -1086,6 +1123,7 @@
         async function handleSendOtp(e) {
             if (e && e.preventDefault) e.preventDefault();
             hideAlert();
+            trackRegistrationStart("email");
 
             let email = document.getElementById("userEmail").value.trim().toLowerCase();
             if (!email) {
@@ -1116,10 +1154,10 @@
                 });
 
                 const data = await res.json();
-                if (!res.ok) {
-                    const errDetail = data.detail || "Failed to send verification code.";
+                if (!res.ok || !data || data.success !== true) {
+                    const errDetail = (data && (data.detail || data.message)) || "Failed to send verification code.";
                     // If a code was just sent within the last 60s for this email, advance smoothly to Step 2
-                    const waitMatch = errDetail.match(/wait\s+(\d+)\s+second/i);
+                    const waitMatch = typeof errDetail === "string" ? errDetail.match(/wait\s+(\d+)\s+second/i) : null;
                     if (res.status === 429 && waitMatch) {
                         const remSec = parseInt(waitMatch[1], 10) || 60;
                         goToStep2(email, remSec, 240 + remSec, false);
@@ -1129,6 +1167,7 @@
                     throw new Error(errDetail);
                 }
 
+                trackOtpRequested("email");
                 goToStep2(email, data.cooldown_seconds || 60, data.expires_in_seconds || 300, false);
                 showAlert("Verification code has been sent to your email.", false);
             } catch (err) {
@@ -1164,9 +1203,9 @@
                 });
 
                 const data = await res.json();
-                if (!res.ok) {
-                    const errDetail = data.detail || "Failed to resend verification code.";
-                    const waitMatch = errDetail.match(/wait\s+(\d+)\s+second/i);
+                if (!res.ok || !data || data.success !== true) {
+                    const errDetail = (data && (data.detail || data.message)) || "Failed to resend verification code.";
+                    const waitMatch = typeof errDetail === "string" ? errDetail.match(/wait\s+(\d+)\s+second/i) : null;
                     if (res.status === 429 && waitMatch) {
                         const remSec = parseInt(waitMatch[1], 10) || 60;
                         cooldownUntil = Date.now() + (remSec * 1000);
@@ -1176,6 +1215,7 @@
                     throw new Error(errDetail);
                 }
 
+                trackOtpRequested("email");
                 cooldownUntil = Date.now() + ((data.cooldown_seconds || 60) * 1000);
                 otpExpiresAt = Date.now() + ((data.expires_in_seconds || 300) * 1000);
                 saveSignupState();
@@ -1221,11 +1261,12 @@
                 });
 
                 const data = await res.json();
-                if (!res.ok) {
-                    throw new Error(data.detail || "Invalid or expired verification code.");
+                if (!res.ok || !data || data.success !== true) {
+                    throw new Error((data && (data.detail || data.message)) || "Invalid or expired verification code.");
                 }
 
                 emailVerified = true;
+                trackOtpVerified("email");
                 goToStep3(false);
                 showAlert("Email verified! Complete your profile to finish registration.", false);
             } catch (err) {
@@ -1472,9 +1513,10 @@
                 }
             }
 
-            // 3b. Wire email typo auto-suggestion on #userEmail
+            // 3b. Wire email typo auto-suggestion on #userEmail & track registration start on interaction
             const userEmailEl = document.getElementById("userEmail");
             if (userEmailEl) {
+                userEmailEl.addEventListener("input", () => trackRegistrationStart("email"), { once: true });
                 userEmailEl.addEventListener("input", checkEmailTypoUI);
                 userEmailEl.addEventListener("blur", checkEmailTypoUI);
                 checkEmailTypoUI();
@@ -1561,6 +1603,12 @@
         }
 
         function triggerGoogleSignup() {
+            if (currentRole === "company") {
+                trackEmployerRegStart("google");
+                trackRegistrationStart("google", "employer");
+            } else {
+                trackRegistrationStart("google", "jobseeker");
+            }
             if (!googleClientId) {
                 showAlert("Google Sign-In is being configured. Please use Email OTP registration below.");
                 return;

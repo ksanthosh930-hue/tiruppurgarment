@@ -971,6 +971,30 @@
             }
         });
 
+        let hasTrackedLogin = false;
+
+        function sanitizeLoginError(errMessage) {
+            if (!errMessage) return "authentication_failed";
+            const msg = String(errMessage).toLowerCase();
+            if (msg.includes("rate") || msg.includes("too many")) return "rate_limited";
+            if (msg.includes("token") || msg.includes("expired") || msg.includes("oauth")) return "oauth_token_invalid";
+            if (msg.includes("password") || msg.includes("credential") || msg.includes("invalid") || msg.includes("incorrect")) return "invalid_credentials";
+            if (msg.includes("not found") || msg.includes("no account") || msg.includes("does not exist")) return "account_not_found";
+            if (msg.includes("disabled") || msg.includes("suspended") || msg.includes("blocked")) return "account_disabled";
+            if (msg.includes("server") || msg.includes("internal")) return "server_error";
+            return "authentication_failed";
+        }
+
+        function trackLoginFailed(method, role, reason) {
+            if (typeof window.gtag === "function") {
+                window.gtag("event", "login_failed", {
+                    method: method,
+                    role: role === "company" || role === "employer" ? "employer" : "jobseeker",
+                    error_reason: reason || "authentication_failed"
+                });
+            }
+        }
+
         // Form Submit Handler
         async function handleLogin(e) {
             e.preventDefault();
@@ -997,6 +1021,8 @@
 
                 const data = await res.json();
                 if (!res.ok) {
+                    const errorReason = sanitizeLoginError(data.detail);
+                    trackLoginFailed("email_password", currentRole, errorReason);
                     throw new Error(data.detail || "Sign in failed. Please check your credentials.");
                 }
 
@@ -1076,20 +1102,49 @@
                 });
                 const data = await res.json();
                 if (!res.ok) {
+                    const errorReason = sanitizeLoginError(data.detail);
+                    trackLoginFailed("google", targetRole, errorReason);
                     throw new Error(data.detail || "Google verification failed.");
                 }
 
                 if (data.action === "login") {
-                    if ((data.role === "employer" || data.role === "company") && window.dgTrackEmployerEvent) {
+                    const effectiveRole = (data.role === "employer" || data.role === "company") ? "employer" : "jobseeker";
+                    if (effectiveRole === "employer" && window.dgTrackEmployerEvent) {
                         window.dgTrackEmployerEvent('employer_login', {
                             login_method: 'google',
                             role_type: 'company'
                         });
                     }
+
+                    // Clean any stale session key so destination dashboards do not fire duplicate login events
+                    try { sessionStorage.removeItem("dg_just_logged_in"); } catch (e) {}
+
                     showAlert("Signed in successfully! Redirecting...", false);
-                    setTimeout(() => {
-                        window.location.href = getSafeRedirectUrl() || data.redirect_url;
-                    }, 400);
+                    const safeTarget = getSafeRedirectUrl() || data.redirect_url || (effectiveRole === "employer" ? "/dashboard/company" : "/dashboard/individual");
+
+                    let hasRedirected = false;
+                    const doRedirect = () => {
+                        if (!hasRedirected) {
+                            hasRedirected = true;
+                            try { window.dispatchEvent(new Event("pagehide")); } catch (e) {}
+                            window.location.href = safeTarget;
+                        }
+                    };
+
+                    if (!hasTrackedLogin && typeof window.gtag === "function") {
+                        hasTrackedLogin = true;
+                        window.gtag("event", "login", {
+                            method: "google",
+                            role: effectiveRole,
+                            event_callback: () => {
+                                setTimeout(doRedirect, 100);
+                            },
+                            event_timeout: 1500
+                        });
+                        setTimeout(doRedirect, 1600);
+                    } else {
+                        setTimeout(doRedirect, 400);
+                    }
                 } else if (data.action === "link_challenge_required") {
                     document.getElementById("linkTargetEmail").textContent = data.email || "";
                     document.getElementById("linkingModal").style.display = "flex";
