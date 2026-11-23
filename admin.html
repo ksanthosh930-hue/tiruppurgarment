@@ -1586,23 +1586,35 @@
                             <div>
                                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
                                     <h2 class="card-panel-title" style="margin: 0; font-size: 20px;">📈 DigiGarment Growth Analytics</h2>
-                                    <span style="background: #e0f2fe; color: #0284c7; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; text-transform: uppercase;">PostgreSQL Ground Truth</span>
+                                    <span style="background: #e0f2fe; color: #0284c7; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; text-transform: uppercase;">PostgreSQL & GA4 Unified</span>
                                     <span style="background: #fef3c7; color: #92400e; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px;">Timezone: IST (UTC+5:30)</span>
                                 </div>
                                 <p style="margin: 0; color: #64748b; font-size: 13.5px;">
-                                    Authoritative transactional metrics on Job Seeker acquisition, Employer onboarding, active job inventory, and liquidity.
+                                    Unified intelligence combining authoritative PostgreSQL database records with Google Analytics 4 web traffic & conversion funnels.
                                 </p>
                             </div>
                             <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
                                 <div>
                                     <label style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 2px;">Reporting Range</label>
-                                    <select id="growthRangeSelect" class="form-control" style="width: auto; min-width: 140px; font-weight: 600;" onchange="loadGrowthAnalytics(false)">
+                                    <select id="growthRangeSelect" class="form-control" style="width: auto; min-width: 140px; font-weight: 600;" onchange="handleGrowthRangeChange()">
                                         <option value="today">Today (IST)</option>
                                         <option value="7d">Last 7 Days</option>
                                         <option value="30d" selected>Last 30 Days</option>
                                         <option value="90d">Last 90 Days</option>
-                                        <option value="all">All Time</option>
+                                        <option value="custom">Custom Range</option>
+                                        <option value="all">All Time (DB)</option>
                                     </select>
+                                </div>
+                                <div id="growthCustomRangeBox" style="display: none; align-items: flex-end; gap: 6px;">
+                                    <div>
+                                        <label style="font-size: 10px; font-weight: 700; color: #64748b; display: block;">From</label>
+                                        <input type="date" id="growthCustomStart" class="form-control" style="width: auto; font-size: 12px; padding: 4px 8px;">
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 10px; font-weight: 700; color: #64748b; display: block;">To</label>
+                                        <input type="date" id="growthCustomEnd" class="form-control" style="width: auto; font-size: 12px; padding: 4px 8px;">
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-primary" onclick="loadGrowthAnalytics(false)" style="padding: 6px 10px; font-size: 12px; font-weight: 700;">Apply</button>
                                 </div>
                                 <div style="align-self: flex-end;">
                                     <button type="button" id="growthRefreshBtn" class="btn btn-primary" onclick="loadGrowthAnalytics(true)" style="display: flex; align-items: center; gap: 6px; font-weight: 600;">
@@ -1611,7 +1623,18 @@
                                 </div>
                             </div>
                         </div>
-                        <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #64748b;">
+
+                        <!-- Sub-tab Navigation Switcher -->
+                        <div style="display: flex; gap: 10px; margin-top: 18px; padding-top: 14px; border-top: 1px solid #f1f5f9; flex-wrap: wrap;">
+                            <button type="button" id="subtabBtnPostgres" class="btn btn-sm" onclick="switchGrowthSubtab('postgres')" style="padding: 7px 16px; font-weight: 700; font-size: 13px; background: var(--accent-blue, #2563eb); color: white; border-radius: 6px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                <span>🐘</span> PostgreSQL Database Ground Truth
+                            </button>
+                            <button type="button" id="subtabBtnGA4" class="btn btn-sm" onclick="switchGrowthSubtab('ga4')" style="padding: 7px 16px; font-weight: 700; font-size: 13px; background: #e2e8f0; color: #334155; border-radius: 6px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                <span>🌐</span> Google Analytics 4 (Traffic & Conversion)
+                            </button>
+                        </div>
+
+                        <div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #64748b; flex-wrap: wrap; gap: 8px;">
                             <span id="growthLastUpdatedLabel">⏱️ Last synchronized: Loading...</span>
                             <span id="growthCacheNotice" style="color: #059669; font-weight: 600;">⚡ 10-Minute TTL Cache Active</span>
                         </div>
@@ -1621,6 +1644,9 @@
                     <div id="growthErrorBanner" style="display: none; background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px;">
                         <span id="growthErrorMessage" style="font-size: 13px; font-weight: 600;">Failed to load analytics data.</span>
                     </div>
+
+                    <!-- CONTAINER 1: PostgreSQL Ground Truth (Existing Sections) -->
+                    <div id="growthPostgresContainer">
 
                     <!-- 2. Executive KPI Scorecards (6 Key Metrics) -->
                     <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
@@ -1846,7 +1872,372 @@
                                 </tbody>
                             </table>
                         </div>
-                    </div>
+                    </div> <!-- End of growthPostgresContainer -->
+
+                    <!-- CONTAINER 2: Google Analytics 4 (Web Traffic & Conversion Funnels) -->
+                    <div id="growthGA4Container" style="display: none;">
+                        <!-- GA4 Status & Property Notification Banner -->
+                        <div id="ga4StatusBanner" class="card-panel" style="margin-bottom: 20px; background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 4px solid #16a34a; padding: 12px 18px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="font-size: 16px;">🌐</span>
+                                    <span style="font-weight: 700; color: #166534; font-size: 13.5px;">Google Analytics 4 Property:</span>
+                                    <code style="background: white; padding: 2px 8px; border-radius: 4px; border: 1px solid #dcfce7; font-weight: 700; color: #15803d;" id="ga4PropertyBadge">properties/564842012</code>
+                                    <span style="font-size: 12px; color: #15803d;" id="ga4StatusMessage">Connected & Operational</span>
+                                </div>
+                                <span style="font-size: 11.5px; color: #166534;" id="ga4LastSyncLabel">Last fetched: --</span>
+                            </div>
+                        </div>
+
+                        <!-- Role Custom Dimension Warning Banner (Hidden by default, shown if customEvent:role is unavailable) -->
+                        <div id="ga4RoleWarningBanner" style="display: none; background: #fffbeb; border: 1px solid #fef3c7; border-left: 4px solid #f59e0b; color: #92400e; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px;">
+                            <div style="display: flex; align-items: flex-start; gap: 10px;">
+                                <span style="font-size: 18px;">⚠️</span>
+                                <div>
+                                    <strong style="font-size: 13px;">GA4 Custom Dimension Notice: Role Breakdown Pending</strong>
+                                    <p style="margin: 4px 0 0 0; font-size: 12px; line-height: 1.5;">
+                                        The custom dimension <code>customEvent:role</code> is not yet registered in GA4 Admin definitions. Role-based event segmentation will activate automatically once created in the Google Analytics Console (Admin &rarr; Data display &rarr; Custom definitions &rarr; Dimension name: "Role", Scope: "Event", Parameter: "role"). Dedicated employer events are tracked below.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECTION A: Traffic Overview KPI Cards -->
+                        <div style="margin-bottom: 12px;">
+                            <h3 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 700; color: #1e293b;">🌐 Section A – Web Traffic & Engagement Overview</h3>
+                            <p style="margin: 0 0 16px 0; font-size: 12px; color: #64748b;">Top-of-funnel visitor acquisition, unique reach, session volume, and engagement metrics.</p>
+                        </div>
+                        <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                            <!-- Total Users -->
+                            <div class="stat-card" style="border-top: 3px solid #2563eb;">
+                                <div class="stat-icon" style="background: rgba(37, 99, 235, 0.1); color: #2563eb;">👤</div>
+                                <div class="stat-info">
+                                    <h3 id="ga4TotalUsers" style="font-size: 24px; font-weight: 800; margin: 0; color: #0f172a;">--</h3>
+                                    <p style="margin: 2px 0 0; font-size: 13px; font-weight: 600; color: #475569;">Total Users</p>
+                                    <span style="font-size: 11px; color: #64748b;" id="ga4TotalUsersSub">All active visitors</span>
+                                </div>
+                            </div>
+
+                            <!-- New Users -->
+                            <div class="stat-card" style="border-top: 3px solid #10b981;">
+                                <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">✨</div>
+                                <div class="stat-info">
+                                    <h3 id="ga4NewUsers" style="font-size: 24px; font-weight: 800; margin: 0; color: #0f172a;">--</h3>
+                                    <p style="margin: 2px 0 0; font-size: 13px; font-weight: 600; color: #475569;">New Users</p>
+                                    <span style="font-size: 11px; color: #64748b;" id="ga4NewUsersSub">First-time web visits</span>
+                                </div>
+                            </div>
+
+                            <!-- Sessions -->
+                            <div class="stat-card" style="border-top: 3px solid #6366f1;">
+                                <div class="stat-icon" style="background: rgba(99, 102, 241, 0.1); color: #6366f1;">🔄</div>
+                                <div class="stat-info">
+                                    <h3 id="ga4Sessions" style="font-size: 24px; font-weight: 800; margin: 0; color: #0f172a;">--</h3>
+                                    <p style="margin: 2px 0 0; font-size: 13px; font-weight: 600; color: #475569;">Total Sessions</p>
+                                    <span style="font-size: 11px; color: #64748b;" id="ga4SessionsSub">Browsing interactions</span>
+                                </div>
+                            </div>
+
+                            <!-- Organic Users -->
+                            <div class="stat-card" style="border-top: 3px solid #059669;">
+                                <div class="stat-icon" style="background: rgba(5, 150, 105, 0.1); color: #059669;">🔍</div>
+                                <div class="stat-info">
+                                    <h3 id="ga4OrganicUsers" style="font-size: 24px; font-weight: 800; margin: 0; color: #0f172a;">--</h3>
+                                    <p style="margin: 2px 0 0; font-size: 13px; font-weight: 600; color: #475569;">Organic Search Users</p>
+                                    <span style="font-size: 11px; color: #059669; font-weight: 600;" id="ga4OrganicUsersSub">Google Search acquisition</span>
+                                </div>
+                            </div>
+
+                            <!-- Organic Sessions -->
+                            <div class="stat-card" style="border-top: 3px solid #0d9488;">
+                                <div class="stat-icon" style="background: rgba(13, 148, 136, 0.1); color: #0d9488;">📈</div>
+                                <div class="stat-info">
+                                    <h3 id="ga4OrganicSessions" style="font-size: 24px; font-weight: 800; margin: 0; color: #0f172a;">--</h3>
+                                    <p style="margin: 2px 0 0; font-size: 13px; font-weight: 600; color: #475569;">Organic Sessions</p>
+                                    <span style="font-size: 11px; color: #64748b;" id="ga4OrganicSessionsSub">Inbound search sessions</span>
+                                </div>
+                            </div>
+
+                            <!-- Engagement Rate -->
+                            <div class="stat-card" style="border-top: 3px solid #f59e0b;">
+                                <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">⚡</div>
+                                <div class="stat-info">
+                                    <h3 id="ga4EngagementRate" style="font-size: 24px; font-weight: 800; margin: 0; color: #0f172a;">--%</h3>
+                                    <p style="margin: 2px 0 0; font-size: 13px; font-weight: 600; color: #475569;">Engagement Rate</p>
+                                    <span style="font-size: 11px; color: #64748b;" id="ga4EngagedSessionsSub">Engaged browsing rate</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECTION B: Registration Conversion Funnel -->
+                        <div class="card-panel" style="margin-bottom: 24px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;">
+                                <div>
+                                    <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #1e293b;">🎯 Section B – Registration Conversion Funnel</h3>
+                                    <p style="margin: 0; font-size: 12px; color: #64748b;">Step-by-step conversion tracking from intent through OTP verification and registration completion.</p>
+                                </div>
+                                <span style="background: #eef2ff; color: #4338ca; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 4px;">Phase 1C Telemetry</span>
+                            </div>
+
+                            <!-- Visual Step-by-Step Micro-Funnel (Horizontal Flow) -->
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 20px;">
+                                <!-- Step 1: registration_start -->
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; position: relative;">
+                                    <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 4px;">Step 1: Intent</div>
+                                    <div style="font-size: 14px; font-weight: 700; color: #1e293b;">Registration Start</div>
+                                    <div style="display: flex; align-items: baseline; gap: 8px; margin: 8px 0 4px;">
+                                        <span id="funnelStep1Users" style="font-size: 22px; font-weight: 800; color: #2563eb;">--</span>
+                                        <span style="font-size: 12px; color: #64748b;">users</span>
+                                    </div>
+                                    <div style="font-size: 11px; color: #64748b;" id="funnelStep1Events">Events: --</div>
+                                    <div style="margin-top: 8px; font-size: 11px; font-weight: 700; color: #059669;">Progression: 100%</div>
+                                </div>
+
+                                <!-- Step 2: otp_requested -->
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; position: relative;">
+                                    <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 4px;">Step 2: Verification Sent</div>
+                                    <div style="font-size: 14px; font-weight: 700; color: #1e293b;">OTP Requested</div>
+                                    <div style="display: flex; align-items: baseline; gap: 8px; margin: 8px 0 4px;">
+                                        <span id="funnelStep2Users" style="font-size: 22px; font-weight: 800; color: #0284c7;">--</span>
+                                        <span style="font-size: 12px; color: #64748b;">users</span>
+                                    </div>
+                                    <div style="font-size: 11px; color: #64748b;" id="funnelStep2Events">Events: --</div>
+                                    <div style="margin-top: 8px; font-size: 11px; font-weight: 700; color: #0284c7;" id="funnelStep2Rate">Progression: --%</div>
+                                </div>
+
+                                <!-- Step 3: otp_verified -->
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; position: relative;">
+                                    <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 4px;">Step 3: Verification Passed</div>
+                                    <div style="font-size: 14px; font-weight: 700; color: #1e293b;">OTP Verified</div>
+                                    <div style="display: flex; align-items: baseline; gap: 8px; margin: 8px 0 4px;">
+                                        <span id="funnelStep3Users" style="font-size: 22px; font-weight: 800; color: #7c3aed;">--</span>
+                                        <span style="font-size: 12px; color: #64748b;">users</span>
+                                    </div>
+                                    <div style="font-size: 11px; color: #64748b;" id="funnelStep3Events">Events: --</div>
+                                    <div style="margin-top: 8px; font-size: 11px; font-weight: 700; color: #7c3aed;" id="funnelStep3Rate">Progression: --%</div>
+                                </div>
+
+                                <!-- Step 4: sign_up -->
+                                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 14px; position: relative;">
+                                    <div style="font-size: 11px; font-weight: 700; color: #166534; text-transform: uppercase; margin-bottom: 4px;">Step 4: Account Created</div>
+                                    <div style="font-size: 14px; font-weight: 700; color: #15803d;">Sign Up Complete</div>
+                                    <div style="display: flex; align-items: baseline; gap: 8px; margin: 8px 0 4px;">
+                                        <span id="funnelStep4Users" style="font-size: 22px; font-weight: 800; color: #16a34a;">--</span>
+                                        <span style="font-size: 12px; color: #166534;">email users</span>
+                                    </div>
+                                    <div style="font-size: 11px; color: #166534;" id="funnelStep4Rate">Conversion: --%</div>
+                                    <div style="margin-top: 8px; font-size: 11px; font-weight: 700; color: #15803d;">Complete Access Granted</div>
+                                </div>
+                            </div>
+
+                            <!-- Email OTP vs Google OAuth Path Distinction -->
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 14px; padding-top: 14px; border-top: 1px solid #f1f5f9;">
+                                <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 14px;">
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                                        <span style="font-size: 16px;">📧</span>
+                                        <h4 style="margin: 0; font-size: 13.5px; font-weight: 700; color: #1e40af;">Email OTP Path Funnel</h4>
+                                    </div>
+                                    <p style="margin: 0 0 8px 0; font-size: 12px; color: #1e3a8a;">End-to-end progression through email OTP credential verification.</p>
+                                    <div style="font-size: 12px; color: #1e40af; font-weight: 600;" id="funnelEmailOverall">Overall Email Conversion: <strong>--%</strong></div>
+                                </div>
+
+                                <div style="background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 8px; padding: 14px;">
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                                        <span style="font-size: 16px;">⚡</span>
+                                        <h4 style="margin: 0; font-size: 13.5px; font-weight: 700; color: #6b21a8;">Google OAuth 1-Click Path</h4>
+                                    </div>
+                                    <p style="margin: 0 0 8px 0; font-size: 12px; color: #581c87;">Direct registrations bypassing email and phone OTP verification.</p>
+                                    <div style="font-size: 12px; color: #6b21a8; font-weight: 600;" id="funnelGoogleOAuthUsers">Google OAuth Signups: <strong>-- users</strong></div>
+                                </div>
+
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px;">
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                                        <span style="font-size: 16px;">📊</span>
+                                        <h4 style="margin: 0; font-size: 13.5px; font-weight: 700; color: #334155;">Sequential CTA Funnel (GA4 API)</h4>
+                                    </div>
+                                    <p style="margin: 0 0 8px 0; font-size: 12px; color: #475569;">Strict same-session traversal: Registration CTA Click &rarr; Sign Up.</p>
+                                    <div style="font-size: 12px; color: #334155; font-weight: 600;" id="funnelSequentialRate">Sequential Completion Rate: <strong>--%</strong></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECTION C: Role-Based Conversion -->
+                        <div style="margin-bottom: 12px;">
+                            <h3 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 700; color: #1e293b;">👥 Section C – Role-Based Conversion Breakdown</h3>
+                            <p style="margin: 0 0 16px 0; font-size: 12px; color: #64748b;">Segmenting acquisition by Job Seeker and Employer personas using verified event parameters.</p>
+                        </div>
+                        <div class="grid-cols-2" style="margin-bottom: 24px;">
+                            <!-- Job Seeker Panel -->
+                            <div class="card-panel">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                                    <div style="background: #eff6ff; color: #2563eb; width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px;">👷</div>
+                                    <div>
+                                        <h4 style="margin: 0; font-size: 14.5px; font-weight: 700; color: #1e293b;">Job Seeker Conversion</h4>
+                                        <span style="font-size: 11px; color: #64748b;">Individual candidates seeking apparel positions</span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 10px;">
+                                    <div style="display: flex; justify-content: space-between; padding: 8px 12px; background: #f8fafc; border-radius: 6px; font-size: 13px;">
+                                        <span style="color: #475569;">Job Seeker Registrations (`sign_up`)</span>
+                                        <strong style="color: #1e293b;" id="roleJsSignups">--</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; padding: 8px 12px; background: #f8fafc; border-radius: 6px; font-size: 13px;">
+                                        <span style="color: #475569;">Job Seeker Logins (`login`)</span>
+                                        <strong style="color: #1e293b;" id="roleJsLogins">--</strong>
+                                    </div>
+                                    <div style="font-size: 11px; color: #64748b; margin-top: 4px;">
+                                        Telemetry tagged with <code>role: jobseeker</code>.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Employer Panel -->
+                            <div class="card-panel">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                                    <div style="background: #fdf4ff; color: #a855f7; width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px;">🏢</div>
+                                    <div>
+                                        <h4 style="margin: 0; font-size: 14.5px; font-weight: 700; color: #1e293b;">Employer Onboarding Conversion</h4>
+                                        <span style="font-size: 11px; color: #64748b;">Garment factories, mills, and hiring managers</span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 10px;">
+                                    <div style="display: flex; justify-content: space-between; padding: 8px 12px; background: #f8fafc; border-radius: 6px; font-size: 13px;">
+                                        <span style="color: #475569;">Employer Registration Starts</span>
+                                        <strong style="color: #1e293b;" id="roleEmpStarts">--</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; padding: 8px 12px; background: #f8fafc; border-radius: 6px; font-size: 13px;">
+                                        <span style="color: #475569;">Employer Registrations Completed</span>
+                                        <strong style="color: #059669;" id="roleEmpCompletes">--</strong>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; padding: 8px 12px; background: #f8fafc; border-radius: 6px; font-size: 13px;">
+                                        <span style="color: #475569;">Employer Conversion Rate</span>
+                                        <strong style="color: #7c3aed;" id="roleEmpConvRate">--%</strong>
+                                    </div>
+                                    <div style="font-size: 11px; color: #64748b; margin-top: 4px;">
+                                        Telemetry tagged with dedicated <code>employer_reg_*</code> lifecycle events.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECTION D: Organic Search & Traffic Acquisition Sources -->
+                        <div class="card-panel" style="margin-bottom: 24px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;">
+                                <div>
+                                    <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #1e293b;">🔍 Section D – Organic Search & Traffic Acquisition</h3>
+                                    <p style="margin: 0; font-size: 12px; color: #64748b;">Granular breakdown of Google Organic Search, Google for Jobs rich snippet traffic, and referral sources.</p>
+                                </div>
+                                <span style="background: #ecfdf5; color: #047857; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 4px;">Primary Growth Channel</span>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-bottom: 18px;">
+                                <!-- Daily Organic Trend Table -->
+                                <div>
+                                    <h5 style="margin: 0 0 8px; font-size: 13px; font-weight: 700; color: #334155;">Daily Organic Search Users</h5>
+                                    <div style="overflow-x: auto; max-height: 260px; overflow-y: auto;">
+                                        <table class="data-table" style="width: 100%; font-size: 12px;">
+                                            <thead>
+                                                <tr style="background: #f8fafc;">
+                                                    <th style="padding: 6px 10px;">Date (IST)</th>
+                                                    <th style="padding: 6px 10px; text-align: right;">Users</th>
+                                                    <th style="padding: 6px 10px; text-align: right;">Sessions</th>
+                                                    <th style="padding: 6px 10px; text-align: right;">Engaged</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="ga4OrganicDailyTbody">
+                                                <tr><td colspan="4" style="text-align: center; color: #94a3b8; padding: 12px;">Loading daily organic data...</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Acquisition Sources Table -->
+                                <div>
+                                    <h5 style="margin: 0 0 8px; font-size: 13px; font-weight: 700; color: #334155;">Acquisition Channels (Source / Medium)</h5>
+                                    <div style="overflow-x: auto; max-height: 260px; overflow-y: auto;">
+                                        <table class="data-table" style="width: 100%; font-size: 12px;">
+                                            <thead>
+                                                <tr style="background: #f8fafc;">
+                                                    <th style="padding: 6px 10px;">Source / Medium</th>
+                                                    <th style="padding: 6px 10px; text-align: right;">Sessions</th>
+                                                    <th style="padding: 6px 10px; text-align: right;">Users</th>
+                                                    <th style="padding: 6px 10px; text-align: right;">Engagement</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="ga4SourcesTbody">
+                                                <tr><td colspan="4" style="text-align: center; color: #94a3b8; padding: 12px;">Loading acquisition sources...</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECTION E: Top Landing Pages Performance -->
+                        <div class="card-panel" style="margin-bottom: 24px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;">
+                                <div>
+                                    <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #1e293b;">📄 Section E – Top 20 Landing Pages Performance</h3>
+                                    <p style="margin: 0; font-size: 12px; color: #64748b;">Pages attracting inbound web traffic, programmatic job landing performance, and conversion attribution.</p>
+                                </div>
+                                <span style="background: #f1f5f9; color: #475569; font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 4px;">Sorted by Sessions Descending</span>
+                            </div>
+
+                            <div style="overflow-x: auto;">
+                                <table class="data-table" style="width: 100%; font-size: 12.5px;">
+                                    <thead>
+                                        <tr style="background: #f8fafc;">
+                                            <th style="padding: 8px 12px;">#</th>
+                                            <th style="padding: 8px 12px;">Landing Page Path</th>
+                                            <th style="padding: 8px 12px; text-align: center;">Type</th>
+                                            <th style="padding: 8px 12px; text-align: right;">Sessions</th>
+                                            <th style="padding: 8px 12px; text-align: right;">Users</th>
+                                            <th style="padding: 8px 12px; text-align: right;">Engaged Sessions</th>
+                                            <th style="padding: 8px 12px; text-align: right;">Engagement Rate</th>
+                                            <th style="padding: 8px 12px; text-align: right;">Sign-Ups (`sign_up`)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ga4LandingPagesTbody">
+                                        <tr><td colspan="8" style="text-align: center; color: #94a3b8; padding: 18px;">Loading top landing pages...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- SECTION F: Web Growth Trends Time Series -->
+                        <div class="card-panel" style="margin-bottom: 24px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+                                <div>
+                                    <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #1e293b;">📈 Section F – Web Growth Trends (GA4 Time Series)</h3>
+                                    <p style="margin: 0; font-size: 12px; color: #64748b;">Daily, weekly, and monthly trends across users, sessions, and conversion events in Asia/Kolkata timezone.</p>
+                                </div>
+                                <div style="display: flex; gap: 6px;">
+                                    <button type="button" class="btn btn-sm" id="ga4TrendBtnDaily" onclick="setGA4TrendsGranularity('daily')" style="padding: 4px 10px; font-size: 12px; font-weight: 700; background: var(--accent-blue, #2563eb); color: white;">Daily</button>
+                                    <button type="button" class="btn btn-sm" id="ga4TrendBtnWeekly" onclick="setGA4TrendsGranularity('weekly')" style="padding: 4px 10px; font-size: 12px; font-weight: 600; background: #e2e8f0; color: #475569;">Weekly</button>
+                                    <button type="button" class="btn btn-sm" id="ga4TrendBtnMonthly" onclick="setGA4TrendsGranularity('monthly')" style="padding: 4px 10px; font-size: 12px; font-weight: 600; background: #e2e8f0; color: #475569;">Monthly</button>
+                                </div>
+                            </div>
+
+                            <div style="overflow-x: auto;">
+                                <table class="data-table" style="width: 100%; font-size: 13px;">
+                                    <thead>
+                                        <tr style="background: #f8fafc;">
+                                            <th style="padding: 8px 12px;">Period (IST)</th>
+                                            <th style="padding: 8px 12px; text-align: right;">Total Users</th>
+                                            <th style="padding: 8px 12px; text-align: right;">New Users</th>
+                                            <th style="padding: 8px 12px; text-align: right;">Sessions</th>
+                                            <th style="padding: 8px 12px; text-align: right;">Engaged Sessions</th>
+                                            <th style="padding: 8px 12px; text-align: right;">Sign-Ups</th>
+                                            <th style="padding: 8px 12px; text-align: center;">Activity Visual</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ga4TrendsTbody">
+                                        <tr><td colspan="7" style="text-align: center; color: #94a3b8; padding: 16px;">Loading GA4 growth trends...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div> <!-- End of growthGA4Container -->
                 </div>
 
 
@@ -2873,9 +3264,46 @@
         }
 
 
-        // --- Growth Analytics Controller (Phase 1D-1: PostgreSQL System of Record) ---
+        // --- Growth Analytics Controller (Unified PostgreSQL & GA4) ---
         let currentTrendsGranularity = "daily";
         let isGrowthLoading = false;
+        let currentGrowthSubtab = "postgres";
+
+        function switchGrowthSubtab(tab) {
+            currentGrowthSubtab = tab;
+            const btnPg = document.getElementById("subtabBtnPostgres");
+            const btnGa4 = document.getElementById("subtabBtnGA4");
+            const cPg = document.getElementById("growthPostgresContainer");
+            const cGa4 = document.getElementById("growthGA4Container");
+
+            if (tab === "postgres") {
+                if (btnPg) { btnPg.style.background = "var(--accent-blue, #2563eb)"; btnPg.style.color = "white"; }
+                if (btnGa4) { btnGa4.style.background = "#e2e8f0"; btnGa4.style.color = "#334155"; }
+                if (cPg) cPg.style.display = "block";
+                if (cGa4) cGa4.style.display = "none";
+            } else {
+                if (btnPg) { btnPg.style.background = "#e2e8f0"; btnPg.style.color = "#334155"; }
+                if (btnGa4) { btnGa4.style.background = "var(--accent-blue, #2563eb)"; btnGa4.style.color = "white"; }
+                if (cPg) cPg.style.display = "none";
+                if (cGa4) cGa4.style.display = "block";
+                if (!hasGA4Loaded) {
+                    loadGA4Analytics(false);
+                }
+            }
+        }
+
+        function handleGrowthRangeChange() {
+            const rangeSelect = document.getElementById("growthRangeSelect");
+            const customBox = document.getElementById("growthCustomRangeBox");
+            if (rangeSelect && customBox) {
+                if (rangeSelect.value === "custom") {
+                    customBox.style.display = "inline-flex";
+                } else {
+                    customBox.style.display = "none";
+                    loadGrowthAnalytics(false);
+                }
+            }
+        }
 
         async function loadGrowthAnalytics(forceRefresh = false) {
             if (isGrowthLoading) return;
@@ -2890,16 +3318,27 @@
             if (refreshIcon) refreshIcon.style.animation = "spin 1s linear infinite";
             if (errorBanner) errorBanner.style.display = "none";
 
+            // Trigger GA4 analytics load in parallel
+            loadGA4Analytics(forceRefresh);
+
             try {
                 const refreshParam = forceRefresh ? "&refresh=true" : "";
+                let customParams = "";
+                if (range === "custom") {
+                    const s = document.getElementById("growthCustomStart")?.value;
+                    const e = document.getElementById("growthCustomEnd")?.value;
+                    if (s && e) {
+                        customParams = `&start_date=${encodeURIComponent(s)}&end_date=${encodeURIComponent(e)}`;
+                    }
+                }
 
                 // Fetch all 5 growth endpoints concurrently
                 const [overviewRes, jsRes, empRes, jobsRes, trendsRes] = await Promise.all([
-                    fetch(`/api/admin/growth-analytics/overview?range=${range}${refreshParam}`),
-                    fetch(`/api/admin/growth-analytics/jobseekers?range=${range}${refreshParam}`),
-                    fetch(`/api/admin/growth-analytics/employers?range=${range}${refreshParam}`),
-                    fetch(`/api/admin/growth-analytics/jobs?range=${range}${refreshParam}`),
-                    fetch(`/api/admin/growth-analytics/trends?granularity=${currentTrendsGranularity}&range=${range}${refreshParam}`)
+                    fetch(`/api/admin/growth-analytics/overview?range=${range}${customParams}${refreshParam}`),
+                    fetch(`/api/admin/growth-analytics/jobseekers?range=${range}${customParams}${refreshParam}`),
+                    fetch(`/api/admin/growth-analytics/employers?range=${range}${customParams}${refreshParam}`),
+                    fetch(`/api/admin/growth-analytics/jobs?range=${range}${customParams}${refreshParam}`),
+                    fetch(`/api/admin/growth-analytics/trends?granularity=${currentTrendsGranularity}&range=${range}${customParams}${refreshParam}`)
                 ]);
 
                 if (!overviewRes.ok || !jsRes.ok || !empRes.ok || !jobsRes.ok || !trendsRes.ok) {
@@ -3165,6 +3604,359 @@
                         <td style="padding: 8px 12px; text-align: center;">
                             <div style="background: #f1f5f9; border-radius: 4px; height: 10px; width: 100%; min-width: 80px; overflow: hidden; display: inline-block;">
                                 <div style="background: linear-gradient(90deg, #3b82f6, #10b981); height: 100%; width: ${barWidth}%;"></div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // =========================================================================
+        // GA4 Analytics Controller (Phase 1D-2: Google Analytics 4 Data API)
+        // =========================================================================
+        let currentGA4TrendsGranularity = "daily";
+        let isGA4Loading = false;
+        let hasGA4Loaded = false;
+
+        async function loadGA4Analytics(forceRefresh = false) {
+            if (isGA4Loading) return;
+            isGA4Loading = true;
+
+            const rangeSelect = document.getElementById("growthRangeSelect");
+            let range = rangeSelect ? rangeSelect.value : "30d";
+            if (range === "all") range = "90d"; // GA4 API does not support "all", map to 90d
+
+            let customParams = "";
+            if (range === "custom") {
+                const s = document.getElementById("growthCustomStart")?.value;
+                const e = document.getElementById("growthCustomEnd")?.value;
+                if (s && e) {
+                    customParams = `&start_date=${encodeURIComponent(s)}&end_date=${encodeURIComponent(e)}`;
+                }
+            }
+
+            const refreshParam = forceRefresh ? "&refresh=true" : "";
+
+            try {
+                // Fetch all 7 GA4 endpoints concurrently
+                const [statusRes, overviewRes, funnelRes, rolesRes, organicRes, pagesRes, trendsRes] = await Promise.all([
+                    fetch(`/api/admin/ga4-analytics/status`),
+                    fetch(`/api/admin/ga4-analytics/overview?range=${range}${customParams}${refreshParam}`),
+                    fetch(`/api/admin/ga4-analytics/funnel?range=${range}${customParams}${refreshParam}`),
+                    fetch(`/api/admin/ga4-analytics/roles?range=${range}${customParams}${refreshParam}`),
+                    fetch(`/api/admin/ga4-analytics/organic?range=${range}${customParams}${refreshParam}`),
+                    fetch(`/api/admin/ga4-analytics/landing-pages?range=${range}${customParams}${refreshParam}&limit=20`),
+                    fetch(`/api/admin/ga4-analytics/trends?granularity=${currentGA4TrendsGranularity}&range=${range}${customParams}${refreshParam}`)
+                ]);
+
+                const statusData = statusRes.ok ? await statusRes.json() : null;
+                const overviewData = overviewRes.ok ? await overviewRes.json() : null;
+                const funnelData = funnelRes.ok ? await funnelRes.json() : null;
+                const rolesData = rolesRes.ok ? await rolesRes.json() : null;
+                const organicData = organicRes.ok ? await organicRes.json() : null;
+                const pagesData = pagesRes.ok ? await pagesRes.json() : null;
+                const trendsData = trendsRes.ok ? await trendsRes.json() : null;
+
+                if (statusData) renderGA4Status(statusData);
+                if (overviewData) renderGA4Overview(overviewData);
+                if (funnelData) renderGA4Funnel(funnelData);
+                if (rolesData) renderGA4Roles(rolesData);
+                if (organicData) renderGA4Organic(organicData);
+                if (pagesData) renderGA4LandingPages(pagesData);
+                if (trendsData) renderGA4Trends(trendsData);
+
+                hasGA4Loaded = true;
+            } catch (err) {
+                console.error("Failed to load GA4 analytics:", err);
+            } finally {
+                isGA4Loading = false;
+            }
+        }
+
+        function renderGA4Status(data) {
+            const badge = document.getElementById("ga4PropertyBadge");
+            const statusMsg = document.getElementById("ga4StatusMessage");
+            const lastSync = document.getElementById("ga4LastSyncLabel");
+            const banner = document.getElementById("ga4StatusBanner");
+
+            if (badge && data.property_id) {
+                badge.textContent = `properties/${data.property_id}`;
+            }
+            if (statusMsg) {
+                statusMsg.textContent = data.configured ? "Connected & Operational" : (data.status_message || "Unconfigured");
+            }
+            if (banner) {
+                if (data.configured) {
+                    banner.style.background = "#f0fdf4";
+                    banner.style.borderColor = "#bbf7d0";
+                    banner.style.borderLeftColor = "#16a34a";
+                } else {
+                    banner.style.background = "#fffbeb";
+                    banner.style.borderColor = "#fef3c7";
+                    banner.style.borderLeftColor = "#f59e0b";
+                }
+            }
+            if (lastSync) {
+                if (data.last_successful_fetch) {
+                    try {
+                        const d = new Date(data.last_successful_fetch);
+                        lastSync.textContent = `Last fetched: ${d.toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata" })} IST`;
+                    } catch (e) {
+                        lastSync.textContent = `Last fetched: ${data.last_successful_fetch}`;
+                    }
+                } else {
+                    lastSync.textContent = data.configured ? "Live API Ready" : "Awaiting credentials";
+                }
+            }
+        }
+
+        function renderGA4Overview(data) {
+            const m = data.metrics || {};
+            const totalUsersEl = document.getElementById("ga4TotalUsers");
+            const newUsersEl = document.getElementById("ga4NewUsers");
+            const sessionsEl = document.getElementById("ga4Sessions");
+            const orgUsersEl = document.getElementById("ga4OrganicUsers");
+            const orgSessionsEl = document.getElementById("ga4OrganicSessions");
+            const engRateEl = document.getElementById("ga4EngagementRate");
+            const engSubEl = document.getElementById("ga4EngagedSessionsSub");
+
+            if (totalUsersEl) totalUsersEl.textContent = Number(m.total_users || 0).toLocaleString();
+            if (newUsersEl) newUsersEl.textContent = Number(m.new_users || 0).toLocaleString();
+            if (sessionsEl) sessionsEl.textContent = Number(m.sessions || 0).toLocaleString();
+            if (orgUsersEl) orgUsersEl.textContent = Number(m.organic_users || 0).toLocaleString();
+            if (orgSessionsEl) orgSessionsEl.textContent = Number(m.organic_sessions || 0).toLocaleString();
+            if (engRateEl) engRateEl.textContent = `${m.engagement_rate || 0.0}%`;
+            if (engSubEl) engSubEl.textContent = `${Number(m.engaged_sessions || 0).toLocaleString()} engaged sessions`;
+        }
+
+        function renderGA4Funnel(data) {
+            const emailFunnel = data.email_otp_funnel || {};
+            const stages = emailFunnel.stages || [];
+            const googleFunnel = data.google_oauth_funnel || {};
+            const sequential = data.sequential_cta_funnel || {};
+
+            // Step 1: registration_start
+            const s1 = stages.find(s => s.event_name === "registration_start") || {};
+            const step1UsersEl = document.getElementById("funnelStep1Users");
+            const step1EventsEl = document.getElementById("funnelStep1Events");
+            if (step1UsersEl) step1UsersEl.textContent = Number(s1.users || 0).toLocaleString();
+            if (step1EventsEl) step1EventsEl.textContent = `Events: ${Number(s1.events || 0).toLocaleString()}`;
+
+            // Step 2: otp_requested
+            const s2 = stages.find(s => s.event_name === "otp_requested") || {};
+            const step2UsersEl = document.getElementById("funnelStep2Users");
+            const step2EventsEl = document.getElementById("funnelStep2Events");
+            const step2RateEl = document.getElementById("funnelStep2Rate");
+            if (step2UsersEl) step2UsersEl.textContent = Number(s2.users || 0).toLocaleString();
+            if (step2EventsEl) step2EventsEl.textContent = `Events: ${Number(s2.events || 0).toLocaleString()}`;
+            if (step2RateEl) step2RateEl.textContent = `Progression: ${s2.progression_rate || 0}%`;
+
+            // Step 3: otp_verified
+            const s3 = stages.find(s => s.event_name === "otp_verified") || {};
+            const step3UsersEl = document.getElementById("funnelStep3Users");
+            const step3EventsEl = document.getElementById("funnelStep3Events");
+            const step3RateEl = document.getElementById("funnelStep3Rate");
+            if (step3UsersEl) step3UsersEl.textContent = Number(s3.users || 0).toLocaleString();
+            if (step3EventsEl) step3EventsEl.textContent = `Events: ${Number(s3.events || 0).toLocaleString()}`;
+            if (step3RateEl) step3RateEl.textContent = `Progression: ${s3.progression_rate || 0}%`;
+
+            // Step 4: sign_up
+            const s4 = stages.find(s => s.event_name === "sign_up") || {};
+            const step4UsersEl = document.getElementById("funnelStep4Users");
+            const step4RateEl = document.getElementById("funnelStep4Rate");
+            if (step4UsersEl) step4UsersEl.textContent = Number(s4.users || 0).toLocaleString();
+            if (step4RateEl) step4RateEl.textContent = `Conversion: ${s4.progression_rate || 0}%`;
+
+            // Overall Email Rate
+            const emailOverallEl = document.getElementById("funnelEmailOverall");
+            if (emailOverallEl) {
+                emailOverallEl.innerHTML = `Overall Email Conversion: <strong>${emailFunnel.overall_email_conversion_rate || 0.0}%</strong>`;
+            }
+
+            // Google OAuth Signups
+            const googleEl = document.getElementById("funnelGoogleOAuthUsers");
+            if (googleEl) {
+                googleEl.innerHTML = `Google OAuth Signups: <strong>${Number(googleFunnel.sign_up_users || 0).toLocaleString()} users</strong>`;
+            }
+
+            // Sequential CTA Funnel
+            const seqEl = document.getElementById("funnelSequentialRate");
+            if (seqEl) {
+                if (sequential.supported && sequential.completion_rate !== null) {
+                    seqEl.innerHTML = `Sequential Completion: <strong>${sequential.completion_rate}%</strong> (${sequential.abandonment_rate}% drop-off)`;
+                } else {
+                    seqEl.innerHTML = `Sequential Completion: <em>Awaiting settled sessions</em>`;
+                }
+            }
+        }
+
+        function renderGA4Roles(data) {
+            const warningEl = document.getElementById("ga4RoleWarningBanner");
+            if (warningEl) {
+                warningEl.style.display = data.role_dimension_available ? "none" : "block";
+            }
+
+            const emp = data.employer_dedicated_metrics || {};
+            const startsEl = document.getElementById("roleEmpStarts");
+            const completesEl = document.getElementById("roleEmpCompletes");
+            const convRateEl = document.getElementById("roleEmpConvRate");
+            if (startsEl) startsEl.textContent = Number(emp.employer_reg_start_users || 0).toLocaleString();
+            if (completesEl) completesEl.textContent = Number(emp.employer_reg_complete_users || 0).toLocaleString();
+            if (convRateEl) convRateEl.textContent = `${emp.employer_conversion_rate || 0.0}%`;
+
+            // Seekers summary
+            const jsSignupsEl = document.getElementById("roleJsSignups");
+            const jsLoginsEl = document.getElementById("roleJsLogins");
+            if (jsSignupsEl) jsSignupsEl.textContent = data.role_dimension_available ? "Tagged" : "See Email/OAuth Funnel above";
+            if (jsLoginsEl) jsLoginsEl.textContent = data.role_dimension_available ? "Tagged" : "--";
+        }
+
+        function renderGA4Organic(data) {
+            // Daily Organic Table
+            const dailyTbody = document.getElementById("ga4OrganicDailyTbody");
+            if (dailyTbody) {
+                const trends = data.daily_trends || [];
+                if (trends.length === 0) {
+                    dailyTbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #94a3b8; padding: 12px;">No organic traffic recorded for period</td></tr>';
+                } else {
+                    dailyTbody.innerHTML = trends.map(t => `
+                        <tr>
+                            <td style="padding: 6px 10px; font-weight: 600;">${t.date}</td>
+                            <td style="padding: 6px 10px; text-align: right; font-weight: 700; color: #059669;">${t.users}</td>
+                            <td style="padding: 6px 10px; text-align: right; color: #1e293b;">${t.sessions}</td>
+                            <td style="padding: 6px 10px; text-align: right; color: #64748b;">${t.engaged_sessions}</td>
+                        </tr>
+                    `).join('');
+                }
+            }
+
+            // Acquisition Sources Table
+            const sourcesTbody = document.getElementById("ga4SourcesTbody");
+            if (sourcesTbody) {
+                const sources = data.sources || [];
+                if (sources.length === 0) {
+                    sourcesTbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #94a3b8; padding: 12px;">No sources recorded</td></tr>';
+                } else {
+                    sourcesTbody.innerHTML = sources.map(s => {
+                        const isOrganic = s.source_medium.toLowerCase().includes('organic');
+                        const isGoogleJobs = s.source_medium.toLowerCase().includes('jobs');
+                        const isAi = s.source_medium.toLowerCase().includes('assistant') || s.source_medium.toLowerCase().includes('chatgpt');
+                        let badgeColor = "#475569";
+                        let badgeBg = "#f1f5f9";
+                        if (isGoogleJobs) { badgeColor = "#0284c7"; badgeBg = "#e0f2fe"; }
+                        else if (isOrganic) { badgeColor = "#059669"; badgeBg = "#dcfce7"; }
+                        else if (isAi) { badgeColor = "#7c3aed"; badgeBg = "#f3e8ff"; }
+
+                        return `
+                            <tr>
+                                <td style="padding: 6px 10px;">
+                                    <span style="background: ${badgeBg}; color: ${badgeColor}; font-weight: 600; padding: 2px 6px; border-radius: 4px; font-size: 11px;">
+                                        ${s.source_medium}
+                                    </span>
+                                </td>
+                                <td style="padding: 6px 10px; text-align: right; font-weight: 700; color: #1e293b;">${s.sessions}</td>
+                                <td style="padding: 6px 10px; text-align: right; color: #2563eb;">${s.users}</td>
+                                <td style="padding: 6px 10px; text-align: right; color: #059669; font-weight: 600;">${s.engagement_rate}%</td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            }
+        }
+
+        function renderGA4LandingPages(data) {
+            const tbody = document.getElementById("ga4LandingPagesTbody");
+            if (!tbody) return;
+
+            const pages = data.landing_pages || [];
+            if (pages.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #94a3b8; padding: 18px;">No landing page data for selected period</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = pages.map((p, idx) => {
+                let badge = '<span style="background: #f1f5f9; color: #475569; padding: 2px 6px; border-radius: 4px; font-size: 10.5px;">Other</span>';
+                if (p.page_type === "job_detail") {
+                    badge = '<span style="background: #e0f2fe; color: #0284c7; font-weight: 700; padding: 2px 6px; border-radius: 4px; font-size: 10.5px;">Job Posting</span>';
+                } else if (p.page_type === "homepage") {
+                    badge = '<span style="background: #dcfce7; color: #15803d; font-weight: 700; padding: 2px 6px; border-radius: 4px; font-size: 10.5px;">Homepage</span>';
+                } else if (p.page_type === "jobs_directory") {
+                    badge = '<span style="background: #fef3c7; color: #b45309; font-weight: 700; padding: 2px 6px; border-radius: 4px; font-size: 10.5px;">Jobs Directory</span>';
+                } else if (p.page_type === "admin") {
+                    badge = '<span style="background: #f1f5f9; color: #64748b; padding: 2px 6px; border-radius: 4px; font-size: 10.5px;">Admin</span>';
+                }
+
+                return `
+                    <tr>
+                        <td style="padding: 8px 12px; font-weight: 600; color: #64748b;">${idx + 1}</td>
+                        <td style="padding: 8px 12px; font-family: monospace; font-size: 12px; font-weight: 600; color: #1e293b; max-width: 320px; word-break: break-all;">
+                            ${p.landing_page}
+                        </td>
+                        <td style="padding: 8px 12px; text-align: center;">${badge}</td>
+                        <td style="padding: 8px 12px; text-align: right; font-weight: 700; color: #1e293b;">${p.sessions}</td>
+                        <td style="padding: 8px 12px; text-align: right; color: #2563eb;">${p.users}</td>
+                        <td style="padding: 8px 12px; text-align: right; color: #059669;">${p.engaged_sessions}</td>
+                        <td style="padding: 8px 12px; text-align: right; font-weight: 600; color: #475569;">${p.engagement_rate}%</td>
+                        <td style="padding: 8px 12px; text-align: right; font-weight: 700; color: ${p.conversions > 0 ? '#15803d' : '#94a3b8'};">
+                            ${p.conversions > 0 ? `+${p.conversions}` : '0'}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function setGA4TrendsGranularity(granularity) {
+            currentGA4TrendsGranularity = granularity;
+            ["Daily", "Weekly", "Monthly"].forEach(g => {
+                const btn = document.getElementById(`ga4TrendBtn${g}`);
+                if (btn) {
+                    if (g.toLowerCase() === granularity) {
+                        btn.style.background = "var(--accent-blue, #2563eb)";
+                        btn.style.color = "white";
+                        btn.style.fontWeight = "700";
+                    } else {
+                        btn.style.background = "#e2e8f0";
+                        btn.style.color = "#475569";
+                        btn.style.fontWeight = "600";
+                    }
+                }
+            });
+            loadGA4Analytics(false);
+        }
+
+        function renderGA4Trends(data) {
+            const tbody = document.getElementById("ga4TrendsTbody");
+            if (!tbody) return;
+
+            const trends = data.trends || [];
+            if (trends.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #94a3b8; padding: 16px;">No GA4 trends data for selected period</td></tr>';
+                return;
+            }
+
+            const maxUsers = Math.max(...trends.map(t => t.total_users || 0), 1);
+
+            tbody.innerHTML = trends.map(t => {
+                const u = parseInt(t.total_users || 0);
+                const nu = parseInt(t.new_users || 0);
+                const s = parseInt(t.sessions || 0);
+                const eng = parseInt(t.engaged_sessions || 0);
+                const conv = parseInt(t.sign_ups || 0);
+                const barWidth = Math.min(Math.round((u / maxUsers) * 100), 100);
+
+                return `
+                    <tr>
+                        <td style="padding: 8px 12px; font-weight: 700; color: #1e293b;">${t.period}</td>
+                        <td style="padding: 8px 12px; text-align: right; color: #2563eb; font-weight: 700;">${u}</td>
+                        <td style="padding: 8px 12px; text-align: right; color: #10b981; font-weight: 600;">${nu}</td>
+                        <td style="padding: 8px 12px; text-align: right; color: #6366f1; font-weight: 600;">${s}</td>
+                        <td style="padding: 8px 12px; text-align: right; color: #059669; font-weight: 600;">${eng}</td>
+                        <td style="padding: 8px 12px; text-align: right; font-weight: 700; color: ${conv > 0 ? '#15803d' : '#94a3b8'};">
+                            ${conv > 0 ? `+${conv}` : '0'}
+                        </td>
+                        <td style="padding: 8px 12px; text-align: center;">
+                            <div style="background: #f1f5f9; border-radius: 4px; height: 10px; width: 100%; min-width: 80px; overflow: hidden; display: inline-block;">
+                                <div style="background: linear-gradient(90deg, #3b82f6, #059669); height: 100%; width: ${barWidth}%;"></div>
                             </div>
                         </td>
                     </tr>
