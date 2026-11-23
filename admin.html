@@ -56,6 +56,7 @@
                 <li class="sidebar-menu-item" data-tab="sources"><a><span>🌐</span> Job Sources</a></li>
                 <li class="sidebar-menu-item" data-tab="companies"><a><span>🏢</span> Companies</a></li>
                 <li class="sidebar-menu-item" data-tab="job-analytics"><a><span>📊</span> Job Seeker Analytics</a></li>
+                <li class="sidebar-menu-item" data-tab="growth-analytics"><a><span>📈</span> Growth Analytics</a></li>
                 <li class="sidebar-menu-item" data-tab="comingsoon"><a><span>⏳</span> Coming Soon CMS</a></li>
                 <li class="sidebar-menu-item" data-tab="media"><a><span>🖼️</span> Media Library</a></li>
                 <li class="sidebar-menu-item" data-tab="enquiries"><a><span>📨</span> Enquiries</a></li>
@@ -1576,6 +1577,279 @@
                     </div>
                 </div>
 
+
+                <!-- Growth Analytics Tab (Phase 1D-1: PostgreSQL Ground Truth) -->
+                <div id="tab-growth-analytics" class="tab-content">
+                    <!-- 1. Header & Filters Bar -->
+                    <div class="card-panel" style="margin-bottom: 24px; border-left: 4px solid var(--accent-blue, #2563eb);">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                                    <h2 class="card-panel-title" style="margin: 0; font-size: 20px;">📈 DigiGarment Growth Analytics</h2>
+                                    <span style="background: #e0f2fe; color: #0284c7; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; text-transform: uppercase;">PostgreSQL Ground Truth</span>
+                                    <span style="background: #fef3c7; color: #92400e; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px;">Timezone: IST (UTC+5:30)</span>
+                                </div>
+                                <p style="margin: 0; color: #64748b; font-size: 13.5px;">
+                                    Authoritative transactional metrics on Job Seeker acquisition, Employer onboarding, active job inventory, and liquidity.
+                                </p>
+                            </div>
+                            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                                <div>
+                                    <label style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 2px;">Reporting Range</label>
+                                    <select id="growthRangeSelect" class="form-control" style="width: auto; min-width: 140px; font-weight: 600;" onchange="loadGrowthAnalytics(false)">
+                                        <option value="today">Today (IST)</option>
+                                        <option value="7d">Last 7 Days</option>
+                                        <option value="30d" selected>Last 30 Days</option>
+                                        <option value="90d">Last 90 Days</option>
+                                        <option value="all">All Time</option>
+                                    </select>
+                                </div>
+                                <div style="align-self: flex-end;">
+                                    <button type="button" id="growthRefreshBtn" class="btn btn-primary" onclick="loadGrowthAnalytics(true)" style="display: flex; align-items: center; gap: 6px; font-weight: 600;">
+                                        <span id="growthRefreshIcon">🔄</span> Refresh
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #64748b;">
+                            <span id="growthLastUpdatedLabel">⏱️ Last synchronized: Loading...</span>
+                            <span id="growthCacheNotice" style="color: #059669; font-weight: 600;">⚡ 10-Minute TTL Cache Active</span>
+                        </div>
+                    </div>
+
+                    <!-- Error Alert Banner (Hidden by default) -->
+                    <div id="growthErrorBanner" style="display: none; background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px;">
+                        <span id="growthErrorMessage" style="font-size: 13px; font-weight: 600;">Failed to load analytics data.</span>
+                    </div>
+
+                    <!-- 2. Executive KPI Scorecards (6 Key Metrics) -->
+                    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                        <!-- KPI 1: Job Seekers -->
+                        <div class="stat-card" style="border-top: 3px solid #3b82f6;">
+                            <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1); color: #2563eb;">👥</div>
+                            <div class="stat-info">
+                                <h3 id="growthKpiJobseekers">0</h3>
+                                <p style="margin: 0; font-weight: 600;">Registered Job Seekers</p>
+                                <div style="font-size: 11px; color: #64748b; margin-top: 4px;" id="growthKpiJobseekersSub">Verified: 0 (0%)</div>
+                            </div>
+                        </div>
+
+                        <!-- KPI 2: Employers -->
+                        <div class="stat-card" style="border-top: 3px solid #8b5cf6;">
+                            <div class="stat-icon" style="background: rgba(139, 92, 246, 0.1); color: #7c3aed;">🏢</div>
+                            <div class="stat-info">
+                                <h3 id="growthKpiEmployers">0</h3>
+                                <p style="margin: 0; font-weight: 600;">Registered Employers</p>
+                                <div style="font-size: 11px; color: #64748b; margin-top: 4px;" id="growthKpiEmployersSub">Profiles: 0 created</div>
+                            </div>
+                        </div>
+
+                        <!-- KPI 3: Active Jobs -->
+                        <div class="stat-card" style="border-top: 3px solid #10b981;">
+                            <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: #059669;">💼</div>
+                            <div class="stat-info">
+                                <h3 id="growthKpiActiveJobs">0</h3>
+                                <p style="margin: 0; font-weight: 600;">Active Live Jobs</p>
+                                <div style="font-size: 11px; color: #64748b; margin-top: 4px;" id="growthKpiActiveJobsSub">Total Posted: 0</div>
+                            </div>
+                        </div>
+
+                        <!-- KPI 4: Applications -->
+                        <div class="stat-card" style="border-top: 3px solid #f59e0b;">
+                            <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #d97706;">📨</div>
+                            <div class="stat-info">
+                                <h3 id="growthKpiApplications">0</h3>
+                                <p style="margin: 0; font-weight: 600;">Candidate Applications</p>
+                                <div style="font-size: 11px; color: #64748b; margin-top: 4px;" id="growthKpiApplicationsSub">Avg / Active Job: 0.0</div>
+                            </div>
+                        </div>
+
+                        <!-- KPI 5: Employer Activation -->
+                        <div class="stat-card" style="border-top: 3px solid #06b6d4;">
+                            <div class="stat-icon" style="background: rgba(6, 182, 212, 0.1); color: #0891b2;">🚀</div>
+                            <div class="stat-info">
+                                <h3 id="growthKpiEmployerActivation">0.0%</h3>
+                                <p style="margin: 0; font-weight: 600;">Employer Activation</p>
+                                <div style="font-size: 11px; color: #64748b; margin-top: 4px;" id="growthKpiEmployerActivationSub">0 posted >= 1 job</div>
+                            </div>
+                        </div>
+
+                        <!-- KPI 6: Profile Completion -->
+                        <div class="stat-card" style="border-top: 3px solid #ec4899;">
+                            <div class="stat-icon" style="background: rgba(236, 72, 153, 0.1); color: #db2777;">📋</div>
+                            <div class="stat-info">
+                                <h3 id="growthKpiProfileCompletion">0.0%</h3>
+                                <p style="margin: 0; font-weight: 600;">Profile Completion</p>
+                                <div style="font-size: 11px; color: #64748b; margin-top: 4px;" id="growthKpiProfileCompletionSub">0 completed profiles</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Two-Column Row: Job Seeker Growth & Employer Growth -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 24px; margin-bottom: 24px;">
+                        <!-- Panel: Job Seeker Growth -->
+                        <div class="card-panel">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #1e293b;">👤 Job Seeker Acquisition & Verification</h3>
+                                <span class="badge" style="background: #f1f5f9; color: #475569; font-size: 11px; padding: 2px 8px; border-radius: 4px;">Public Users</span>
+                            </div>
+
+                            <!-- Mini Stats Bar -->
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; text-align: center;">
+                                <div style="background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                                    <div style="font-size: 11px; color: #64748b; font-weight: 600;">WITH RESUME</div>
+                                    <div id="growthJsWithResume" style="font-size: 18px; font-weight: 700; color: #0284c7; margin-top: 2px;">0</div>
+                                </div>
+                                <div style="background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                                    <div style="font-size: 11px; color: #64748b; font-weight: 600;">WITH SKILLS</div>
+                                    <div id="growthJsWithSkills" style="font-size: 18px; font-weight: 700; color: #059669; margin-top: 2px;">0</div>
+                                </div>
+                                <div style="background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                                    <div style="font-size: 11px; color: #64748b; font-weight: 600;">ACTIVE USERS</div>
+                                    <div id="growthJsActive" style="font-size: 18px; font-weight: 700; color: #6366f1; margin-top: 2px;">0</div>
+                                </div>
+                            </div>
+
+                            <!-- Auth Method Breakdown -->
+                            <div style="margin-bottom: 16px; background: #fdfefe; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px;">
+                                <div style="font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 8px;">REGISTRATION AUTH METHOD SPLIT</div>
+                                <div id="growthJsAuthBreakdown" style="display: flex; gap: 12px; flex-wrap: wrap;">
+                                    <span style="font-size: 12px; color: #64748b;">Loading auth breakdown...</span>
+                                </div>
+                            </div>
+
+                            <!-- Daily Velocity Table -->
+                            <div style="font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 8px;">RECENT REGISTRATION VELOCITY (IST)</div>
+                            <div style="overflow-x: auto; max-height: 280px;">
+                                <table class="data-table" style="width: 100%; font-size: 12px;">
+                                    <thead>
+                                        <tr>
+                                            <th style="padding: 6px 10px;">Date</th>
+                                            <th style="padding: 6px 10px; text-align: right;">Total</th>
+                                            <th style="padding: 6px 10px; text-align: right;">Verified</th>
+                                            <th style="padding: 6px 10px; text-align: right;">Google</th>
+                                            <th style="padding: 6px 10px; text-align: right;">Local</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="growthJsDailyTableBody">
+                                        <tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 12px;">Loading registrations...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Panel: Employer Growth & Activation -->
+                        <div class="card-panel">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #1e293b;">🏢 Employer Growth & Location Distribution</h3>
+                                <span class="badge" style="background: #f1f5f9; color: #475569; font-size: 11px; padding: 2px 8px; border-radius: 4px;">Company Profiles</span>
+                            </div>
+
+                            <!-- Activation Funnel Bar -->
+                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+                                <div style="font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 10px;">EMPLOYER ACTIVATION FUNNEL</div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; text-align: center;">
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 18px; font-weight: 700; color: #1e293b;" id="growthFunnelEmpRegistered">0</div>
+                                        <div style="font-size: 11px; color: #64748b;">1. Registered</div>
+                                    </div>
+                                    <div style="color: #cbd5e1; font-weight: bold;">➔</div>
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 18px; font-weight: 700; color: #0284c7;" id="growthFunnelEmpProfiles">0</div>
+                                        <div style="font-size: 11px; color: #64748b;">2. Profiles Created</div>
+                                    </div>
+                                    <div style="color: #cbd5e1; font-weight: bold;">➔</div>
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 18px; font-weight: 700; color: #059669;" id="growthFunnelEmpActivated">0</div>
+                                        <div style="font-size: 11px; color: #64748b;">3. Posted Job (Active)</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Top Locations Table -->
+                            <div style="font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 8px;">TOP EMPLOYER CONCENTRATION (LOCATIONS)</div>
+                            <div style="overflow-x: auto; max-height: 280px;">
+                                <table class="data-table" style="width: 100%; font-size: 12px;">
+                                    <thead>
+                                        <tr>
+                                            <th style="padding: 6px 10px;">Location / Cluster</th>
+                                            <th style="padding: 6px 10px; text-align: right;">Company Count</th>
+                                            <th style="padding: 6px 10px; text-align: right;">Share</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="growthEmpLocationTableBody">
+                                        <tr><td colspan="3" style="text-align: center; color: #94a3b8; padding: 12px;">Loading locations...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Job Performance & Liquidity Panel -->
+                    <div class="card-panel" style="margin-bottom: 24px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <div>
+                                <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #1e293b;">💼 Job Inventory & Department Breakdown</h3>
+                                <p style="margin: 0; font-size: 12px; color: #64748b;">Marketplace supply, active vs archived vacancies, and application distribution by department.</p>
+                            </div>
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;" id="growthJobStatusBadges">
+                                <!-- Status Badges loaded dynamically -->
+                            </div>
+                        </div>
+
+                        <div style="overflow-x: auto;">
+                            <table class="data-table" style="width: 100%; font-size: 13px;">
+                                <thead>
+                                    <tr style="background: #f8fafc;">
+                                        <th style="padding: 8px 12px;">Department</th>
+                                        <th style="padding: 8px 12px; text-align: right;">Total Jobs</th>
+                                        <th style="padding: 8px 12px; text-align: right;">Active Live Jobs</th>
+                                        <th style="padding: 8px 12px; text-align: right;">Applications Received</th>
+                                        <th style="padding: 8px 12px; text-align: right;">Liquidity Ratio</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="growthJobsDeptTableBody">
+                                    <tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 16px;">Loading department breakdown...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 5. Growth Trends Time Series Panel -->
+                    <div class="card-panel" style="margin-bottom: 24px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+                            <div>
+                                <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #1e293b;">📊 Growth Trends & Progression</h3>
+                                <p style="margin: 0; font-size: 12px; color: #64748b;">Multi-entity synchronized time-series tracking registrations, listings, and applications.</p>
+                            </div>
+                            <div style="display: flex; gap: 6px;">
+                                <button type="button" class="btn btn-sm" id="trendBtnDaily" onclick="setTrendsGranularity('daily')" style="padding: 4px 10px; font-size: 12px; font-weight: 700; background: var(--accent-blue, #2563eb); color: white;">Daily</button>
+                                <button type="button" class="btn btn-sm" id="trendBtnWeekly" onclick="setTrendsGranularity('weekly')" style="padding: 4px 10px; font-size: 12px; font-weight: 600; background: #e2e8f0; color: #475569;">Weekly</button>
+                                <button type="button" class="btn btn-sm" id="trendBtnMonthly" onclick="setTrendsGranularity('monthly')" style="padding: 4px 10px; font-size: 12px; font-weight: 600; background: #e2e8f0; color: #475569;">Monthly</button>
+                            </div>
+                        </div>
+
+                        <div style="overflow-x: auto;">
+                            <table class="data-table" style="width: 100%; font-size: 13px;">
+                                <thead>
+                                    <tr style="background: #f8fafc;">
+                                        <th style="padding: 8px 12px;">Period (IST)</th>
+                                        <th style="padding: 8px 12px; text-align: right;">Job Seekers</th>
+                                        <th style="padding: 8px 12px; text-align: right;">Employers</th>
+                                        <th style="padding: 8px 12px; text-align: right;">Jobs Posted</th>
+                                        <th style="padding: 8px 12px; text-align: right;">Applications Submitted</th>
+                                        <th style="padding: 8px 12px; text-align: center;">Activity Visual</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="growthTrendsTableBody">
+                                    <tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 16px;">Loading trends data...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+
                 <!-- 10. Password Tab -->
                 <div id="tab-password" class="tab-content">
                     <form id="passwordForm">
@@ -2591,11 +2865,313 @@
                 case "sources": loadJobSources(); loadSourceLogs(); break;
                 case "companies": loadAdminCompanies(); loadRegisteredEmployers(); break;
                 case "job-analytics": loadJobSeekerAnalytics(); break;
+                case "growth-analytics": loadGrowthAnalytics(); break;
                 case "comingsoon": loadComingSoon(); break;
                 case "media": loadMedia(); break;
                 case "enquiries": loadEnquiries(); break;
             }
         }
+
+
+        // --- Growth Analytics Controller (Phase 1D-1: PostgreSQL System of Record) ---
+        let currentTrendsGranularity = "daily";
+        let isGrowthLoading = false;
+
+        async function loadGrowthAnalytics(forceRefresh = false) {
+            if (isGrowthLoading) return;
+            isGrowthLoading = true;
+
+            const rangeSelect = document.getElementById("growthRangeSelect");
+            const range = rangeSelect ? rangeSelect.value : "30d";
+            const refreshIcon = document.getElementById("growthRefreshIcon");
+            const errorBanner = document.getElementById("growthErrorBanner");
+            const errorMsg = document.getElementById("growthErrorMessage");
+
+            if (refreshIcon) refreshIcon.style.animation = "spin 1s linear infinite";
+            if (errorBanner) errorBanner.style.display = "none";
+
+            try {
+                const refreshParam = forceRefresh ? "&refresh=true" : "";
+
+                // Fetch all 5 growth endpoints concurrently
+                const [overviewRes, jsRes, empRes, jobsRes, trendsRes] = await Promise.all([
+                    fetch(`/api/admin/growth-analytics/overview?range=${range}${refreshParam}`),
+                    fetch(`/api/admin/growth-analytics/jobseekers?range=${range}${refreshParam}`),
+                    fetch(`/api/admin/growth-analytics/employers?range=${range}${refreshParam}`),
+                    fetch(`/api/admin/growth-analytics/jobs?range=${range}${refreshParam}`),
+                    fetch(`/api/admin/growth-analytics/trends?granularity=${currentTrendsGranularity}&range=${range}${refreshParam}`)
+                ]);
+
+                if (!overviewRes.ok || !jsRes.ok || !empRes.ok || !jobsRes.ok || !trendsRes.ok) {
+                    throw new Error(`API error: one or more analytics endpoints returned non-200 status.`);
+                }
+
+                const overviewData = await overviewRes.json();
+                const jsData = await jsRes.json();
+                const empData = await empRes.json();
+                const jobsData = await jobsRes.json();
+                const trendsData = await trendsRes.json();
+
+                // 1. Render Header Metadata
+                renderGrowthHeader(overviewData);
+
+                // 2. Render Executive KPI Scorecards
+                renderGrowthKPIs(overviewData);
+
+                // 3. Render Job Seeker Growth Details
+                renderJobSeekerGrowth(jsData);
+
+                // 4. Render Employer Growth Details
+                renderEmployerGrowth(empData);
+
+                // 5. Render Job Inventory & Departments
+                renderJobPerformance(jobsData);
+
+                // 6. Render Growth Trends
+                renderGrowthTrends(trendsData);
+
+            } catch (err) {
+                console.error("Failed to load growth analytics:", err);
+                if (errorBanner && errorMsg) {
+                    errorMsg.textContent = "Error loading growth analytics: " + (err.message || "Network error. Please try again.");
+                    errorBanner.style.display = "block";
+                }
+            } finally {
+                isGrowthLoading = false;
+                if (refreshIcon) refreshIcon.style.animation = "none";
+            }
+        }
+
+        function renderGrowthHeader(data) {
+            const lastUpdatedElem = document.getElementById("growthLastUpdatedLabel");
+            if (lastUpdatedElem && data.last_updated) {
+                try {
+                    const d = new Date(data.last_updated);
+                    const istTime = d.toLocaleString("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "medium" });
+                    lastUpdatedElem.innerHTML = `⏱️ Synchronized with PostgreSQL: <strong>${istTime} IST</strong>`;
+                } catch (e) {
+                    lastUpdatedElem.textContent = `⏱️ Synchronized: ${data.last_updated}`;
+                }
+            }
+        }
+
+        function renderGrowthKPIs(data) {
+            const kpi = data.kpis || {};
+            const rates = data.rates || {};
+            const period = data.period_metrics || {};
+
+            // 1. Job Seekers
+            const totalJs = kpi.total_jobseekers || 0;
+            const verJs = kpi.verified_jobseekers || 0;
+            const newJs = period.new_jobseekers || 0;
+            document.getElementById("growthKpiJobseekers").textContent = Number(totalJs).toLocaleString();
+            document.getElementById("growthKpiJobseekersSub").textContent = `Verified: ${verJs} (${rates.jobseeker_verification_rate || 0}%) | +${newJs} in period`;
+
+            // 2. Employers
+            const totalEmp = kpi.total_employers || 0;
+            const profilesEmp = kpi.total_company_profiles || 0;
+            const newEmp = period.new_employers || 0;
+            document.getElementById("growthKpiEmployers").textContent = Number(totalEmp).toLocaleString();
+            document.getElementById("growthKpiEmployersSub").textContent = `Profiles: ${profilesEmp} (${rates.employer_profile_completion_rate || 0}%) | +${newEmp} in period`;
+
+            // 3. Active Jobs
+            const activeJobs = kpi.active_jobs || 0;
+            const totalJobs = kpi.total_jobs || 0;
+            const closedJobs = kpi.closed_or_expired_jobs || 0;
+            document.getElementById("growthKpiActiveJobs").textContent = Number(activeJobs).toLocaleString();
+            document.getElementById("growthKpiActiveJobsSub").textContent = `Total: ${totalJobs} posted | ${closedJobs} closed/expired`;
+
+            // 4. Applications
+            const totalApps = kpi.total_applications || 0;
+            const newApps = period.new_applications || 0;
+            document.getElementById("growthKpiApplications").textContent = Number(totalApps).toLocaleString();
+            document.getElementById("growthKpiApplicationsSub").textContent = `Avg / Active Job: ${rates.avg_applications_per_active_job || 0} | +${newApps} in period`;
+
+            // 5. Employer Activation
+            const actRate = rates.employer_activation_rate || 0.0;
+            const actCount = kpi.activated_employers || 0;
+            document.getElementById("growthKpiEmployerActivation").textContent = `${actRate}%`;
+            document.getElementById("growthKpiEmployerActivationSub").textContent = `${actCount} of ${totalEmp} employers posted >= 1 job`;
+
+            // 6. Profile Completion
+            const compRate = rates.jobseeker_profile_completion_rate || 0.0;
+            const compProfiles = kpi.total_jobseeker_profiles || 0;
+            document.getElementById("growthKpiProfileCompletion").textContent = `${compRate}%`;
+            document.getElementById("growthKpiProfileCompletionSub").textContent = `${compProfiles} of ${totalJs} seekers completed profile`;
+        }
+
+        function renderJobSeekerGrowth(data) {
+            const summary = data.summary || {};
+            document.getElementById("growthJsWithResume").textContent = Number(summary.with_resume || 0).toLocaleString();
+            document.getElementById("growthJsWithSkills").textContent = Number(summary.with_skills || 0).toLocaleString();
+            document.getElementById("growthJsActive").textContent = Number(summary.total_active || 0).toLocaleString();
+
+            // Auth providers split
+            const authContainer = document.getElementById("growthJsAuthBreakdown");
+            if (authContainer) {
+                const providers = data.auth_provider_breakdown || [];
+                if (providers.length === 0) {
+                    authContainer.innerHTML = '<span style="font-size: 12px; color: #94a3b8;">No auth records</span>';
+                } else {
+                    const totalAuth = providers.reduce((sum, p) => sum + parseInt(p.count || 0), 0) || 1;
+                    authContainer.innerHTML = providers.map(p => {
+                        const pct = Math.round((parseInt(p.count || 0) / totalAuth) * 100);
+                        const isGoogle = (p.provider || '').toLowerCase().includes('google');
+                        const bg = isGoogle ? '#eff6ff' : '#f8fafc';
+                        const color = isGoogle ? '#1d4ed8' : '#334155';
+                        const label = isGoogle ? 'Google OAuth' : 'Local Email/Password';
+                        return `
+                            <div style="background: ${bg}; border: 1px solid #e2e8f0; border-radius: 4px; padding: 4px 8px; font-size: 11px; display: inline-flex; align-items: center; gap: 6px;">
+                                <span style="font-weight: 700; color: ${color};">${label}:</span>
+                                <span style="font-weight: 800;">${p.count}</span>
+                                <span style="color: #64748b;">(${pct}%)</span>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            }
+
+            // Daily Velocity Table
+            const dailyTbody = document.getElementById("growthJsDailyTableBody");
+            if (dailyTbody) {
+                const daily = (data.daily_registrations || []).slice(-10).reverse();
+                if (daily.length === 0) {
+                    dailyTbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 12px;">No registrations in selected period</td></tr>';
+                } else {
+                    dailyTbody.innerHTML = daily.map(d => `
+                        <tr>
+                            <td style="padding: 6px 10px; font-weight: 600;">${d.date}</td>
+                            <td style="padding: 6px 10px; text-align: right; font-weight: 700; color: #1e293b;">${d.registered}</td>
+                            <td style="padding: 6px 10px; text-align: right; color: #059669; font-weight: 600;">${d.verified}</td>
+                            <td style="padding: 6px 10px; text-align: right; color: #2563eb;">${d.google_auth}</td>
+                            <td style="padding: 6px 10px; text-align: right; color: #64748b;">${d.local_auth}</td>
+                        </tr>
+                    `).join('');
+                }
+            }
+        }
+
+        function renderEmployerGrowth(data) {
+            const summary = data.summary || {};
+            document.getElementById("growthFunnelEmpRegistered").textContent = Number(summary.total_registered || 0).toLocaleString();
+            document.getElementById("growthFunnelEmpProfiles").textContent = Number(summary.company_profiles_created || 0).toLocaleString();
+            document.getElementById("growthFunnelEmpActivated").textContent = Number(summary.activated_employers || 0).toLocaleString();
+
+            // Top Locations Table
+            const locTbody = document.getElementById("growthEmpLocationTableBody");
+            if (locTbody) {
+                const locs = data.top_locations || [];
+                const totalLocCount = locs.reduce((sum, l) => sum + parseInt(l.count || 0), 0) || 1;
+                if (locs.length === 0) {
+                    locTbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #94a3b8; padding: 12px;">No location data available</td></tr>';
+                } else {
+                    locTbody.innerHTML = locs.map(l => {
+                        const pct = Math.round((parseInt(l.count || 0) / totalLocCount) * 100);
+                        return `
+                            <tr>
+                                <td style="padding: 6px 10px; font-weight: 600; color: #1e293b;">📍 ${l.location}</td>
+                                <td style="padding: 6px 10px; text-align: right; font-weight: 700;">${l.count}</td>
+                                <td style="padding: 6px 10px; text-align: right; color: #0284c7; font-weight: 600;">${pct}%</td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            }
+        }
+
+        function renderJobPerformance(data) {
+            const summary = data.summary || {};
+            const badgeContainer = document.getElementById("growthJobStatusBadges");
+            if (badgeContainer) {
+                badgeContainer.innerHTML = `
+                    <span class="badge" style="background:#dcfce7; color:#15803d; font-weight:700; padding:4px 8px; border-radius:4px;">● ${summary.active_jobs || 0} Published Live</span>
+                    <span class="badge" style="background:#f1f5f9; color:#475569; font-weight:600; padding:4px 8px; border-radius:4px;">● ${summary.draft_jobs || 0} Draft</span>
+                    <span class="badge" style="background:#fef3c7; color:#b45309; font-weight:600; padding:4px 8px; border-radius:4px;">● ${summary.pending_jobs || 0} Pending</span>
+                    <span class="badge" style="background:#fee2e2; color:#b91c1c; font-weight:600; padding:4px 8px; border-radius:4px;">● ${summary.expired_jobs || 0} Expired/Closed</span>
+                `;
+            }
+
+            const deptTbody = document.getElementById("growthJobsDeptTableBody");
+            if (deptTbody) {
+                const depts = data.departments || [];
+                if (depts.length === 0) {
+                    deptTbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 16px;">No department metrics available</td></tr>';
+                } else {
+                    deptTbody.innerHTML = depts.map(d => {
+                        const total = parseInt(d.total_jobs || 0);
+                        const active = parseInt(d.active_jobs || 0);
+                        const apps = parseInt(d.applications || 0);
+                        const ratio = active > 0 ? (apps / active).toFixed(1) : "0.0";
+                        return `
+                            <tr>
+                                <td style="padding: 8px 12px; font-weight: 700; color: #1e293b;">${d.department}</td>
+                                <td style="padding: 8px 12px; text-align: right; font-weight: 600;">${total}</td>
+                                <td style="padding: 8px 12px; text-align: right; color: #059669; font-weight: 700;">${active}</td>
+                                <td style="padding: 8px 12px; text-align: right; color: #d97706; font-weight: 700;">${apps}</td>
+                                <td style="padding: 8px 12px; text-align: right; color: #2563eb; font-weight: 700;">${ratio} apps / job</td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            }
+        }
+
+        function setTrendsGranularity(granularity) {
+            currentTrendsGranularity = granularity;
+            ["trendBtnDaily", "trendBtnWeekly", "trendBtnMonthly"].forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) {
+                    btn.style.background = "#e2e8f0";
+                    btn.style.color = "#475569";
+                }
+            });
+            const activeId = granularity === "daily" ? "trendBtnDaily" : (granularity === "weekly" ? "trendBtnWeekly" : "trendBtnMonthly");
+            const activeBtn = document.getElementById(activeId);
+            if (activeBtn) {
+                activeBtn.style.background = "var(--accent-blue, #2563eb)";
+                activeBtn.style.color = "white";
+            }
+            loadGrowthAnalytics(false);
+        }
+
+        function renderGrowthTrends(data) {
+            const tbody = document.getElementById("growthTrendsTableBody");
+            if (!tbody) return;
+
+            const trends = data.trends || [];
+            if (trends.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 16px;">No trends data for selected period</td></tr>';
+                return;
+            }
+
+            // Find max values for visual activity bar
+            const maxActivity = Math.max(...trends.map(t => (t.jobseekers || 0) + (t.employers || 0) + (t.jobs || 0) + (t.applications || 0)), 1);
+
+            tbody.innerHTML = trends.map(t => {
+                const js = parseInt(t.jobseekers || 0);
+                const emp = parseInt(t.employers || 0);
+                const jb = parseInt(t.jobs || 0);
+                const app = parseInt(t.applications || 0);
+                const totalActivity = js + emp + jb + app;
+                const barWidth = Math.min(Math.round((totalActivity / maxActivity) * 100), 100);
+
+                return `
+                    <tr>
+                        <td style="padding: 8px 12px; font-weight: 700; color: #1e293b;">${t.period_label}</td>
+                        <td style="padding: 8px 12px; text-align: right; color: #2563eb; font-weight: 600;">${js > 0 ? `+${js}` : '0'}</td>
+                        <td style="padding: 8px 12px; text-align: right; color: #7c3aed; font-weight: 600;">${emp > 0 ? `+${emp}` : '0'}</td>
+                        <td style="padding: 8px 12px; text-align: right; color: #059669; font-weight: 600;">${jb > 0 ? `+${jb}` : '0'}</td>
+                        <td style="padding: 8px 12px; text-align: right; color: #d97706; font-weight: 600;">${app > 0 ? `+${app}` : '0'}</td>
+                        <td style="padding: 8px 12px; text-align: center;">
+                            <div style="background: #f1f5f9; border-radius: 4px; height: 10px; width: 100%; min-width: 80px; overflow: hidden; display: inline-block;">
+                                <div style="background: linear-gradient(90deg, #3b82f6, #10b981); height: 100%; width: ${barWidth}%;"></div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
 
         // --- Job Seeker Analytics & Conversion Controller ---
         let currentAnalyticsData = null;
@@ -3338,7 +3914,7 @@
         function filterAnalyticsTable() {
             const query = (document.getElementById("analyticsJobSearch").value || "").toLowerCase().trim();
             if (!currentAnalyticsData || !currentAnalyticsData.top_jobs) return;
-            const filtered = currentAnalyticsData.top_jobs.filter(j => 
+            const filtered = currentAnalyticsData.top_jobs.filter(j =>
                 (j.title || "").toLowerCase().includes(query) ||
                 (j.company_name || "").toLowerCase().includes(query) ||
                 (j.source_type || "").toLowerCase().includes(query)

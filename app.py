@@ -1149,6 +1149,7 @@ import routers.admin_ingestion
 import routers.seo
 import routers.public_auth
 import routers.employer_jobs
+import routers.admin_growth_analytics
 
 routers.jobs.init_db_helpers(db_enabled, query_db, execute_db, execute_db_returning)
 routers.admin_jobs.init_admin_helpers(db_enabled, query_db, execute_db, execute_db_returning, get_current_admin)
@@ -1156,6 +1157,7 @@ routers.admin_ingestion.init_ingestion_router(query_db, execute_db, execute_db_r
 routers.seo.init_seo_db_helpers(db_enabled, query_db)
 routers.public_auth.init_public_auth_helpers(db_enabled, query_db, execute_db, execute_db_returning)
 routers.employer_jobs.init_employer_jobs_helpers(db_enabled, query_db, execute_db, execute_db_returning, BASE_DIR, db_pool)
+routers.admin_growth_analytics.init_growth_analytics_router(db_enabled, query_db, get_current_admin)
 
 app.include_router(routers.jobs.router)
 app.include_router(routers.admin_jobs.router)
@@ -1163,6 +1165,7 @@ app.include_router(routers.admin_ingestion.router)
 app.include_router(routers.seo.router)
 app.include_router(routers.public_auth.router)
 app.include_router(routers.employer_jobs.router)
+app.include_router(routers.admin_growth_analytics.router)
 
 # Custom 404 Exception Handler returning HTTP 404 status code and friendly 404.html
 @app.exception_handler(StarletteHTTPException)
