@@ -32,39 +32,62 @@
     <style>
         :root {
             --dg-navy: #081226;
-            --dg-light-navy: #0e1c38;
+            --dg-navy-card: #0d1d3b;
             --dg-red: #9E1B32;
             --dg-red-hover: #b92a43;
             --dg-slate: #64748B;
+            --dg-slate-light: #94A3B8;
             --dg-bg: #F8FAFC;
             --dg-white: #FFFFFF;
             --dg-border: #E2E8F0;
+            --dg-border-hover: #CBD5E1;
+            --dg-green: #10B981;
+            --dg-blue-light: #EFF6FF;
+            --dg-blue-border: #BFDBFE;
+            --dg-blue-text: #1D4ED8;
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
             background-color: var(--dg-bg);
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             color: #0F172A;
             margin: 0;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            -webkit-font-smoothing: antialiased;
         }
 
+        /* Top Bar */
         .auth-nav {
             background: var(--dg-navy);
-            padding: 16px 24px;
+            padding: 14px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         .auth-nav .brand img {
-            height: 38px;
+            height: 36px;
+            display: block;
+        }
+
+        .auth-nav .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
         }
 
         .auth-nav a {
-            color: #cbd5e1;
+            color: #CBD5E1;
             text-decoration: none;
             font-size: 14px;
             font-weight: 500;
@@ -72,206 +95,287 @@
         }
 
         .auth-nav a:hover {
-            color: #ffffff;
+            color: #FFFFFF;
         }
 
         .auth-nav .nav-signup-btn {
             background: var(--dg-red);
-            color: #fff;
-            padding: 8px 18px;
-            border-radius: 6px;
-            margin-left: 12px;
-            text-decoration: none;
+            color: #FFFFFF;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13.5px;
+            transition: background 0.2s, transform 0.1s;
         }
 
         .auth-nav .nav-signup-btn:hover {
             background: var(--dg-red-hover);
-        }
-
-        .auth-container {
-            max-width: 440px;
-            width: 90%;
-            margin: 50px auto;
-            background: var(--dg-white);
-            border-radius: 14px;
-            box-shadow: 0 10px 30px rgba(8, 18, 38, 0.06);
-            border: 1px solid var(--dg-border);
-            padding: 40px 32px;
-            flex-grow: 1;
-        }
-
-        .auth-header {
-            text-align: center;
-            margin-bottom: 28px;
-        }
-
-        .auth-header .eyebrow {
-            color: var(--dg-red);
-            font-weight: 700;
-            font-size: 12px;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            margin-bottom: 6px;
-        }
-
-        .auth-header h1 {
-            font-size: 26px;
-            font-weight: 800;
-            color: var(--dg-navy);
-            margin: 0 0 8px 0;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-
-        .auth-header p {
-            color: var(--dg-slate);
-            font-size: 14px;
-            margin: 0;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 13.5px;
-            font-weight: 600;
-            color: var(--dg-navy);
-            margin-bottom: 6px;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1px solid var(--dg-border);
-            border-radius: 8px;
-            font-size: 14px;
-            color: var(--dg-navy);
-            font-family: inherit;
-            box-sizing: border-box;
-            background: #fff;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--dg-red);
-            box-shadow: 0 0 0 3px rgba(158, 27, 50, 0.12);
-        }
-
-        .flex-between {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .forgot-link {
-            font-size: 13px;
-            color: var(--dg-red);
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .forgot-link:hover {
-            text-decoration: underline;
-        }
-
-        .btn-submit {
-            width: 100%;
-            padding: 13px;
-            background: var(--dg-navy);
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-top: 10px;
-        }
-
-        .btn-submit:hover:not(:disabled) {
-            background: var(--dg-red);
             transform: translateY(-1px);
         }
 
-        .btn-submit:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
+        /* Main Container */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
         }
 
-        .msg-alert {
-            padding: 12px 16px;
+        .auth-split-wrapper {
+            max-width: 1040px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1.08fr;
+            background: var(--dg-white);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 16px 40px -10px rgba(8, 18, 38, 0.08), 0 0 1px 1px rgba(8, 18, 38, 0.04);
+            border: 1px solid var(--dg-border);
+        }
+
+        /* Left Side: Brand Showcase */
+        .brand-showcase {
+            background: linear-gradient(145deg, #071020 0%, #0d1e3d 60%, #112852 100%);
+            color: #FFFFFF;
+            padding: 48px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .brand-showcase::after {
+            content: '';
+            position: absolute;
+            bottom: -50px;
+            right: -50px;
+            width: 260px;
+            height: 260px;
+            background: radial-gradient(circle, rgba(158, 27, 50, 0.18) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .showcase-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.09);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #F8FAFC;
+            letter-spacing: 0.03em;
+            margin-bottom: 24px;
+            width: fit-content;
+        }
+
+        .showcase-badge .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--dg-green);
+            border-radius: 50%;
+            box-shadow: 0 0 6px var(--dg-green);
+        }
+
+        .showcase-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 27px;
+            font-weight: 800;
+            line-height: 1.3;
+            color: #FFFFFF;
+            margin: 0 0 16px 0;
+        }
+
+        .showcase-title span {
+            color: #F87171;
+        }
+
+        .showcase-desc {
+            font-size: 14.5px;
+            line-height: 1.6;
+            color: #CBD5E1;
+            margin: 0 0 32px 0;
+        }
+
+        .showcase-perks {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .perk-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .perk-icon {
+            width: 22px;
+            height: 22px;
+            min-width: 22px;
+            background: rgba(16, 185, 129, 0.15);
+            color: #34D399;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 2px;
+        }
+
+        .perk-text h4 {
+            margin: 0 0 3px 0;
+            font-size: 14px;
+            font-weight: 700;
+            color: #F8FAFC;
+        }
+
+        .perk-text p {
+            margin: 0;
+            font-size: 12.5px;
+            color: #94A3B8;
+            line-height: 1.45;
+        }
+
+        .showcase-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12.5px;
+            color: #94A3B8;
+        }
+
+        .showcase-stat-pill {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
             border-radius: 8px;
-            font-size: 13.5px;
-            margin-bottom: 20px;
-            display: none;
-            line-height: 1.4;
-        }
-
-        .msg-error {
-            background: #fee2e2;
-            color: #b91c1c;
-            border: 1px solid #fecaca;
-        }
-
-        .msg-success {
-            background: #dcfce7;
-            color: #15803d;
-            border: 1px solid #bbf7d0;
-        }
-
-        .auth-footer-links {
-            text-align: center;
-            margin-top: 24px;
-            font-size: 13.5px;
-            color: var(--dg-slate);
-        }
-
-        .auth-footer-links a {
-            color: var(--dg-red);
             font-weight: 600;
-            text-decoration: none;
+            color: #E2E8F0;
         }
 
-        .auth-footer-links a:hover {
-            text-decoration: underline;
+        /* Right Side: Login Card */
+        .auth-card-body {
+            padding: 44px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
+        .card-header {
+            margin-bottom: 24px;
+        }
+
+        .card-header .eyebrow {
+            color: var(--dg-red);
+            font-weight: 800;
+            font-size: 11.5px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin: 0 0 6px 0;
+        }
+
+        .card-header h1 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--dg-navy);
+            margin: 0 0 6px 0;
+            letter-spacing: -0.02em;
+        }
+
+        .card-header p {
+            color: var(--dg-slate);
+            font-size: 13.5px;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        /* Role Selector Segmented Control */
+        .role-selector {
+            display: flex;
+            background: #F1F5F9;
+            padding: 4px;
+            border-radius: 10px;
+            margin-bottom: 22px;
+            border: 1px solid var(--dg-border);
+        }
+
+        .role-btn {
+            flex: 1;
+            padding: 10px 14px;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--dg-slate);
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .role-btn.active {
+            background: var(--dg-white);
+            color: var(--dg-navy);
+            font-weight: 700;
+            box-shadow: 0 2px 6px rgba(8, 18, 38, 0.08);
+        }
+
+        .role-btn:hover:not(.active) {
+            color: var(--dg-navy);
+        }
+
+        /* Google Button */
         .btn-google {
             width: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 12px;
-            background: #ffffff;
-            color: #1f2937;
-            border: 1.5px solid #cbd5e1;
-            border-radius: 8px;
+            background: #FFFFFF;
+            color: #1F2937;
+            border: 1.5px solid #CBD5E1;
+            border-radius: 10px;
             padding: 12px 16px;
-            font-size: 14.5px;
+            font-size: 14px;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.2s;
-            margin-bottom: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            margin-bottom: 20px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+            min-height: 48px;
         }
 
         .btn-google:hover {
-            background: #f8fafc;
-            border-color: #94a3b8;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            background: #F8FAFC;
+            border-color: #94A3B8;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+            transform: translateY(-1px);
         }
 
+        /* Divider */
         .auth-divider {
             display: flex;
             align-items: center;
             text-align: center;
-            margin: 18px 0;
-            color: var(--dg-slate);
-            font-size: 11.5px;
+            margin: 18px 0 22px 0;
+            color: #94A3B8;
+            font-size: 11px;
             font-weight: 700;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
         }
 
         .auth-divider::before, .auth-divider::after {
@@ -281,9 +385,184 @@
         }
 
         .auth-divider span {
-            padding: 0 10px;
+            padding: 0 12px;
         }
 
+        /* Form Inputs */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--dg-navy);
+            margin-bottom: 6px;
+        }
+
+        .form-control-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid var(--dg-border);
+            border-radius: 9px;
+            font-size: 14px;
+            color: var(--dg-navy);
+            font-family: inherit;
+            background: #FFFFFF;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            min-height: 46px;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--dg-red);
+            box-shadow: 0 0 0 3px rgba(158, 27, 50, 0.12);
+        }
+
+        .form-control::placeholder {
+            color: #94A3B8;
+        }
+
+        /* Password Wrapper with Toggle */
+        .password-wrap .form-control {
+            padding-right: 44px;
+        }
+
+        .password-toggle-btn {
+            position: absolute;
+            right: 10px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: #94A3B8;
+            padding: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            transition: color 0.15s;
+        }
+
+        .password-toggle-btn:hover {
+            color: var(--dg-navy);
+        }
+
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .forgot-link {
+            font-size: 12.5px;
+            color: var(--dg-red);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.15s;
+        }
+
+        .forgot-link:hover {
+            color: var(--dg-red-hover);
+            text-decoration: underline;
+        }
+
+        /* Submit Button */
+        .btn-submit {
+            width: 100%;
+            padding: 13px;
+            background: var(--dg-navy);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+            margin-top: 8px;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            background: var(--dg-red);
+            box-shadow: 0 4px 12px rgba(158, 27, 50, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+        /* Alerts */
+        .msg-alert {
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 18px;
+            display: none;
+            line-height: 1.45;
+        }
+
+        .msg-error {
+            background: #FEE2E2;
+            color: #B91C1C;
+            border: 1px solid #FECACA;
+        }
+
+        .msg-success {
+            background: #DCFCE7;
+            color: #15803D;
+            border: 1px solid #BBF7D0;
+        }
+
+        /* Footer Registration CTA */
+        .auth-footer-card {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--dg-border);
+            text-align: center;
+            font-size: 13.5px;
+            color: var(--dg-slate);
+        }
+
+        .auth-footer-card .reg-cta-btn {
+            display: inline-block;
+            margin-top: 8px;
+            color: var(--dg-red);
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .auth-footer-card .reg-cta-btn:hover {
+            color: var(--dg-red-hover);
+            text-decoration: underline;
+        }
+
+        .auth-trust-note {
+            text-align: center;
+            margin-top: 14px;
+            font-size: 11.5px;
+            color: #94A3B8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        /* Modal Overlay */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -299,81 +578,248 @@
         }
 
         .modal-box {
-            background: #fff;
-            border-radius: 12px;
-            max-width: 420px;
+            background: #FFFFFF;
+            border-radius: 14px;
+            max-width: 440px;
             width: 100%;
-            padding: 24px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            padding: 28px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 960px) {
+            .auth-split-wrapper {
+                grid-template-columns: 1fr;
+                max-width: 480px;
+                border-radius: 16px;
+            }
+
+            .brand-showcase {
+                display: none; /* Mobile focuses cleanly on the login card */
+            }
+
+            .auth-card-body {
+                padding: 32px 24px;
+            }
+
+            .main-content {
+                padding: 24px 16px;
+            }
         }
 
         @media (max-width: 480px) {
-            .auth-container {
-                padding: 28px 20px;
-                margin: 30px auto;
+            .auth-card-body {
+                padding: 24px 18px;
+            }
+
+            .card-header h1 {
+                font-size: 22px;
+            }
+
+            .role-btn {
+                font-size: 12.5px;
+                padding: 8px 10px;
+            }
+
+            .btn-google {
+                font-size: 13.5px;
+                padding: 10px 12px;
+            }
+
+            .auth-nav {
+                padding: 12px 16px;
+            }
+
+            .auth-nav .brand img {
+                height: 30px;
+            }
+
+            .auth-nav .nav-signup-btn {
+                padding: 6px 12px;
+                font-size: 12.5px;
+            }
+        }
+
+        @media (max-width: 340px) {
+            .auth-card-body {
+                padding: 20px 14px;
+            }
+
+            .role-btn {
+                font-size: 11.5px;
+                gap: 4px;
+                padding: 8px 6px;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Navigation Bar -->
     <nav class="auth-nav">
-        <a class="brand" href="/">
+        <a class="brand" href="/" aria-label="DigiGarment Home">
             <img src="/assets/images/logo-light.png" alt="DigiGarment Logo">
         </a>
-        <div>
+        <div class="nav-right">
             <a href="/jobs">Tiruppur Jobs</a>
             <a href="/signup" class="nav-signup-btn">Create Account</a>
         </div>
     </nav>
 
-    <div class="auth-container">
-        <div class="auth-header">
-            <p class="eyebrow">DIGIGARMENT JOBS</p>
-            <h1>Welcome Back</h1>
-            <p>Sign in to your Job Seeker or Employer account</p>
-        </div>
+    <!-- Main Content Split -->
+    <main class="main-content">
+        <div class="auth-split-wrapper">
+            <!-- Left Side: Garment Industry Trust Showcase -->
+            <aside class="brand-showcase">
+                <div>
+                    <div class="showcase-badge">
+                        <span class="dot"></span>
+                        Tiruppur's #1 Apparel Portal
+                    </div>
+                    <h2 class="showcase-title">
+                        Empowering Tiruppur’s <span>Garment Industry</span>
+                    </h2>
+                    <p class="showcase-desc">
+                        Direct connection between textile manufacturing units, export houses, and apparel professionals.
+                    </p>
 
-        <div id="alertBox" class="msg-alert"></div>
-
-        <!-- Google 1-Tap / Sign-In Button -->
-        <button type="button" id="btnGoogleSignIn" class="btn-google" onclick="triggerGoogleLogin()">
-            <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
-            Continue with Google
-        </button>
-
-        <div class="auth-divider">
-            <span>OR CONTINUE WITH EMAIL / MOBILE</span>
-        </div>
-
-        <form id="loginForm" onsubmit="handleLogin(event)">
-            <div class="form-group">
-                <label>Email Address or Mobile Number</label>
-                <input type="text" id="loginIdentifier" class="form-control" placeholder="Email or 10-digit mobile number" required autocomplete="username">
-            </div>
-
-            <div class="form-group">
-                <div class="flex-between" style="margin-bottom: 6px;">
-                    <label style="margin-bottom: 0;">Password</label>
-                    <a href="/forgot-password" class="forgot-link">Forgot password?</a>
+                    <div class="showcase-perks">
+                        <div class="perk-item">
+                            <div class="perk-icon">✓</div>
+                            <div class="perk-text">
+                                <h4>Direct Factory HR Access</h4>
+                                <p>Verified vacancies across Merchandising, Production, Cutting, Quality & Accounts.</p>
+                            </div>
+                        </div>
+                        <div class="perk-item">
+                            <div class="perk-icon">✓</div>
+                            <div class="perk-text">
+                                <h4>Fast Candidate Shortlisting</h4>
+                                <p>Garment companies post vacancies and review skilled apparel profiles instantly.</p>
+                            </div>
+                        </div>
+                        <div class="perk-item">
+                            <div class="perk-icon">✓</div>
+                            <div class="perk-text">
+                                <h4>Zero Third-Party Brokerage</h4>
+                                <p>100% transparent and direct contact between employers and job seekers.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <input type="password" id="loginPassword" class="form-control" placeholder="Enter your password" required autocomplete="current-password">
+
+                <div class="showcase-footer">
+                    <div class="showcase-stat-pill">🏭 500+ Verified Units</div>
+                    <span>🔒 256-Bit SSL Encrypted</span>
+                </div>
+            </aside>
+
+            <!-- Right Side: Clean Login Card -->
+            <div class="auth-card-body">
+                <div class="card-header">
+                    <p class="eyebrow">DIGIGARMENT AUTHENTICATION</p>
+                    <h1 id="loginCardTitle">Sign In</h1>
+                    <p id="loginCardSub">Choose your account type to access your dashboard</p>
+                </div>
+
+                <!-- Role Selector -->
+                <div class="role-selector" role="tablist" aria-label="Select Login Role">
+                    <button type="button" class="role-btn active" id="btnRoleJobseeker" onclick="switchLoginRole('individual')" role="tab" aria-selected="true">
+                        <span>👤</span> Job Seeker
+                    </button>
+                    <button type="button" class="role-btn" id="btnRoleEmployer" onclick="switchLoginRole('company')" role="tab" aria-selected="false">
+                        <span>🏢</span> Employer / Unit
+                    </button>
+                </div>
+
+                <div id="alertBox" class="msg-alert" role="alert"></div>
+
+                <!-- Google 1-Tap / Sign-In Button -->
+                <button type="button" id="btnGoogleSignIn" class="btn-google" onclick="triggerGoogleLogin()" aria-label="Sign in with Google">
+                    <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+                    <span id="googleBtnText">Continue with Google (Job Seeker)</span>
+                </button>
+
+                <div class="auth-divider">
+                    <span>Or Sign in with Email / Mobile</span>
+                </div>
+
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="loginIdentifier" id="identifierLabel">Email Address or Mobile Number</label>
+                        <div class="form-control-wrap">
+                            <input type="text" id="loginIdentifier" class="form-control" placeholder="name@gmail.com or 10-digit mobile" required autocomplete="username">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="flex-between">
+                            <label for="loginPassword">Password</label>
+                            <a href="/forgot-password" class="forgot-link" id="forgotPasswordLink">Forgot password?</a>
+                        </div>
+                        <div class="form-control-wrap password-wrap">
+                            <input type="password" id="loginPassword" class="form-control" placeholder="Enter your password" required autocomplete="current-password">
+                            <button type="button" class="password-toggle-btn" id="passwordToggleBtn" onclick="togglePasswordVisibility()" aria-label="Show password" title="Show password">
+                                <svg id="eyeIcon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="btn-submit">
+                        <span id="submitBtnText">Sign In to Account</span>
+                    </button>
+                </form>
+
+                <div class="auth-footer-card">
+                    <span id="footerPromptText">Don't have a Job Seeker account?</span><br>
+                    <a href="/jobseeker/register" id="footerRegisterLink" class="reg-cta-btn">Create Free Job Seeker Account &rarr;</a>
+                </div>
+
+                <div class="auth-trust-note">
+                    🔒 Secure 256-Bit SSL • Confidential &amp; Protected
+                </div>
             </div>
+        </div>
+    </main>
 
-            <button type="submit" id="submitBtn" class="btn-submit">Sign In</button>
-        </form>
-
-        <div class="auth-footer-links">
-            Don't have an account yet?<br>
-            <a href="/jobseeker/register">Register as Job Seeker</a> &bull; <a href="/employer/register">Register as Employer</a>
+    <!-- Google Account Linking Challenge Modal -->
+    <div id="linkingModal" class="modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="linkModalTitle">
+        <div class="modal-box">
+            <h3 id="linkModalTitle" style="margin-top: 0; margin-bottom: 8px; color: var(--dg-navy); font-size: 18px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif;">Link Google Account</h3>
+            <p style="font-size: 13.5px; color: var(--dg-slate); line-height: 1.5; margin-bottom: 16px;">
+                An existing DigiGarment account with email <strong id="linkTargetEmail" style="color: var(--dg-navy);"></strong> was found. Please enter your account password to verify and link your Google account.
+            </p>
+            <div id="linkAlert" class="msg-alert" style="display: none;"></div>
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label for="linkPasswordInput" style="font-size: 13px; font-weight: 700; color: var(--dg-navy); margin-bottom: 6px;">Account Password</label>
+                <div class="form-control-wrap password-wrap">
+                    <input type="password" id="linkPasswordInput" class="form-control" placeholder="Enter your current password">
+                    <button type="button" class="password-toggle-btn" onclick="toggleLinkPasswordVisibility()" aria-label="Show password">
+                        <svg id="linkEyeIcon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <button type="button" id="btnLinkSubmit" class="btn-submit" style="margin-top: 0;" onclick="submitAccountLinkPassword()">Verify &amp; Link Account</button>
+            <div style="text-align: center; margin-top: 14px;">
+                <button type="button" style="background: none; border: none; color: var(--dg-slate); font-size: 13px; cursor: pointer; text-decoration: underline;" onclick="closeLinkingModal()">Cancel</button>
+            </div>
         </div>
     </div>
 
     <script>
+        let currentRole = "individual"; // 'individual' (jobseeker) or 'company' (employer)
+
         function showAlert(msg, isError = true) {
             const el = document.getElementById("alertBox");
             el.textContent = msg;
             el.className = "msg-alert " + (isError ? "msg-error" : "msg-success");
             el.style.display = "block";
+            el.scrollIntoView({ behavior: "smooth", block: "nearest" });
         }
 
         function hideAlert() {
@@ -401,12 +847,121 @@
             return null;
         }
 
-        // Preserve redirect param on registration links (including header Create Account button)
+        // Role Switcher
+        function switchLoginRole(role) {
+            currentRole = role === "company" ? "company" : "individual";
+            hideAlert();
+
+            const btnSeeker = document.getElementById("btnRoleJobseeker");
+            const btnEmployer = document.getElementById("btnRoleEmployer");
+            const googleBtnText = document.getElementById("googleBtnText");
+            const identifierLabel = document.getElementById("identifierLabel");
+            const loginIdentifier = document.getElementById("loginIdentifier");
+            const footerPrompt = document.getElementById("footerPromptText");
+            const footerLink = document.getElementById("footerRegisterLink");
+            const cardSub = document.getElementById("loginCardSub");
+
+            const safeRedirect = getSafeRedirectUrl();
+            const redirectQuery = safeRedirect ? `?redirect=${encodeURIComponent(safeRedirect)}` : '';
+
+            if (currentRole === "individual") {
+                btnSeeker.classList.add("active");
+                btnSeeker.setAttribute("aria-selected", "true");
+                btnEmployer.classList.remove("active");
+                btnEmployer.setAttribute("aria-selected", "false");
+
+                googleBtnText.textContent = "Continue with Google (Job Seeker)";
+                identifierLabel.textContent = "Personal Email or Mobile Number";
+                loginIdentifier.placeholder = "name@gmail.com or 10-digit mobile";
+                cardSub.textContent = "Sign in to access your saved jobs and applications";
+
+                footerPrompt.textContent = "Don't have a Job Seeker account?";
+                footerLink.textContent = "Create Free Job Seeker Account \u2192";
+                footerLink.href = `/jobseeker/register${redirectQuery}`;
+
+                if (window.location.hash !== "#jobseeker") {
+                    history.replaceState(null, "", window.location.pathname + window.location.search + "#jobseeker");
+                }
+            } else {
+                btnSeeker.classList.remove("active");
+                btnSeeker.setAttribute("aria-selected", "false");
+                btnEmployer.classList.add("active");
+                btnEmployer.setAttribute("aria-selected", "true");
+
+                googleBtnText.textContent = "Continue with Google (Employer)";
+                identifierLabel.textContent = "Company Email or Official Mobile";
+                loginIdentifier.placeholder = "hr@company.com or 10-digit official mobile";
+                cardSub.textContent = "Sign in to post jobs and view candidate applications";
+
+                footerPrompt.textContent = "Hiring textile talent for your factory?";
+                footerLink.textContent = "Register as an Employer & Post Jobs \u2192";
+                footerLink.href = `/employer/register${redirectQuery}`;
+
+                if (window.location.hash !== "#employer") {
+                    history.replaceState(null, "", window.location.pathname + window.location.search + "#employer");
+                }
+            }
+        }
+
+        // Password Visibility Toggle
+        function togglePasswordVisibility() {
+            const pwdInput = document.getElementById("loginPassword");
+            const toggleBtn = document.getElementById("passwordToggleBtn");
+            const eyeIcon = document.getElementById("eyeIcon");
+
+            if (pwdInput.type === "password") {
+                pwdInput.type = "text";
+                toggleBtn.setAttribute("aria-label", "Hide password");
+                toggleBtn.title = "Hide password";
+                // Eye Off SVG
+                eyeIcon.innerHTML = `
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                `;
+            } else {
+                pwdInput.type = "password";
+                toggleBtn.setAttribute("aria-label", "Show password");
+                toggleBtn.title = "Show password";
+                // Eye On SVG
+                eyeIcon.innerHTML = `
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                `;
+            }
+        }
+
+        function toggleLinkPasswordVisibility() {
+            const pwdInput = document.getElementById("linkPasswordInput");
+            const eyeIcon = document.getElementById("linkEyeIcon");
+            if (pwdInput.type === "password") {
+                pwdInput.type = "text";
+                eyeIcon.innerHTML = `
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                `;
+            } else {
+                pwdInput.type = "password";
+                eyeIcon.innerHTML = `
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                `;
+            }
+        }
+
+        // Initialize role and redirect links
         document.addEventListener("DOMContentLoaded", () => {
+            const path = window.location.pathname.toLowerCase();
+            const hash = window.location.hash.toLowerCase();
+            if (path.includes("employer") || hash === "#employer") {
+                switchLoginRole("company");
+            } else {
+                switchLoginRole("individual");
+            }
+
             const safeRedirect = getSafeRedirectUrl();
             if (safeRedirect) {
                 const encoded = encodeURIComponent(safeRedirect);
-                const links = document.querySelectorAll(".auth-footer-links a, .nav-signup-btn");
+                const links = document.querySelectorAll(".nav-signup-btn, #forgotPasswordLink");
                 links.forEach(link => {
                     const href = link.getAttribute("href");
                     if (href && !href.includes("redirect=")) {
@@ -416,8 +971,7 @@
             }
         });
 
-        let hasTrackedLogin = false;
-
+        // Form Submit Handler
         async function handleLogin(e) {
             e.preventDefault();
             hideAlert();
@@ -425,9 +979,10 @@
             const identifier = document.getElementById("loginIdentifier").value.trim();
             const password = document.getElementById("loginPassword").value;
             const btn = document.getElementById("submitBtn");
+            const btnText = document.getElementById("submitBtnText");
 
             btn.disabled = true;
-            btn.textContent = "Signing in...";
+            btnText.textContent = "Signing in...";
 
             try {
                 const res = await fetch("/api/auth/login", {
@@ -445,10 +1000,10 @@
                     throw new Error(data.detail || "Sign in failed. Please check your credentials.");
                 }
 
-                const method = data.role === "employer" ? "employer" : "jobseeker";
+                const method = (data.role === "employer" || data.role === "company") ? "employer" : "jobseeker";
                 try {
                     sessionStorage.setItem("dg_just_logged_in", method);
-                } catch (e) {}
+                } catch (err) {}
 
                 if ((data.role === "employer" || data.role === "company") && window.dgTrackEmployerEvent) {
                     window.dgTrackEmployerEvent('employer_login', {
@@ -458,14 +1013,14 @@
                 }
 
                 showAlert("Signed in successfully! Redirecting...", false);
-                const safeTarget = getSafeRedirectUrl() || data.redirect_url || (data.role === "employer" ? "/dashboard/company" : "/dashboard/individual");
+                const safeTarget = getSafeRedirectUrl() || data.redirect_url || (method === "employer" ? "/dashboard/company" : "/dashboard/individual");
                 setTimeout(() => {
                     window.location.href = safeTarget;
                 }, 400);
             } catch (err) {
-                showAlert(err.message || "Something went wrong. Please try again.");
+                showAlert(err.message || "Something went wrong. Please check your credentials.");
                 btn.disabled = false;
-                btn.textContent = "Sign In";
+                btnText.textContent = "Sign In to Account";
             }
         }
 
@@ -503,11 +1058,11 @@
             if (!response || !response.credential) return;
             hideAlert();
             const btn = document.getElementById("btnGoogleSignIn");
+            const googleBtnText = document.getElementById("googleBtnText");
             btn.disabled = true;
-            btn.innerHTML = "Verifying with Google...";
+            googleBtnText.textContent = "Verifying with Google...";
 
-            const path = window.location.pathname.toLowerCase();
-            const role = (path.includes("employer") || window.location.hash === "#employer") ? "company" : "individual";
+            const targetRole = currentRole === "company" ? "company" : "individual";
 
             try {
                 const res = await fetch("/api/auth/google/verify", {
@@ -515,7 +1070,7 @@
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         id_token: response.credential,
-                        role: role,
+                        role: targetRole,
                         visitor_id: getVisitorId()
                     })
                 });
@@ -539,19 +1094,22 @@
                     document.getElementById("linkTargetEmail").textContent = data.email || "";
                     document.getElementById("linkingModal").style.display = "flex";
                 } else if (data.action === "needs_profile" || data.action === "otp_verification_required") {
-                    window.location.href = role === "company" ? "/employer/register" : "/signup";
+                    const safeRedirect = getSafeRedirectUrl();
+                    const redirectQuery = safeRedirect ? `?redirect=${encodeURIComponent(safeRedirect)}` : '';
+                    window.location.href = targetRole === "company" ? `/employer/register${redirectQuery}` : `/signup${redirectQuery}`;
                 }
             } catch (err) {
                 showAlert(err.message || "Google Sign-In failed.");
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg> Continue with Google`;
+                googleBtnText.textContent = currentRole === "company" ? "Continue with Google (Employer)" : "Continue with Google (Job Seeker)";
             }
         }
 
         async function submitAccountLinkPassword() {
             const pwd = document.getElementById("linkPasswordInput").value;
             const alertEl = document.getElementById("linkAlert");
+            const btn = document.getElementById("btnLinkSubmit");
             alertEl.style.display = "none";
             if (!pwd) {
                 alertEl.textContent = "Please enter your password.";
@@ -559,6 +1117,9 @@
                 alertEl.style.display = "block";
                 return;
             }
+
+            btn.disabled = true;
+            btn.textContent = "Verifying...";
 
             try {
                 const res = await fetch("/api/auth/google/link-account", {
@@ -585,6 +1146,8 @@
                 alertEl.textContent = err.message || "Failed to link account.";
                 alertEl.className = "msg-alert msg-error";
                 alertEl.style.display = "block";
+                btn.disabled = false;
+                btn.textContent = "Verify & Link Account";
             }
         }
 
@@ -594,24 +1157,5 @@
 
         window.addEventListener("load", initGoogleAuth);
     </script>
-
-    <!-- Linking Challenge Modal -->
-    <div id="linkingModal" class="modal-overlay" style="display: none;">
-        <div class="modal-box">
-            <h3 style="margin-top: 0; margin-bottom: 8px; color: var(--dg-navy); font-size: 18px; font-weight: 800;">Link Google Account</h3>
-            <p style="font-size: 13.5px; color: var(--dg-slate); line-height: 1.5; margin-bottom: 16px;">
-                An existing DigiGarment account with email <strong id="linkTargetEmail" style="color: var(--dg-navy);"></strong> was found. Please enter your account password to verify and link your Google account.
-            </p>
-            <div id="linkAlert" class="msg-alert" style="display: none;"></div>
-            <div class="form-group" style="margin-bottom: 14px;">
-                <label style="font-size: 13px; font-weight: 600; color: var(--dg-navy); margin-bottom: 4px;">Existing Account Password</label>
-                <input type="password" id="linkPasswordInput" class="form-control" placeholder="Enter your current password">
-            </div>
-            <button type="button" class="btn-submit" style="margin-top: 0;" onclick="submitAccountLinkPassword()">Verify &amp; Link Account</button>
-            <div style="text-align: center; margin-top: 14px;">
-                <button type="button" style="background: none; border: none; color: var(--dg-slate); font-size: 13px; cursor: pointer; text-decoration: underline;" onclick="closeLinkingModal()">Cancel</button>
-            </div>
-        </div>
-    </div>
 </body>
 </html>
