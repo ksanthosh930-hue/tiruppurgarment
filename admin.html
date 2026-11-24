@@ -1614,7 +1614,7 @@
                                         <label style="font-size: 10px; font-weight: 700; color: #64748b; display: block;">To</label>
                                         <input type="date" id="growthCustomEnd" class="form-control" style="width: auto; font-size: 12px; padding: 4px 8px;">
                                     </div>
-                                    <button type="button" class="btn btn-sm btn-primary" onclick="loadGrowthAnalytics(false)" style="padding: 6px 10px; font-size: 12px; font-weight: 700;">Apply</button>
+                                    <button type="button" class="btn btn-sm btn-primary" onclick="handleGrowthCustomApply()" style="padding: 6px 10px; font-size: 12px; font-weight: 700;">Apply</button>
                                 </div>
                                 <div style="align-self: flex-end;">
                                     <button type="button" id="growthRefreshBtn" class="btn btn-primary" onclick="loadGrowthAnalytics(true)" style="display: flex; align-items: center; gap: 6px; font-weight: 600;">
@@ -1631,6 +1631,9 @@
                             </button>
                             <button type="button" id="subtabBtnGA4" class="btn btn-sm" onclick="switchGrowthSubtab('ga4')" style="padding: 7px 16px; font-weight: 700; font-size: 13px; background: #e2e8f0; color: #334155; border-radius: 6px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px;">
                                 <span>🌐</span> Google Analytics 4 (Traffic & Conversion)
+                            </button>
+                            <button type="button" id="subtabBtnEmployerDeepDive" class="btn btn-sm" onclick="switchGrowthSubtab('employer-deep-dive')" style="padding: 7px 16px; font-weight: 700; font-size: 13px; background: #e2e8f0; color: #334155; border-radius: 6px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                <span>🏢</span> Employer Acquisition &amp; Activation
                             </button>
                         </div>
 
@@ -2238,6 +2241,265 @@
                             </div>
                         </div>
                     </div> <!-- End of growthGA4Container -->
+
+                    <!-- CONTAINER 3: Employer Acquisition & Activation Deep-Dive (Phase 1D-3C) -->
+                    <div id="growthEmployerDeepDiveContainer" style="display: none;">
+                        <!-- Advisory / Data Quality Banner -->
+                        <div id="empDeepDiveAdvisoryBanner" class="card-panel" style="display: none; margin-bottom: 20px; background: #fffbeb; border: 1px solid #fde68a; border-left: 4px solid #d97706; padding: 14px 18px; border-radius: 8px;">
+                            <div style="display: flex; align-items: flex-start; gap: 10px;">
+                                <span style="font-size: 18px; line-height: 1;">⚠️</span>
+                                <div style="flex: 1;">
+                                    <h4 style="margin: 0 0 4px; font-size: 13.5px; font-weight: 700; color: #92400e;">Data Quality &amp; Sample Size Advisories</h4>
+                                    <ul id="empDeepDiveWarningsList" style="margin: 0; padding-left: 18px; font-size: 12px; color: #78350f; line-height: 1.5;"></ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECTION 1: Executive KPI Scorecards (10 Ground Truth Cards) -->
+                        <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                            <!-- Card 1: Registered Employers -->
+                            <div class="stat-card" style="border-top: 3px solid #2563eb;">
+                                <div class="stat-icon" style="background: rgba(37, 99, 235, 0.1); color: #2563eb;">🏢</div>
+                                <div class="stat-info">
+                                    <h3 id="empKpiTotalReg">--</h3>
+                                    <p style="margin: 0; font-weight: 600;">Registered Employers</p>
+                                    <div style="font-size: 11px; color: #64748b; margin-top: 4px;" id="empKpiTotalRegSub">Active: -- accounts</div>
+                                </div>
+                            </div>
+
+                            <!-- Card 2: Active Accounts -->
+                            <div class="stat-card" style="border-top: 3px solid #10b981;">
+                                <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: #059669;">✅</div>
+                                <div class="stat-info">
+                                    <h3 id="empKpiActiveAccounts">--</h3>
+                                    <p style="margin: 0; font-weight: 600;">Active Accounts</p>
+                                    <div style="font-size: 11px; color: #64748b; margin-top: 4px;" id="empKpiActiveAccountsSub">Eligible to sign in</div>
+                                </div>
+                            </div>
+
+                            <!-- Card 3: Profile Completed -->
+                            <div class="stat-card" style="border-top: 3px solid #6366f1;">
+                                <div class="stat-icon" style="background: rgba(99, 102, 241, 0.1); color: #4f46e5;">📋</div>
+                                <div class="stat-info">
+                                    <h3 id="empKpiProfileCompleted">--</h3>
+                                    <p style="margin: 0; font-weight: 600;">Profile Completed</p>
+                                    <div style="font-size: 11px; color: #64748b; margin-top: 4px;" id="empKpiProfileCompletedSub">Mandatory contacts filled</div>
+                                </div>
+                            </div>
+
+                            <!-- Card 4: Activated Employers -->
+                            <div class="stat-card" style="border-top: 3px solid #0891b2;">
+                                <div class="stat-icon" style="background: rgba(8, 145, 178, 0.1); color: #0891b2;">🚀</div>
+                                <div class="stat-info">
+                                    <h3 id="empKpiActivated">--</h3>
+                                    <p style="margin: 0; font-weight: 600;">Activated Employers</p>
+                                    <div style="font-size: 11px; color: #64748b; margin-top: 4px;" id="empKpiActivatedSub">Authored &ge; 1 job</div>
+                                </div>
+                            </div>
+
+                            <!-- Card 5: Activation Rate -->
+                            <div class="stat-card" style="border-top: 3px solid #059669;">
+                                <div class="stat-icon" style="background: rgba(5, 150, 105, 0.1); color: #059669;">📈</div>
+                                <div class="stat-info">
+                                    <h3 id="empKpiActivationRate">--%</h3>
+                                    <p style="margin: 0; font-weight: 600;">Activation Rate</p>
+                                    <div style="font-size: 11px; color: #64748b; margin-top: 4px;" id="empKpiActivationRateSub">-- of -- registered</div>
+                                </div>
+                            </div>
+
+                            <!-- Card 6: Published Employers -->
+                            <div class="stat-card" style="border-top: 3px solid #8b5cf6;">
+                                <div class="stat-icon" style="background: rgba(139, 92, 246, 0.1); color: #7c3aed;">🌐</div>
+                                <div class="stat-info">
+                                    <h3 id="empKpiPublished">--</h3>
+                                    <p style="margin: 0; font-weight: 600;">Published Employers</p>
+                                    <div style="font-size: 11px; color: #64748b; margin-top: 4px;" id="empKpiPublishedSub">Live Job Posting Rate: --%</div>
+                                </div>
+                            </div>
+
+                            <!-- Card 7: Total Jobs Posted -->
+                            <div class="stat-card" style="border-top: 3px solid #d97706;">
+                                <div class="stat-icon" style="background: rgba(217, 119, 6, 0.1); color: #d97706;">💼</div>
+                                <div class="stat-info">
+                                    <h3 id="empKpiTotalJobs">--</h3>
+                                    <p style="margin: 0; font-weight: 600;">Total Jobs Authored</p>
+                                    <div style="font-size: 11px; color: #64748b; margin-top: 4px;" id="empKpiTotalJobsSub">-- published &bull; -- archived</div>
+                                </div>
+                            </div>
+
+                            <!-- Card 8: Repeat Posting Rate -->
+                            <div class="stat-card" style="border-top: 3px solid #ec4899;">
+                                <div class="stat-icon" style="background: rgba(236, 72, 153, 0.1); color: #db2777;">🔄</div>
+                                <div class="stat-info">
+                                    <h3 id="empKpiRepeatRate">--%</h3>
+                                    <p style="margin: 0; font-weight: 600;">Repeat Posting Rate</p>
+                                    <div style="font-size: 11px; color: #64748b; margin-top: 4px;" id="empKpiRepeatRateSub">-- employers with &ge; 2 jobs</div>
+                                </div>
+                            </div>
+
+                            <!-- Card 9: Median Time to First Job -->
+                            <div class="stat-card" style="border-top: 3px solid #4f46e5;">
+                                <div class="stat-icon" style="background: rgba(79, 70, 229, 0.1); color: #4f46e5;">⏱️</div>
+                                <div class="stat-info">
+                                    <h3 id="empKpiMedianTime">--</h3>
+                                    <p style="margin: 0; font-weight: 600;">Median Onboarding Time</p>
+                                    <div style="font-size: 11px; color: #64748b; margin-top: 4px;">50th percentile velocity</div>
+                                </div>
+                            </div>
+
+                            <!-- Card 10: Average Time to First Job -->
+                            <div class="stat-card" style="border-top: 3px solid #64748b;">
+                                <div class="stat-icon" style="background: rgba(100, 116, 139, 0.1); color: #475569;">📊</div>
+                                <div class="stat-info">
+                                    <h3 id="empKpiAvgTime">--</h3>
+                                    <p style="margin: 0; font-weight: 600;">Average Time to First Job</p>
+                                    <div style="font-size: 11px; color: #64748b; margin-top: 4px;">Arithmetic mean (includes outliers)</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECTION 2: Employer Onboarding & Conversion Funnel -->
+                        <div class="card-panel" style="margin-bottom: 24px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;">
+                                <div>
+                                    <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #1e293b;">🎯 Employer Onboarding &amp; Activation Funnel</h3>
+                                    <p style="margin: 0; font-size: 12px; color: #64748b;">Sequential conversion tracking from registration through profile setup and job authoring.</p>
+                                </div>
+                                <span style="background: #e0f2fe; color: #0284c7; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 4px;">Ground Truth Funnel</span>
+                            </div>
+
+                            <!-- Pre-Registration Intent Callout Box (Distinguishing Anonymous OTP from Authenticated Users) -->
+                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #6366f1; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                                <div>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span style="font-size: 14px;">✉️</span>
+                                        <span style="font-size: 12.5px; font-weight: 700; color: #1e293b;">Pre-Registration Intent (Anonymous OTP Telemetry):</span>
+                                        <span id="empFunnelPreRegOtpCount" style="font-size: 15px; font-weight: 800; color: #4f46e5;">--</span>
+                                        <span style="font-size: 12px; color: #64748b;">events</span>
+                                    </div>
+                                    <div style="font-size: 11.5px; color: #64748b; margin-top: 4px;">
+                                        Pre-registration OTP requests are logged anonymously prior to account creation. Cohort linkage from OTP request to registered account is unmeasured in database (no fabricated conversion rate is shown).
+                                    </div>
+                                </div>
+                                <span style="background: #ede9fe; color: #6b21a8; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px;">Telemetry Event</span>
+                            </div>
+
+                            <!-- Funnel Progression Cards (6 Cumulative Steps) -->
+                            <div id="empFunnelStepsContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+                                <!-- Dynamic Funnel Cards -->
+                            </div>
+                        </div>
+
+                        <!-- SECTION 3: Two-Column Row (Activation Velocity & Repeat Job Distribution) -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; margin-bottom: 24px;">
+                            <!-- Panel: Activation Velocity -->
+                            <div class="card-panel">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                    <div>
+                                        <h3 style="margin: 0; font-size: 15.5px; font-weight: 700; color: #1e293b;">⏱️ Activation Velocity (Time to First Job)</h3>
+                                        <p style="margin: 0; font-size: 12px; color: #64748b;">Distribution of time elapsed from registration to first job authoring.</p>
+                                    </div>
+                                    <span id="empVelocityTotalBadge" style="background: #f1f5f9; color: #475569; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 4px;">-- measured</span>
+                                </div>
+                                <div id="empVelocityBucketsContainer" style="display: flex; flex-direction: column; gap: 12px;">
+                                    <!-- Dynamic Velocity Buckets -->
+                                </div>
+                            </div>
+
+                            <!-- Panel: Job Posting Distribution -->
+                            <div class="card-panel">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                    <div>
+                                        <h3 style="margin: 0; font-size: 15.5px; font-weight: 700; color: #1e293b;">📦 Job Posting Distribution (Repeat Activity)</h3>
+                                        <p style="margin: 0; font-size: 12px; color: #64748b;">Number of jobs posted per employer account.</p>
+                                    </div>
+                                    <span id="empDistributionTotalBadge" style="background: #f1f5f9; color: #475569; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 4px;">-- employers</span>
+                                </div>
+                                <div id="empDistributionTiersContainer" style="display: flex; flex-direction: column; gap: 12px;">
+                                    <!-- Dynamic Distribution Tiers -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECTION 4: Two-Column Row (Profile Completeness & Acquisition Attribution) -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; margin-bottom: 24px;">
+                            <!-- Panel: Profile Completeness Audit -->
+                            <div class="card-panel">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                    <div>
+                                        <h3 style="margin: 0; font-size: 15.5px; font-weight: 700; color: #1e293b;">📋 Profile Completeness Audit</h3>
+                                        <p style="margin: 0; font-size: 12px; color: #64748b;">Field-level completeness across company profile sections.</p>
+                                    </div>
+                                    <span style="background: #e0f2fe; color: #0284c7; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 4px;">Field Audited</span>
+                                </div>
+                                <div id="empProfileCompletenessContainer" style="display: flex; flex-direction: column; gap: 14px;">
+                                    <!-- Dynamic Profile Categories -->
+                                </div>
+                            </div>
+
+                            <!-- Panel: Acquisition Channels & Marketing Attribution -->
+                            <div class="card-panel">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                    <div>
+                                        <h3 style="margin: 0; font-size: 15.5px; font-weight: 700; color: #1e293b;">🎯 Acquisition &amp; Source Attribution</h3>
+                                        <p style="margin: 0; font-size: 12px; color: #64748b;">Authentication mechanisms and verified marketing channel tracking status.</p>
+                                    </div>
+                                    <span style="background: #f1f5f9; color: #475569; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 4px;">System Audit</span>
+                                </div>
+
+                                <!-- Auth Providers Grid -->
+                                <div style="margin-bottom: 16px;">
+                                    <div style="font-size: 12px; font-weight: 700; color: #475569; text-transform: uppercase; margin-bottom: 8px;">Authentication Method Breakdown</div>
+                                    <div id="empAuthProvidersGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
+                                        <!-- Dynamic Auth Provider Cards -->
+                                    </div>
+                                </div>
+
+                                <!-- Marketing Source Attribution Status Callout -->
+                                <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 14px;">
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                                        <span style="font-size: 16px;">⚠️</span>
+                                        <h4 style="margin: 0; font-size: 13.5px; font-weight: 700; color: #92400e;">Marketing Attribution Status</h4>
+                                    </div>
+                                    <div style="font-size: 12px; font-weight: 700; color: #b45309; margin-bottom: 6px;">
+                                        Marketing source attribution not yet measured.
+                                    </div>
+                                    <p style="margin: 0; font-size: 11.5px; color: #78350f; line-height: 1.5;">
+                                        PostgreSQL database user tables do not record UTM campaign tags, referrers, or acquisition ad links. <code>auth_provider = 'local'</code> represents email OTP credentials, <strong>NOT</strong> direct marketing traffic. Marketing campaign channels must be referenced via the Google Analytics 4 tab.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECTION 5: Daily Time-Series Growth Trends (IST Time Series) -->
+                        <div class="card-panel" style="margin-bottom: 24px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+                                <div>
+                                    <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #1e293b;">📊 Daily Employer Growth &amp; Activation Trends (IST)</h3>
+                                    <p style="margin: 0; font-size: 12px; color: #64748b;">Daily progression of registrations, activations, and jobs authored in Asia/Kolkata timezone.</p>
+                                </div>
+                                <span id="empTrendsCountBadge" style="background: #f1f5f9; color: #475569; font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 4px;">-- days</span>
+                            </div>
+
+                            <div style="overflow-x: auto; max-height: 420px; overflow-y: auto;">
+                                <table class="data-table" style="width: 100%; font-size: 12.5px;">
+                                    <thead>
+                                        <tr style="background: #f8fafc; position: sticky; top: 0; z-index: 1;">
+                                            <th style="padding: 8px 12px;">Date (IST)</th>
+                                            <th style="padding: 8px 12px; text-align: right;">New Registrations</th>
+                                            <th style="padding: 8px 12px; text-align: right;">New Activations</th>
+                                            <th style="padding: 8px 12px; text-align: right;">Jobs Created</th>
+                                            <th style="padding: 8px 12px; text-align: right;">Jobs Published</th>
+                                            <th style="padding: 8px 12px; text-align: center;">Quality / Timestamp Flag</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="empTrendsTableBody">
+                                        <tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 18px;">Loading employer growth trends...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div> <!-- End of growthEmployerDeepDiveContainer -->
                 </div>
 
 
@@ -3273,21 +3535,35 @@
             currentGrowthSubtab = tab;
             const btnPg = document.getElementById("subtabBtnPostgres");
             const btnGa4 = document.getElementById("subtabBtnGA4");
+            const btnEmp = document.getElementById("subtabBtnEmployerDeepDive");
             const cPg = document.getElementById("growthPostgresContainer");
             const cGa4 = document.getElementById("growthGA4Container");
+            const cEmp = document.getElementById("growthEmployerDeepDiveContainer");
+
+            // Reset all sub-tab buttons
+            if (btnPg) { btnPg.style.background = "#e2e8f0"; btnPg.style.color = "#334155"; }
+            if (btnGa4) { btnGa4.style.background = "#e2e8f0"; btnGa4.style.color = "#334155"; }
+            if (btnEmp) { btnEmp.style.background = "#e2e8f0"; btnEmp.style.color = "#334155"; }
+
+            // Hide all sub-tab containers
+            if (cPg) cPg.style.display = "none";
+            if (cGa4) cGa4.style.display = "none";
+            if (cEmp) cEmp.style.display = "none";
 
             if (tab === "postgres") {
                 if (btnPg) { btnPg.style.background = "var(--accent-blue, #2563eb)"; btnPg.style.color = "white"; }
-                if (btnGa4) { btnGa4.style.background = "#e2e8f0"; btnGa4.style.color = "#334155"; }
                 if (cPg) cPg.style.display = "block";
-                if (cGa4) cGa4.style.display = "none";
-            } else {
-                if (btnPg) { btnPg.style.background = "#e2e8f0"; btnPg.style.color = "#334155"; }
+            } else if (tab === "ga4") {
                 if (btnGa4) { btnGa4.style.background = "var(--accent-blue, #2563eb)"; btnGa4.style.color = "white"; }
-                if (cPg) cPg.style.display = "none";
                 if (cGa4) cGa4.style.display = "block";
                 if (!hasGA4Loaded) {
                     loadGA4Analytics(false);
+                }
+            } else if (tab === "employer-deep-dive") {
+                if (btnEmp) { btnEmp.style.background = "var(--accent-blue, #2563eb)"; btnEmp.style.color = "white"; }
+                if (cEmp) cEmp.style.display = "block";
+                if (!hasEmployerDeepDiveLoaded) {
+                    loadEmployerDeepDive(false);
                 }
             }
         }
@@ -3301,7 +3577,17 @@
                 } else {
                     customBox.style.display = "none";
                     loadGrowthAnalytics(false);
+                    if (currentGrowthSubtab === "employer-deep-dive" || hasEmployerDeepDiveLoaded) {
+                        loadEmployerDeepDive(false);
+                    }
                 }
+            }
+        }
+
+        function handleGrowthCustomApply() {
+            loadGrowthAnalytics(false);
+            if (currentGrowthSubtab === "employer-deep-dive" || hasEmployerDeepDiveLoaded) {
+                loadEmployerDeepDive(false);
             }
         }
 
@@ -3320,6 +3606,11 @@
 
             // Trigger GA4 analytics load in parallel
             loadGA4Analytics(forceRefresh);
+
+            // Trigger Employer Deep Dive analytics load if currently active, previously loaded, or forced refresh
+            if (currentGrowthSubtab === "employer-deep-dive" || hasEmployerDeepDiveLoaded || forceRefresh) {
+                loadEmployerDeepDive(forceRefresh);
+            }
 
             try {
                 const refreshParam = forceRefresh ? "&refresh=true" : "";
@@ -3962,6 +4253,379 @@
                     </tr>
                 `;
             }).join('');
+        }
+
+
+        // --- Employer Deep Dive Analytics Controller (Phase 1D-3C) ---
+        let isEmployerDeepDiveLoading = false;
+        let hasEmployerDeepDiveLoaded = false;
+
+        function formatDurationMins(mins) {
+            if (mins === null || mins === undefined || isNaN(mins)) return "N/A";
+            const m = parseFloat(mins);
+            if (m < 1) return "< 1 min";
+            if (m < 60) return `${Math.round(m)} mins`;
+            if (m < 1440) return `${(m / 60).toFixed(1)} hrs`;
+            return `${(m / 1440).toFixed(1)} days`;
+        }
+
+        async function loadEmployerDeepDive(forceRefresh = false) {
+            if (isEmployerDeepDiveLoading) return;
+            isEmployerDeepDiveLoading = true;
+
+            const rangeSelect = document.getElementById("growthRangeSelect");
+            const range = rangeSelect ? rangeSelect.value : "30d";
+            const refreshIcon = document.getElementById("growthRefreshIcon");
+            if (refreshIcon) refreshIcon.style.animation = "spin 1s linear infinite";
+
+            let customParams = "";
+            if (range === "custom") {
+                const s = document.getElementById("growthCustomStart")?.value;
+                const e = document.getElementById("growthCustomEnd")?.value;
+                if (s && e) {
+                    customParams = `&start_date=${encodeURIComponent(s)}&end_date=${encodeURIComponent(e)}`;
+                }
+            }
+
+            const refreshParam = forceRefresh ? "&refresh=true" : "";
+
+            try {
+                const res = await fetch(`/api/admin/growth-analytics/employers/deep-dive?range=${range}${customParams}${refreshParam}`);
+                if (!res.ok) {
+                    throw new Error(`Failed to load employer deep dive analytics (HTTP ${res.status})`);
+                }
+                const data = await res.json();
+                if (!data || !data.success) {
+                    throw new Error(data?.message || "Invalid employer deep dive response");
+                }
+
+                renderEmployerDeepDiveWarnings(data.data_quality_warnings || []);
+                renderEmployerDeepDiveKPIs(data.kpis?.all_time_totals || {});
+                renderEmployerDeepDiveFunnel(data.funnel || {});
+                renderEmployerDeepDiveVelocity(data.activation_velocity || {});
+                renderEmployerDeepDiveDistribution(data.job_distribution || {});
+                renderEmployerDeepDiveProfile(data.profile_completeness || {});
+                renderEmployerDeepDiveAcquisition(data.acquisition || {});
+                renderEmployerDeepDiveTrends(data.trends || []);
+
+                hasEmployerDeepDiveLoaded = true;
+            } catch (err) {
+                console.error("Failed to load employer deep dive analytics:", err);
+            } finally {
+                isEmployerDeepDiveLoading = false;
+                if (refreshIcon && !isGrowthLoading && !isGA4Loading) {
+                    refreshIcon.style.animation = "none";
+                }
+            }
+        }
+
+        function renderEmployerDeepDiveWarnings(warnings) {
+            const banner = document.getElementById("empDeepDiveAdvisoryBanner");
+            const list = document.getElementById("empDeepDiveWarningsList");
+            if (!banner || !list) return;
+
+            if (warnings && warnings.length > 0) {
+                banner.style.display = "block";
+                list.innerHTML = warnings.map(w => `<li style="margin-bottom: 4px;">${w}</li>`).join("");
+            } else {
+                banner.style.display = "none";
+                list.innerHTML = "";
+            }
+        }
+
+        function renderEmployerDeepDiveKPIs(s) {
+            const setTxt = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = val;
+            };
+            const setHtml = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = val;
+            };
+
+            const totalReg = Number(s?.total_registered_employers || 0);
+            const activeAcc = Number(s?.active_accounts || 0);
+            const inactiveAcc = Math.max(totalReg - activeAcc, 0);
+            const profComp = Number(s?.profile_completed_employers || 0);
+            const profRate = totalReg > 0 ? ((profComp / totalReg) * 100) : 0.0;
+            const activated = Number(s?.activated_employers || 0);
+            const pendingAct = Number(s?.pending_activation_employers || 0);
+            const actRate = Number(s?.activation_rate_pct ?? (totalReg > 0 ? (activated / totalReg * 100) : 0.0));
+            const publishedEmp = Number(s?.published_employers || 0);
+            const publishedRate = Number(s?.published_rate_pct ?? (totalReg > 0 ? (publishedEmp / totalReg * 100) : 0.0));
+            const totalJobs = Number(s?.total_employer_jobs || 0);
+            const publishedJobs = Number(s?.published_employer_jobs || 0);
+            const archivedJobs = Number(s?.archived_employer_jobs || 0);
+            const repeatPosters = Number(s?.repeat_job_posting_employers || 0);
+            const repeatRate = Number(s?.repeat_posting_rate_pct ?? (activated > 0 ? (repeatPosters / activated * 100) : 0.0));
+
+            setTxt("empKpiTotalReg", totalReg.toLocaleString());
+            setTxt("empKpiTotalRegSub", `Active: ${activeAcc.toLocaleString()} accounts`);
+
+            setTxt("empKpiActiveAccounts", activeAcc.toLocaleString());
+            setTxt("empKpiActiveAccountsSub", `${inactiveAcc.toLocaleString()} inactive / disabled`);
+
+            setTxt("empKpiProfileCompleted", profComp.toLocaleString());
+            setTxt("empKpiProfileCompletedSub", `${profRate.toFixed(1)}% completion rate`);
+
+            setTxt("empKpiActivated", activated.toLocaleString());
+            setTxt("empKpiActivatedSub", `${pendingAct.toLocaleString()} pending activation`);
+
+            setTxt("empKpiActivationRate", `${actRate.toFixed(1)}%`);
+            setTxt("empKpiActivationRateSub", `${activated.toLocaleString()} of ${totalReg.toLocaleString()} registered`);
+
+            setTxt("empKpiPublished", publishedEmp.toLocaleString());
+            setTxt("empKpiPublishedSub", `Live Posting Rate: ${publishedRate.toFixed(1)}%`);
+
+            setTxt("empKpiTotalJobs", totalJobs.toLocaleString());
+            setHtml("empKpiTotalJobsSub", `${publishedJobs.toLocaleString()} published &bull; ${archivedJobs.toLocaleString()} archived`);
+
+            setTxt("empKpiRepeatRate", `${repeatRate.toFixed(1)}%`);
+            setTxt("empKpiRepeatRateSub", `${repeatPosters.toLocaleString()} employers with \u2265 2 jobs`);
+
+            setTxt("empKpiMedianTime", formatDurationMins(s?.median_time_to_first_job_mins));
+            setTxt("empKpiAvgTime", formatDurationMins(s?.avg_time_to_first_job_mins));
+        }
+
+        function renderEmployerDeepDiveFunnel(funnel) {
+            const preRegCount = document.getElementById("empFunnelPreRegOtpCount");
+            if (preRegCount) {
+                const otpEvents = funnel?.pre_registration?.raw_otp_requests_count ?? 0;
+                preRegCount.textContent = Number(otpEvents).toLocaleString();
+            }
+
+            const container = document.getElementById("empFunnelStepsContainer");
+            if (!container) return;
+
+            const stages = funnel?.cohort_stages || [];
+            if (stages.length === 0) {
+                container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #94a3b8; padding: 16px;">No funnel data available</div>';
+                return;
+            }
+
+            container.innerHTML = stages.map((s, idx) => {
+                const stepNum = idx + 1;
+                const name = s.label || s.stage || `Stage ${stepNum}`;
+                const count = Number(s.count || 0).toLocaleString();
+                const dropOff = Number(s.drop_off_from_prior_pct || 0);
+                const prevRate = stepNum === 1 ? "Baseline" : `\u2193 -${dropOff.toFixed(1)}% drop`;
+                const overallRate = `${Number(s.conversion_from_registered_pct || 0).toFixed(1)}%`;
+                const barWidth = Math.min(Math.max(parseFloat(s.conversion_from_registered_pct || 0), 0), 100);
+
+                return `
+                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; position: relative;">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                <span style="background: #e2e8f0; color: #475569; font-size: 10.5px; font-weight: 700; border-radius: 4px; padding: 2px 6px;">Step ${stepNum}</span>
+                                <span style="font-size: 11px; font-weight: 600; color: ${stepNum === 1 ? '#64748b' : (dropOff > 50 ? '#ef4444' : '#64748b')};">${prevRate}</span>
+                            </div>
+                            <h4 style="margin: 0 0 6px; font-size: 13px; font-weight: 700; color: #1e293b; line-height: 1.3;">${name}</h4>
+                            <div style="font-size: 20px; font-weight: 800; color: #2563eb; margin-bottom: 8px;">${count}</div>
+                        </div>
+                        <div>
+                            <div style="display: flex; justify-content: space-between; font-size: 11px; color: #64748b; margin-bottom: 4px;">
+                                <span>Cohort Conversion</span>
+                                <span style="font-weight: 700; color: #0f172a;">${overallRate}</span>
+                            </div>
+                            <div style="background: #f1f5f9; border-radius: 4px; height: 6px; width: 100%; overflow: hidden;">
+                                <div style="background: linear-gradient(90deg, #3b82f6, #10b981); height: 100%; width: ${barWidth}%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        function renderEmployerDeepDiveVelocity(vel) {
+            const badge = document.getElementById("empVelocityTotalBadge");
+            const total = Number(vel?.total_activated_measured || 0);
+            if (badge) {
+                badge.textContent = `${total.toLocaleString()} measured`;
+            }
+
+            const container = document.getElementById("empVelocityBucketsContainer");
+            if (!container) return;
+
+            if (!vel || (total === 0 && !vel.under_5_mins)) {
+                container.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 16px;">No velocity data available</div>';
+                return;
+            }
+
+            const buckets = [
+                { label: "< 5 minutes", data: vel.under_5_mins },
+                { label: "5\u201315 minutes", data: vel.mins_5_to_15 },
+                { label: "15\u201360 minutes", data: vel.mins_15_to_60 },
+                { label: "1\u201324 hours", data: vel.hours_1_to_24 },
+                { label: "> 24 hours", data: vel.over_24_hours }
+            ];
+
+            container.innerHTML = buckets.map(b => {
+                const count = Number(b.data?.count || 0);
+                const pct = Number(b.data?.percentage || 0).toFixed(1);
+                const barWidth = Math.min(Math.max(parseFloat(pct), 0), 100);
+
+                return `
+                    <div>
+                        <div style="display: flex; justify-content: space-between; font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px;">
+                            <span>${b.label}</span>
+                            <span>${count.toLocaleString()} <span style="color: #64748b; font-weight: 400;">(${pct}%)</span></span>
+                        </div>
+                        <div style="background: #f1f5f9; border-radius: 4px; height: 8px; width: 100%; overflow: hidden;">
+                            <div style="background: linear-gradient(90deg, #6366f1, #0891b2); height: 100%; width: ${barWidth}%;"></div>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        function renderEmployerDeepDiveDistribution(dist) {
+            const badge = document.getElementById("empDistributionTotalBadge");
+            const total = Number(dist?.total_posting_employers || 0);
+            if (badge) {
+                badge.textContent = `${total.toLocaleString()} employers`;
+            }
+
+            const container = document.getElementById("empDistributionTiersContainer");
+            if (!container) return;
+
+            if (!dist || (total === 0 && !dist.employers_with_1_job)) {
+                container.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 16px;">No distribution data available</div>';
+                return;
+            }
+
+            const tiers = [
+                { label: "1 job", data: dist.employers_with_1_job },
+                { label: "2 jobs", data: dist.employers_with_2_jobs },
+                { label: "3 jobs", data: dist.employers_with_3_jobs },
+                { label: "4+ jobs", data: dist.employers_with_4_plus_jobs }
+            ];
+
+            container.innerHTML = tiers.map(t => {
+                const count = Number(t.data?.count || 0);
+                const pct = Number(t.data?.percentage || 0).toFixed(1);
+                const barWidth = Math.min(Math.max(parseFloat(pct), 0), 100);
+
+                return `
+                    <div>
+                        <div style="display: flex; justify-content: space-between; font-size: 12.5px; font-weight: 600; color: #334155; margin-bottom: 4px;">
+                            <span>${t.label}</span>
+                            <span>${count.toLocaleString()} <span style="color: #64748b; font-weight: 400;">(${pct}%)</span></span>
+                        </div>
+                        <div style="background: #f1f5f9; border-radius: 4px; height: 8px; width: 100%; overflow: hidden;">
+                            <div style="background: linear-gradient(90deg, #d97706, #10b981); height: 100%; width: ${barWidth}%;"></div>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        function renderEmployerDeepDiveProfile(prof) {
+            const container = document.getElementById("empProfileCompletenessContainer");
+            if (!container) return;
+
+            if (!prof || !prof.core_contact) {
+                container.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 16px;">No profile completeness data</div>';
+                return;
+            }
+
+            const categories = [
+                { name: "Basic Identity & Core Contacts", obj: prof.core_contact },
+                { name: "Business & Company Information", obj: prof.business_info },
+                { name: "Location & Physical Address", obj: prof.location_info },
+                { name: "Branding & Web Presence", obj: prof.branding_info }
+            ];
+
+            container.innerHTML = categories.map(cat => {
+                const count = Number(cat.obj?.count || 0);
+                const pct = Number(cat.obj?.percentage || 0).toFixed(1);
+                const fields = cat.obj?.fields || [];
+                const barWidth = Math.min(Math.max(parseFloat(pct), 0), 100);
+                const color = pct >= 70 ? "#10b981" : (pct >= 30 ? "#d97706" : "#ef4444");
+
+                const fieldsBadges = fields.map(f => `<code style="background: #e2e8f0; color: #334155; padding: 2px 5px; border-radius: 3px; font-size: 11px; margin-right: 4px;">${f}</code>`).join("");
+
+                return `
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <h4 style="margin: 0; font-size: 12.5px; font-weight: 700; color: #334155;">${cat.name}</h4>
+                            <span style="font-size: 12px; font-weight: 700; color: ${color};">${count.toLocaleString()} completed (${pct}%)</span>
+                        </div>
+                        <div style="background: #f1f5f9; border-radius: 3px; height: 6px; width: 100%; overflow: hidden; margin-bottom: 8px;">
+                            <div style="background: ${color}; height: 100%; width: ${barWidth}%;"></div>
+                        </div>
+                        <div style="font-size: 11px; color: #64748b;">
+                            Fields evaluated: ${fieldsBadges}
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        function renderEmployerDeepDiveAcquisition(acq) {
+            const grid = document.getElementById("empAuthProvidersGrid");
+            if (!grid) return;
+
+            const providers = acq?.auth_providers || [];
+            if (providers.length === 0) {
+                grid.innerHTML = '<div style="color: #94a3b8; font-size: 12px;">No authentication data</div>';
+                return;
+            }
+
+            grid.innerHTML = providers.map(p => {
+                const name = p.provider === "local" ? "Email / OTP (local)" : (p.provider === "google" ? "Google OAuth" : p.provider);
+                const count = Number(p.count || 0);
+                const pct = Number(p.percentage || 0).toFixed(1);
+                const desc = p.description || "";
+
+                return `
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-size: 12px; font-weight: 700; color: #1e293b;">${name}</div>
+                            <div style="font-size: 11px; color: #64748b;" title="${desc}">${pct}% share</div>
+                        </div>
+                        <div style="font-size: 16px; font-weight: 800; color: #2563eb;">${count.toLocaleString()}</div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        function renderEmployerDeepDiveTrends(trends) {
+            const badge = document.getElementById("empTrendsCountBadge");
+            const arr = Array.isArray(trends) ? trends : [];
+            if (badge) badge.textContent = `${arr.length} days`;
+
+            const tbody = document.getElementById("empTrendsTableBody");
+            if (!tbody) return;
+
+            if (arr.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 18px;">No employer activity recorded for this period</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = arr.map(t => {
+                const date = t.date || "";
+                const newReg = Number(t.new_registrations || 0);
+                const newAct = Number(t.new_activations || 0);
+                const jobsCreated = Number(t.jobs_created || 0);
+                const jobsPub = Number(t.jobs_published || 0);
+                const fallbackCount = Number(t.published_fallback_count || 0);
+
+                let flagHtml = '<span style="color: #10b981; font-size: 11px; font-weight: 600;">\u2713 Verified</span>';
+                if (fallbackCount > 0) {
+                    flagHtml = `<span style="background: #fef3c7; color: #92400e; font-size: 10.5px; font-weight: 600; padding: 2px 6px; border-radius: 4px;" title="${fallbackCount} job(s) used created_at fallback">\u26a0\ufe0f Fallback (${fallbackCount})</span>`;
+                }
+
+                return `
+                    <tr>
+                        <td style="padding: 8px 12px; font-weight: 700; color: #1e293b;">${date}</td>
+                        <td style="padding: 8px 12px; text-align: right; color: #2563eb; font-weight: 600;">${newReg > 0 ? `+${newReg}` : '0'}</td>
+                        <td style="padding: 8px 12px; text-align: right; color: #059669; font-weight: 600;">${newAct > 0 ? `+${newAct}` : '0'}</td>
+                        <td style="padding: 8px 12px; text-align: right; color: #6366f1; font-weight: 600;">${jobsCreated > 0 ? `+${jobsCreated}` : '0'}</td>
+                        <td style="padding: 8px 12px; text-align: right; color: #d97706; font-weight: 600;">${jobsPub > 0 ? `+${jobsPub}` : '0'}</td>
+                        <td style="padding: 8px 12px; text-align: center;">${flagHtml}</td>
+                    </tr>
+                `;
+            }).join("");
         }
 
 

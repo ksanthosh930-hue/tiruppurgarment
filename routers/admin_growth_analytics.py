@@ -537,6 +537,658 @@ def get_employer_growth(
 
 
 # ---------------------------------------------------------------------------
+# 3B. EMPLOYER ACQUISITION & ACTIVATION DEEP-DIVE ENDPOINT (Phase 1D-3A)
+# ---------------------------------------------------------------------------
+@router.get("/employers/deep-dive")
+def get_employer_deep_dive(
+    range: str = Query("30d", pattern="^(today|7d|30d|90d|all|custom)$"),
+    start_date: Optional[str] = Query(None),
+    end_date: Optional[str] = Query(None),
+    refresh: bool = Query(False),
+    admin: Dict[str, Any] = Depends(require_admin)
+):
+    """
+    Returns granular Employer Acquisition & Activation Analytics calculated
+    directly from PostgreSQL system of record tables.
+    Includes Executive KPIs, Cohort Funnel, Activation Velocity, Job Distribution,
+    Profile Completeness, Acquisition Channels, and IST Daily Time-Series Trends.
+    Guaranteed Zero-PII payload.
+    """
+    custom_start_dt: Optional[str] = None
+    custom_end_dt: Optional[str] = None
+    date_range_label = "Last 30 Days"
+    days_count = 30
+
+    if range == "today":
+        days_count = 1
+        date_range_label = "Today (IST)"
+        p_filter = lambda col: f"({col} AT TIME ZONE 'Asia/Kolkata')::date = (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')::date"
+        p_params = None
+    elif range == "7d":
+        days_count = 7
+        date_range_label = "Last 7 Days"
+        p_filter = lambda col: f"{col} >= (CURRENT_TIMESTAMP - INTERVAL '7 days')"
+        p_params = None
+    elif range == "30d":
+        days_count = 30
+        date_range_label = "Last 30 Days"
+        p_filter = lambda col: f"{col} >= (CURRENT_TIMESTAMP - INTERVAL '30 days')"
+        p_params = None
+    elif range == "90d":
+        days_count = 90
+        date_range_label = "Last 90 Days"
+        p_filter = lambda col: f"{col} >= (CURRENT_TIMESTAMP - INTERVAL '90 days')"
+        p_params = None
+    elif range == "all":
+        days_count = 365
+        date_range_label = "All Time"
+        p_filter = lambda col: "1=1"
+        p_params = None
+    elif range == "custom":
+        if not start_date or not end_date:
+            raise HTTPException(
+                status_code=400,
+                detail="start_date and end_date are required when range='custom' (format: YYYY-MM-DD)"
+            )
+        try:
+            d_start = datetime.strptime(start_date.strip(), "%Y-%m-%d").date()
+            d_end = datetime.strptime(end_date.strip(), "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid date format for start_date or end_date. Expected format: YYYY-MM-DD"
+            )
+        if d_start > d_end:
+            d_start, d_end = d_end, d_start
+        custom_start_dt = d_start.strftime("%Y-%m-%d")
+        custom_end_dt = d_end.strftime("%Y-%m-%d")
+        days_count = max(1, (d_end - d_start).days + 1)
+        date_range_label = f"Custom ({custom_start_dt} to {custom_end_dt})"
+        p_filter = lambda col: f"({col} AT TIME ZONE 'Asia/Kolkata')::date >= %s::date AND ({col} AT TIME ZONE 'Asia/Kolkata')::date <= %s::date"
+        p_params = (custom_start_dt, custom_end_dt)
+
+    cache_key = f"growth_employer_deep_dive_{range}_{custom_start_dt}_{custom_end_dt}"
+    if not refresh:
+        cached_data = analytics_cache.get(cache_key)
+        if cached_data:
+            return cached_data
+
+    if not db_helpers["db_enabled"] or not db_helpers["query_db"]:
+        return {
+            "success": True,
+            "data_source": "PostgreSQL (Offline/Mock)",
+            "reporting_timezone": "Asia/Kolkata (IST)",
+            "range": range,
+            "date_range_label": date_range_label,
+            "start_date": custom_start_dt,
+            "end_date": custom_end_dt,
+            "last_updated": datetime.now(timezone.utc).isoformat(),
+            "kpis": {
+                "all_time_totals": {
+                    "total_registered_employers": 0,
+                    "active_accounts": 0,
+                    "profile_completed_employers": 0,
+                    "activated_employers": 0,
+                    "pending_activation_employers": 0,
+                    "activation_rate_pct": 0.0,
+                    "published_employers": 0,
+                    "published_rate_pct": 0.0,
+                    "total_employer_jobs": 0,
+                    "published_employer_jobs": 0,
+                    "archived_employer_jobs": 0,
+                    "draft_employer_jobs": 0,
+                    "median_time_to_first_job_mins": None,
+                    "avg_time_to_first_job_mins": None,
+                    "repeat_job_posting_employers": 0,
+                    "repeat_posting_rate_pct": 0.0
+                },
+                "period_metrics": {
+                    "new_registrations_in_period": 0,
+                    "new_activations_in_period": 0,
+                    "period_activation_rate_pct": 0.0,
+                    "jobs_created_in_period": 0,
+                    "jobs_published_in_period": 0,
+                    "cohort_size": 0,
+                    "cohort_activated": 0,
+                    "cohort_activation_rate_pct": 0.0
+                }
+            },
+            "funnel": {
+                "pre_registration": {
+                    "raw_otp_requests_count": 0,
+                    "cohort_conversion_tracked": False,
+                    "note": "Raw OTP request events are logged anonymously before account creation. Identity linkage from pre-registration OTP to user account is unmeasured in database."
+                },
+                "cohort_stages": []
+            },
+            "activation_velocity": {
+                "total_activated_measured": 0,
+                "under_5_mins": {"count": 0, "percentage": 0.0},
+                "mins_5_to_15": {"count": 0, "percentage": 0.0},
+                "mins_15_to_60": {"count": 0, "percentage": 0.0},
+                "hours_1_to_24": {"count": 0, "percentage": 0.0},
+                "over_24_hours": {"count": 0, "percentage": 0.0}
+            },
+            "job_distribution": {
+                "total_posting_employers": 0,
+                "employers_with_1_job": {"count": 0, "percentage": 0.0},
+                "employers_with_2_jobs": {"count": 0, "percentage": 0.0},
+                "employers_with_3_jobs": {"count": 0, "percentage": 0.0},
+                "employers_with_4_plus_jobs": {"count": 0, "percentage": 0.0}
+            },
+            "profile_completeness": {
+                "total_employers": 0,
+                "core_contact": {"count": 0, "percentage": 0.0, "fields": ["company_name", "contact_person", "mobile", "email"]},
+                "business_info": {"count": 0, "percentage": 0.0, "fields": ["business_type", "company_description"]},
+                "location_info": {"count": 0, "percentage": 0.0, "fields": ["location", "address", "area"]},
+                "branding_info": {"count": 0, "percentage": 0.0, "fields": ["company_logo", "website"]}
+            },
+            "acquisition": {
+                "auth_providers": [
+                    {"provider": "local", "count": 0, "percentage": 0.0, "description": "Email OTP verification (Note: Not direct marketing traffic)"},
+                    {"provider": "google", "count": 0, "percentage": 0.0, "description": "Google OAuth 1-Click"}
+                ],
+                "marketing_attribution": {
+                    "status": "unmeasured_in_database",
+                    "source_tracking_column_present": False,
+                    "note": "PostgreSQL public_users and company_profiles tables do not store UTM parameters, referrers, or acquisition campaigns. Do not label auth_provider='local' as Direct traffic. Marketing campaign attribution must be cross-referenced with GA4 acquisition reports."
+                }
+            },
+            "trends": [],
+            "methodology": {
+                "registered_employer": "Any user account in public_users where account_type = 'company'.",
+                "active_account": "An employer user where COALESCE(is_active, true) = true. Represents account login eligibility, distinct from employer activation.",
+                "profile_completed_employer": "An employer with a linked company_profiles record possessing mandatory contact fields (company_name, contact_person, mobile, email).",
+                "activated_employer": "An employer who has successfully authored at least one job record in the jobs table linked to their account.",
+                "published_job_employer": "An employer who has at least one job in status = 'published'.",
+                "repeat_employer": "An employer who has authored two or more jobs in the jobs table.",
+                "timezone": "All date-range truncations and time-series aggregations are calculated in Asia/Kolkata (IST)."
+            },
+            "data_quality_warnings": [
+                "Database connection offline/mock mode."
+            ]
+        }
+
+    try:
+        # 1. Executive KPIs & All-Time Totals
+        kpi_sql = """
+            WITH employer_users AS (
+                SELECT
+                    u.id,
+                    u.created_at,
+                    COALESCE(u.is_active, true) as is_active,
+                    u.email_verified,
+                    cp.id as profile_id,
+                    cp.company_name,
+                    cp.contact_person,
+                    cp.mobile,
+                    cp.email as profile_email,
+                    cp.business_type,
+                    cp.location,
+                    cp.address,
+                    cp.website,
+                    cp.company_description,
+                    cp.company_logo
+                FROM public_users u
+                LEFT JOIN company_profiles cp ON cp.user_id = u.id
+                WHERE u.account_type = 'company'
+            ),
+            employer_jobs_agg AS (
+                SELECT
+                    j.employer_user_id,
+                    COUNT(j.id) as total_jobs,
+                    COUNT(CASE WHEN j.status = 'published' THEN 1 END) as published_jobs,
+                    COUNT(CASE WHEN j.status = 'archived' THEN 1 END) as archived_jobs,
+                    COUNT(CASE WHEN j.status = 'draft' THEN 1 END) as draft_jobs,
+                    MIN(j.created_at) as first_job_created_at,
+                    MIN(COALESCE(j.published_at, j.created_at)) as first_job_published_at
+                FROM jobs j
+                WHERE j.employer_user_id IS NOT NULL
+                GROUP BY j.employer_user_id
+            )
+            SELECT
+                COUNT(eu.id) as total_registered,
+                COUNT(CASE WHEN eu.is_active THEN 1 END) as active_accounts,
+                COUNT(CASE WHEN eu.profile_id IS NOT NULL
+                            AND eu.company_name IS NOT NULL AND TRIM(eu.company_name) != ''
+                            AND eu.contact_person IS NOT NULL AND TRIM(eu.contact_person) != ''
+                            AND eu.mobile IS NOT NULL AND TRIM(eu.mobile) != ''
+                      THEN 1 END) as profile_completed,
+                COUNT(eja.employer_user_id) as activated_employers,
+                COUNT(CASE WHEN eja.employer_user_id IS NULL THEN 1 END) as pending_activation,
+                COALESCE(SUM(eja.total_jobs), 0) as total_employer_jobs,
+                COALESCE(SUM(eja.published_jobs), 0) as published_employer_jobs,
+                COALESCE(SUM(eja.archived_jobs), 0) as archived_employer_jobs,
+                COALESCE(SUM(eja.draft_jobs), 0) as draft_employer_jobs,
+                COUNT(CASE WHEN eja.published_jobs >= 1 THEN 1 END) as published_employers,
+                COUNT(CASE WHEN eja.total_jobs >= 2 THEN 1 END) as repeat_employers,
+                PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY EXTRACT(EPOCH FROM (eja.first_job_created_at - eu.created_at)) / 60.0) as median_time_to_first_job_mins,
+                AVG(EXTRACT(EPOCH FROM (eja.first_job_created_at - eu.created_at)) / 60.0) as avg_time_to_first_job_mins
+            FROM employer_users eu
+            LEFT JOIN employer_jobs_agg eja ON eu.id = eja.employer_user_id;
+        """
+        kpi_rows = db_helpers["query_db"](kpi_sql)
+        kpi_row = kpi_rows[0] if kpi_rows else {}
+        tot_reg = int(kpi_row.get("total_registered") or 0)
+        act_emp = int(kpi_row.get("activated_employers") or 0)
+        rep_emp = int(kpi_row.get("repeat_employers") or 0)
+        pub_emp = int(kpi_row.get("published_employers") or 0)
+        tot_jobs = int(kpi_row.get("total_employer_jobs") or 0)
+        prof_comp_count = int(kpi_row.get("profile_completed") or 0)
+
+        # 2. Period Metrics & Cohorts
+        p_regs_sql = f"SELECT COUNT(*) as count FROM public_users WHERE account_type = 'company' AND {p_filter('created_at')};"
+        p_regs_rows = db_helpers["query_db"](p_regs_sql, p_params)
+        p_regs_count = int(p_regs_rows[0].get("count") or 0) if p_regs_rows else 0
+
+        cohort_sql = f"""
+            WITH cohort_regs AS (
+                SELECT id
+                FROM public_users
+                WHERE account_type = 'company' AND {p_filter('created_at')}
+            ),
+            cohort_acts AS (
+                SELECT DISTINCT employer_user_id as id
+                FROM jobs
+                WHERE employer_user_id IN (SELECT id FROM cohort_regs)
+            )
+            SELECT
+                (SELECT COUNT(*) FROM cohort_regs) as cohort_size,
+                (SELECT COUNT(*) FROM cohort_acts) as cohort_activated;
+        """
+        cohort_rows = db_helpers["query_db"](cohort_sql, p_params)
+        cohort_row = cohort_rows[0] if cohort_rows else {}
+        c_size = int(cohort_row.get("cohort_size") or 0)
+        c_act = int(cohort_row.get("cohort_activated") or 0)
+
+        new_act_sql = f"""
+            WITH first_jobs AS (
+                SELECT employer_user_id, MIN(created_at) as first_job_created
+                FROM jobs
+                WHERE employer_user_id IS NOT NULL
+                GROUP BY employer_user_id
+            )
+            SELECT COUNT(DISTINCT employer_user_id) as count
+            FROM first_jobs
+            WHERE {p_filter('first_job_created')};
+        """
+        new_act_rows = db_helpers["query_db"](new_act_sql, p_params)
+        new_act_in_p = int(new_act_rows[0].get("count") or 0) if new_act_rows else 0
+
+        pj_created_sql = f"SELECT COUNT(*) as count FROM jobs WHERE employer_user_id IS NOT NULL AND {p_filter('created_at')};"
+        pj_created_rows = db_helpers["query_db"](pj_created_sql, p_params)
+        pj_created = int(pj_created_rows[0].get("count") or 0) if pj_created_rows else 0
+
+        pj_pub_sql = f"SELECT COUNT(*) as count FROM jobs WHERE employer_user_id IS NOT NULL AND status = 'published' AND {p_filter('COALESCE(published_at, created_at)')};"
+        pj_pub_rows = db_helpers["query_db"](pj_pub_sql, p_params)
+        pj_published = int(pj_pub_rows[0].get("count") or 0) if pj_pub_rows else 0
+
+        # 3. Funnel Stages
+        raw_otp_rows = db_helpers["query_db"]("SELECT COUNT(*) as count FROM job_analytics_events WHERE event_type = 'registration_start' AND metadata->>'account_type' = 'company';")
+        raw_otp_count = int(raw_otp_rows[0].get("count") or 0) if raw_otp_rows else 0
+
+        email_ver_rows = db_helpers["query_db"]("SELECT COUNT(*) as count FROM public_users WHERE account_type = 'company' AND email_verified = true;")
+        email_ver_count = int(email_ver_rows[0].get("count") or 0) if email_ver_rows else 0
+
+        funnel_stages = [
+            {
+                "stage": "account_created",
+                "label": "Registered Employers",
+                "count": tot_reg,
+                "conversion_from_registered_pct": 100.0,
+                "drop_off_from_prior_pct": 0.0
+            },
+            {
+                "stage": "email_verified",
+                "label": "Email OTP Verified",
+                "count": email_ver_count,
+                "conversion_from_registered_pct": round((email_ver_count / tot_reg * 100), 2) if tot_reg > 0 else 0.0,
+                "drop_off_from_prior_pct": round(((tot_reg - email_ver_count) / tot_reg * 100), 2) if tot_reg > 0 else 0.0
+            },
+            {
+                "stage": "company_profile_created",
+                "label": "Company Profile Setup",
+                "count": prof_comp_count,
+                "conversion_from_registered_pct": round((prof_comp_count / tot_reg * 100), 2) if tot_reg > 0 else 0.0,
+                "drop_off_from_prior_pct": round(((email_ver_count - prof_comp_count) / email_ver_count * 100), 2) if email_ver_count > 0 else 0.0
+            },
+            {
+                "stage": "first_job_created",
+                "label": "First Job Authored",
+                "count": act_emp,
+                "conversion_from_registered_pct": round((act_emp / tot_reg * 100), 2) if tot_reg > 0 else 0.0,
+                "drop_off_from_prior_pct": round(((prof_comp_count - act_emp) / prof_comp_count * 100), 2) if prof_comp_count > 0 else 0.0
+            },
+            {
+                "stage": "first_job_published",
+                "label": "First Job Published",
+                "count": pub_emp,
+                "conversion_from_registered_pct": round((pub_emp / tot_reg * 100), 2) if tot_reg > 0 else 0.0,
+                "drop_off_from_prior_pct": round(((act_emp - pub_emp) / act_emp * 100), 2) if act_emp > 0 else 0.0
+            },
+            {
+                "stage": "repeat_job_posting",
+                "label": "Multi-Job Employer (>=2)",
+                "count": rep_emp,
+                "conversion_from_registered_pct": round((rep_emp / tot_reg * 100), 2) if tot_reg > 0 else 0.0,
+                "drop_off_from_prior_pct": round(((pub_emp - rep_emp) / pub_emp * 100), 2) if pub_emp > 0 else 0.0
+            }
+        ]
+
+        # 4. Activation Velocity Buckets
+        vel_sql = """
+            WITH first_jobs AS (
+                SELECT
+                    u.id as employer_id,
+                    EXTRACT(EPOCH FROM (MIN(j.created_at) - u.created_at)) / 60.0 as mins_to_first_job
+                FROM public_users u
+                JOIN jobs j ON u.id = j.employer_user_id
+                WHERE u.account_type = 'company'
+                GROUP BY u.id, u.created_at
+            )
+            SELECT
+                COUNT(CASE WHEN mins_to_first_job < 5 THEN 1 END) as under_5_mins,
+                COUNT(CASE WHEN mins_to_first_job >= 5 AND mins_to_first_job < 15 THEN 1 END) as mins_5_to_15,
+                COUNT(CASE WHEN mins_to_first_job >= 15 AND mins_to_first_job < 60 THEN 1 END) as mins_15_to_60,
+                COUNT(CASE WHEN mins_to_first_job >= 60 AND mins_to_first_job < 1440 THEN 1 END) as hours_1_to_24,
+                COUNT(CASE WHEN mins_to_first_job >= 1440 THEN 1 END) as over_24_hours,
+                COUNT(*) as total_measured
+            FROM first_jobs;
+        """
+        vel_rows = db_helpers["query_db"](vel_sql)
+        vel_row = vel_rows[0] if vel_rows else {}
+        tot_meas = int(vel_row.get("total_measured") or 0)
+        u5 = int(vel_row.get("under_5_mins") or 0)
+        m5_15 = int(vel_row.get("mins_5_to_15") or 0)
+        m15_60 = int(vel_row.get("mins_15_to_60") or 0)
+        h1_24 = int(vel_row.get("hours_1_to_24") or 0)
+        o24 = int(vel_row.get("over_24_hours") or 0)
+
+        # 5. Job Distribution
+        dist_sql = """
+            WITH job_counts AS (
+                SELECT
+                    u.id as employer_id,
+                    COUNT(j.id) as jobs_count
+                FROM public_users u
+                JOIN jobs j ON u.id = j.employer_user_id
+                WHERE u.account_type = 'company'
+                GROUP BY u.id
+            )
+            SELECT
+                COUNT(CASE WHEN jobs_count = 1 THEN 1 END) as employers_with_1_job,
+                COUNT(CASE WHEN jobs_count = 2 THEN 1 END) as employers_with_2_jobs,
+                COUNT(CASE WHEN jobs_count = 3 THEN 1 END) as employers_with_3_jobs,
+                COUNT(CASE WHEN jobs_count >= 4 THEN 1 END) as employers_with_4_plus_jobs,
+                COUNT(*) as total_posting_employers
+            FROM job_counts;
+        """
+        dist_rows = db_helpers["query_db"](dist_sql)
+        dist_row = dist_rows[0] if dist_rows else {}
+        tot_posting = int(dist_row.get("total_posting_employers") or 0)
+        j1 = int(dist_row.get("employers_with_1_job") or 0)
+        j2 = int(dist_row.get("employers_with_2_jobs") or 0)
+        j3 = int(dist_row.get("employers_with_3_jobs") or 0)
+        j4 = int(dist_row.get("employers_with_4_plus_jobs") or 0)
+
+        # 6. Profile Completeness
+        prof_sql = """
+            SELECT
+                COUNT(u.id) as total_employers,
+                COUNT(CASE WHEN cp.company_name IS NOT NULL AND TRIM(cp.company_name) != ''
+                            AND cp.contact_person IS NOT NULL AND TRIM(cp.contact_person) != ''
+                            AND cp.mobile IS NOT NULL AND TRIM(cp.mobile) != ''
+                            AND cp.email IS NOT NULL AND TRIM(cp.email) != '' THEN 1 END) as core_contact_complete,
+                COUNT(CASE WHEN (cp.business_type IS NOT NULL AND TRIM(cp.business_type) != '')
+                            OR (cp.company_description IS NOT NULL AND TRIM(cp.company_description) != '') THEN 1 END) as business_info_filled,
+                COUNT(CASE WHEN (cp.location IS NOT NULL AND TRIM(cp.location) != '')
+                            OR (cp.address IS NOT NULL AND TRIM(cp.address) != '')
+                            OR (cp.area IS NOT NULL AND TRIM(cp.area) != '') THEN 1 END) as location_info_filled,
+                COUNT(CASE WHEN (cp.company_logo IS NOT NULL AND TRIM(cp.company_logo) != '')
+                            OR (cp.website IS NOT NULL AND TRIM(cp.website) != '') THEN 1 END) as branding_info_filled
+            FROM public_users u
+            LEFT JOIN company_profiles cp ON cp.user_id = u.id
+            WHERE u.account_type = 'company';
+        """
+        prof_rows = db_helpers["query_db"](prof_sql)
+        prof_row = prof_rows[0] if prof_rows else {}
+        core_c = int(prof_row.get("core_contact_complete") or 0)
+        biz_c = int(prof_row.get("business_info_filled") or 0)
+        loc_c = int(prof_row.get("location_info_filled") or 0)
+        brd_c = int(prof_row.get("branding_info_filled") or 0)
+
+        # 7. Acquisition & Auth Providers
+        auth_rows = db_helpers["query_db"]("""
+            SELECT
+                COALESCE(auth_provider, 'local') as provider,
+                COUNT(*) as count
+            FROM public_users
+            WHERE account_type = 'company'
+            GROUP BY 1
+            ORDER BY count DESC;
+        """)
+        auth_map = {r["provider"]: int(r["count"]) for r in auth_rows}
+        local_auth_count = auth_map.get("local", 0)
+        google_auth_count = auth_map.get("google", 0)
+
+        # 8. Data Quality Checks (Job 631 fallback check)
+        fallback_check_rows = db_helpers["query_db"]("SELECT COUNT(*) as count FROM jobs WHERE employer_user_id IS NOT NULL AND status = 'published' AND published_at IS NULL;")
+        job_631_check = int(fallback_check_rows[0].get("count") or 0) if fallback_check_rows else 0
+
+        # 9. Time Series Trends
+        if range == "custom":
+            dates_cte = "SELECT generate_series(%s::date, %s::date, '1 day'::interval)::date AS day"
+            t_params = (custom_start_dt, custom_end_dt)
+        elif range == "today":
+            dates_cte = "SELECT generate_series((CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')::date, (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')::date, '1 day'::interval)::date AS day"
+            t_params = None
+        elif range == "all":
+            dates_cte = """SELECT generate_series(
+                COALESCE((SELECT MIN(created_at AT TIME ZONE 'Asia/Kolkata')::date FROM public_users WHERE account_type = 'company'), (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')::date - INTERVAL '89 days'),
+                (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')::date,
+                '1 day'::interval
+            )::date AS day"""
+            t_params = None
+        else:
+            dates_cte = f"""SELECT generate_series(
+                (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')::date - INTERVAL '{days_count - 1} days',
+                (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')::date,
+                '1 day'::interval
+            )::date AS day"""
+            t_params = None
+
+        trends_sql = f"""
+            WITH dates AS (
+                {dates_cte}
+            ),
+            bounds AS (
+                SELECT MIN(day) as min_day, MAX(day) as max_day FROM dates
+            ),
+            regs AS (
+                SELECT
+                    (u.created_at AT TIME ZONE 'Asia/Kolkata')::date AS day,
+                    COUNT(*) AS count
+                FROM public_users u, bounds b
+                WHERE u.account_type = 'company'
+                  AND (u.created_at AT TIME ZONE 'Asia/Kolkata')::date >= b.min_day
+                  AND (u.created_at AT TIME ZONE 'Asia/Kolkata')::date <= b.max_day
+                GROUP BY 1
+            ),
+            first_jobs AS (
+                SELECT
+                    j.employer_user_id,
+                    MIN(j.created_at) as first_job_created
+                FROM jobs j
+                WHERE j.employer_user_id IS NOT NULL
+                GROUP BY j.employer_user_id
+            ),
+            acts AS (
+                SELECT
+                    (fj.first_job_created AT TIME ZONE 'Asia/Kolkata')::date AS day,
+                    COUNT(*) AS count
+                FROM first_jobs fj, bounds b
+                WHERE (fj.first_job_created AT TIME ZONE 'Asia/Kolkata')::date >= b.min_day
+                  AND (fj.first_job_created AT TIME ZONE 'Asia/Kolkata')::date <= b.max_day
+                GROUP BY 1
+            ),
+            created_jobs AS (
+                SELECT
+                    (j.created_at AT TIME ZONE 'Asia/Kolkata')::date AS day,
+                    COUNT(*) AS count
+                FROM jobs j, bounds b
+                WHERE j.employer_user_id IS NOT NULL
+                  AND (j.created_at AT TIME ZONE 'Asia/Kolkata')::date >= b.min_day
+                  AND (j.created_at AT TIME ZONE 'Asia/Kolkata')::date <= b.max_day
+                GROUP BY 1
+            ),
+            pub_jobs AS (
+                SELECT
+                    (COALESCE(j.published_at, j.created_at) AT TIME ZONE 'Asia/Kolkata')::date AS day,
+                    COUNT(*) AS count,
+                    COUNT(CASE WHEN j.published_at IS NULL AND j.status = 'published' THEN 1 END) AS fallback_count
+                FROM jobs j, bounds b
+                WHERE j.employer_user_id IS NOT NULL
+                  AND j.status = 'published'
+                  AND (COALESCE(j.published_at, j.created_at) AT TIME ZONE 'Asia/Kolkata')::date >= b.min_day
+                  AND (COALESCE(j.published_at, j.created_at) AT TIME ZONE 'Asia/Kolkata')::date <= b.max_day
+                GROUP BY 1
+            )
+            SELECT
+                d.day::text AS date,
+                COALESCE(r.count, 0) AS new_registrations,
+                COALESCE(a.count, 0) AS new_activations,
+                COALESCE(cj.count, 0) AS jobs_created,
+                COALESCE(pj.count, 0) AS jobs_published,
+                COALESCE(pj.fallback_count, 0) AS published_fallback_count
+            FROM dates d
+            LEFT JOIN regs r ON r.day = d.day
+            LEFT JOIN acts a ON a.day = d.day
+            LEFT JOIN created_jobs cj ON cj.day = d.day
+            LEFT JOIN pub_jobs pj ON pj.day = d.day
+            ORDER BY d.day ASC;
+        """
+        trend_rows = db_helpers["query_db"](trends_sql, t_params)
+
+        median_mins = kpi_row.get("median_time_to_first_job_mins")
+        avg_mins = kpi_row.get("avg_time_to_first_job_mins")
+
+        response_data = {
+            "success": True,
+            "data_source": "PostgreSQL Ground Truth",
+            "reporting_timezone": "Asia/Kolkata (IST)",
+            "range": range,
+            "date_range_label": date_range_label,
+            "start_date": custom_start_dt,
+            "end_date": custom_end_dt,
+            "last_updated": datetime.now(timezone.utc).isoformat(),
+            "kpis": {
+                "all_time_totals": {
+                    "total_registered_employers": tot_reg,
+                    "active_accounts": int(kpi_row.get("active_accounts") or 0),
+                    "profile_completed_employers": prof_comp_count,
+                    "activated_employers": act_emp,
+                    "pending_activation_employers": int(kpi_row.get("pending_activation") or 0),
+                    "activation_rate_pct": round((act_emp / tot_reg * 100), 2) if tot_reg > 0 else 0.0,
+                    "published_employers": pub_emp,
+                    "published_rate_pct": round((pub_emp / tot_reg * 100), 2) if tot_reg > 0 else 0.0,
+                    "total_employer_jobs": tot_jobs,
+                    "published_employer_jobs": int(kpi_row.get("published_employer_jobs") or 0),
+                    "archived_employer_jobs": int(kpi_row.get("archived_employer_jobs") or 0),
+                    "draft_employer_jobs": int(kpi_row.get("draft_employer_jobs") or 0),
+                    "median_time_to_first_job_mins": round(float(median_mins), 2) if median_mins is not None else None,
+                    "avg_time_to_first_job_mins": round(float(avg_mins), 2) if avg_mins is not None else None,
+                    "repeat_job_posting_employers": rep_emp,
+                    "repeat_posting_rate_pct": round((rep_emp / act_emp * 100), 2) if act_emp > 0 else 0.0
+                },
+                "period_metrics": {
+                    "new_registrations_in_period": p_regs_count,
+                    "new_activations_in_period": new_act_in_p,
+                    "period_activation_rate_pct": round((new_act_in_p / p_regs_count * 100), 2) if p_regs_count > 0 else 0.0,
+                    "jobs_created_in_period": pj_created,
+                    "jobs_published_in_period": pj_published,
+                    "cohort_size": c_size,
+                    "cohort_activated": c_act,
+                    "cohort_activation_rate_pct": round((c_act / c_size * 100), 2) if c_size > 0 else 0.0
+                }
+            },
+            "funnel": {
+                "pre_registration": {
+                    "raw_otp_requests_count": raw_otp_count,
+                    "cohort_conversion_tracked": False,
+                    "note": "Raw OTP request events are logged anonymously before account creation. Identity linkage from pre-registration OTP to user account is unmeasured in database."
+                },
+                "cohort_stages": funnel_stages
+            },
+            "activation_velocity": {
+                "total_activated_measured": tot_meas,
+                "under_5_mins": {"count": u5, "percentage": round((u5 / tot_meas * 100), 2) if tot_meas > 0 else 0.0},
+                "mins_5_to_15": {"count": m5_15, "percentage": round((m5_15 / tot_meas * 100), 2) if tot_meas > 0 else 0.0},
+                "mins_15_to_60": {"count": m15_60, "percentage": round((m15_60 / tot_meas * 100), 2) if tot_meas > 0 else 0.0},
+                "hours_1_to_24": {"count": h1_24, "percentage": round((h1_24 / tot_meas * 100), 2) if tot_meas > 0 else 0.0},
+                "over_24_hours": {"count": o24, "percentage": round((o24 / tot_meas * 100), 2) if tot_meas > 0 else 0.0}
+            },
+            "job_distribution": {
+                "total_posting_employers": tot_posting,
+                "employers_with_1_job": {"count": j1, "percentage": round((j1 / tot_posting * 100), 2) if tot_posting > 0 else 0.0},
+                "employers_with_2_jobs": {"count": j2, "percentage": round((j2 / tot_posting * 100), 2) if tot_posting > 0 else 0.0},
+                "employers_with_3_jobs": {"count": j3, "percentage": round((j3 / tot_posting * 100), 2) if tot_posting > 0 else 0.0},
+                "employers_with_4_plus_jobs": {"count": j4, "percentage": round((j4 / tot_posting * 100), 2) if tot_posting > 0 else 0.0}
+            },
+            "profile_completeness": {
+                "total_employers": tot_reg,
+                "core_contact": {"count": core_c, "percentage": round((core_c / tot_reg * 100), 2) if tot_reg > 0 else 0.0, "fields": ["company_name", "contact_person", "mobile", "email"]},
+                "business_info": {"count": biz_c, "percentage": round((biz_c / tot_reg * 100), 2) if tot_reg > 0 else 0.0, "fields": ["business_type", "company_description"]},
+                "location_info": {"count": loc_c, "percentage": round((loc_c / tot_reg * 100), 2) if tot_reg > 0 else 0.0, "fields": ["location", "address", "area"]},
+                "branding_info": {"count": brd_c, "percentage": round((brd_c / tot_reg * 100), 2) if tot_reg > 0 else 0.0, "fields": ["company_logo", "website"]}
+            },
+            "acquisition": {
+                "auth_providers": [
+                    {"provider": "local", "count": local_auth_count, "percentage": round((local_auth_count / tot_reg * 100), 2) if tot_reg > 0 else 0.0, "description": "Email OTP verification (Note: Not direct marketing traffic)"},
+                    {"provider": "google", "count": google_auth_count, "percentage": round((google_auth_count / tot_reg * 100), 2) if tot_reg > 0 else 0.0, "description": "Google OAuth 1-Click"}
+                ],
+                "marketing_attribution": {
+                    "status": "unmeasured_in_database",
+                    "source_tracking_column_present": False,
+                    "note": "PostgreSQL public_users and company_profiles tables do not store UTM parameters, referrers, or acquisition campaigns. Do not label auth_provider='local' as Direct traffic. Marketing campaign attribution must be cross-referenced with GA4 acquisition reports."
+                }
+            },
+            "trends": [
+                {
+                    "date": str(tr["date"]),
+                    "new_registrations": int(tr["new_registrations"]),
+                    "new_activations": int(tr["new_activations"]),
+                    "jobs_created": int(tr["jobs_created"]),
+                    "jobs_published": int(tr["jobs_published"]),
+                    "published_fallback_count": int(tr["published_fallback_count"])
+                }
+                for tr in trend_rows
+            ],
+            "methodology": {
+                "registered_employer": "Any user account in public_users where account_type = 'company'.",
+                "active_account": "An employer user where COALESCE(is_active, true) = true. Represents account login eligibility, distinct from employer activation.",
+                "profile_completed_employer": "An employer with a linked company_profiles record possessing mandatory contact fields (company_name, contact_person, mobile, email).",
+                "activated_employer": "An employer who has successfully authored at least one job record in the jobs table linked to their account.",
+                "published_job_employer": "An employer who has at least one job in status = 'published'.",
+                "repeat_employer": "An employer who has authored two or more jobs in the jobs table.",
+                "timezone": "All date-range truncations and time-series aggregations are calculated in Asia/Kolkata (IST)."
+            },
+            "data_quality_warnings": [
+                f"Small sample size alert: Total registered employer cohort is currently {tot_reg} accounts. Percentages should be interpreted alongside raw counts.",
+                "Pre-registration OTP funnel: Raw OTP event counts are tracked anonymously prior to account creation; cohort identity linkage from OTP request to registered account is unmeasured.",
+                "Marketing attribution limitation: Acquisition channel sources (UTM/Referrers) are not recorded in PostgreSQL user tables.",
+                f"Timestamp fallback: {job_631_check} published job (Job ID 631) has NULL published_at timestamp; created_at was used as an explicit fallback."
+            ]
+        }
+
+        analytics_cache.set(cache_key, response_data)
+        return response_data
+
+    except Exception as e:
+        logger.error(f"Error loading employer deep-dive metrics: {e}")
+        raise HTTPException(status_code=500, detail=f"Database error loading employer deep-dive metrics: {e}")
+
+
+# ---------------------------------------------------------------------------
 # 4. JOB PERFORMANCE & LIQUIDITY ENDPOINT
 # ---------------------------------------------------------------------------
 @router.get("/jobs")
