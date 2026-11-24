@@ -255,7 +255,7 @@ def get_ga4_status(admin=Depends(require_admin)):
 # ---------------------------------------------------------------------------
 @router.get("/overview")
 def get_ga4_overview(
-    range: str = Query("30d", enum=["today", "7d", "30d", "90d", "custom"]),
+    range: str = Query("30d", pattern="^(today|7d|30d|90d|custom)$"),
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     refresh: bool = False,
@@ -380,7 +380,7 @@ def get_ga4_overview(
 # ---------------------------------------------------------------------------
 @router.get("/funnel")
 def get_ga4_funnel(
-    range: str = Query("30d", enum=["today", "7d", "30d", "90d", "custom"]),
+    range: str = Query("30d", pattern="^(today|7d|30d|90d|custom)$"),
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     refresh: bool = False,
@@ -601,7 +601,7 @@ def get_ga4_funnel(
 # ---------------------------------------------------------------------------
 @router.get("/roles")
 def get_ga4_roles(
-    range: str = Query("30d", enum=["today", "7d", "30d", "90d", "custom"]),
+    range: str = Query("30d", pattern="^(today|7d|30d|90d|custom)$"),
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     refresh: bool = False,
@@ -715,7 +715,7 @@ def get_ga4_roles(
 # ---------------------------------------------------------------------------
 @router.get("/organic")
 def get_ga4_organic(
-    range: str = Query("30d", enum=["today", "7d", "30d", "90d", "custom"]),
+    range: str = Query("30d", pattern="^(today|7d|30d|90d|custom)$"),
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     refresh: bool = False,
@@ -855,7 +855,7 @@ def get_ga4_organic(
 # ---------------------------------------------------------------------------
 @router.get("/landing-pages")
 def get_ga4_landing_pages(
-    range: str = Query("30d", enum=["today", "7d", "30d", "90d", "custom"]),
+    range: str = Query("30d", pattern="^(today|7d|30d|90d|custom)$"),
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     limit: int = Query(20, ge=5, le=50),
@@ -959,8 +959,8 @@ def get_ga4_landing_pages(
 # ---------------------------------------------------------------------------
 @router.get("/trends")
 def get_ga4_trends(
-    granularity: str = Query("daily", enum=["daily", "weekly", "monthly"]),
-    range: str = Query("30d", enum=["today", "7d", "30d", "90d", "custom"]),
+    granularity: str = Query("daily", pattern="^(daily|weekly|monthly)$"),
+    range: str = Query("30d", pattern="^(today|7d|30d|90d|custom)$"),
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     refresh: bool = False,
