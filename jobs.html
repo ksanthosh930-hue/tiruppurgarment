@@ -21,6 +21,8 @@
         }
       };
     </script>
+    <!-- Marketing Attribution Engine -->
+    <script src="/js/dg-attribution.js?v=20261125-1"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- BEGIN_PAGE_METADATA -->
@@ -4155,6 +4157,14 @@
             formData.append("skills", document.getElementById("candSkills").value);
             formData.append("resume_url", document.getElementById("candResumeUrl").value);
             formData.append("visitor_id", getVisitorId());
+            if (typeof getMarketingAttributionPayload === "function") {
+                try {
+                    const attr = getMarketingAttributionPayload();
+                    if (attr) {
+                        formData.append("attribution", JSON.stringify(attr));
+                    }
+                } catch (e) {}
+            }
             if (!isLoggedInIndividual) {
                 formData.append("email", emailVal);
                 formData.append("password", pwdVal);

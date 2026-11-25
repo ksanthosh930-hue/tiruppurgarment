@@ -754,7 +754,8 @@ async def register_candidate(
     current_company: Optional[str] = Form(None),
     expected_salary: Optional[str] = Form(None),
     preferred_location: Optional[str] = Form(None),
-    resume_url: Optional[str] = Form(None)
+    resume_url: Optional[str] = Form(None),
+    attribution: Optional[str] = Form(None)
 ):
     """
     Canonical Job Seeker Candidate Quick Registration & Profile Update.
@@ -1023,6 +1024,32 @@ async def register_candidate(
             """, (vid, new_pub_user_id, session_token, json.dumps({"account_type": "individual", "source": "candidate_quick_register"})))
         except Exception as ae:
             logger.warning(f"Could not track registration_complete event in register_candidate: {ae}")
+
+        # Persist deterministic marketing attribution (REV-01)
+        try:
+            from schemas.attribution import (
+                MarketingAttributionPayload,
+                persist_user_marketing_attribution
+            )
+            parsed_attr_payload = None
+            if attribution and isinstance(attribution, str) and attribution.strip():
+                try:
+                    attr_dict = json.loads(attribution.strip())
+                    if isinstance(attr_dict, dict):
+                        parsed_attr_payload = MarketingAttributionPayload(**attr_dict)
+                except Exception as pe:
+                    logger.warning(f"Failed to parse candidate attribution payload: {pe}")
+
+            persist_user_marketing_attribution(
+                exec_fn=db_helpers["execute_db"],
+                user_id=new_pub_user_id,
+                account_type="individual",
+                attribution_payload=parsed_attr_payload,
+                request=request,
+                raw_metadata={"source": "candidate_quick_register"}
+            )
+        except Exception as attr_err:
+            logger.error(f"Error persisting candidate attribution for user_id={new_pub_user_id}: {attr_err}")
 
         return {
             "success": True,

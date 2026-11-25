@@ -20,6 +20,8 @@
         }
       };
     </script>
+    <!-- Marketing Attribution Engine -->
+    <script src="/js/dg-attribution.js?v=20261125-1"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
@@ -1295,7 +1297,8 @@
                 account_type: currentRole,
                 password: pwd,
                 confirm_password: pwd,
-                visitor_id: getVisitorId()
+                visitor_id: getVisitorId(),
+                attribution: typeof getMarketingAttributionPayload === "function" ? getMarketingAttributionPayload() : null
             };
 
             if (currentRole === "individual") {
@@ -1700,7 +1703,8 @@
             btn.textContent = "Setting up your account...";
 
             const payload = {
-                visitor_id: getVisitorId()
+                visitor_id: getVisitorId(),
+                attribution: typeof getMarketingAttributionPayload === "function" ? getMarketingAttributionPayload() : null
             };
 
             if (googleAuthRole === "company") {

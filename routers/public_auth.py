@@ -21,6 +21,10 @@ from services.otp_service import (
     OTP_MAX_ATTEMPTS,
     OTP_RESEND_COOLDOWN_SECONDS
 )
+from schemas.attribution import (
+    MarketingAttributionPayload,
+    persist_user_marketing_attribution
+)
 
 logger = logging.getLogger(__name__)
 
@@ -225,6 +229,7 @@ class EmployeeRegisterRequest(BaseModel):
     confirm_password: Optional[str] = None
     location: Optional[str] = None
     visitor_id: Optional[str] = None
+    attribution: Optional[MarketingAttributionPayload] = None
 
 @router.post("/register/employee")
 @router.post("/register/individual")
@@ -283,6 +288,16 @@ def register_employee(
             INSERT INTO individual_profiles (user_id, full_name, email, mobile, location, created_at, updated_at)
             VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
         """, (new_user_id, full_name, email, mobile, location))
+
+        # Persist deterministic marketing attribution
+        persist_user_marketing_attribution(
+            exec_fn=_execute_db,
+            user_id=new_user_id,
+            account_type="individual",
+            attribution_payload=req_data.attribution,
+            request=request,
+            raw_metadata={"source": "register_employee"}
+        )
         
         # Auto-login: Create public session
         session_token = str(uuid.uuid4())
@@ -334,6 +349,7 @@ class EmployerRegisterRequest(BaseModel):
     area: Optional[str] = None
     location: Optional[str] = None
     visitor_id: Optional[str] = None
+    attribution: Optional[MarketingAttributionPayload] = None
 
 @router.post("/register/employer")
 @router.post("/register/company")
@@ -400,6 +416,16 @@ def register_employer(
             )
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'pending', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
         """, (new_user_id, company_name, contact_person, email, mobile, whatsapp, area, location))
+
+        # Persist deterministic marketing attribution
+        persist_user_marketing_attribution(
+            exec_fn=_execute_db,
+            user_id=new_user_id,
+            account_type="company",
+            attribution_payload=req_data.attribution,
+            request=request,
+            raw_metadata={"source": "register_employer"}
+        )
         
         # Auto-login: Create public session
         session_token = str(uuid.uuid4())
@@ -1109,11 +1135,13 @@ class CompleteRegistrationRequest(BaseModel):
     whatsapp: Optional[str] = None
     area: Optional[str] = None
     visitor_id: Optional[str] = None
+    attribution: Optional[MarketingAttributionPayload] = None
 
 @router.post("/register/complete")
 def register_complete(
     req_data: CompleteRegistrationRequest,
     response: Response,
+    request: Request = None,
     dg_reg_verify: Optional[str] = Cookie(None)
 ):
     account_type = req_data.account_type.strip().lower()
@@ -1191,6 +1219,16 @@ def register_complete(
                 VALUES (%s, %s, %s, %s, %s, %s, %s, 'pending', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
             """, (new_user_id, company_name_clean, contact_person_clean, email, mobile_clean, whatsapp_clean, area_clean))
         
+        # Persist deterministic marketing attribution
+        persist_user_marketing_attribution(
+            exec_fn=_execute_db,
+            user_id=new_user_id,
+            account_type=account_type,
+            attribution_payload=req_data.attribution,
+            request=request,
+            raw_metadata={"source": "register_complete"}
+        )
+
         session_token = str(uuid.uuid4())
         _execute_db("""
             INSERT INTO public_user_sessions (token, user_id, expires_at, created_at)
@@ -1584,6 +1622,7 @@ class GoogleCompleteRegistrationRequest(BaseModel):
     area: Optional[str] = None
     otp_code: Optional[str] = None
     visitor_id: Optional[str] = None
+    attribution: Optional[MarketingAttributionPayload] = None
 
 class GoogleLinkAccountRequest(BaseModel):
     method: str = "password"  # 'password' or 'otp'
@@ -1889,6 +1928,16 @@ def google_complete_registration(
                 INSERT INTO company_profiles (user_id, company_name, contact_person, email, mobile, area, location, verification_status, created_at, updated_at)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, 'pending', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
             """, (new_user_id, company_name, contact_person, email, mobile, area, location))
+
+        # Persist deterministic marketing attribution
+        persist_user_marketing_attribution(
+            exec_fn=_execute_db,
+            user_id=new_user_id,
+            account_type=role,
+            attribution_payload=req_data.attribution,
+            request=request,
+            raw_metadata={"source": "google_complete_registration"}
+        )
 
         # Create session
         session_token = str(uuid.uuid4())

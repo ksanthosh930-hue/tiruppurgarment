@@ -1,0 +1,1 @@
+# DigiGarment Schemas Package
