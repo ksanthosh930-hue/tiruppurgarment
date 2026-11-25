@@ -2,7 +2,7 @@ import os
 import time
 import logging
 import threading
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Dict, Any, Optional, List
 from fastapi import APIRouter, HTTPException, Depends, Query, Cookie
 
@@ -1490,3 +1490,464 @@ def get_growth_trends(
     except Exception as e:
         logger.error(f"Error loading growth trends: {e}")
         raise HTTPException(status_code=500, detail=f"Database error loading trends: {e}")
+
+
+# ---------------------------------------------------------------------------
+# 6. MARKETING ATTRIBUTION & CAMPAIGN ROI ANALYTICS ENDPOINT (Phase 1D-5B)
+# ---------------------------------------------------------------------------
+@router.get("/marketing-attribution")
+def get_marketing_attribution(
+    range: str = Query("30d", pattern="^(today|7d|30d|90d|all|custom)$"),
+    start_date: Optional[str] = Query(None),
+    end_date: Optional[str] = Query(None),
+    account_type: Optional[str] = Query("all", pattern="^(all|individual|company)$"),
+    refresh: bool = Query(False),
+    admin: Dict[str, Any] = Depends(require_admin)
+):
+    """
+    Returns granular Marketing Attribution & ROI Analytics derived from
+    user_marketing_attributions joined with public_users.
+    Includes Executive Marketing KPIs, 10-Tier Channel Groupings, First-Touch Sources,
+    Last-Touch Sources, Campaigns, Multi-Touch Journeys, and IST Continuous Daily Timeline.
+    Guaranteed Zero-PII payload.
+    """
+    IST = timezone(timedelta(hours=5, minutes=30))
+    now_ist = datetime.now(IST)
+    today_ist = now_ist.date()
+
+    custom_start_dt: Optional[str] = None
+    custom_end_dt: Optional[str] = None
+    date_range_label = "Last 30 Days"
+    days_count = 30
+
+    if range == "today":
+        days_count = 1
+        date_range_label = "Today (IST)"
+        start_date_str = today_ist.strftime("%Y-%m-%d")
+        end_date_str = today_ist.strftime("%Y-%m-%d")
+        p_filter = lambda col: f"({col} AT TIME ZONE 'Asia/Kolkata')::date = '{start_date_str}'::date"
+        timeline_start_expr = f"'{start_date_str}'::date"
+        timeline_end_expr = f"'{end_date_str}'::date"
+
+    elif range == "7d":
+        days_count = 7
+        date_range_label = "Last 7 Days"
+        start_date_str = (today_ist - timedelta(days=6)).strftime("%Y-%m-%d")
+        end_date_str = today_ist.strftime("%Y-%m-%d")
+        p_filter = lambda col: f"({col} AT TIME ZONE 'Asia/Kolkata')::date >= '{start_date_str}'::date AND ({col} AT TIME ZONE 'Asia/Kolkata')::date <= '{end_date_str}'::date"
+        timeline_start_expr = f"'{start_date_str}'::date"
+        timeline_end_expr = f"'{end_date_str}'::date"
+
+    elif range == "30d":
+        days_count = 30
+        date_range_label = "Last 30 Days"
+        start_date_str = (today_ist - timedelta(days=29)).strftime("%Y-%m-%d")
+        end_date_str = today_ist.strftime("%Y-%m-%d")
+        p_filter = lambda col: f"({col} AT TIME ZONE 'Asia/Kolkata')::date >= '{start_date_str}'::date AND ({col} AT TIME ZONE 'Asia/Kolkata')::date <= '{end_date_str}'::date"
+        timeline_start_expr = f"'{start_date_str}'::date"
+        timeline_end_expr = f"'{end_date_str}'::date"
+
+    elif range == "90d":
+        days_count = 90
+        date_range_label = "Last 90 Days"
+        start_date_str = (today_ist - timedelta(days=89)).strftime("%Y-%m-%d")
+        end_date_str = today_ist.strftime("%Y-%m-%d")
+        p_filter = lambda col: f"({col} AT TIME ZONE 'Asia/Kolkata')::date >= '{start_date_str}'::date AND ({col} AT TIME ZONE 'Asia/Kolkata')::date <= '{end_date_str}'::date"
+        timeline_start_expr = f"'{start_date_str}'::date"
+        timeline_end_expr = f"'{end_date_str}'::date"
+
+    elif range == "all":
+        days_count = 365
+        date_range_label = "All Time"
+        start_date_str = None
+        end_date_str = today_ist.strftime("%Y-%m-%d")
+        p_filter = lambda col: "1=1"
+        timeline_start_expr = "COALESCE((SELECT MIN(created_at AT TIME ZONE 'Asia/Kolkata')::date FROM public_users), ((CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')::date - INTERVAL '30 days')::date)"
+        timeline_end_expr = "(CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')::date"
+
+    elif range == "custom":
+        if not start_date or not end_date:
+            raise HTTPException(
+                status_code=400,
+                detail="start_date and end_date are required when range='custom' (format: YYYY-MM-DD)"
+            )
+        try:
+            d_start = datetime.strptime(start_date.strip(), "%Y-%m-%d").date()
+            d_end = datetime.strptime(end_date.strip(), "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid date format for start_date or end_date. Expected format: YYYY-MM-DD"
+            )
+        if d_start > d_end:
+            d_start, d_end = d_end, d_start
+        custom_start_dt = d_start.strftime("%Y-%m-%d")
+        custom_end_dt = d_end.strftime("%Y-%m-%d")
+        start_date_str = custom_start_dt
+        end_date_str = custom_end_dt
+        days_count = max(1, (d_end - d_start).days + 1)
+        date_range_label = f"Custom ({custom_start_dt} to {custom_end_dt})"
+        p_filter = lambda col: f"({col} AT TIME ZONE 'Asia/Kolkata')::date >= '{custom_start_dt}'::date AND ({col} AT TIME ZONE 'Asia/Kolkata')::date <= '{custom_end_dt}'::date"
+        timeline_start_expr = f"'{custom_start_dt}'::date"
+        timeline_end_expr = f"'{custom_end_dt}'::date"
+
+    cache_key = f"growth_marketing_attribution_{range}_{account_type}_{start_date_str}_{end_date_str}"
+    if not refresh:
+        cached_data = analytics_cache.get(cache_key)
+        if cached_data:
+            return cached_data
+
+    # Account type filtering
+    if account_type == "individual":
+        account_filter = "u.account_type = 'individual'"
+    elif account_type == "company":
+        account_filter = "u.account_type = 'company'"
+    else:
+        account_filter = "1=1"
+
+    user_where = f"{p_filter('u.created_at')} AND {account_filter}"
+
+    if not db_helpers["db_enabled"] or not db_helpers["query_db"]:
+        return {
+            "success": True,
+            "data_source": "PostgreSQL (Offline/Mock)",
+            "reporting_timezone": "Asia/Kolkata (IST)",
+            "range": range,
+            "account_type": account_type or "all",
+            "period": {
+                "label": date_range_label,
+                "start_date": start_date_str,
+                "end_date": end_date_str,
+                "days_count": days_count
+            },
+            "last_updated": datetime.now(timezone.utc).isoformat(),
+            "kpis": {
+                "total_registrations": 0,
+                "tracked_registrations": 0,
+                "legacy_untracked_registrations": 0,
+                "tracking_coverage_pct": 0.0,
+                "candidate_registrations": 0,
+                "employer_registrations": 0,
+                "multi_touch_switches": 0,
+                "avg_time_to_register_minutes": None,
+                "median_time_to_register_minutes": None
+            },
+            "channel_groups": [],
+            "first_touch_sources": [],
+            "last_touch_sources": [],
+            "campaigns": [],
+            "cross_channel_journeys": [],
+            "timeline": []
+        }
+
+    try:
+        # 1. Executive Marketing KPIs
+        kpi_query = f"""
+            SELECT
+                COUNT(u.id) AS total_registrations,
+                COUNT(u.id) FILTER (WHERE u.account_type = 'individual') AS candidate_registrations,
+                COUNT(u.id) FILTER (WHERE u.account_type = 'company') AS employer_registrations,
+                COUNT(uma.id) AS tracked_registrations,
+                COUNT(u.id) FILTER (WHERE uma.id IS NULL) AS legacy_untracked_registrations,
+                ROUND(
+                    (COUNT(uma.id)::numeric / NULLIF(COUNT(u.id), 0)::numeric) * 100.0,
+                    2
+                ) AS tracking_coverage_pct,
+                COUNT(uma.id) FILTER (
+                    WHERE uma.first_utm_source != uma.last_utm_source
+                       OR uma.first_utm_medium != uma.last_utm_medium
+                ) AS multi_touch_switches,
+                ROUND(
+                    AVG(EXTRACT(EPOCH FROM (uma.registration_at - uma.first_visit_at)) / 60.0)::numeric,
+                    2
+                ) AS avg_time_to_register_minutes,
+                ROUND(
+                    PERCENTILE_CONT(0.5) WITHIN GROUP (
+                        ORDER BY EXTRACT(EPOCH FROM (uma.registration_at - uma.first_visit_at)) / 60.0
+                    )::numeric,
+                    2
+                ) AS median_time_to_register_minutes
+            FROM public_users u
+            LEFT JOIN user_marketing_attributions uma ON u.id = uma.user_id
+            WHERE {user_where};
+        """
+        kpi_rows = db_helpers["query_db"](kpi_query)
+        kpi_row = kpi_rows[0] if kpi_rows else {}
+
+        kpis = {
+            "total_registrations": int(kpi_row.get("total_registrations") or 0),
+            "tracked_registrations": int(kpi_row.get("tracked_registrations") or 0),
+            "legacy_untracked_registrations": int(kpi_row.get("legacy_untracked_registrations") or 0),
+            "tracking_coverage_pct": float(kpi_row.get("tracking_coverage_pct") or 0.0),
+            "candidate_registrations": int(kpi_row.get("candidate_registrations") or 0),
+            "employer_registrations": int(kpi_row.get("employer_registrations") or 0),
+            "multi_touch_switches": int(kpi_row.get("multi_touch_switches") or 0),
+            "avg_time_to_register_minutes": float(kpi_row["avg_time_to_register_minutes"]) if kpi_row.get("avg_time_to_register_minutes") is not None else None,
+            "median_time_to_register_minutes": float(kpi_row["median_time_to_register_minutes"]) if kpi_row.get("median_time_to_register_minutes") is not None else None,
+        }
+
+        # 2. 10-Tier Channel Groupings
+        channel_query = f"""
+            SELECT
+                CASE
+                    WHEN uma.id IS NULL THEN 'Legacy Untracked'
+                    WHEN uma.first_utm_source = 'google' 
+                         AND (uma.first_utm_medium IN ('cpc', 'ppc', 'paidsearch', 'cpm') 
+                              OR uma.first_landing_page ILIKE '%gclid=%'
+                              OR (uma.raw_metadata->'first_touch'->>'gclid') IS NOT NULL) THEN 'Google Ads'
+                    WHEN uma.first_utm_source = 'google' 
+                         OR uma.first_referrer ILIKE '%google.co%'
+                         OR uma.first_referrer ILIKE '%google.com%' THEN 'Google Organic'
+                    WHEN uma.first_utm_source IN ('instagram', 'facebook', 'meta') 
+                         AND (uma.first_utm_medium IN ('paid_social', 'cpc', 'cpm', 'ads')
+                              OR uma.first_landing_page ILIKE '%fbclid=%'
+                              OR (uma.raw_metadata->'first_touch'->>'fbclid') IS NOT NULL) THEN 'Meta Paid Ads'
+                    WHEN uma.first_utm_source = 'instagram' 
+                         OR uma.first_referrer ILIKE '%instagram.com%'
+                         OR uma.first_referrer ILIKE '%com.instagram.android%' THEN 'Instagram Organic'
+                    WHEN uma.first_utm_source = 'facebook' 
+                         OR uma.first_referrer ILIKE '%facebook.com%'
+                         OR uma.first_referrer ILIKE '%com.facebook.katana%' THEN 'Facebook Organic'
+                    WHEN uma.first_utm_source = 'whatsapp' 
+                         OR uma.first_utm_medium = 'chat_share'
+                         OR uma.first_referrer ILIKE '%whatsapp%'
+                         OR uma.first_referrer ILIKE '%wa.me%' THEN 'WhatsApp Direct'
+                    WHEN uma.first_utm_source = 'direct' 
+                         OR (uma.first_utm_source = 'untracked' AND uma.first_referrer IS NULL) THEN 'Direct / Brand'
+                    WHEN uma.first_utm_medium = 'referral' 
+                         OR (uma.first_referrer IS NOT NULL 
+                             AND uma.first_referrer NOT ILIKE '%tirupurgarment.in%') THEN 'External Referral'
+                    ELSE 'Other / Fallback'
+                END AS channel_group,
+                COUNT(u.id) AS total_count,
+                COUNT(u.id) FILTER (WHERE u.account_type = 'individual') AS candidate_count,
+                COUNT(u.id) FILTER (WHERE u.account_type = 'company') AS employer_count,
+                ROUND(
+                    (COUNT(u.id)::numeric / NULLIF(SUM(COUNT(u.id)) OVER (), 0) * 100.0),
+                    2
+                ) AS share_pct
+            FROM public_users u
+            LEFT JOIN user_marketing_attributions uma ON u.id = uma.user_id
+            WHERE {user_where}
+            GROUP BY 1
+            ORDER BY total_count DESC;
+        """
+        channel_rows = db_helpers["query_db"](channel_query)
+        channel_groups = [
+            {
+                "channel_group": str(r.get("channel_group") or "Other / Fallback"),
+                "total_count": int(r.get("total_count") or 0),
+                "candidate_count": int(r.get("candidate_count") or 0),
+                "employer_count": int(r.get("employer_count") or 0),
+                "share_pct": float(r.get("share_pct") or 0.0)
+            }
+            for r in (channel_rows or [])
+        ]
+
+        # 3. First-Touch Sources & Mediums
+        first_touch_query = f"""
+            SELECT
+                COALESCE(uma.first_utm_source, 'legacy_untracked') AS source,
+                COALESCE(uma.first_utm_medium, '(none)') AS medium,
+                COUNT(u.id) AS total_count,
+                COUNT(u.id) FILTER (WHERE u.account_type = 'individual') AS candidate_count,
+                COUNT(u.id) FILTER (WHERE u.account_type = 'company') AS employer_count,
+                ROUND(
+                    (COUNT(u.id)::numeric / NULLIF(SUM(COUNT(u.id)) OVER (), 0) * 100.0),
+                    2
+                ) AS share_pct
+            FROM public_users u
+            LEFT JOIN user_marketing_attributions uma ON u.id = uma.user_id
+            WHERE {user_where}
+            GROUP BY 1, 2
+            ORDER BY total_count DESC
+            LIMIT 50;
+        """
+        first_touch_rows = db_helpers["query_db"](first_touch_query)
+        first_touch_sources = [
+            {
+                "source": str(r.get("source") or "(not set)"),
+                "medium": str(r.get("medium") or "(none)"),
+                "total_count": int(r.get("total_count") or 0),
+                "candidate_count": int(r.get("candidate_count") or 0),
+                "employer_count": int(r.get("employer_count") or 0),
+                "share_pct": float(r.get("share_pct") or 0.0)
+            }
+            for r in (first_touch_rows or [])
+        ]
+
+        # 4. Last-Touch Sources & Mediums
+        last_touch_query = f"""
+            SELECT
+                COALESCE(uma.last_utm_source, 'legacy_untracked') AS source,
+                COALESCE(uma.last_utm_medium, '(none)') AS medium,
+                COUNT(u.id) AS total_count,
+                COUNT(u.id) FILTER (WHERE u.account_type = 'individual') AS candidate_count,
+                COUNT(u.id) FILTER (WHERE u.account_type = 'company') AS employer_count,
+                ROUND(
+                    (COUNT(u.id)::numeric / NULLIF(SUM(COUNT(u.id)) OVER (), 0) * 100.0),
+                    2
+                ) AS share_pct
+            FROM public_users u
+            LEFT JOIN user_marketing_attributions uma ON u.id = uma.user_id
+            WHERE {user_where}
+            GROUP BY 1, 2
+            ORDER BY total_count DESC
+            LIMIT 50;
+        """
+        last_touch_rows = db_helpers["query_db"](last_touch_query)
+        last_touch_sources = [
+            {
+                "source": str(r.get("source") or "(not set)"),
+                "medium": str(r.get("medium") or "(none)"),
+                "total_count": int(r.get("total_count") or 0),
+                "candidate_count": int(r.get("candidate_count") or 0),
+                "employer_count": int(r.get("employer_count") or 0),
+                "share_pct": float(r.get("share_pct") or 0.0)
+            }
+            for r in (last_touch_rows or [])
+        ]
+
+        # 5. Marketing Campaigns Breakdown
+        campaign_query = f"""
+            SELECT
+                COALESCE(uma.first_utm_campaign, '(not set)') AS campaign,
+                COALESCE(uma.first_utm_source, 'direct') AS source,
+                COALESCE(uma.first_utm_medium, '(none)') AS medium,
+                COUNT(u.id) AS total_count,
+                COUNT(u.id) FILTER (WHERE u.account_type = 'individual') AS candidate_count,
+                COUNT(u.id) FILTER (WHERE u.account_type = 'company') AS employer_count,
+                ROUND(
+                    (COUNT(u.id)::numeric / NULLIF(SUM(COUNT(u.id)) OVER (), 0) * 100.0),
+                    2
+                ) AS share_pct
+            FROM public_users u
+            LEFT JOIN user_marketing_attributions uma ON u.id = uma.user_id
+            WHERE {user_where} AND uma.id IS NOT NULL AND uma.first_utm_campaign IS NOT NULL AND TRIM(uma.first_utm_campaign) != ''
+            GROUP BY 1, 2, 3
+            ORDER BY total_count DESC
+            LIMIT 50;
+        """
+        campaign_rows = db_helpers["query_db"](campaign_query)
+        campaigns = [
+            {
+                "campaign": str(r.get("campaign") or "(not set)"),
+                "source": str(r.get("source") or "direct"),
+                "medium": str(r.get("medium") or "(none)"),
+                "total_count": int(r.get("total_count") or 0),
+                "candidate_count": int(r.get("candidate_count") or 0),
+                "employer_count": int(r.get("employer_count") or 0),
+                "share_pct": float(r.get("share_pct") or 0.0)
+            }
+            for r in (campaign_rows or [])
+        ]
+
+        # 6. Cross-Channel Journeys (Multi-Touch Transitions)
+        journey_query = f"""
+            SELECT
+                COALESCE(uma.first_utm_source, 'direct') AS first_source,
+                COALESCE(uma.first_utm_medium, '(none)') AS first_medium,
+                COALESCE(uma.last_utm_source, 'direct') AS last_source,
+                COALESCE(uma.last_utm_medium, '(none)') AS last_medium,
+                COUNT(u.id) AS journey_count,
+                COUNT(u.id) FILTER (WHERE u.account_type = 'individual') AS candidate_count,
+                COUNT(u.id) FILTER (WHERE u.account_type = 'company') AS employer_count
+            FROM public_users u
+            JOIN user_marketing_attributions uma ON u.id = uma.user_id
+            WHERE {user_where}
+            GROUP BY 1, 2, 3, 4
+            ORDER BY journey_count DESC
+            LIMIT 50;
+        """
+        journey_rows = db_helpers["query_db"](journey_query)
+        cross_channel_journeys = [
+            {
+                "first_source": str(r.get("first_source") or "direct"),
+                "first_medium": str(r.get("first_medium") or "(none)"),
+                "last_source": str(r.get("last_source") or "direct"),
+                "last_medium": str(r.get("last_medium") or "(none)"),
+                "journey_count": int(r.get("journey_count") or 0),
+                "candidate_count": int(r.get("candidate_count") or 0),
+                "employer_count": int(r.get("employer_count") or 0)
+            }
+            for r in (journey_rows or [])
+        ]
+
+        # 7. Continuous IST Daily Timeline
+        timeline_query = f"""
+            WITH date_series AS (
+                SELECT generate_series(
+                    {timeline_start_expr},
+                    {timeline_end_expr},
+                    INTERVAL '1 day'
+                )::date AS day
+            ),
+            daily_signups AS (
+                SELECT
+                    (u.created_at AT TIME ZONE 'Asia/Kolkata')::date AS day,
+                    COUNT(u.id) FILTER (WHERE u.account_type = 'individual' AND uma.id IS NOT NULL) AS candidates_tracked,
+                    COUNT(u.id) FILTER (WHERE u.account_type = 'individual' AND uma.id IS NULL) AS candidates_legacy,
+                    COUNT(u.id) FILTER (WHERE u.account_type = 'company' AND uma.id IS NOT NULL) AS employers_tracked,
+                    COUNT(u.id) FILTER (WHERE u.account_type = 'company' AND uma.id IS NULL) AS employers_legacy,
+                    COUNT(uma.id) FILTER (WHERE uma.first_utm_medium IN ('cpc', 'paid_social', 'ppc', 'cpm', 'ads')) AS paid_traffic,
+                    COUNT(uma.id) FILTER (WHERE (uma.first_utm_medium NOT IN ('cpc', 'paid_social', 'ppc', 'cpm', 'ads') OR uma.first_utm_medium IS NULL) AND uma.id IS NOT NULL) AS organic_direct_traffic
+                FROM public_users u
+                LEFT JOIN user_marketing_attributions uma ON u.id = uma.user_id
+                WHERE {user_where}
+                GROUP BY 1
+            )
+            SELECT
+                ds.day::text AS day,
+                TO_CHAR(ds.day, 'YYYY-MM-DD') AS date_str,
+                COALESCE(dsign.candidates_tracked, 0) AS candidates_tracked,
+                COALESCE(dsign.candidates_legacy, 0) AS candidates_legacy,
+                COALESCE(dsign.employers_tracked, 0) AS employers_tracked,
+                COALESCE(dsign.employers_legacy, 0) AS employers_legacy,
+                COALESCE(dsign.paid_traffic, 0) AS paid_traffic,
+                COALESCE(dsign.organic_direct_traffic, 0) AS organic_direct_traffic
+            FROM date_series ds
+            LEFT JOIN daily_signups dsign ON ds.day = dsign.day
+            ORDER BY ds.day ASC;
+        """
+        timeline_rows = db_helpers["query_db"](timeline_query)
+        timeline = [
+            {
+                "date": str(r.get("date_str") or r.get("day")),
+                "candidates_tracked": int(r.get("candidates_tracked") or 0),
+                "candidates_legacy": int(r.get("candidates_legacy") or 0),
+                "employers_tracked": int(r.get("employers_tracked") or 0),
+                "employers_legacy": int(r.get("employers_legacy") or 0),
+                "paid_traffic": int(r.get("paid_traffic") or 0),
+                "organic_direct_traffic": int(r.get("organic_direct_traffic") or 0)
+            }
+            for r in (timeline_rows or [])
+        ]
+
+        response_data = {
+            "success": True,
+            "data_source": "PostgreSQL (Direct System of Record)",
+            "reporting_timezone": "Asia/Kolkata (IST)",
+            "range": range,
+            "account_type": account_type or "all",
+            "period": {
+                "label": date_range_label,
+                "start_date": start_date_str,
+                "end_date": end_date_str,
+                "days_count": days_count
+            },
+            "last_updated": datetime.now(timezone.utc).isoformat(),
+            "kpis": kpis,
+            "channel_groups": channel_groups,
+            "first_touch_sources": first_touch_sources,
+            "last_touch_sources": last_touch_sources,
+            "campaigns": campaigns,
+            "cross_channel_journeys": cross_channel_journeys,
+            "timeline": timeline
+        }
+
+        analytics_cache.set(cache_key, response_data)
+        return response_data
+
+    except Exception as e:
+        logger.error(f"Error loading marketing attribution analytics: {e}")
+        raise HTTPException(status_code=500, detail=f"Database error loading marketing attribution analytics: {e}")

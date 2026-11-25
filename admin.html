@@ -1635,6 +1635,9 @@
                             <button type="button" id="subtabBtnEmployerDeepDive" class="btn btn-sm" onclick="switchGrowthSubtab('employer-deep-dive')" style="padding: 7px 16px; font-weight: 700; font-size: 13px; background: #e2e8f0; color: #334155; border-radius: 6px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px;">
                                 <span>🏢</span> Employer Acquisition &amp; Activation
                             </button>
+                            <button type="button" id="subtabBtnAttribution" class="btn btn-sm" onclick="switchGrowthSubtab('attribution')" style="padding: 7px 16px; font-weight: 700; font-size: 13px; background: #e2e8f0; color: #334155; border-radius: 6px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                <span>🎯</span> Marketing Attribution &amp; Performance
+                            </button>
                         </div>
 
                         <div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #64748b; flex-wrap: wrap; gap: 8px;">
@@ -2500,6 +2503,351 @@
                             </div>
                         </div>
                     </div> <!-- End of growthEmployerDeepDiveContainer -->
+
+                    <!-- CONTAINER 4: Marketing Attribution & Performance Analytics (Phase 1D-5C) -->
+                    <div id="growthAttributionContainer" style="display: none;">
+
+                        <!-- Attribution Banners & Alerts -->
+                        <!-- 1. Historical Pre-Migration Account Notice -->
+                        <div class="card-panel" style="margin-bottom: 20px; background: #eff6ff; border: 1px solid #bfdbfe; border-left: 4px solid #3b82f6; padding: 14px 18px; border-radius: 8px;">
+                            <div style="display: flex; align-items: flex-start; gap: 12px;">
+                                <span style="font-size: 20px; line-height: 1;">ℹ️</span>
+                                <div style="flex: 1;">
+                                    <h4 style="margin: 0 0 4px; font-size: 13.5px; font-weight: 700; color: #1e40af;">Attribution Architecture Notice: Pre-Migration &amp; Live Tracking</h4>
+                                    <p style="margin: 0; font-size: 12.5px; color: #1e3a8a; line-height: 1.5;">
+                                        User accounts registered prior to Migration 016 (2026-11-25) are classified into the <strong>Legacy Untracked</strong> cohort to preserve historical registration ground truth. Full multi-touch attribution (first-touch acquisition &amp; last-touch conversion) is active and enforced for all new candidate and employer registrations.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. Offline / Mock Mode Warning Banner -->
+                        <div id="attrOfflineBanner" class="card-panel" style="display: none; margin-bottom: 20px; background: #fffbeb; border: 1px solid #fde68a; border-left: 4px solid #d97706; padding: 14px 18px; border-radius: 8px;">
+                            <div style="display: flex; align-items: flex-start; gap: 10px;">
+                                <span style="font-size: 18px; line-height: 1;">⚠️</span>
+                                <div style="flex: 1;">
+                                    <h4 style="margin: 0 0 4px; font-size: 13.5px; font-weight: 700; color: #92400e;">Database Offline / Mock Simulation Active</h4>
+                                    <p style="margin: 0; font-size: 12px; color: #78350f; line-height: 1.5;">
+                                        PostgreSQL database connection is currently running in offline or mock mode. Telemetry metrics below reflect simulated fallback state and not live production databases.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Error Alert Banner -->
+                        <div id="attrErrorBanner" style="display: none; background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 14px 18px; border-radius: 8px; margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                                <div>
+                                    <strong style="font-size: 13.5px;">⚠️ Attribution Analytics Error:</strong>
+                                    <span id="attrErrorMessage" style="font-size: 13px; margin-left: 6px;">Failed to load marketing attribution data.</span>
+                                </div>
+                                <button type="button" class="btn btn-sm" onclick="loadMarketingAttribution(true)" style="background: #991b1b; color: white; padding: 5px 12px; font-weight: 700; border-radius: 4px; border: none; cursor: pointer;">
+                                    🔄 Retry
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 4. Empty State Banner -->
+                        <div id="attrEmptyBanner" style="display: none; background: #f8fafc; border: 1px dashed #cbd5e1; padding: 24px; border-radius: 8px; margin-bottom: 24px; text-align: center;">
+                            <div style="font-size: 32px; margin-bottom: 8px;">🎯</div>
+                            <h4 style="margin: 0 0 6px; font-size: 15px; font-weight: 700; color: #334155;">No Tracked Attribution Records in this Period</h4>
+                            <p style="margin: 0 auto; max-width: 540px; font-size: 12.5px; color: #64748b; line-height: 1.5;">
+                                There are no newly attributed registrations in the selected date range. All existing accounts in this period are historical pre-migration registrations or direct visits.
+                            </p>
+                        </div>
+
+                        <!-- Attribution Filter & Segmentation Toolbar -->
+                        <div class="card-panel" style="margin-bottom: 24px; padding: 14px 18px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+                                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                    <span style="font-size: 12px; font-weight: 700; color: #475569; text-transform: uppercase;">Account Segment:</span>
+                                    <div style="display: inline-flex; background: #e2e8f0; padding: 3px; border-radius: 6px; gap: 3px;">
+                                        <button type="button" id="attrSegmentAll" onclick="setAttributionAccountType('all')" style="padding: 5px 12px; font-size: 12px; font-weight: 700; border: none; border-radius: 4px; cursor: pointer; background: var(--accent-blue, #2563eb); color: white;">
+                                            All Registrations
+                                        </button>
+                                        <button type="button" id="attrSegmentCandidates" onclick="setAttributionAccountType('individual')" style="padding: 5px 12px; font-size: 12px; font-weight: 600; border: none; border-radius: 4px; cursor: pointer; background: transparent; color: #475569;">
+                                            Candidates Only
+                                        </button>
+                                        <button type="button" id="attrSegmentEmployers" onclick="setAttributionAccountType('company')" style="padding: 5px 12px; font-size: 12px; font-weight: 600; border: none; border-radius: 4px; cursor: pointer; background: transparent; color: #475569;">
+                                            Employers Only
+                                        </button>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 12px; font-size: 12px; color: #64748b; flex-wrap: wrap;">
+                                    <span id="attrPeriodBadge" style="background: #e2e8f0; color: #334155; font-weight: 600; padding: 3px 8px; border-radius: 4px;">Last 30 Days</span>
+                                    <span id="attrSyncTimeLabel">⏱️ Loading...</span>
+                                    <button type="button" class="btn btn-sm btn-primary" onclick="loadMarketingAttribution(true)" style="padding: 5px 12px; font-weight: 700; display: flex; align-items: center; gap: 5px;">
+                                        <span>🔄</span> Bypass Cache
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECTION 1: Executive Marketing KPI Cards (8 Cards) -->
+                        <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                            <!-- Card 1: Total Registrations -->
+                            <div class="stat-card" style="border-top: 3px solid #2563eb;">
+                                <div class="stat-icon" style="background: rgba(37, 99, 235, 0.1); color: #2563eb;">👥</div>
+                                <div class="stat-info">
+                                    <h3 id="attrKpiTotal">--</h3>
+                                    <p style="margin: 0; font-weight: 600;">Total Registrations</p>
+                                    <div style="font-size: 11px; color: #64748b; margin-top: 4px;" id="attrKpiTotalSub">Candidates vs Employers</div>
+                                </div>
+                            </div>
+
+                            <!-- Card 2: Tracked Registrations -->
+                            <div class="stat-card" style="border-top: 3px solid #10b981;">
+                                <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">🎯</div>
+                                <div class="stat-info">
+                                    <h3 id="attrKpiTracked">--</h3>
+                                    <p style="margin: 0; font-weight: 600;">Tracked Registrations</p>
+                                    <div style="font-size: 11px; color: #059669; margin-top: 4px;" id="attrKpiTrackedSub">With UTM / Referrer data</div>
+                                </div>
+                            </div>
+
+                            <!-- Card 3: Attribution Coverage % -->
+                            <div class="stat-card" style="border-top: 3px solid #06b6d4;">
+                                <div class="stat-icon" style="background: rgba(6, 182, 212, 0.1); color: #06b6d4;">📊</div>
+                                <div class="stat-info">
+                                    <h3 id="attrKpiCoverage">--</h3>
+                                    <p style="margin: 0; font-weight: 600;">Attribution Coverage</p>
+                                    <div style="font-size: 11px; color: #64748b; margin-top: 4px;" id="attrKpiCoverageSub">Of total period accounts</div>
+                                </div>
+                            </div>
+
+                            <!-- Card 4: Legacy Untracked -->
+                            <div class="stat-card" style="border-top: 3px solid #94a3b8;">
+                                <div class="stat-icon" style="background: rgba(148, 163, 184, 0.1); color: #64748b;">🏛️</div>
+                                <div class="stat-info">
+                                    <h3 id="attrKpiLegacy">--</h3>
+                                    <p style="margin: 0; font-weight: 600;">Legacy Untracked</p>
+                                    <div style="font-size: 11px; color: #64748b; margin-top: 4px;" id="attrKpiLegacySub">Pre-Migration 016 accounts</div>
+                                </div>
+                            </div>
+
+                            <!-- Card 5: Candidates Tracked -->
+                            <div class="stat-card" style="border-top: 3px solid #6366f1;">
+                                <div class="stat-icon" style="background: rgba(99, 102, 241, 0.1); color: #6366f1;">👔</div>
+                                <div class="stat-info">
+                                    <h3 id="attrKpiCandidates">--</h3>
+                                    <p style="margin: 0; font-weight: 600;">Candidate Signups</p>
+                                    <div style="font-size: 11px; color: #64748b; margin-top: 4px;" id="attrKpiCandidatesSub">Individual job seekers</div>
+                                </div>
+                            </div>
+
+                            <!-- Card 6: Employers Tracked -->
+                            <div class="stat-card" style="border-top: 3px solid #d97706;">
+                                <div class="stat-icon" style="background: rgba(217, 119, 6, 0.1); color: #d97706;">🏢</div>
+                                <div class="stat-info">
+                                    <h3 id="attrKpiEmployers">--</h3>
+                                    <p style="margin: 0; font-weight: 600;">Employer Signups</p>
+                                    <div style="font-size: 11px; color: #64748b; margin-top: 4px;" id="attrKpiEmployersSub">Garment companies</div>
+                                </div>
+                            </div>
+
+                            <!-- Card 7: Multi-Touch Switches -->
+                            <div class="stat-card" style="border-top: 3px solid #ec4899;">
+                                <div class="stat-icon" style="background: rgba(236, 72, 153, 0.1); color: #ec4899;">🔀</div>
+                                <div class="stat-info">
+                                    <h3 id="attrKpiSwitches">--</h3>
+                                    <p style="margin: 0; font-weight: 600;">Multi-Touch Switches</p>
+                                    <div style="font-size: 11px; color: #64748b; margin-top: 4px;" id="attrKpiSwitchesSub">First touch ≠ Last touch</div>
+                                </div>
+                            </div>
+
+                            <!-- Card 8: Time to Register Velocity -->
+                            <div class="stat-card" style="border-top: 3px solid #8b5cf6;">
+                                <div class="stat-icon" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;">⏱️</div>
+                                <div class="stat-info">
+                                    <h3 id="attrKpiVelocity">--</h3>
+                                    <p style="margin: 0; font-weight: 600;">Avg Velocity</p>
+                                    <div style="font-size: 11px; color: #64748b; margin-top: 4px;" id="attrKpiVelocitySub">Median: -- mins</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECTION 2: Channel Groupings Distribution (10 Tiers) -->
+                        <div class="card-panel" style="margin-bottom: 24px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
+                                <div>
+                                    <h3 class="card-panel-title" style="margin: 0; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+                                        <span>🌐</span> Channel Groupings Distribution (10-Tier Multi-Touch Taxonomy)
+                                    </h3>
+                                    <p style="margin: 4px 0 0; font-size: 12.5px; color: #64748b;">
+                                        Deterministic hierarchical classification mapping UTM tags, ad click IDs (gclid/fbclid), and external referrers.
+                                    </p>
+                                </div>
+                                <span id="attrChannelTotalBadge" style="background: #f1f5f9; color: #475569; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 4px;">-- Channels Active</span>
+                            </div>
+                            <div id="attrChannelTiersContainer" style="display: flex; flex-direction: column; gap: 14px;">
+                                <div style="text-align: center; color: #94a3b8; padding: 20px;">Loading channel distribution...</div>
+                            </div>
+                        </div>
+
+                        <!-- SECTION 3: First-Touch vs Last-Touch Side-by-Side Comparison -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 20px; margin-bottom: 24px;">
+                            <!-- Column A: First Touch (Acquisition Driver) -->
+                            <div class="card-panel">
+                                <div style="margin-bottom: 14px;">
+                                    <h3 class="card-panel-title" style="margin: 0; font-size: 15px; display: flex; align-items: center; gap: 8px;">
+                                        <span>🚀</span> First-Touch (Acquisition Driver)
+                                    </h3>
+                                    <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">
+                                        Original source &amp; medium that first introduced the visitor to DigiGarment.
+                                    </p>
+                                </div>
+                                <div class="table-responsive" style="max-height: 380px; overflow-y: auto;">
+                                    <table class="data-table" style="width: 100%; font-size: 12px;">
+                                        <thead>
+                                            <tr style="background: #f8fafc; position: sticky; top: 0; z-index: 1;">
+                                                <th style="padding: 8px 10px;">Source / Medium</th>
+                                                <th style="padding: 8px 10px; text-align: right;">Total</th>
+                                                <th style="padding: 8px 10px; text-align: right;">Candidates</th>
+                                                <th style="padding: 8px 10px; text-align: right;">Employers</th>
+                                                <th style="padding: 8px 10px; text-align: right;">Share</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="attrFirstTouchBody">
+                                            <tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 16px;">Loading first-touch sources...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Column B: Last Touch (Conversion Trigger) -->
+                            <div class="card-panel">
+                                <div style="margin-bottom: 14px;">
+                                    <h3 class="card-panel-title" style="margin: 0; font-size: 15px; display: flex; align-items: center; gap: 8px;">
+                                        <span>🎯</span> Last-Touch (Conversion Trigger)
+                                    </h3>
+                                    <p style="margin: 4px 0 0; font-size: 12px; color: #64748b;">
+                                        Latest marketing touchpoint immediately prior to account registration.
+                                    </p>
+                                </div>
+                                <div class="table-responsive" style="max-height: 380px; overflow-y: auto;">
+                                    <table class="data-table" style="width: 100%; font-size: 12px;">
+                                        <thead>
+                                            <tr style="background: #f8fafc; position: sticky; top: 0; z-index: 1;">
+                                                <th style="padding: 8px 10px;">Source / Medium</th>
+                                                <th style="padding: 8px 10px; text-align: right;">Total</th>
+                                                <th style="padding: 8px 10px; text-align: right;">Candidates</th>
+                                                <th style="padding: 8px 10px; text-align: right;">Employers</th>
+                                                <th style="padding: 8px 10px; text-align: right;">Share</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="attrLastTouchBody">
+                                            <tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 16px;">Loading last-touch sources...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- First/Last Touch Methodology Disclaimer -->
+                        <div style="margin-top: -12px; margin-bottom: 24px; font-size: 11.5px; color: #64748b; line-height: 1.4; padding: 0 4px;">
+                            * <strong>Methodology Note:</strong> First-touch reflects initial discovery; last-touch reflects final conversion. Attribution captures correlation across tracked channels and does not imply singular causality.
+                        </div>
+
+                        <!-- SECTION 4: Daily Registration & Attribution Time Series (IST) -->
+                        <div class="card-panel" style="margin-bottom: 24px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+                                <div>
+                                    <h3 class="card-panel-title" style="margin: 0; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+                                        <span>📈</span> Daily Registration &amp; Attribution Trends (IST Continuous Timeline)
+                                    </h3>
+                                    <p style="margin: 4px 0 0; font-size: 12.5px; color: #64748b;">
+                                        Continuous daily time-series generated in Indian Standard Time (Asia/Kolkata) with zero-filled non-activity days.
+                                    </p>
+                                </div>
+                                <span id="attrTimelineCountBadge" style="background: #f1f5f9; color: #475569; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 4px;">-- days</span>
+                            </div>
+
+                            <div class="table-responsive" style="max-height: 420px; overflow-y: auto;">
+                                <table class="data-table" style="width: 100%; font-size: 12.5px;">
+                                    <thead>
+                                        <tr style="background: #f8fafc; position: sticky; top: 0; z-index: 1;">
+                                            <th style="padding: 8px 12px;">Date (IST)</th>
+                                            <th style="padding: 8px 12px; text-align: right; color: #2563eb;">Candidates (Tracked)</th>
+                                            <th style="padding: 8px 12px; text-align: right; color: #94a3b8;">Candidates (Legacy)</th>
+                                            <th style="padding: 8px 12px; text-align: right; color: #d97706;">Employers (Tracked)</th>
+                                            <th style="padding: 8px 12px; text-align: right; color: #94a3b8;">Employers (Legacy)</th>
+                                            <th style="padding: 8px 12px; text-align: right; color: #059669;">Paid Traffic</th>
+                                            <th style="padding: 8px 12px; text-align: right; color: #6366f1;">Organic / Direct</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="attrTimelineBody">
+                                        <tr><td colspan="7" style="text-align: center; color: #94a3b8; padding: 18px;">Loading daily attribution trends...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- SECTION 5: Campaign Analytics Matrix -->
+                        <div class="card-panel" style="margin-bottom: 24px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 12px;">
+                                <div>
+                                    <h3 class="card-panel-title" style="margin: 0; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+                                        <span>📢</span> Marketing Campaign Performance &amp; Conversion Matrix
+                                    </h3>
+                                    <p style="margin: 4px 0 0; font-size: 12.5px; color: #64748b;">
+                                        Named marketing campaigns tagged via <code>utm_campaign</code> parameter across search, social, and messaging.
+                                    </p>
+                                </div>
+                                <div style="width: 100%; max-width: 320px;">
+                                    <input type="text" id="attrCampaignSearch" class="form-control" placeholder="Search campaigns, sources, mediums..." oninput="handleAttributionCampaignSearch()" style="font-size: 12px; padding: 6px 10px;">
+                                </div>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="data-table" style="width: 100%; font-size: 12.5px;">
+                                    <thead>
+                                        <tr style="background: #f8fafc;">
+                                            <th style="padding: 8px 12px;">Campaign Name</th>
+                                            <th style="padding: 8px 12px;">Source</th>
+                                            <th style="padding: 8px 12px;">Medium</th>
+                                            <th style="padding: 8px 12px; text-align: right;">Total Signups</th>
+                                            <th style="padding: 8px 12px; text-align: right;">Candidates</th>
+                                            <th style="padding: 8px 12px; text-align: right;">Employers</th>
+                                            <th style="padding: 8px 12px; text-align: right;">Share %</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="attrCampaignsBody">
+                                        <tr><td colspan="7" style="text-align: center; color: #94a3b8; padding: 18px;">Loading campaigns...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- SECTION 6: Cross-Channel Multi-Touch Journeys -->
+                        <div class="card-panel" style="margin-bottom: 24px;">
+                            <div style="margin-bottom: 14px;">
+                                <h3 class="card-panel-title" style="margin: 0; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+                                    <span>🔄</span> Multi-Touch Cross-Channel Journey Transitions
+                                </h3>
+                                <p style="margin: 4px 0 0; font-size: 12.5px; color: #64748b;">
+                                    Analysis of users transitioning from an initial discovery channel (First-Touch) to a distinct conversion channel (Last-Touch).
+                                </p>
+                            </div>
+                            <div class="table-responsive" style="max-height: 320px; overflow-y: auto;">
+                                <table class="data-table" style="width: 100%; font-size: 12.5px;">
+                                    <thead>
+                                        <tr style="background: #f8fafc; position: sticky; top: 0; z-index: 1;">
+                                            <th style="padding: 8px 12px;">First-Touch (Discovery)</th>
+                                            <th style="padding: 8px 12px; text-align: center;">Transition</th>
+                                            <th style="padding: 8px 12px;">Last-Touch (Conversion)</th>
+                                            <th style="padding: 8px 12px; text-align: right;">Total Journeys</th>
+                                            <th style="padding: 8px 12px; text-align: right;">Candidates</th>
+                                            <th style="padding: 8px 12px; text-align: right;">Employers</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="attrJourneysBody">
+                                        <tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 18px;">Loading multi-touch journey transitions...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div> <!-- End of growthAttributionContainer -->
                 </div>
 
 
@@ -3536,19 +3884,23 @@
             const btnPg = document.getElementById("subtabBtnPostgres");
             const btnGa4 = document.getElementById("subtabBtnGA4");
             const btnEmp = document.getElementById("subtabBtnEmployerDeepDive");
+            const btnAttr = document.getElementById("subtabBtnAttribution");
             const cPg = document.getElementById("growthPostgresContainer");
             const cGa4 = document.getElementById("growthGA4Container");
             const cEmp = document.getElementById("growthEmployerDeepDiveContainer");
+            const cAttr = document.getElementById("growthAttributionContainer");
 
             // Reset all sub-tab buttons
             if (btnPg) { btnPg.style.background = "#e2e8f0"; btnPg.style.color = "#334155"; }
             if (btnGa4) { btnGa4.style.background = "#e2e8f0"; btnGa4.style.color = "#334155"; }
             if (btnEmp) { btnEmp.style.background = "#e2e8f0"; btnEmp.style.color = "#334155"; }
+            if (btnAttr) { btnAttr.style.background = "#e2e8f0"; btnAttr.style.color = "#334155"; }
 
             // Hide all sub-tab containers
             if (cPg) cPg.style.display = "none";
             if (cGa4) cGa4.style.display = "none";
             if (cEmp) cEmp.style.display = "none";
+            if (cAttr) cAttr.style.display = "none";
 
             if (tab === "postgres") {
                 if (btnPg) { btnPg.style.background = "var(--accent-blue, #2563eb)"; btnPg.style.color = "white"; }
@@ -3565,6 +3917,12 @@
                 if (!hasEmployerDeepDiveLoaded) {
                     loadEmployerDeepDive(false);
                 }
+            } else if (tab === "attribution") {
+                if (btnAttr) { btnAttr.style.background = "var(--accent-blue, #2563eb)"; btnAttr.style.color = "white"; }
+                if (cAttr) cAttr.style.display = "block";
+                if (!hasAttributionLoaded) {
+                    loadMarketingAttribution(false);
+                }
             }
         }
 
@@ -3580,14 +3938,35 @@
                     if (currentGrowthSubtab === "employer-deep-dive" || hasEmployerDeepDiveLoaded) {
                         loadEmployerDeepDive(false);
                     }
+                    if (currentGrowthSubtab === "attribution" || hasAttributionLoaded) {
+                        loadMarketingAttribution(false);
+                    }
                 }
             }
         }
 
         function handleGrowthCustomApply() {
+            const s = document.getElementById("growthCustomStart")?.value;
+            const e = document.getElementById("growthCustomEnd")?.value;
+            if (s && e) {
+                const dStart = new Date(s);
+                const dEnd = new Date(e);
+                if (dStart > dEnd) {
+                    alert("Invalid date range: 'From' date cannot be after 'To' date.");
+                    return;
+                }
+                const diffDays = Math.round((dEnd - dStart) / (1000 * 60 * 60 * 24)) + 1;
+                if (diffDays > 366) {
+                    alert("Custom date range cannot exceed 366 days (1 year). Please select a narrower range.");
+                    return;
+                }
+            }
             loadGrowthAnalytics(false);
             if (currentGrowthSubtab === "employer-deep-dive" || hasEmployerDeepDiveLoaded) {
                 loadEmployerDeepDive(false);
+            }
+            if (currentGrowthSubtab === "attribution" || hasAttributionLoaded) {
+                loadMarketingAttribution(false);
             }
         }
 
@@ -3610,6 +3989,11 @@
             // Trigger Employer Deep Dive analytics load if currently active, previously loaded, or forced refresh
             if (currentGrowthSubtab === "employer-deep-dive" || hasEmployerDeepDiveLoaded || forceRefresh) {
                 loadEmployerDeepDive(forceRefresh);
+            }
+
+            // Trigger Marketing Attribution analytics load if currently active, previously loaded, or forced refresh
+            if (currentGrowthSubtab === "attribution" || hasAttributionLoaded || forceRefresh) {
+                loadMarketingAttribution(forceRefresh);
             }
 
             try {
@@ -4623,6 +5007,462 @@
                         <td style="padding: 8px 12px; text-align: right; color: #6366f1; font-weight: 600;">${jobsCreated > 0 ? `+${jobsCreated}` : '0'}</td>
                         <td style="padding: 8px 12px; text-align: right; color: #d97706; font-weight: 600;">${jobsPub > 0 ? `+${jobsPub}` : '0'}</td>
                         <td style="padding: 8px 12px; text-align: center;">${flagHtml}</td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+
+        
+
+        // --- Marketing Attribution & Campaign Performance Controller (Phase 1D-5C / Phase 1D-5E-1 Hardened) ---
+        let isAttributionLoading = false;
+        let hasAttributionLoaded = false;
+        let currentAttributionAccountType = "all";
+        let currentAttributionCampaignsData = [];
+        let attributionAbortController = null;
+
+        // Context-appropriate HTML entity escaping (REV-5D-03 Defense-in-Depth against stored XSS)
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return "";
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function setAttributionAccountType(type) {
+            currentAttributionAccountType = type;
+            const btnAll = document.getElementById("attrSegmentAll");
+            const btnCand = document.getElementById("attrSegmentCandidates");
+            const btnEmp = document.getElementById("attrSegmentEmployers");
+
+            if (btnAll) {
+                btnAll.style.background = type === "all" ? "var(--accent-blue, #2563eb)" : "transparent";
+                btnAll.style.color = type === "all" ? "white" : "#475569";
+                btnAll.style.fontWeight = type === "all" ? "700" : "600";
+            }
+            if (btnCand) {
+                btnCand.style.background = type === "individual" ? "var(--accent-blue, #2563eb)" : "transparent";
+                btnCand.style.color = type === "individual" ? "white" : "#475569";
+                btnCand.style.fontWeight = type === "individual" ? "700" : "600";
+            }
+            if (btnEmp) {
+                btnEmp.style.background = type === "company" ? "var(--accent-blue, #2563eb)" : "transparent";
+                btnEmp.style.color = type === "company" ? "white" : "#475569";
+                btnEmp.style.fontWeight = type === "company" ? "700" : "600";
+            }
+
+            loadMarketingAttribution(false);
+        }
+
+        async function loadMarketingAttribution(forceRefresh = false) {
+            // Abort any existing in-flight request so latest filter selection always wins (REV-5D-01)
+            if (attributionAbortController) {
+                try {
+                    attributionAbortController.abort();
+                } catch (e) {}
+            }
+            attributionAbortController = new AbortController();
+            const currentController = attributionAbortController;
+
+            isAttributionLoading = true;
+
+            const rangeSelect = document.getElementById("growthRangeSelect");
+            const range = rangeSelect ? rangeSelect.value : "30d";
+            const refreshIcon = document.getElementById("growthRefreshIcon");
+            if (refreshIcon) refreshIcon.style.animation = "spin 1s linear infinite";
+
+            const errorBanner = document.getElementById("attrErrorBanner");
+            const errorMsg = document.getElementById("attrErrorMessage");
+            const offlineBanner = document.getElementById("attrOfflineBanner");
+            const emptyBanner = document.getElementById("attrEmptyBanner");
+
+            if (errorBanner) errorBanner.style.display = "none";
+            if (offlineBanner) offlineBanner.style.display = "none";
+            if (emptyBanner) emptyBanner.style.display = "none";
+
+            let customParams = "";
+            if (range === "custom") {
+                const s = document.getElementById("growthCustomStart")?.value;
+                const e = document.getElementById("growthCustomEnd")?.value;
+                if (s && e) {
+                    const dStart = new Date(s);
+                    const dEnd = new Date(e);
+                    if (dStart > dEnd) {
+                        if (errorBanner && errorMsg) {
+                            errorMsg.textContent = "Invalid date range: 'From' date cannot be after 'To' date.";
+                            errorBanner.style.display = "block";
+                        }
+                        isAttributionLoading = false;
+                        if (refreshIcon) refreshIcon.style.animation = "none";
+                        return;
+                    }
+                    const diffDays = Math.round((dEnd - dStart) / (1000 * 60 * 60 * 24)) + 1;
+                    if (diffDays > 366) {
+                        if (errorBanner && errorMsg) {
+                            errorMsg.textContent = "Custom date range cannot exceed 366 days (1 year).";
+                            errorBanner.style.display = "block";
+                        }
+                        isAttributionLoading = false;
+                        if (refreshIcon) refreshIcon.style.animation = "none";
+                        return;
+                    }
+                    customParams = `&start_date=${encodeURIComponent(s)}&end_date=${encodeURIComponent(e)}`;
+                }
+            }
+
+            const refreshParam = forceRefresh ? "&refresh=true" : "";
+            const accountTypeParam = `&account_type=${encodeURIComponent(currentAttributionAccountType)}`;
+
+            try {
+                const url = `/api/admin/growth-analytics/marketing-attribution?range=${encodeURIComponent(range)}${accountTypeParam}${customParams}${refreshParam}`;
+                const res = await fetch(url, { signal: currentController.signal });
+
+                if (!res.ok) {
+                    if (res.status === 401 || res.status === 403) {
+                        window.location.href = "/admin/login";
+                        return;
+                    }
+                    const errData = await res.json().catch(() => ({}));
+                    throw new Error(errData?.detail || `API error (HTTP ${res.status})`);
+                }
+
+                const data = await res.json();
+                if (!data || !data.success) {
+                    throw new Error(data?.message || "Invalid marketing attribution response payload");
+                }
+
+                // Check offline / mock data source
+                if (data.data_source === "PostgreSQL (Offline/Mock)") {
+                    if (offlineBanner) offlineBanner.style.display = "block";
+                }
+
+                // Update period and timestamp badges
+                const periodBadge = document.getElementById("attrPeriodBadge");
+                if (periodBadge) {
+                    periodBadge.textContent = data.period?.label || "Last 30 Days";
+                }
+                const syncLabel = document.getElementById("attrSyncTimeLabel");
+                if (syncLabel) {
+                    const dt = data.last_updated ? new Date(data.last_updated) : new Date();
+                    syncLabel.textContent = `⏱️ Last synced: ${dt.toLocaleTimeString()} (IST)`;
+                }
+
+                // Check empty state
+                const trackedCount = Number(data.kpis?.tracked_registrations || 0);
+                if (trackedCount === 0 && emptyBanner) {
+                    emptyBanner.style.display = "block";
+                }
+
+                // Render Sub-components
+                renderAttributionKPIs(data.kpis || {});
+                renderAttributionChannels(data.channel_groups || []);
+                renderAttributionTouches(data.first_touch_sources || [], data.last_touch_sources || []);
+                renderAttributionTimeline(data.timeline || []);
+
+                currentAttributionCampaignsData = Array.isArray(data.campaigns) ? data.campaigns : [];
+                renderAttributionCampaigns(currentAttributionCampaignsData);
+
+                renderAttributionJourneys(data.cross_channel_journeys || []);
+
+                hasAttributionLoaded = true;
+            } catch (err) {
+                if (err.name === "AbortError" || currentController.signal.aborted) {
+                    // Request was deliberately cancelled by a newer filter/refresh selection (REV-5D-01); suppress error display
+                    return;
+                }
+                console.error("Failed to load marketing attribution analytics:", err);
+                if (errorBanner && errorMsg) {
+                    errorMsg.textContent = err.message || "Failed to load marketing attribution data from server.";
+                    errorBanner.style.display = "block";
+                }
+            } finally {
+                // Only reset loading indicators if this is still the active non-aborted request
+                if (!currentController.signal.aborted) {
+                    isAttributionLoading = false;
+                    if (refreshIcon && !isGrowthLoading && !isGA4Loading && !isEmployerDeepDiveLoading) {
+                        refreshIcon.style.animation = "none";
+                    }
+                }
+            }
+        }
+
+        function renderAttributionKPIs(kpis) {
+            const setTxt = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = val;
+            };
+
+            const total = Number(kpis.total_registrations || 0);
+            const tracked = Number(kpis.tracked_registrations || 0);
+            const legacy = Number(kpis.legacy_untracked_registrations || 0);
+            const covRate = Number(kpis.tracking_coverage_pct || 0);
+            const cand = Number(kpis.candidate_registrations || 0);
+            const emp = Number(kpis.employer_registrations || 0);
+            const switches = Number(kpis.multi_touch_switches || 0);
+            const avgVel = kpis.avg_time_to_register_minutes != null ? `${Number(kpis.avg_time_to_register_minutes).toFixed(1)}m` : "N/A";
+            const medVel = kpis.median_time_to_register_minutes != null ? `${Number(kpis.median_time_to_register_minutes).toFixed(1)}m` : "N/A";
+
+            setTxt("attrKpiTotal", total.toLocaleString());
+            setTxt("attrKpiTotalSub", `${cand.toLocaleString()} candidates • ${emp.toLocaleString()} employers`);
+
+            setTxt("attrKpiTracked", tracked.toLocaleString());
+            setTxt("attrKpiTrackedSub", `${covRate.toFixed(1)}% tracking coverage`);
+
+            setTxt("attrKpiCoverage", `${covRate.toFixed(1)}%`);
+            setTxt("attrKpiCoverageSub", `${tracked.toLocaleString()} of ${total.toLocaleString()} attributed`);
+
+            setTxt("attrKpiLegacy", legacy.toLocaleString());
+            setTxt("attrKpiLegacySub", "Pre-Migration 016 accounts");
+
+            setTxt("attrKpiCandidates", cand.toLocaleString());
+            setTxt("attrKpiCandidatesSub", `${total > 0 ? ((cand / total) * 100).toFixed(1) : 0}% of all registrations`);
+
+            setTxt("attrKpiEmployers", emp.toLocaleString());
+            setTxt("attrKpiEmployersSub", `${total > 0 ? ((emp / total) * 100).toFixed(1) : 0}% of all registrations`);
+
+            setTxt("attrKpiSwitches", switches.toLocaleString());
+            setTxt("attrKpiSwitchesSub", tracked > 0 ? `${((switches / tracked) * 100).toFixed(1)}% of tracked users` : "0% switch rate");
+
+            setTxt("attrKpiVelocity", avgVel);
+            setTxt("attrKpiVelocitySub", `Median: ${medVel}`);
+        }
+
+        function renderAttributionChannels(channels) {
+            const container = document.getElementById("attrChannelTiersContainer");
+            const badge = document.getElementById("attrChannelTotalBadge");
+            if (!container) return;
+
+            if (badge) {
+                badge.textContent = `${channels.length} Channels Reported`;
+            }
+
+            if (!channels || channels.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 20px;">No channel attribution records in this period</div>';
+                return;
+            }
+
+            // Channel Group Color Scheme
+            const channelColors = {
+                "Google Ads": "#0284c7",
+                "Google Organic": "#10b981",
+                "Meta Paid Ads": "#8b5cf6",
+                "Instagram Organic": "#ec4899",
+                "Facebook Organic": "#3b82f6",
+                "WhatsApp Direct": "#22c55e",
+                "Direct / Brand": "#64748b",
+                "External Referral": "#f59e0b",
+                "Legacy Untracked": "#94a3b8",
+                "Other / Fallback": "#6b7280"
+            };
+
+            const channelIcons = {
+                "Google Ads": "📢",
+                "Google Organic": "🔍",
+                "Meta Paid Ads": "📱",
+                "Instagram Organic": "📸",
+                "Facebook Organic": "👥",
+                "WhatsApp Direct": "💬",
+                "Direct / Brand": "🌐",
+                "External Referral": "🔗",
+                "Legacy Untracked": "🏛️",
+                "Other / Fallback": "📁"
+            };
+
+            container.innerHTML = channels.map(ch => {
+                const rawName = ch.channel_group || "Other / Fallback";
+                const name = escapeHtml(rawName);
+                const total = Number(ch.total_count || 0);
+                const cand = Number(ch.candidate_count || 0);
+                const emp = Number(ch.employer_count || 0);
+                const share = Number(ch.share_pct || 0).toFixed(1);
+                const color = channelColors[rawName] || "#64748b";
+                const icon = channelIcons[rawName] || "📌";
+                const barWidth = Math.min(Math.max(parseFloat(share), 0), 100);
+
+                return `
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 5px;">
+                            <span style="display: flex; align-items: center; gap: 6px;">
+                                <span>${icon}</span>
+                                <span>${name}</span>
+                            </span>
+                            <span style="font-size: 13.5px;">
+                                ${total.toLocaleString()} 
+                                <span style="font-size: 12px; font-weight: 600; color: #64748b;">(${share}%)</span>
+                            </span>
+                        </div>
+                        <div style="background: #f1f5f9; border-radius: 4px; height: 8px; width: 100%; overflow: hidden; margin-bottom: 5px;">
+                            <div style="background: ${color}; height: 100%; width: ${barWidth}%;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 11px; color: #64748b;">
+                            <span>Candidates: <strong>${cand.toLocaleString()}</strong> • Employers: <strong>${emp.toLocaleString()}</strong></span>
+                            <span style="color: ${color}; font-weight: 600;">${share}% total volume</span>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        function renderAttributionTouches(firstTouches, lastTouches) {
+            const firstBody = document.getElementById("attrFirstTouchBody");
+            const lastBody = document.getElementById("attrLastTouchBody");
+
+            const renderTouchRows = (tbody, arr) => {
+                if (!tbody) return;
+                if (!arr || arr.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 16px;">No touch records</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = arr.map(t => {
+                    const src = escapeHtml(t.source || "(not set)");
+                    const med = escapeHtml(t.medium || "(none)");
+                    const total = Number(t.total_count || 0);
+                    const cand = Number(t.candidate_count || 0);
+                    const emp = Number(t.employer_count || 0);
+                    const share = Number(t.share_pct || 0).toFixed(1);
+
+                    return `
+                        <tr>
+                            <td style="padding: 8px 10px; font-weight: 600; color: #1e293b;">
+                                <div>${src}</div>
+                                <div style="font-size: 10.5px; color: #64748b; font-weight: 400;">medium: ${med}</div>
+                            </td>
+                            <td style="padding: 8px 10px; text-align: right; font-weight: 700; color: #2563eb;">${total.toLocaleString()}</td>
+                            <td style="padding: 8px 10px; text-align: right; color: #475569;">${cand.toLocaleString()}</td>
+                            <td style="padding: 8px 10px; text-align: right; color: #475569;">${emp.toLocaleString()}</td>
+                            <td style="padding: 8px 10px; text-align: right; font-weight: 600; color: #059669;">${share}%</td>
+                        </tr>
+                    `;
+                }).join("");
+            };
+
+            renderTouchRows(firstBody, firstTouches);
+            renderTouchRows(lastBody, lastTouches);
+        }
+
+        function renderAttributionTimeline(timeline) {
+            const tbody = document.getElementById("attrTimelineBody");
+            const badge = document.getElementById("attrTimelineCountBadge");
+            if (!tbody) return;
+
+            const arr = Array.isArray(timeline) ? timeline : [];
+            if (badge) badge.textContent = `${arr.length} days`;
+
+            if (arr.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #94a3b8; padding: 18px;">No timeline data available</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = arr.map(row => {
+                const date = escapeHtml(row.date || "--");
+                const candTrk = Number(row.candidates_tracked || 0);
+                const candLeg = Number(row.candidates_legacy || 0);
+                const empTrk = Number(row.employers_tracked || 0);
+                const empLeg = Number(row.employers_legacy || 0);
+                const paid = Number(row.paid_traffic || 0);
+                const org = Number(row.organic_direct_traffic || 0);
+
+                return `
+                    <tr>
+                        <td style="padding: 8px 12px; font-weight: 700; color: #1e293b;">${date}</td>
+                        <td style="padding: 8px 12px; text-align: right; font-weight: 600; color: #2563eb;">${candTrk > 0 ? `+${candTrk}` : '0'}</td>
+                        <td style="padding: 8px 12px; text-align: right; color: #94a3b8;">${candLeg > 0 ? `+${candLeg}` : '0'}</td>
+                        <td style="padding: 8px 12px; text-align: right; font-weight: 600; color: #d97706;">${empTrk > 0 ? `+${empTrk}` : '0'}</td>
+                        <td style="padding: 8px 12px; text-align: right; color: #94a3b8;">${empLeg > 0 ? `+${empLeg}` : '0'}</td>
+                        <td style="padding: 8px 12px; text-align: right; font-weight: 600; color: #059669;">${paid > 0 ? `+${paid}` : '0'}</td>
+                        <td style="padding: 8px 12px; text-align: right; font-weight: 600; color: #6366f1;">${org > 0 ? `+${org}` : '0'}</td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        function renderAttributionCampaigns(campaigns) {
+            const tbody = document.getElementById("attrCampaignsBody");
+            if (!tbody) return;
+
+            const arr = Array.isArray(campaigns) ? campaigns : [];
+            if (arr.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #94a3b8; padding: 20px;">No named marketing campaigns (utm_campaign) recorded in this period. Campaigns tagged with ?utm_campaign=... will automatically populate here.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = arr.map(c => {
+                const camp = escapeHtml(c.campaign || "(not set)");
+                const src = escapeHtml(c.source || "direct");
+                const med = escapeHtml(c.medium || "(none)");
+                const total = Number(c.total_count || 0);
+                const cand = Number(c.candidate_count || 0);
+                const emp = Number(c.employer_count || 0);
+                const share = Number(c.share_pct || 0).toFixed(1);
+
+                return `
+                    <tr>
+                        <td style="padding: 8px 12px; font-weight: 700; color: #1e293b;">${camp}</td>
+                        <td style="padding: 8px 12px; color: #475569;">${src}</td>
+                        <td style="padding: 8px 12px; color: #475569;">${med}</td>
+                        <td style="padding: 8px 12px; text-align: right; font-weight: 700; color: #2563eb;">${total.toLocaleString()}</td>
+                        <td style="padding: 8px 12px; text-align: right; color: #475569;">${cand.toLocaleString()}</td>
+                        <td style="padding: 8px 12px; text-align: right; color: #475569;">${emp.toLocaleString()}</td>
+                        <td style="padding: 8px 12px; text-align: right; font-weight: 600; color: #059669;">${share}%</td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        function handleAttributionCampaignSearch() {
+            const query = (document.getElementById("attrCampaignSearch")?.value || "").toLowerCase().trim();
+            if (!query) {
+                renderAttributionCampaigns(currentAttributionCampaignsData);
+                return;
+            }
+
+            const filtered = currentAttributionCampaignsData.filter(c => {
+                const camp = (c.campaign || "").toLowerCase();
+                const src = (c.source || "").toLowerCase();
+                const med = (c.medium || "").toLowerCase();
+                return camp.includes(query) || src.includes(query) || med.includes(query);
+            });
+
+            renderAttributionCampaigns(filtered);
+        }
+
+        function renderAttributionJourneys(journeys) {
+            const tbody = document.getElementById("attrJourneysBody");
+            if (!tbody) return;
+
+            const arr = Array.isArray(journeys) ? journeys : [];
+            if (arr.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 18px;">No multi-touch journey transition records in this period</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = arr.map(j => {
+                const fSrc = escapeHtml(j.first_source || "direct");
+                const fMed = escapeHtml(j.first_medium || "(none)");
+                const lSrc = escapeHtml(j.last_source || "direct");
+                const lMed = escapeHtml(j.last_medium || "(none)");
+                const count = Number(j.journey_count || 0);
+                const cand = Number(j.candidate_count || 0);
+                const emp = Number(j.employer_count || 0);
+
+                return `
+                    <tr>
+                        <td style="padding: 8px 12px; font-weight: 600; color: #1e293b;">
+                            <div>${fSrc}</div>
+                            <div style="font-size: 10.5px; color: #64748b;">${fMed}</div>
+                        </td>
+                        <td style="padding: 8px 12px; text-align: center; font-size: 16px; color: #94a3b8;">➔</td>
+                        <td style="padding: 8px 12px; font-weight: 600; color: #1e293b;">
+                            <div>${lSrc}</div>
+                            <div style="font-size: 10.5px; color: #64748b;">${lMed}</div>
+                        </td>
+                        <td style="padding: 8px 12px; text-align: right; font-weight: 700; color: #2563eb;">${count.toLocaleString()}</td>
+                        <td style="padding: 8px 12px; text-align: right; color: #475569;">${cand.toLocaleString()}</td>
+                        <td style="padding: 8px 12px; text-align: right; color: #475569;">${emp.toLocaleString()}</td>
                     </tr>
                 `;
             }).join("");
