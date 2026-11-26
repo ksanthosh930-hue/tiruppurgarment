@@ -454,6 +454,35 @@ a {
     border-color: #9E1B32;
 }
 
+/* Scoped Hero Department Pills (Phase 2C-1) */
+.hero-popular-tags .tags-list {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.hero-popular-tags .tag-pill {
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+    background: #F8FAFC;
+    padding: 6px 14px;
+    border-radius: 20px;
+    text-decoration: none;
+    border: 1px solid #CBD5E1;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.hero-popular-tags .tag-pill:hover {
+    background: #9E1B32;
+    color: #FFFFFF;
+    border-color: #9E1B32;
+    transform: translateY(-1px);
+}
+
 /* Right Side Photo Card */
 .hero-visual-photo-wrap {
     display: flex;
@@ -1053,6 +1082,33 @@ a {
     .hero-micro-link {
         text-align: center;
         padding-top: 4px;
+    }
+
+    .hero-cta-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .hero-cta-group .btn {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .hero-popular-tags .tags-list {
+        gap: 8px;
+    }
+
+    .hero-popular-tags .tag-pill {
+        font-size: 12.5px;
+        padding: 8px 14px;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .tags-list {
@@ -2916,5 +2972,206 @@ body.dg-nav-locked {
     }
     .dg-nav-backdrop {
         display: none !important;
+    }
+}
+
+
+/* ==========================================================================
+   Phase 2C-2: Employer Spotlight Section
+   ========================================================================== */
+.employer-spotlight-section {
+    padding: 60px 0;
+    background: #FFFFFF;
+}
+
+.employer-spotlight-card {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: #ffffff;
+    border-radius: 12px;
+    padding: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.15), 0 8px 10px -6px rgba(15, 23, 42, 0.1);
+}
+
+.employer-spotlight-content {
+    flex: 1;
+}
+
+.spotlight-eyebrow {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #38bdf8;
+    margin-bottom: 8px;
+}
+
+.spotlight-title {
+    font-size: 26px;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 10px 0;
+    line-height: 1.25;
+}
+
+.spotlight-subtitle {
+    font-size: 14.5px;
+    color: #cbd5e1;
+    margin: 0 0 16px 0;
+    line-height: 1.5;
+    max-width: 620px;
+}
+
+.spotlight-benefits {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.benefit-item {
+    font-size: 13px;
+    color: #e2e8f0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.benefit-item span {
+    color: #34d399;
+    font-weight: bold;
+}
+
+.employer-spotlight-action {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.spotlight-btn {
+    padding: 14px 28px;
+    font-size: 15px;
+    font-weight: 700;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.spotlight-note {
+    font-size: 11.5px;
+    color: #94a3b8;
+}
+
+@media (max-width: 768px) {
+    .employer-spotlight-card {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 28px 20px;
+        gap: 24px;
+    }
+
+    .employer-spotlight-action {
+        width: 100%;
+        align-items: stretch;
+    }
+
+    .spotlight-btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .spotlight-note {
+        text-align: center;
+    }
+}
+
+
+/* ==========================================================================
+   Phase 2C-3: Tools & Knowledge Section Refinements
+   ========================================================================== */
+.featured-tool-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.featured-tool-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+}
+
+@media (max-width: 768px) {
+    .featured-tool-card {
+        padding: 24px 20px !important;
+    }
+    
+    .featured-tool-card > div:first-child {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+    
+    .featured-tool-card .btn-primary {
+        width: 100% !important;
+        text-align: center !important;
+    }
+    
+    .knowledge-grid {
+        grid-template-columns: 1fr !important;
+        gap: 18px !important;
+    }
+}
+
+
+/* ==========================================================================
+   Phase 2C-4: Final Sections (Services, About, Contact, Footer) Refinements
+   ========================================================================== */
+.services-section .service-card {
+    background: #FFFFFF;
+    border-radius: 12px;
+    padding: 28px 24px;
+    border: 1px solid rgba(14, 28, 56, 0.06);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.services-section .service-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(15, 23, 42, 0.08);
+}
+
+@media (max-width: 768px) {
+    .services-section .services-grid {
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+    }
+
+    .services-section .btn {
+        width: 100% !important;
+        margin: 6px 0 !important;
+        text-align: center !important;
+    }
+
+    .about-grid {
+        grid-template-columns: 1fr !important;
+        gap: 32px !important;
+    }
+
+    .about-visual {
+        order: -1;
+    }
+
+    .contact-grid {
+        grid-template-columns: 1fr !important;
+        gap: 36px !important;
+    }
+
+    .footer-grid {
+        grid-template-columns: 1fr !important;
+        gap: 32px !important;
     }
 }
