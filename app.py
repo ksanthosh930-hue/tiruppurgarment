@@ -882,13 +882,20 @@ def get_admin_login(session_id: str = Cookie(None)):
                 pass
     return FileResponse(os.path.join(BASE_DIR, "login.html"))
 
+# Phase 1D-5M: Admin HTML Cache Hardening Headers
+ADMIN_NO_CACHE_HEADERS = {
+    "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
+    "Pragma": "no-cache",
+    "Expires": "0"
+}
+
 @app.get("/admin")
 def get_admin_dashboard(session_id: str = Cookie(None)):
     if not session_id:
         return RedirectResponse(url="/admin/login")
         
     if session_id in FALLBACK_ADMIN_SESSIONS and FALLBACK_ADMIN_SESSIONS[session_id]["expires_at"] > datetime.datetime.now():
-        return FileResponse(os.path.join(BASE_DIR, "admin.html"))
+        return FileResponse(os.path.join(BASE_DIR, "admin.html"), headers=ADMIN_NO_CACHE_HEADERS)
         
     _ensure_db_connected()
     if not db_enabled:
@@ -901,7 +908,7 @@ def get_admin_dashboard(session_id: str = Cookie(None)):
     except Exception:
         return RedirectResponse(url="/admin/login")
         
-    return FileResponse(os.path.join(BASE_DIR, "admin.html"))
+    return FileResponse(os.path.join(BASE_DIR, "admin.html"), headers=ADMIN_NO_CACHE_HEADERS)
 
 @app.get("/")
 def get_index():

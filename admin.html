@@ -34,6 +34,54 @@
             height: 17px;
             accent-color: #2563EB;
         }
+
+        /* Phase 1D-5M: Growth Analytics Responsive Subtab Navigation */
+        .growth-subtab-nav {
+            display: flex;
+            gap: 10px;
+            margin-top: 18px;
+            padding-top: 14px;
+            padding-bottom: 6px;
+            border-top: 1px solid #f1f5f9;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 transparent;
+        }
+
+        .growth-subtab-nav::-webkit-scrollbar {
+            height: 5px;
+        }
+
+        .growth-subtab-nav::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .growth-subtab-nav::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .growth-subtab-btn {
+            padding: 7px 16px;
+            font-weight: 700;
+            font-size: 13px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            flex-shrink: 0;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+
+        .growth-subtab-btn:focus-visible {
+            outline: 2px solid var(--accent-blue, #2563eb);
+            outline-offset: 2px;
+        }
     </style>
 </head>
 
@@ -1625,17 +1673,17 @@
                         </div>
 
                         <!-- Sub-tab Navigation Switcher -->
-                        <div style="display: flex; gap: 10px; margin-top: 18px; padding-top: 14px; border-top: 1px solid #f1f5f9; flex-wrap: wrap;">
-                            <button type="button" id="subtabBtnPostgres" class="btn btn-sm" onclick="switchGrowthSubtab('postgres')" style="padding: 7px 16px; font-weight: 700; font-size: 13px; background: var(--accent-blue, #2563eb); color: white; border-radius: 6px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        <div id="growthSubtabNav" class="growth-subtab-nav" role="tablist" aria-label="Growth Analytics Subtabs">
+                            <button type="button" id="subtabBtnPostgres" class="btn btn-sm growth-subtab-btn" role="tab" aria-selected="true" aria-controls="growthPostgresContainer" onclick="switchGrowthSubtab('postgres')" style="padding: 7px 16px; font-weight: 700; font-size: 13px; background: var(--accent-blue, #2563eb); color: white; border-radius: 6px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0;">
                                 <span>🐘</span> PostgreSQL Database Ground Truth
                             </button>
-                            <button type="button" id="subtabBtnGA4" class="btn btn-sm" onclick="switchGrowthSubtab('ga4')" style="padding: 7px 16px; font-weight: 700; font-size: 13px; background: #e2e8f0; color: #334155; border-radius: 6px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                            <button type="button" id="subtabBtnGA4" class="btn btn-sm growth-subtab-btn" role="tab" aria-selected="false" aria-controls="growthGA4Container" onclick="switchGrowthSubtab('ga4')" style="padding: 7px 16px; font-weight: 700; font-size: 13px; background: #e2e8f0; color: #334155; border-radius: 6px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0;">
                                 <span>🌐</span> Google Analytics 4 (Traffic & Conversion)
                             </button>
-                            <button type="button" id="subtabBtnEmployerDeepDive" class="btn btn-sm" onclick="switchGrowthSubtab('employer-deep-dive')" style="padding: 7px 16px; font-weight: 700; font-size: 13px; background: #e2e8f0; color: #334155; border-radius: 6px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                            <button type="button" id="subtabBtnEmployerDeepDive" class="btn btn-sm growth-subtab-btn" role="tab" aria-selected="false" aria-controls="growthEmployerDeepDiveContainer" onclick="switchGrowthSubtab('employer-deep-dive')" style="padding: 7px 16px; font-weight: 700; font-size: 13px; background: #e2e8f0; color: #334155; border-radius: 6px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0;">
                                 <span>🏢</span> Employer Acquisition &amp; Activation
                             </button>
-                            <button type="button" id="subtabBtnAttribution" class="btn btn-sm" onclick="switchGrowthSubtab('attribution')" style="padding: 7px 16px; font-weight: 700; font-size: 13px; background: #e2e8f0; color: #334155; border-radius: 6px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                            <button type="button" id="subtabBtnAttribution" class="btn btn-sm growth-subtab-btn" role="tab" aria-selected="false" aria-controls="growthAttributionContainer" onclick="switchGrowthSubtab('attribution')" style="padding: 7px 16px; font-weight: 700; font-size: 13px; background: #e2e8f0; color: #334155; border-radius: 6px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0;">
                                 <span>🎯</span> Marketing Attribution &amp; Performance
                             </button>
                         </div>
@@ -3891,10 +3939,10 @@
             const cAttr = document.getElementById("growthAttributionContainer");
 
             // Reset all sub-tab buttons
-            if (btnPg) { btnPg.style.background = "#e2e8f0"; btnPg.style.color = "#334155"; }
-            if (btnGa4) { btnGa4.style.background = "#e2e8f0"; btnGa4.style.color = "#334155"; }
-            if (btnEmp) { btnEmp.style.background = "#e2e8f0"; btnEmp.style.color = "#334155"; }
-            if (btnAttr) { btnAttr.style.background = "#e2e8f0"; btnAttr.style.color = "#334155"; }
+            if (btnPg) { btnPg.style.background = "#e2e8f0"; btnPg.style.color = "#334155"; btnPg.setAttribute("aria-selected", "false"); }
+            if (btnGa4) { btnGa4.style.background = "#e2e8f0"; btnGa4.style.color = "#334155"; btnGa4.setAttribute("aria-selected", "false"); }
+            if (btnEmp) { btnEmp.style.background = "#e2e8f0"; btnEmp.style.color = "#334155"; btnEmp.setAttribute("aria-selected", "false"); }
+            if (btnAttr) { btnAttr.style.background = "#e2e8f0"; btnAttr.style.color = "#334155"; btnAttr.setAttribute("aria-selected", "false"); }
 
             // Hide all sub-tab containers
             if (cPg) cPg.style.display = "none";
@@ -3902,27 +3950,34 @@
             if (cEmp) cEmp.style.display = "none";
             if (cAttr) cAttr.style.display = "none";
 
+            let activeSubtabBtn = null;
             if (tab === "postgres") {
-                if (btnPg) { btnPg.style.background = "var(--accent-blue, #2563eb)"; btnPg.style.color = "white"; }
+                if (btnPg) { btnPg.style.background = "var(--accent-blue, #2563eb)"; btnPg.style.color = "white"; btnPg.setAttribute("aria-selected", "true"); activeSubtabBtn = btnPg; }
                 if (cPg) cPg.style.display = "block";
             } else if (tab === "ga4") {
-                if (btnGa4) { btnGa4.style.background = "var(--accent-blue, #2563eb)"; btnGa4.style.color = "white"; }
+                if (btnGa4) { btnGa4.style.background = "var(--accent-blue, #2563eb)"; btnGa4.style.color = "white"; btnGa4.setAttribute("aria-selected", "true"); activeSubtabBtn = btnGa4; }
                 if (cGa4) cGa4.style.display = "block";
                 if (!hasGA4Loaded) {
                     loadGA4Analytics(false);
                 }
             } else if (tab === "employer-deep-dive") {
-                if (btnEmp) { btnEmp.style.background = "var(--accent-blue, #2563eb)"; btnEmp.style.color = "white"; }
+                if (btnEmp) { btnEmp.style.background = "var(--accent-blue, #2563eb)"; btnEmp.style.color = "white"; btnEmp.setAttribute("aria-selected", "true"); activeSubtabBtn = btnEmp; }
                 if (cEmp) cEmp.style.display = "block";
                 if (!hasEmployerDeepDiveLoaded) {
                     loadEmployerDeepDive(false);
                 }
             } else if (tab === "attribution") {
-                if (btnAttr) { btnAttr.style.background = "var(--accent-blue, #2563eb)"; btnAttr.style.color = "white"; }
+                if (btnAttr) { btnAttr.style.background = "var(--accent-blue, #2563eb)"; btnAttr.style.color = "white"; btnAttr.setAttribute("aria-selected", "true"); activeSubtabBtn = btnAttr; }
                 if (cAttr) cAttr.style.display = "block";
                 if (!hasAttributionLoaded) {
                     loadMarketingAttribution(false);
                 }
+            }
+
+            if (activeSubtabBtn && typeof activeSubtabBtn.scrollIntoView === "function") {
+                try {
+                    activeSubtabBtn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+                } catch (_) {}
             }
         }
 
