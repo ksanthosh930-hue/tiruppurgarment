@@ -1,7 +1,10 @@
 import os
 import re
 import html
+import xml.sax.saxutils as saxutils
 import json
+import time
+import threading
 import urllib.parse
 import logging
 import datetime
@@ -90,116 +93,369 @@ Sitemap: {CANONICAL_DOMAIN}/sitemap.xml
     return PlainTextResponse(content=content, media_type="text/plain")
 
 
-# --- 2. SITEMAP.XML ---
-@router.get("/sitemap.xml")
-def get_sitemap_xml():
-    """
-    Generates a production-ready, valid XML sitemap.
-    Static: Only real, public canonical URLs.
-    Dynamic: Real active published jobs queried from the database.
-    SAFETY: If database query fails, outputs static sitemap cleanly without failing or injecting fake jobs.
-    """
-    today_iso = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
+# ==============================================================================
+# --- 2. SITEMAP ARCHITECTURE (SITEMAP INDEX & CHILD SITEMAPS) ---
+# ==============================================================================
 
-    static_urls = [
-        {"loc": f"{CANONICAL_DOMAIN}/", "priority": "1.0", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/jobs", "priority": "0.9", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/tirupur-jobs", "priority": "0.9", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/tirupur-garment-jobs", "priority": "0.9", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/garment-jobs-in-tirupur", "priority": "0.9", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/apparel-jobs-in-tirupur", "priority": "0.9", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/tools", "priority": "0.8", "changefreq": "weekly"},
-        {"loc": f"{CANONICAL_DOMAIN}/tools/sam-calculator", "priority": "0.9", "changefreq": "weekly"},
-        {"loc": f"{CANONICAL_DOMAIN}/hire", "priority": "0.9", "changefreq": "weekly"},
-        {"loc": f"{CANONICAL_DOMAIN}/free-job-posting-tirupur", "priority": "0.9", "changefreq": "weekly"},
-        {"loc": f"{CANONICAL_DOMAIN}/services", "priority": "0.8", "changefreq": "monthly"},
-        {"loc": f"{CANONICAL_DOMAIN}/services/report-automation", "priority": "0.8", "changefreq": "monthly"},
-        {"loc": f"{CANONICAL_DOMAIN}/services/excel-automation", "priority": "0.8", "changefreq": "monthly"},
-        {"loc": f"{CANONICAL_DOMAIN}/services/garment-production-planning", "priority": "0.8", "changefreq": "monthly"},
-        {"loc": f"{CANONICAL_DOMAIN}/services/garment-erp", "priority": "0.8", "changefreq": "monthly"},
-        {"loc": f"{CANONICAL_DOMAIN}/blog", "priority": "0.8", "changefreq": "weekly"},
-        {"loc": f"{CANONICAL_DOMAIN}/blog/what-is-sam-in-garment-manufacturing", "priority": "0.8", "changefreq": "monthly"},
-        {"loc": f"{CANONICAL_DOMAIN}/blog/how-to-calculate-garment-production-target-and-efficiency", "priority": "0.8", "changefreq": "monthly"},
-        {"loc": f"{CANONICAL_DOMAIN}/blog/tiruppur-garment-industry-jobs-and-hiring-guide", "priority": "0.8", "changefreq": "monthly"},
-        {"loc": f"{CANONICAL_DOMAIN}/blog/garment-excel-automation-vs-erp", "priority": "0.8", "changefreq": "monthly"},
-        {"loc": f"{CANONICAL_DOMAIN}/jobs/merchandiser-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/jobs/production-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/jobs/quality-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/jobs/cutting-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/jobs/sewing-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/jobs/cutting-incharge-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/jobs/production-manager-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/jobs/quality-manager-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/jobs/fabric-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/jobs/stores-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/jobs/finishing-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/jobs/accounts-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/jobs/hr-admin-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/jobs/female-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/jobs/driver-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/jobs/designer-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/jobs/fresher-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/jobs/buying-office-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/jobs/ie-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/jobs/cotton-jobs-tiruppur", "priority": "0.9", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/jobs/erp-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/jobs/netaji-apparel-park-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/jobs/avinashi-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
-        {"loc": f"{CANONICAL_DOMAIN}/jobs/kangayam-jobs-tiruppur", "priority": "0.8", "changefreq": "daily"},
-    ]
+# --- 2.1. SITEMAP IN-MEMORY CACHE & XML HELPERS ---
+_CHILD_SITEMAP_CACHE: Dict[str, Dict[str, Any]] = {}
+_CHILD_SITEMAP_CACHE_LOCK = threading.Lock()
 
-    job_urls = []
-    if db_helpers["db_enabled"] and db_helpers["query_db"]:
+def _get_cached_sitemap(cache_key: str, ttl_seconds: int, generator_fn) -> str:
+    """
+    Lightweight, thread-safe in-memory cache helper for child sitemaps and sitemap index.
+    Stores generated XML string and creation timestamp.
+    Re-uses cached XML until TTL expires, preventing unnecessary CPU/disk overhead.
+    """
+    now = time.time()
+    with _CHILD_SITEMAP_CACHE_LOCK:
+        entry = _CHILD_SITEMAP_CACHE.get(cache_key)
+        if entry and (now - entry["created_at"]) < ttl_seconds:
+            return entry["xml"]
+
+    fresh_xml = generator_fn()
+
+    with _CHILD_SITEMAP_CACHE_LOCK:
+        _CHILD_SITEMAP_CACHE[cache_key] = {
+            "xml": fresh_xml,
+            "created_at": time.time()
+        }
+    return fresh_xml
+
+_XML_ENTITIES = {'"': '&quot;', "'": '&apos;'}
+_XML_UNESCAPE_ENTITIES = {
+    '&quot;': '"',
+    '&apos;': "'",
+    '&#39;': "'",
+    '&#x27;': "'",
+    '&#34;': '"',
+    '&#x22;': '"'
+}
+_W3C_DATE_REGEX = re.compile(r'^\d{4}-\d{2}-\d{2}$')
+_W3C_DATETIME_REGEX = re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}')
+
+def _xml_escape_loc(url: Any) -> str:
+    """
+    Safely escapes a URL string for inclusion in XML sitemap <loc>.
+    - Normalizes by unescaping XML-specific entities first to prevent double-escaping (&amp;amp;).
+    - Preserves literal characters without confusing with HTML entities (e.g. &copy= or &note=).
+    - Uses standard XML entity escaping: & (&amp;), < (&lt;), > (&gt;), " (&quot;), ' (&apos;).
+    """
+    if not url:
+        return ""
+    raw = saxutils.unescape(str(url).strip(), entities=_XML_UNESCAPE_ENTITIES)
+    return saxutils.escape(raw, entities=_XML_ENTITIES)
+
+def _xml_validate_lastmod(lastmod: Any) -> Optional[str]:
+    """
+    Validates and formats lastmod to standard W3C Datetime format (YYYY-MM-DD).
+    Rejects malformed, non-date, or potential markup injection strings.
+    """
+    if not lastmod:
+        return None
+    lm_str = str(lastmod).strip()
+    if _W3C_DATE_REGEX.match(lm_str):
         try:
-            query = """
-                SELECT slug, published_at, created_at
-                FROM jobs
-                WHERE LOWER(status) = 'published'
-                  AND COALESCE(is_archived, FALSE) = FALSE
-                  AND (expires_at IS NULL OR expires_at >= CURRENT_TIMESTAMP)
-                  AND slug IS NOT NULL AND slug != '';
-            """
-            rows = db_helpers["query_db"](query)
-            for r in rows:
-                slug = r.get("slug")
-                if not slug:
-                    continue
-                pub_date = r.get("published_at") or r.get("created_at")
-                lastmod = pub_date.strftime("%Y-%m-%d") if isinstance(pub_date, (datetime.datetime, datetime.date)) else today_iso
-                job_urls.append({
-                    "loc": f"{CANONICAL_DOMAIN}/jobs/{slug}",
-                    "lastmod": lastmod,
-                    "priority": "0.7",
-                    "changefreq": "weekly"
-                })
-        except Exception as e:
-            logger.warning(f"Database sitemap query warning (safely proceeding with static URLs): {e}")
+            datetime.date.fromisoformat(lm_str)
+            return lm_str
+        except ValueError:
+            return None
+    if _W3C_DATETIME_REGEX.match(lm_str):
+        try:
+            dt = datetime.datetime.fromisoformat(lm_str.replace("Z", "+00:00"))
+            return dt.strftime("%Y-%m-%d")
+        except ValueError:
+            return None
+    return None
 
+def _build_child_sitemap_xml(entries: List[Dict[str, Any]]) -> str:
+    """
+    Constructs a standards-compliant XML sitemap adhering to sitemap 0.9 protocol.
+    Only includes <loc> and reliable <lastmod> where available.
+    Omits redundant <changefreq> and <priority> per modern Google Search Central guidelines.
+    Ensures safe XML escaping without double-escaping and validates lastmod formats.
+    """
     xml_lines = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
     ]
-
-    for item in static_urls:
+    for item in entries:
+        loc = _xml_escape_loc(item.get("loc"))
+        if not loc:
+            continue
         xml_lines.append("  <url>")
-        xml_lines.append(f"    <loc>{item['loc']}</loc>")
-        xml_lines.append(f"    <lastmod>{item.get('lastmod', today_iso)}</lastmod>")
-        xml_lines.append(f"    <changefreq>{item['changefreq']}</changefreq>")
-        xml_lines.append(f"    <priority>{item['priority']}</priority>")
+        xml_lines.append(f"    <loc>{loc}</loc>")
+        valid_lastmod = _xml_validate_lastmod(item.get("lastmod"))
+        if valid_lastmod:
+            xml_lines.append(f"    <lastmod>{valid_lastmod}</lastmod>")
         xml_lines.append("  </url>")
-
-    for item in job_urls:
-        xml_lines.append("  <url>")
-        xml_lines.append(f"    <loc>{item['loc']}</loc>")
-        xml_lines.append(f"    <lastmod>{item['lastmod']}</lastmod>")
-        xml_lines.append(f"    <changefreq>{item['changefreq']}</changefreq>")
-        xml_lines.append(f"    <priority>{item['priority']}</priority>")
-        xml_lines.append("  </url>")
-
     xml_lines.append("</urlset>")
-    xml_content = "\n".join(xml_lines)
+    return "\n".join(xml_lines)
 
-    return Response(content=xml_content, media_type="application/xml; charset=utf-8")
+def _build_sitemap_index_xml(sitemaps: List[str]) -> str:
+    """
+    Constructs a standards-compliant Sitemap Index XML string adhering to Sitemap 0.9 protocol.
+    Contains exactly the referenced child sitemaps in <sitemap><loc>...</loc></sitemap>.
+    """
+    xml_lines = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+    ]
+    for sitemap_url in sitemaps:
+        loc = _xml_escape_loc(sitemap_url)
+        xml_lines.append("  <sitemap>")
+        xml_lines.append(f"    <loc>{loc}</loc>")
+        xml_lines.append("  </sitemap>")
+    xml_lines.append("</sitemapindex>")
+    return "\n".join(xml_lines)
+
+
+# --- 2.2. ROOT SITEMAP INDEX (/sitemap.xml) ---
+@router.get("/sitemap.xml")
+def get_sitemap_xml():
+    """
+    Serves the master Sitemap Index referencing all 6 child sitemaps.
+    Conforms strictly to standard Sitemap 0.9 Sitemap Index protocol.
+    Contains zero individual URLs.
+    Cached in-memory for 10 minutes (600s).
+    """
+    TTL = 600  # 10 minutes
+
+    def generate():
+        child_sitemaps = [
+            f"{CANONICAL_DOMAIN}/sitemap-static.xml",
+            f"{CANONICAL_DOMAIN}/sitemap-categories.xml",
+            f"{CANONICAL_DOMAIN}/sitemap-tools.xml",
+            f"{CANONICAL_DOMAIN}/sitemap-services.xml",
+            f"{CANONICAL_DOMAIN}/sitemap-blog.xml",
+            f"{CANONICAL_DOMAIN}/sitemap-jobs.xml",
+        ]
+        return _build_sitemap_index_xml(child_sitemaps)
+
+    xml_content = _get_cached_sitemap("sitemap_index", TTL, generate)
+    return Response(
+        content=xml_content,
+        media_type="application/xml; charset=utf-8",
+        headers={
+            "Cache-Control": f"public, max-age={TTL}",
+            "X-Content-Type-Options": "nosniff"
+        }
+    )
+
+
+# --- 2.2. CHILD SITEMAP: STATIC HUBS ---
+@router.get("/sitemap-static.xml")
+def get_sitemap_static():
+    """
+    Serves canonical static pages, job search directory, primary SEO hubs, and employer acquisition hubs.
+    Cached in-memory for 24 hours.
+    """
+    TTL = 86400  # 24 hours
+
+    def generate():
+        static_paths = [
+            ("/", "index.html"),
+            ("/jobs", "jobs.html"),
+            ("/tirupur-jobs", None),
+            ("/tirupur-garment-jobs", None),
+            ("/garment-jobs-in-tirupur", None),
+            ("/apparel-jobs-in-tirupur", None),
+            ("/hire", "hire.html"),
+            ("/free-job-posting-tirupur", "free_job_posting.html"),
+        ]
+        entries = []
+        for path, rel_file in static_paths:
+            loc = f"{CANONICAL_DOMAIN}{path}"
+            lastmod = None
+            if rel_file:
+                fp = os.path.join(BASE_DIR, rel_file)
+                if os.path.exists(fp):
+                    try:
+                        lastmod = datetime.datetime.fromtimestamp(os.path.getmtime(fp), tz=datetime.timezone.utc).strftime("%Y-%m-%d")
+                    except Exception:
+                        pass
+            entries.append({"loc": loc, "lastmod": lastmod})
+        return _build_child_sitemap_xml(entries)
+
+    xml_content = _get_cached_sitemap("sitemap_static", TTL, generate)
+    return Response(
+        content=xml_content,
+        media_type="application/xml; charset=utf-8",
+        headers={"Cache-Control": f"public, max-age={TTL}", "X-Content-Type-Options": "nosniff"}
+    )
+
+
+# --- 2.3. CHILD SITEMAP: GARMENT CATEGORY HUBS ---
+@router.get("/sitemap-categories.xml")
+def get_sitemap_categories():
+    """
+    Serves all 24 verified public garment designation category landing pages.
+    Derived dynamically from CATEGORY_MAPPINGS.
+    Cached in-memory for 6 hours.
+    """
+    TTL = 21600  # 6 hours
+
+    def generate():
+        entries = []
+        for slug in sorted(CATEGORY_MAPPINGS.keys()):
+            loc = f"{CANONICAL_DOMAIN}/jobs/{slug}"
+            entries.append({"loc": loc})
+        return _build_child_sitemap_xml(entries)
+
+    xml_content = _get_cached_sitemap("sitemap_categories", TTL, generate)
+    return Response(
+        content=xml_content,
+        media_type="application/xml; charset=utf-8",
+        headers={"Cache-Control": f"public, max-age={TTL}", "X-Content-Type-Options": "nosniff"}
+    )
+
+
+# --- 2.4. CHILD SITEMAP: GARMENT TOOLS ---
+@router.get("/sitemap-tools.xml")
+def get_sitemap_tools():
+    """
+    Serves public garment manufacturing engineering tools and calculators.
+    Cached in-memory for 24 hours.
+    """
+    TTL = 86400  # 24 hours
+
+    def generate():
+        tools_list = [
+            ("/tools", "tools.html"),
+            ("/tools/sam-calculator", "sam_calculator.html")
+        ]
+        entries = []
+        for path, rel_file in tools_list:
+            loc = f"{CANONICAL_DOMAIN}{path}"
+            lastmod = None
+            if rel_file:
+                fp = os.path.join(BASE_DIR, rel_file)
+                if os.path.exists(fp):
+                    try:
+                        lastmod = datetime.datetime.fromtimestamp(os.path.getmtime(fp), tz=datetime.timezone.utc).strftime("%Y-%m-%d")
+                    except Exception:
+                        pass
+            entries.append({"loc": loc, "lastmod": lastmod})
+        return _build_child_sitemap_xml(entries)
+
+    xml_content = _get_cached_sitemap("sitemap_tools", TTL, generate)
+    return Response(
+        content=xml_content,
+        media_type="application/xml; charset=utf-8",
+        headers={"Cache-Control": f"public, max-age={TTL}", "X-Content-Type-Options": "nosniff"}
+    )
+
+
+# --- 2.5. CHILD SITEMAP: B2B FACTORY SERVICES ---
+@router.get("/sitemap-services.xml")
+def get_sitemap_services():
+    """
+    Serves B2B solutions, reporting automation, and PPC landing pages.
+    Derived dynamically from SERVICE_DATA.
+    Cached in-memory for 24 hours.
+    """
+    TTL = 86400  # 24 hours
+
+    def generate():
+        entries = []
+        srv_file = os.path.join(BASE_DIR, "services.html")
+        lastmod = None
+        if os.path.exists(srv_file):
+            try:
+                lastmod = datetime.datetime.fromtimestamp(os.path.getmtime(srv_file), tz=datetime.timezone.utc).strftime("%Y-%m-%d")
+            except Exception:
+                pass
+        entries.append({"loc": f"{CANONICAL_DOMAIN}/services", "lastmod": lastmod})
+
+        for slug in sorted(SERVICE_DATA.keys()):
+            entries.append({"loc": f"{CANONICAL_DOMAIN}/services/{slug}"})
+        return _build_child_sitemap_xml(entries)
+
+    xml_content = _get_cached_sitemap("sitemap_services", TTL, generate)
+    return Response(
+        content=xml_content,
+        media_type="application/xml; charset=utf-8",
+        headers={"Cache-Control": f"public, max-age={TTL}", "X-Content-Type-Options": "nosniff"}
+    )
+
+
+# --- 2.6. CHILD SITEMAP: KNOWLEDGE & BLOG GUIDES ---
+@router.get("/sitemap-blog.xml")
+def get_sitemap_blog():
+    """
+    Serves garment technical articles, efficiency guides, and blog index.
+    Derived dynamically from BLOG_ARTICLES.
+    Cached in-memory for 24 hours.
+    """
+    TTL = 86400  # 24 hours
+
+    def generate():
+        entries = []
+        blog_file = os.path.join(BASE_DIR, "blog.html")
+        lastmod = None
+        if os.path.exists(blog_file):
+            try:
+                lastmod = datetime.datetime.fromtimestamp(os.path.getmtime(blog_file), tz=datetime.timezone.utc).strftime("%Y-%m-%d")
+            except Exception:
+                pass
+        entries.append({"loc": f"{CANONICAL_DOMAIN}/blog", "lastmod": lastmod})
+
+        for slug in sorted(BLOG_ARTICLES.keys()):
+            art = BLOG_ARTICLES.get(slug, {})
+            entries.append({"loc": f"{CANONICAL_DOMAIN}/blog/{slug}", "lastmod": art.get("date")})
+        return _build_child_sitemap_xml(entries)
+
+    xml_content = _get_cached_sitemap("sitemap_blog", TTL, generate)
+    return Response(
+        content=xml_content,
+        media_type="application/xml; charset=utf-8",
+        headers={"Cache-Control": f"public, max-age={TTL}", "X-Content-Type-Options": "nosniff"}
+    )
+
+
+# --- 2.7. CHILD SITEMAP: DYNAMIC JOB POSTINGS ---
+@router.get("/sitemap-jobs.xml")
+def get_sitemap_jobs():
+    """
+    Serves all active, public, published garment job vacancies in Tiruppur.
+    Queries only eligible jobs (status='published', not archived, not expired, non-empty slug).
+    Extracts authentic lastmod from updated_at / published_at / created_at.
+    Cached in-memory for 10 minutes (600 seconds) to balance freshness with crawler efficiency.
+    """
+    TTL = 600  # 10 minutes
+
+    def generate():
+        entries = []
+        if db_helpers["db_enabled"] and db_helpers["query_db"]:
+            try:
+                query = """
+                    SELECT slug, COALESCE(updated_at, published_at, created_at) AS mod_time
+                    FROM jobs
+                    WHERE LOWER(status) = 'published'
+                      AND COALESCE(is_archived, FALSE) = FALSE
+                      AND (expires_at IS NULL OR expires_at >= CURRENT_TIMESTAMP)
+                      AND slug IS NOT NULL AND slug != ''
+                    ORDER BY id DESC;
+                """
+                rows = db_helpers["query_db"](query)
+                for r in rows:
+                    slug = r.get("slug")
+                    if not slug:
+                        continue
+                    loc = f"{CANONICAL_DOMAIN}/jobs/{slug}"
+                    mod_time = r.get("mod_time")
+                    lastmod = mod_time.strftime("%Y-%m-%d") if isinstance(mod_time, (datetime.datetime, datetime.date)) else None
+                    entries.append({"loc": loc, "lastmod": lastmod})
+            except Exception as e:
+                logger.warning(f"Database error generating sitemap-jobs: {e}")
+        return _build_child_sitemap_xml(entries)
+
+    xml_content = _get_cached_sitemap("sitemap_jobs", TTL, generate)
+    return Response(
+        content=xml_content,
+        media_type="application/xml; charset=utf-8",
+        headers={"Cache-Control": f"public, max-age={TTL}", "X-Content-Type-Options": "nosniff"}
+    )
 
 
 # --- 3. TOOLS & SERVICES HUBS ---
