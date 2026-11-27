@@ -4774,7 +4774,7 @@ def get_job_or_category_page(slug: str, request: Request):
             "datePosted": date_posted_iso,
             "employmentType": schema_job_type,
             "directApply": True,
-            "url": f"{CANONICAL_DOMAIN}/jobs?job={job_slug}",
+            "url": canonical_url,
             "jobLocation": {
                 "@type": "Place",
                 "address": {
@@ -4911,11 +4911,11 @@ def get_job_or_category_page(slug: str, request: Request):
         # Salary string
         modal_salary_str = job.get("salary_text") or (f"₹{int(job['salary_min']):,} / mo" if job.get("salary_min") else "Negotiable")
 
-        # Accessible crawlable content block for bots and non-JS clients
+        # Accessible crawlable content block for bots and non-JS clients (uses h2 to maintain single h1 on page)
         noscript_block = f"""
         <noscript>
             <div style="background: #ffffff; border: 1px solid #E2E8F0; border-radius: 12px; padding: 32px; margin: 24px auto; max-width: 900px;">
-                <h1 style="font-size: 26px; color: #081226; margin: 0 0 10px 0;">{html.escape(job_title)}</h1>
+                <h2 style="font-size: 26px; color: #081226; margin: 0 0 10px 0;">{html.escape(job_title)}</h2>
                 <div style="font-size: 14px; color: #64748B; margin-bottom: 20px;">
                     {f"<span>🏢 {html.escape(job_comp)}</span> • " if job_comp else ""}
                     <span>📍 {html.escape(job_loc)}</span> • 
@@ -4932,6 +4932,13 @@ def get_job_or_category_page(slug: str, request: Request):
         </noscript>
         """
         custom_html = custom_html.replace('<main class="jobs-container">', f'<main class="jobs-container">\n{noscript_block}', 1)
+
+        # Demote generic hero heading to maintain exactly one H1 on job detail pages
+        custom_html = custom_html.replace(
+            '<h1>Find Your Next Job in <span>Tiruppur</span></h1>',
+            '<div class="jobs-hero-title">Find Your Next Job in <span>Tiruppur</span></div>',
+            1
+        )
 
         # Pre-render job detail into modal DOM elements for 100% crawlability & instant display
         custom_html = custom_html.replace(
